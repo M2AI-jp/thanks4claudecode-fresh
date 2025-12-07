@@ -37,7 +37,20 @@
 【フェーズ 4: 宣言】
 
   10. [自認] を出力
-  11. LOOP に入る
+
+【フェーズ 5: Macro チェック & 自律行動】
+
+  11. plan/project.md の done_when を確認
+  12. current_phase.tasks から未完了タスクを特定
+  13. 宣言して作業開始:
+      「Macro: {project.md の summary}
+       残タスク: {未完了タスクのリスト}
+       → {next_task} を進めます。」
+  14. LOOP に入る（ユーザーが止めない限り進む）
+
+  ⚠️ 禁止: 「よろしいですか？」と聞く
+  ⚠️ 禁止: 「何か続けますか？」と聞く
+  ⚠️ 禁止: ユーザーの応答を待つ
 ```
 
 ---
@@ -50,7 +63,8 @@ what: {focus.current}
 phase: {goal.phase}
 session: {focus.session}
 branch: {現在のブランチ名}
-milestone: {plan_hierarchy.current_milestone}
+macro_goal: {plan/project.md の summary}
+remaining_tasks: {project.md の current_phase.tasks で未完了のもの}
 playbook: {active_playbooks.{focus.current}}
 done_criteria: {goal.done_criteria を列挙}
 git_status: {clean | modified | untracked}
@@ -92,12 +106,13 @@ while true:
   - 通常通り作業を進める
 
 整合していない場合:
-  - 警告を出す
-  - ユーザーに選択肢を提示:
-    1. roadmap を更新して進める
-    2. 割り込みタスクとして処理（context.mode=interrupt）
-    3. 強制実行する
-  - ユーザーの明示的な選択後に作業開始
+  - 「計画と異なります。計画を更新して進めます。」と宣言
+  - playbook/roadmap を自動更新
+  - 作業開始（確認なし）
+
+例外（確認が必要な場合）:
+  - 計画を大幅に変更する場合（破壊的変更）
+  - → この場合のみ「計画を大幅に変更しますがよいですか？」
 ```
 
 ---
