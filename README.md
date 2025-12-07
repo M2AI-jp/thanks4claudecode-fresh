@@ -74,56 +74,20 @@ A: 現在は Mac のみ対応しています。
 
 ```
 .
-├── CLAUDE.md       # LLM への指示（最優先）
-├── CONTEXT.md      # 設計思想（唯一の真実源）
-├── state.md        # 現在の状態（Single Source of Truth）
-├── setup/          # セットアップガイド
-│   └── playbook-setup.md  # 環境構築フロー
-├── plan/           # 計画関連
-│   ├── vision.md       # 存在意義（WHY）
-│   ├── meta-roadmap.md # 改善サイクル
-│   └── roadmap.md      # 中長期計画（WHAT）
-├── .claude/        # Claude Code 拡張
-│   ├── hooks/      # 自動実行スクリプト（SessionStart 等）
-│   ├── skills/     # 専門知識（デプロイ、テスト等）
-│   └── commands/   # カスタムコマンド
-└── test/           # テスト関連
-    └── E2E/        # E2E テスト環境
+├── CLAUDE.md           # LLM への指示（最優先）
+├── CONTEXT.md          # 設計思想（唯一の真実源）
+├── state.md            # 現在の状態（Single Source of Truth）
+├── setup/              # セットアップガイド
+│   ├── playbook-setup.md   # 環境構築フロー（Phase 0-8）
+│   └── CATALOG.md          # 技術詳細リファレンス
+├── plan/               # 計画関連
+│   ├── template/           # playbook/project テンプレート
+│   └── active/             # 現在進行中の playbook
+└── .claude/            # Claude Code 拡張
+    ├── hooks/              # 自動実行スクリプト
+    ├── agents/             # サブエージェント定義
+    ├── skills/             # 専門知識（デプロイ、テスト等）
+    └── commands/           # カスタムコマンド
 ```
 
 詳細は [CONTEXT.md](CONTEXT.md) を参照してください。
-
----
-
-## ワークスペース開発者向け
-
-<details>
-<summary>開発者向け情報を表示</summary>
-
-### Hooks（イベント駆動）
-
-| Hook | 機能 |
-|------|------|
-| session-start.sh | セッション開始時の初期化 |
-| check-protected-edit.sh | 保護ファイルの編集ブロック |
-| check-coherence.sh | 整合性チェック |
-
-### Commands
-
-| コマンド | 機能 |
-|----------|------|
-| /playbook-init | 新タスク開始 |
-| /crit | done_criteria チェック |
-| /lint | 整合性チェック |
-
-### テスト
-
-```bash
-bash .claude/hooks/test-done-criteria.sh
-```
-
-### spec.yaml
-
-全機能の宣言的定義。Hooks, Commands, Agents, Skills の仕様を記述。
-
-</details>

@@ -307,6 +307,34 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 
 ---
 
+### plan-guard【必須・最優先・自己実行】
+
+> **注**: plan-guard は SubAgent ではなく、LLM が参照する設計ドキュメント。
+> `.claude/agents/plan-guard.md` を読み、そのロジックに従って自己判断を行う。
+
+**セッション開始時（ユーザー入力前）:**
+- INIT 完了後、[自認] 宣言の直後
+- `.claude/agents/plan-guard.md` を Read
+- 3層計画（Macro/Medium/Micro）を確認・提示
+- 「今日は〇〇をやります。よろしいですか？」と提示
+
+**ユーザープロンプト受信時:**
+- 要求と現在の playbook の整合性をチェック
+- 計画外の要求には警告を出す
+
+**シナリオ別の判断（plan-guard.md 参照）:**
+- S0: PLAN_PRESENTED（計画提示）
+- S1: PLAN_REQUIRED（計画なし→作成強制）
+- S2: PLAN_MISMATCH（計画外→確認）
+- S3: PLAN_ALIGNED（計画内→続行）
+- S4: MACRO_REQUIRED（Macro なし→作成強制）
+- S5: MEDIUM_REQUIRED（Medium なし→作成強制）
+
+❌ **plan-guard ロジックを無視した作業開始は禁止**
+❌ **ユーザープロンプトを無条件に実行してはならない**
+
+---
+
 ### critic【必須】
 
 以下の状況では、**必ず** `Task(subagent_type='critic')` を使用すること：

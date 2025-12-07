@@ -11,7 +11,7 @@
 
 ```yaml
 current: setup               # plan-template | workspace | setup | product
-session: discussion          # task | discussion
+session: discussion          # task | discussion (playbook作成中は一時的にdiscussion)
 ```
 
 ---
@@ -28,7 +28,7 @@ mode: trusted                # strict | trusted | developer | admin
 
 ```yaml
 plan-template:    null
-workspace:        null
+workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            setup/playbook-setup.md   # デフォルト playbook
 product:          null                       # setup 完了後、product 開発用に作成
 ```
@@ -47,41 +47,52 @@ return_to: null
 
 ## plan_hierarchy
 
-> **6 層レイヤー構造**: vision → meta-roadmap → CONTEXT.md → roadmap → playbook → task
+> **3層計画構造**: Macro → Medium → Micro
 
 ```yaml
-# 最上位レイヤー（WHY-ultimate）
-vision: plan/vision.md
+# Macro: リポジトリ全体の最終目標（Phase 8 で生成）
+macro:
+  file: plan/project.md
+  exists: false
+  summary: null  # setup 完了後、ユーザーの目標に基づいて生成
 
-# roadmap 改善レイヤー（HOW-to-improve）
-meta_roadmap: plan/meta-roadmap.md
+# Archive: 公開時に新規ユーザーに不要なファイルを隔離
+archive:
+  folder: .archive/          # 一時退避フォルダ
+  purpose: |
+    開発時に使用したファイル（テスト履歴、ロードマップ、メタ改善記録など）を
+    公開前に退避させ、新規ユーザーのコンテキスト負荷を軽減する。
+    必要に応じて復元可能。
+  restore_command: "git checkout .archive/ && mv .archive/* ."
 
-# 中長期計画レイヤー（WHAT）
-roadmap: plan/roadmap.md
-current_phase: setup
-current_milestone: null
+# Medium: 単機能実装の中期計画（1ブランチ = 1playbook）
+medium:
+  file: null                 # 新タスク開始時
+  exists: false
+  goal: null
 
-# セッションタスクレイヤー（HOW）
-playbook: setup/playbook-setup.md
+# Micro: セッション単位の作業（playbook の 1 Phase）
+micro:
+  phase: null
+  name: null
+  status: pending
 
-# 完了タスク
-completed_tasks: []
-
-# 次のタスク
-next_tasks:
-  - Phase 0: ルート選択
-  - Phase 1: プロジェクト設計
+# 上位計画参照（.archive/ に退避済み、必要時のみ復元）
+upper_plans:
+  vision: .archive/plan/vision.md           # WHY-ultimate
+  meta_roadmap: .archive/plan/meta-roadmap.md  # HOW-to-improve
+  roadmap: .archive/plan/roadmap.md         # WHAT
 ```
 
 ---
 
 ## project_context
 
-> **setup 完了後に更新される。**
+> **Macro 計画の状態を管理。**
 
 ```yaml
-generated: false             # true = setup 完了、plan/project.md 生成済み
-project_plan: null           # 生成後: plan/project.md
+generated: false             # Phase 8 で生成
+project_plan: null           # setup 完了後に plan/project.md が生成される
 ```
 
 ---
@@ -100,7 +111,7 @@ playbook: null
 
 ```yaml
 state: done
-sub: v7.2-readme-structure-updated
+sub: v8-3layer-plan-guard-archived
 playbook: null
 ```
 
@@ -188,7 +199,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-07 23:32:55
+last_start: 2025-12-08 00:42:19
 last_end: null
 uncommitted_warning: false
 ```
