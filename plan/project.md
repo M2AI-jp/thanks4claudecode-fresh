@@ -37,6 +37,7 @@ focus: 欠落機能の実装
 completed:
   - Issue #8: 自律性強化（PDCA自動回転・妥当性評価フレームワーク）
   - Issue #9: 回帰テスト機能（task-06）
+  - Issue #10: 自動 /clear 判断（task-08）
 
 remaining_tasks:
   # 計画管理（3件）
@@ -78,13 +79,7 @@ remaining_tasks:
     description: コード・設計のレビュープロセス強化
     priority: medium
 
-  # コンテキスト管理（3件）
-  - id: task-08
-    name: 自動 /clear 判断
-    category: コンテキスト管理
-    description: コンテキスト使用率に基づく自動 /clear 提案
-    priority: high
-
+  # コンテキスト管理（2件）
   - id: task-09
     name: /compact 最適化
     category: コンテキスト管理
@@ -124,7 +119,6 @@ remaining_tasks:
 ```yaml
 # 優先度順の実装順序
 high:
-  - task-08: 自動 /clear 判断
   - task-11: ロールバック機能
 
 medium:

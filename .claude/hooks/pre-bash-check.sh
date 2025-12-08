@@ -125,25 +125,25 @@ fi
 # パターン: "git commit" で始まる、または "&&" や ";" の後に "git commit" がある
 GIT_COMMIT_PATTERN='^git[[:space:]]+commit|&&[[:space:]]*git[[:space:]]+commit|;[[:space:]]*git[[:space:]]+commit'
 if [[ "$COMMAND" =~ $GIT_COMMIT_PATTERN ]]; then
-    # 回帰テストを実行
+    # 回帰テストを実行（stdout 出力: stderr は Claude Code にエラーと解釈される）
     if [ -f ".claude/tests/regression-test.sh" ]; then
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-        echo "  🧪 回帰テスト実行中..." >&2
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-        if ! bash .claude/tests/regression-test.sh >&2; then
-            echo "" >&2
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-            echo -e "  ${RED}❌ 回帰テスト失敗 - コミットをブロック${NC}" >&2
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-            echo "" >&2
-            echo "回帰テストが失敗しました。" >&2
-            echo "問題を修正してから再度コミットしてください。" >&2
-            echo "" >&2
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  🧪 回帰テスト実行中..."
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        if ! bash .claude/tests/regression-test.sh; then
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo -e "  ${RED}❌ 回帰テスト失敗 - コミットをブロック${NC}"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "回帰テストが失敗しました。"
+            echo "問題を修正してから再度コミットしてください。"
+            echo ""
             exit 1
         fi
-        echo "" >&2
-        echo -e "  ✅ 回帰テスト PASS" >&2
-        echo "" >&2
+        echo ""
+        echo -e "  ✅ 回帰テスト PASS"
+        echo ""
     fi
 
     # 整合性チェックを実行

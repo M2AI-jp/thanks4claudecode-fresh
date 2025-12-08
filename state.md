@@ -11,7 +11,7 @@
 
 ```yaml
 current: product             # plan-template | workspace | setup | product
-session: task                # task | discussion
+session: discussion          # Issue #10 完了処理中（一時的）
 ```
 
 ---
@@ -30,7 +30,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-auto-clear.md  # Issue #10
+product:          null    # Issue #10 完了 → Issue #11 開始準備
 ```
 
 ---
@@ -135,33 +135,33 @@ playbook: null  # テンプレートは pending のまま（正常）
 ## layer: product
 
 ```yaml
-state: implementing
-sub: auto-clear
-playbook: plan/active/playbook-auto-clear.md
+state: state_update
+sub: issue10-complete
+playbook: null
 ```
 
 ### 概要
 > ユーザーが実際にプロダクトを開発するためのレイヤー。
 > setup 完了後、plan/project.md を参照して TDD で開発。
-> **Issue #10: 自動 /clear 判断機能**
+> **Issue #10 完了。Issue #11（ロールバック機能）開始準備中**
 
 ---
 
 ## goal
 
 ```yaml
-phase: done
-current_phase: 全 Phase 完了
+phase: state_update
+current_phase: Issue #10 完了コミット
 task: Issue #10 完了処理
 assignee: claude
 
 done_criteria:
-  - p1-p3 全て critic PASS
+  - Issue #10 playbook をアーカイブ ✓
+  - state.md 更新 ✓
   - git コミット完了
-  - Issue クローズ
 ```
 
-> **Issue #10: 自動 /clear 判断機能。全 Phase 完了。**
+> **Issue #10 完了処理中。残り 11 タスク。**
 
 ---
 
@@ -198,7 +198,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-08 12:51:59
+last_start: 2025-12-08 13:14:29
 last_end: 2025-12-08 02:20:49
 uncommitted_warning: false
 ```
@@ -217,6 +217,7 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | Issue #10 完了。playbook-auto-clear.md 全 Phase critic PASS。残り 11 タスク。 |
 | 2025-12-08 | Issue #8 開始: 自律性強化。playbook-autonomy-enhancement.md 作成。p1 開始。 |
 | 2025-12-08 | 全コアタスク完了（p1-p7）。Issue #6, #7 クローズ。メンテナンスフェーズへ移行。 |
 | 2025-12-08 | POST_LOOP + Skills バリデーション機構追加。異常系テスト結果を反映。 |
