@@ -18,7 +18,7 @@
 
 行動ルール:
   新タスク開始と判断した場合、必ず INIT を最初からやり直す:
-    1. Read: CONTEXT.md, state.md, playbook, plan/project.md
+    1. Read: state.md, plan/project.md, playbook
     2. git branch / status の再取得
     3. [自認] の再宣言
     4. LOOP に入る
@@ -208,7 +208,7 @@
 
 ```
 基本ルール:
-  1. CONTEXT.md を再読
+  1. state.md / project.md / playbook を再読
   2. 答えがあるか? → YES なら質問するな、即実行
 
 質問してはいけない例:
@@ -223,7 +223,7 @@
 以下のケースでは「例外的に確認・説明を行ってよい」:
 
 1. BLOCK 指定された保護ファイルの編集提案:
-   - 対象: CLAUDE.md, CONTEXT.md, .claude/hooks/*.sh など
+   - 対象: CLAUDE.md, .claude/hooks/*.sh など
    - 行動: 直接編集せず、変更案をテキストで提示
    - 説明: 「適用するかどうかはユーザーの判断が必要です」
 
@@ -277,7 +277,7 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 ## 許可事項
 
 ```
-✅ CONTEXT.md から読み取れないことだけ質問（BEFORE_ASK必須）
+✅ state.md / project.md から読み取れないことだけ質問（BEFORE_ASK必須）
 ✅ done_criteria を満たしたら次のPhaseに進む
 ✅ 問題発見 → 即座に修正（許可不要）
 ✅ 複数の選択肢 → 最適なものを自分で選んで実行
@@ -290,7 +290,7 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 ## END（LOOP終了条件）
 
 ```
-1. CONTEXT.md を読んでも次に何をすべきかわからない
+1. state.md / project.md を読んでも次に何をすべきかわからない
 2. 全てのPhaseが完了した（CRITIQUE経由、critic PASS 必須）
 3. ユーザーからの新しい指示を待つ必要がある
 ```
@@ -445,8 +445,8 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 
 | ファイル | 内容 |
 |----------|------|
-| CONTEXT.md | ユーザー意図、設計思想、ビジョン |
 | state.md | 現在地、goal、done_criteria |
+| plan/project.md | Macro 計画（最終目標） |
 | playbook | タスク管理、Phase定義 |
 
 **他のドキュメントを参照するな。新規作成するな。**

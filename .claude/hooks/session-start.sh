@@ -3,7 +3,7 @@
 #
 # 設計方針（8.5 Hooks 設計ガイドライン準拠）:
 #   - 軽量な出力のみ（1KB 目標）
-#   - CONTEXT.md, state.md, playbook は LLM に Read させる
+#   - state.md, project.md, playbook は LLM に Read させる
 #   - OOM 防止のため全文出力は禁止
 #
 # 自動更新機能:
@@ -165,32 +165,28 @@ case "$FOCUS" in
         ;;
     product)
         # product レイヤー: plan/project.md を参照して開発
-        echo "  1. Read: $WS/CONTEXT.md"
-        echo "  2. Read: $WS/state.md"
+        echo "  1. Read: $WS/state.md"
         if [ "$PROJECT_GENERATED" = "true" ] && [ -n "$PROJECT_PLAN" ] && [ "$PROJECT_PLAN" != "null" ] && [ -f "$PROJECT_PLAN" ]; then
-            echo "  3. Read: $WS/$PROJECT_PLAN"
+            echo "  2. Read: $WS/$PROJECT_PLAN"
         else
             echo "  ⚠️ plan/project.md が未生成（setup 未完了？）"
         fi
-        [ "$PLAYBOOK" != "null" ] && echo "  4. Read: $WS/$PLAYBOOK" || echo "  4. /playbook-init を実行"
+        [ "$PLAYBOOK" != "null" ] && echo "  3. Read: $WS/$PLAYBOOK" || echo "  3. /playbook-init を実行"
         ;;
     workspace)
         # workspace レイヤー: roadmap を参照して開発
-        echo "  1. Read: $WS/CONTEXT.md"
-        echo "  2. Read: $WS/state.md"
-        [ -f "$ROADMAP" ] && echo "  3. Read: $WS/$ROADMAP"
-        [ "$PLAYBOOK" != "null" ] && echo "  4. Read: $WS/$PLAYBOOK" || echo "  4. /playbook-init を実行"
+        echo "  1. Read: $WS/state.md"
+        [ -f "$ROADMAP" ] && echo "  2. Read: $WS/$ROADMAP"
+        [ "$PLAYBOOK" != "null" ] && echo "  3. Read: $WS/$PLAYBOOK" || echo "  3. /playbook-init を実行"
         ;;
     plan-template)
         # plan-template レイヤー: テンプレート開発
-        echo "  1. Read: $WS/CONTEXT.md"
-        echo "  2. Read: $WS/state.md"
-        [ "$PLAYBOOK" != "null" ] && echo "  3. Read: $WS/$PLAYBOOK"
+        echo "  1. Read: $WS/state.md"
+        [ "$PLAYBOOK" != "null" ] && echo "  2. Read: $WS/$PLAYBOOK"
         ;;
     *)
         # 不明な focus
-        echo "  1. Read: $WS/CONTEXT.md"
-        echo "  2. Read: $WS/state.md"
+        echo "  1. Read: $WS/state.md"
         ;;
 esac
 

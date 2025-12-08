@@ -61,7 +61,6 @@ focus.current 別の編集権限:
 常に編集可能:
   - state.md（focus, context, verification セクション）
   - README.md
-  - CONTEXT.md
 ```
 
 ### 3. 禁止遷移

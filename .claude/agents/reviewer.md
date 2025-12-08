@@ -135,5 +135,5 @@ model: haiku
 ## 参照ファイル
 
 - AGENTS.md - コーディング規約
-- CONTEXT.md - プロジェクト設計思想
+- architecture-*.md - システム設計思想
 - state.md - 現在のコンテキスト

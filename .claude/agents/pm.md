@@ -91,4 +91,4 @@ playbook なしで作業開始しない:
 
 - plan/template/playbook-format.md - playbook テンプレート
 - state.md - 現在の playbook、focus
-- CONTEXT.md - playbook ルール
+- CLAUDE.md - playbook ルール

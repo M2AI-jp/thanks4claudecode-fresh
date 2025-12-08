@@ -1,102 +1,151 @@
-# 実装機能の全体アーキテクチャ
+# Claude Code の仕組み（物語編）
 
-```mermaid
-flowchart TB
-    subgraph UserInteraction["ユーザー操作"]
-        User["👤 ユーザー"]
-        Commands["Commands<br/>/crit, /focus, /lint<br/>/playbook-init, /test, /rollback"]
-    end
+> **登場人物たちが協力して開発を進める物語**
 
-    subgraph SessionLifecycle["セッションライフサイクル"]
-        direction TB
-        SS["🚀 SessionStart"]
-        INIT["INIT<br/>5点読込 + [自認]宣言"]
-        LOOP["LOOP<br/>done_criteria 駆動開発"]
-        CRITIQUE["CRITIQUE<br/>証拠ベース完了判定"]
-        SE["🏁 SessionEnd"]
+---
 
-        SS --> INIT
-        INIT --> LOOP
-        LOOP -->|done_criteria達成| CRITIQUE
-        CRITIQUE -->|PASS| SE
-        CRITIQUE -->|FAIL| LOOP
-    end
+## 登場人物
 
-    subgraph Hooks["Hooks（構造的強制・発動率100%）"]
-        direction TB
-        H_SS["session-start.sh<br/>状態表示・警告・[自認]テンプレート"]
-        H_IG["init-guard.sh<br/>Read強制（CONTEXT/state必須）"]
-        H_PG["playbook-guard.sh<br/>session=task時playbook必須"]
-        H_PE["check-protected-edit.sh<br/>CLAUDE.md等の保護"]
-        H_CC["check-coherence.sh<br/>計画-状態整合性"]
-        H_SE["session-end.sh<br/>未push警告"]
-    end
+### メインキャラクター
+- **Claude**（クロード）: 主人公。開発作業を行う AI アシスタント
 
-    subgraph SubAgents["SubAgents（専門判断・独立コンテキスト）"]
-        direction TB
-        SA_C["critic<br/>done判定・自己報酬詐欺防止"]
-        SA_PM["pm<br/>playbook作成・スコープ管理"]
-        SA_SM["state-mgr<br/>focus切替・状態遷移"]
-        SA_SG["setup-guide<br/>新規ユーザー案内"]
-        SA_BA["beginner-advisor<br/>技術用語説明"]
-        SA_R["reviewer<br/>コードレビュー"]
-        SA_HC["health-checker<br/>システム健全性"]
-        SA_CO["coherence<br/>commit前整合性"]
-        SA_PG["plan-guard<br/>計画外作業検出"]
-    end
+### Hooks チーム（自動で動く裏方たち）
+- **スターター**: セッション開始時に現れ、今日やることを案内する受付係
+- **ガードマン**: 必須ファイルを読んだかチェックする門番。読んでないと作業させてくれない
+- **プロテクター**: 大事なファイル（CLAUDE.md など）を守る警備員。勝手に編集しようとするとブロック
+- **チェッカー**: コミット前に現れ、全体の整合性を確認する検査官
 
-    subgraph Skills["Skills（知識ベース・共有コンテキスト）"]
-        direction TB
-        SK_PM["plan-management<br/>playbook/phase操作"]
-        SK_ST["state<br/>state.md操作"]
-        SK_CM["context-management<br/>/compact最適化"]
-        SK_EM["execution-management<br/>並列実行・タイムボックス"]
-        SK_LN["learning<br/>失敗パターン記録"]
-        SK_LC["lint-checker<br/>ESLint/Biome"]
-        SK_TR["test-runner<br/>Jest/Vitest"]
-        SK_DC["deploy-checker<br/>デプロイ準備"]
-        SK_FD["frontend-design<br/>UI設計"]
-    end
+### SubAgents チーム（呼び出すと来てくれる専門家たち）
+- **クリティック**: 「本当に終わった？証拠見せて」と厳しくチェックする検査官。PASS をもらわないと完了にできない
+- **ピーエム**: 計画を管理するプロマネ。新しい機能を作りたいときに playbook を作ってくれる
+- **レビュアー**: コードをレビューしてくれる先輩エンジニア
+- **セットアップガイド**: 新人さんの環境構築を手伝うお世話係
 
-    subgraph TruthSources["真実源（Single Source of Truth）"]
-        TS_CTX["CONTEXT.md<br/>設計思想・WHY"]
-        TS_ST["state.md<br/>現在地・goal"]
-        TS_CL["CLAUDE.md<br/>LLMルール"]
-        TS_PB["playbook<br/>タスク計画"]
-        TS_SP["spec.yaml<br/>実装詳細v8.0.0"]
-    end
+### Skills チーム（知識を教えてくれる先生たち）
+- **プランニング先生**: 計画の立て方を教えてくれる
+- **ステート先生**: 状態管理の方法を教えてくれる
+- **ラーニング先生**: 過去の失敗から学ぶ方法を教えてくれる
 
-    %% 接続
-    User --> Commands
-    Commands --> SessionLifecycle
+---
 
-    H_SS -.->|stdout注入| SS
-    H_IG -.->|BLOCK| INIT
-    H_PG -.->|BLOCK| LOOP
-    H_PE -.->|BLOCK| LOOP
-    H_CC -.->|WARN| CRITIQUE
-    H_SE -.->|リマインダー| SE
+## 物語: ある日の開発セッション
 
-    SA_C -.->|必須| CRITIQUE
-    SA_PM -.->|作成| LOOP
-    SA_SM -.->|更新| LOOP
-    SA_CO -.->|検証| CRITIQUE
+### 第1章: 朝の受付
 
-    SK_PM -.->|参照| LOOP
-    SK_ST -.->|参照| LOOP
-    SK_LN -.->|記録| CRITIQUE
+ユーザーが Claude Code を起動した。
 
-    TS_CTX --> INIT
-    TS_ST --> INIT
-    TS_CL --> INIT
-    TS_PB --> LOOP
+**スターター**が現れて言った。
+「おはようございます！今日の予定を確認しますね」
+
+スターターは state.md を見て、現在地を確認する。
+「現在のレイヤーは **product**、セッションは **task** ですね」
+
+続けて project.md と playbook を確認し、Claude に伝える。
+「今日は **ロールバック機能の実装** の続きです。Phase 2 からですね」
+
+---
+
+### 第2章: 門番のチェック
+
+Claude が作業を始めようとすると、**ガードマン**が立ちはだかる。
+
+「ちょっと待った！必須ファイルは読んだかい？」
+
+Claude: 「state.md は読みました」
+
+ガードマン: 「OK、通ってよし」
+
+（もし読んでいなかったら、ガードマンは Claude の作業をブロックする）
+
+---
+
+### 第3章: 作業ループ
+
+Claude は playbook に書かれた done_criteria を確認しながら作業を進める。
+
+```
+done_criteria:
+  - ロールバック関数が実装されている
+  - テストが通る
+  - ドキュメントが更新されている
 ```
 
-## 実装機能サマリー
+1つ目、完了。2つ目、完了。3つ目...まだだ。
 
-| カテゴリ | 数 | 主要機能 |
-|---------|---|---------|
-| **Hooks** | 6 | session-start, init-guard, playbook-guard, check-protected-edit, check-coherence, session-end |
-| **SubAgents** | 9 | critic, pm, state-mgr, setup-guide, beginner-advisor, reviewer, health-checker, coherence, plan-guard |
-| **Skills** | 9 | plan-management, state, context-management, execution-management, learning, lint-checker, test-runner, deploy-checker, frontend-design |
-| **Commands** | 7 | /crit, /focus, /lint, /playbook-init, /test, /rollback, /state-rollback |
+Claude はドキュメントを書く。これで全部終わったはず。
+
+---
+
+### 第4章: 厳しい検査官
+
+「終わりました！」と Claude が言うと、**クリティック**が現れる。
+
+「本当に？証拠を見せてもらおうか」
+
+クリティックは done_criteria を1つずつ確認する。
+
+- ロールバック関数 → 「コード見せて」 → OK
+- テスト → 「実行結果見せて」 → OK
+- ドキュメント → 「どこ更新した？」 → OK
+
+クリティック: 「**PASS**。よくやった」
+
+（もし証拠が不十分なら **FAIL** を出し、Claude はやり直しになる）
+
+---
+
+### 第5章: 整合性チェック
+
+Claude がコミットしようとすると、**チェッカー**が現れる。
+
+「コミット前にチェックさせてもらうよ」
+
+チェッカーは確認する:
+- state.md と playbook の内容が一致しているか
+- 今のレイヤーで編集していいファイルか
+- playbook の status が正しく更新されているか
+
+チェッカー: 「問題なし。コミットしていいよ」
+
+---
+
+### 第6章: 警備員の監視
+
+もし Claude が CLAUDE.md を編集しようとしたら...
+
+**プロテクター**が飛んでくる。
+
+「待て！そのファイルは保護対象だ。編集したいなら、まず変更案をユーザーに見せて許可をもらえ」
+
+（プロテクターは大事なファイルを Claude の勝手な編集から守っている）
+
+---
+
+### 第7章: 新しい機能を作りたいとき
+
+ユーザー: 「新しく認証機能を作りたい」
+
+Claude は **ピーエム**を呼ぶ。
+
+ピーエム: 「了解。playbook を作るよ」
+
+ピーエムは聞く:
+- 何を作るの？（ゴール）
+- いつ完了？（done_criteria）
+- どう分ける？（Phase 分割）
+
+そして新しい playbook を作成し、Claude に渡す。
+
+---
+
+## まとめ: 誰が何をするか
+
+| キャラクター | いつ動く | 何をする |
+|-------------|---------|---------|
+| スターター | セッション開始時 | 今日の予定を案内 |
+| ガードマン | 作業開始前 | 必須ファイル確認 |
+| プロテクター | ファイル編集時 | 保護ファイルを守る |
+| チェッカー | コミット前 | 整合性を確認 |
+| クリティック | 完了報告時 | 証拠ベースで判定 |
+| ピーエム | 新機能依頼時 | playbook を作成 |
+| レビュアー | レビュー依頼時 | コードをレビュー |

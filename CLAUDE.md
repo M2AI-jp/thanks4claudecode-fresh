@@ -2,7 +2,7 @@
 
 > **敬語かつ批判的なプロフェッショナル。質問するな、実行せよ。間違いには NO。**
 
-> **CONTEXT.md を読め。質問する前に参照せよ。**
+> **state.md → project.md → playbook の順に読め。質問する前に参照せよ。**
 
 @.claude/CLAUDE-ref.md
 
@@ -13,41 +13,39 @@
 > **ユーザーのメッセージに応答する前に、以下を必ず完了せよ。スキップは許可されていない。**
 
 ```
-【フェーズ 1: 5点読み込み】※ユーザー応答前に必須
+【フェーズ 1: 必須読み込み】※ユーザー応答前に必須
 
-  1. Read: CONTEXT.md
-  2. Read: state.md
-  3. Read: plan/roadmap.md（上位計画書）
-  4. Read: playbook（active_playbooks から特定、なければ null）
-  5. Read: plan/project.md（存在する場合のみ）
+  1. Read: state.md（現在地・goal・done_criteria）
+  2. Read: plan/project.md（Macro 計画、存在する場合）
+  3. Read: playbook（active_playbooks から特定、なければ null）
 
   ⚠️ Hook 出力を「見た」だけでは不十分。Read ツールで実際に読め。
   ⚠️ Read 未完了でユーザーに応答するな。
 
 【フェーズ 2: git/branch 状態取得】
 
-  6. Bash: `git rev-parse --abbrev-ref HEAD`
-  7. Bash: `git status -sb`
-  8. main ブランチ AND session=task → ブランチを切る
+  4. Bash: `git rev-parse --abbrev-ref HEAD`
+  5. Bash: `git status -sb`
+  6. main ブランチ AND session=task → ブランチを切る
 
 【フェーズ 3: playbook 準備】
 
-  9. playbook=null AND session=task → /playbook-init を実行
+  7. playbook=null AND session=task → /playbook-init を実行
 
 【フェーズ 4: 宣言】
 
-  10. [自認] を出力
+  8. [自認] を出力
 
 【フェーズ 5: Macro チェック & 自律行動】
 
-  11. plan/project.md の存在を確認
-  12. Macro が存在する場合:
+  9. plan/project.md の存在を確認
+  10. Macro が存在する場合:
       - done_when と current_phase.tasks を確認
       - 「Macro: {summary} / 残タスク: {未完了} → {next} を進めます。」
-  13. Macro が存在しない場合（setup レイヤー）:
+  11. Macro が存在しない場合（setup レイヤー）:
       - 「Macro は Phase 8 で生成されます。setup を進めます。」
       - playbook の Phase 0 から開始
-  14. LOOP に入る（ユーザーが止めない限り進む）
+  12. LOOP に入る（ユーザーが止めない限り進む）
 
   ⚠️ 禁止: 「よろしいですか？」と聞く
   ⚠️ 禁止: 「何か続けますか？」と聞く
@@ -227,7 +225,7 @@ BLOCK ファイルを編集したい場合:
 
 ```yaml
 真実源:
-  - CONTEXT.md / state.md / roadmap / playbook が唯一の真実
+  - state.md / project.md / playbook が唯一の真実
   - チャット履歴に依存しない
 
 いつ /clear するか:
@@ -256,6 +254,7 @@ MCP の使い分け:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | V3.3: CONTEXT.md 廃止。state.md/project.md/playbook を真実源に。INIT 簡素化。 |
 | 2025-12-08 | V3.2: 報酬詐欺防止強化。LOOP に根拠確認、CRITIQUE に検証項目追加。 |
 | 2025-12-02 | V3.1: 複数階層 plan 運用（roadmap）対応。 |
 | 2025-12-02 | V3.0: 二層構造化。core を 200 行以下に最小化。 |

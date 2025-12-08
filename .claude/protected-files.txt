@@ -17,7 +17,7 @@
 #   admin     - 全て通過（ワークスペース開発者用）
 
 # === HARD_BLOCK: 絶対守護（admin モードでのみ編集可能） ===
-HARD_BLOCK:CONTEXT.md
+# CONTEXT.md は .archive に退避済み（開発履歴）
 HARD_BLOCK:CLAUDE.md
 HARD_BLOCK:.claude/protected-files.txt
 

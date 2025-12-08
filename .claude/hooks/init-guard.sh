@@ -27,17 +27,12 @@ if [[ -f "state.md" ]]; then
     FOCUS=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*: *//' | sed 's/ *#.*//')
 fi
 
-# focus=setup の場合、CONTEXT.md は不要（playbook-setup.md で完結）
-if [[ "$FOCUS" == "setup" ]]; then
-    REQUIRED_FILES=(
-        "state.md"
-    )
-else
-    REQUIRED_FILES=(
-        "CONTEXT.md"
-        "state.md"
-    )
-fi
+# 必須ファイル: state.md のみ
+# CONTEXT.md は .archive に退避済み（開発履歴）
+# 設計思想は CLAUDE.md と architecture-*.md を参照
+REQUIRED_FILES=(
+    "state.md"
+)
 
 # playbook は state.md から動的に取得（session-start.sh で設定済み）
 if [[ -f "$INIT_DIR/required_playbook" ]]; then

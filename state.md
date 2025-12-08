@@ -30,7 +30,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-e2e-validation.md  # done_when 達成・Macro 完了
+product:          plan/active/playbook-structure-optimization.md  # 構造最適化
 ```
 
 ---
@@ -151,17 +151,16 @@ playbook: null
 
 ```yaml
 phase: state_update
-current_phase: checkpoint - アーキテクチャ整理完了
-task: E2E 検証（done_when 達成）
+current_phase: p5 - 最終確認・コミット
+task: 構造最適化（CONTEXT.md 整理 + 物語形式 + plan/setup）
 assignee: claude
 
 done_criteria:
-  - core 3 項目が達成済み ✓
-  - quality 3 項目が検証済み ✓
-  - project.md を完了状態に更新 ✓
+  - 全ファイルがコミット済み
+  - critic PASS
 ```
 
-> **checkpoint: done_when 再定義 + アーキテクチャ図作成完了。ディスカッション待ち。**
+> **playbook-structure-optimization: p0-p4 完了 → p5 実行中**
 
 ---
 
@@ -188,7 +187,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 ```yaml
 原則: focus.current のレイヤーのみ編集可能
 例外: state.md の focus/context/verification は常に編集可能
-保護: CLAUDE.md, CONTEXT.md は BLOCK（ユーザー許可必要）
+保護: CLAUDE.md は BLOCK（ユーザー許可必要）
 ```
 
 ---
@@ -198,7 +197,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-08 14:52:18
+last_start: 2025-12-08 15:45:42
 last_end: 2025-12-08 02:20:49
 uncommitted_warning: false
 ```
@@ -209,7 +208,9 @@ uncommitted_warning: false
 
 | ファイル | 内容 |
 |----------|------|
-| CONTEXT.md | 唯一の真実源。設計思想、レイヤー構造、全コンテキスト |
+| CLAUDE.md | LLM の振る舞いルール |
+| plan/project.md | Macro 計画（最終目標） |
+| architecture-*.md | システム設計図（Mermaid） |
 
 ---
 

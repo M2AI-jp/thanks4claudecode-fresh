@@ -1,121 +1,178 @@
-# 計画階層構造
+# 計画の仕組み（物語編）
 
-```mermaid
-flowchart TB
-    subgraph PlanHierarchy["計画階層（6層）"]
-        direction TB
-        V["vision.md<br/>WHY-ultimate<br/>完成形ビジョン"]
-        MR["meta-roadmap.md<br/>HOW-to-improve<br/>仕組み改善計画"]
-        CTX["CONTEXT.md<br/>WHY<br/>設計思想"]
-        RM["roadmap.md<br/>WHAT<br/>中長期計画"]
-        PB["playbook<br/>HOW<br/>タスク計画"]
-        TK["task<br/>DO<br/>実行"]
+> **3層の計画と4つのレイヤーを物語で理解する**
 
-        V --> MR
-        MR --> CTX
-        CTX --> RM
-        RM --> PB
-        PB --> TK
-    end
+---
 
-    subgraph MacroMediumMicro["3層計画構造"]
-        direction TB
-        MACRO["Macro<br/>plan/project.md<br/>リポジトリ全体の最終目標"]
-        MEDIUM["Medium<br/>playbook-*.md<br/>1ブランチ=1playbook"]
-        MICRO["Micro<br/>Phase<br/>1セッション単位"]
+## 3層計画: 会社の組織に例えると
 
-        MACRO --> MEDIUM
-        MEDIUM --> MICRO
-    end
+### 社長（Macro: project.md）
+会社全体の方針を決める人。
 
-    subgraph FocusLayers["Focus レイヤー（4層・作業場所）"]
-        direction LR
-        L1["plan-template<br/>状態: done<br/>テンプレート開発"]
-        L2["workspace<br/>状態: done<br/>仕組み開発"]
-        L3["setup<br/>状態: done<br/>環境構築案内"]
-        L4["product<br/>状態: pending<br/>プロダクト開発"]
+「我が社の目標は **LLM が自律で開発できる環境を作ること** だ」
 
-        L1 -->|作成順| L2
-        L2 -->|作成順| L3
-        L3 -->|使用順| L4
-    end
+社長は最終ゴールだけを示す。細かいことは部下に任せる。
 
-    subgraph StateFlow["状態遷移フロー"]
-        direction LR
-        S1["pending"]
-        S2["designing"]
-        S3["implementing"]
-        S4["reviewing"]
-        S5["state_update"]
-        S6["done"]
+---
 
-        S1 --> S2
-        S2 --> S3
-        S3 --> S4
-        S4 --> S5
-        S5 --> S6
+### 部長（Medium: playbook）
+1つのプロジェクトを担当する人。
 
-        S1 -.-x|禁止| S3
-        S1 -.-x|禁止| S6
-        S3 -.-x|禁止| S6
-    end
+「今月は **ロールバック機能** を完成させる」
 
-    subgraph CurrentState["現在の状態"]
-        CS_F["focus.current: product"]
-        CS_S["session: task"]
-        CS_P["playbook: playbook-e2e-validation.md"]
-        CS_B["branch: feat/e2e-validation"]
-        CS_G["goal: Macro完了（done_when達成）"]
-    end
+部長は社長の方針を受けて、具体的なプロジェクトを立ち上げる。
+1つの playbook = 1つのプロジェクト。
 
-    subgraph FourTuple["四つ組連動"]
-        FT["focus ↔ state ↔ playbook ↔ branch<br/>これが壊れると全てが壊れる"]
-    end
+---
 
-    %% 接続
-    PlanHierarchy --> MacroMediumMicro
-    MacroMediumMicro --> FocusLayers
-    FocusLayers --> StateFlow
-    CurrentState --> FourTuple
-```
+### 担当者（Micro: Phase）
+実際に手を動かす人。
 
-## 計画構造の説明
+「今日は **設計書を書く**」
+「明日は **コードを書く**」
+「明後日は **テストを書く**」
 
-### 6層計画階層
+担当者は1日（1セッション）でやることに集中する。
 
-| 層 | ファイル | 役割 |
-|----|---------|------|
-| 1 | vision.md | WHY-ultimate: 完成形ビジョン |
-| 2 | meta-roadmap.md | HOW-to-improve: 仕組み改善計画 |
-| 3 | CONTEXT.md | WHY: 設計思想 |
-| 4 | roadmap.md | WHAT: 中長期計画 |
-| 5 | playbook | HOW: タスク計画 |
-| 6 | task | DO: 実行 |
+---
 
-### 3層計画構造（Macro/Medium/Micro）
+## 物語: ロールバック機能を作る
 
-| 層 | 単位 | ファイル |
-|----|------|---------|
-| Macro | リポジトリ全体 | plan/project.md |
-| Medium | ブランチ単位 | playbook-*.md |
-| Micro | セッション単位 | Phase |
+### プロローグ
 
-### 4層 Focus レイヤー
+社長（project.md）が言った。
+「ユーザーが間違えても戻せるように、ロールバック機能が欲しい」
 
-| レイヤー | 目的 | 作成順 | 使用順 | 状態 |
-|---------|------|-------|-------|------|
-| plan-template | テンプレート開発 | 1 | 2 | done |
-| workspace | 仕組み開発 | 2 | - | done |
-| setup | 環境構築案内 | 3 | 1 | done |
-| product | プロダクト開発 | - | 3 | pending |
-
-### 状態遷移
+部長（playbook）が計画を立てた。
 
 ```
-pending → designing → implementing → reviewing → state_update → done
+playbook-rollback.md
+- Phase 1: 設計
+- Phase 2: 実装
+- Phase 3: テスト
+- Phase 4: ドキュメント
 ```
 
-**禁止遷移**:
-- pending → implementing（designing スキップ）
-- pending → done（全スキップ）
-- implementing → done（state_update スキップ）
+---
+
+### 第1章: Phase 1 - 設計
+
+担当者（Claude）が出社した。
+
+スターター: 「今日は Phase 1 の設計です」
+
+Claude は設計書を書く。
+
+完了条件:
+- [ ] 設計書が存在する
+- [ ] レビューを受けた
+
+クリティックが来る。「設計書見せて」
+Claude: 「これです」
+クリティック: 「PASS」
+
+→ Phase 1 完了。状態を **done** に更新。
+
+---
+
+### 第2章: Phase 2 - 実装
+
+翌日、担当者が出社。
+
+スターター: 「今日は Phase 2 の実装です」
+
+Claude はコードを書く。
+
+完了条件:
+- [ ] rollback() 関数がある
+- [ ] 型定義がある
+
+クリティックが来る。「コード見せて」
+Claude: 「src/rollback.ts です」
+クリティック: 「PASS」
+
+→ Phase 2 完了。
+
+---
+
+### 第3章: 全 Phase 完了
+
+Phase 3、Phase 4 も同様に進み...
+
+部長（playbook）が報告する。
+「ロールバック機能、完成しました」
+
+社長（project.md）がチェックする。
+「done_when の条件は満たしているか？」
+
+```
+done_when:
+  - ロールバック機能が動作する ✅
+  - テストがある ✅
+  - ドキュメントがある ✅
+```
+
+社長: 「よし、このプロジェクトは完了だ」
+
+---
+
+## 4つのレイヤー: 4つのフロア
+
+この会社には4つのフロアがある。
+
+### 1F: plan-template（テンプレート開発）
+playbook の書式を決めるフロア。
+「こういうフォーマットで計画を書いてね」
+→ **完了済み**
+
+### 2F: workspace（仕組み開発）
+Claude Code 自体の仕組みを改善するフロア。
+Hooks や SubAgents を作る。
+→ **完了済み**
+
+### 3F: setup（環境構築）
+新人さんが入ってきたときに案内するフロア。
+「まずこれをインストールしてね」
+→ **完了済み**
+
+### 4F: product（プロダクト開発）
+実際のプロダクトを作るフロア。
+ここがメインの作業場所。
+→ **現在ここで作業中**
+
+---
+
+## 状態の流れ: 1日の過ごし方
+
+朝起きてから寝るまで、順番がある。
+
+1. **pending**（ベッドの中）: まだ何もしてない
+2. **designing**（朝食を食べながら計画）: 今日何するか考える
+3. **implementing**（仕事中）: 実際にやる
+4. **reviewing**（振り返り）: ちゃんとできたか確認
+5. **state_update**（日記を書く）: 記録を残す
+6. **done**（就寝）: 完了！
+
+**近道は禁止:**
+- 朝起きていきなり仕事 → ダメ（計画しろ）
+- 仕事してすぐ寝る → ダメ（振り返りしろ）
+
+---
+
+## 4つの連動: 4つの歯車
+
+```
+focus.current ←→ layer.state
+      ↑              ↓
+   branch    ←→  playbook
+```
+
+この4つは歯車のように連動している。
+
+- **focus**: 今どのフロアにいる？
+- **state**: 今どの状態？
+- **playbook**: 今どの計画を実行中？
+- **branch**: 今どのブランチで作業中？
+
+1つがズレると、全部の歯車が噛み合わなくなる。
+だから **チェッカー** が常に整合性を監視している。

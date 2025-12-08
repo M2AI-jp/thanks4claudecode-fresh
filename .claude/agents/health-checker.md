@@ -51,10 +51,9 @@ git:
   - main ブランチで作業していないか
 
 files:
-  - CONTEXT.md が存在するか
   - CLAUDE.md が存在するか
   - state.md が存在するか
-  - plan/project.md が存在するか
+  - plan/project.md が存在するか（setup 完了後）
 ```
 
 ## 出力フォーマット

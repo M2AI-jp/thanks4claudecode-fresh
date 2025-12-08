@@ -54,7 +54,7 @@ layer: product               # ユーザーのプロダクト開発
 | workspace | .claude/**, CLAUDE.md, AGENTS.md, plan/** |
 | setup | setup/** |
 
-**常に編集可能**: state.md, README.md, CONTEXT.md
+**常に編集可能**: state.md, README.md
 
 ## session の違い
 
@@ -119,7 +119,7 @@ playbook 自体の妥当性: {問題なし|修正が必要}
 
 ## 制約
 
-- CONTEXT.md、CLAUDE.md は**読み取りのみ**（編集には許可必要）
+- CLAUDE.md は**読み取りのみ**（編集には許可必要）
 - 保護対象ファイル（.claude/protected-files.txt）は編集不可
 - 質問しない。状態を更新する。
 

@@ -129,7 +129,6 @@ CRITIQUE 実行時、以下を自問してください：
 - **.claude/frameworks/done-criteria-validation.md** - **必須**: 妥当性評価の固定フレームワーク
 - state.md - 現在の goal.done_criteria
 - playbook - phase の done_criteria
-- CONTEXT.md - CRITIQUE の定義（セクション 3）
 
 ## 重要: 固定フレームワークの使用
 

@@ -29,8 +29,8 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 
 # === HARD_BLOCK ファイルへのアクセス検出 ===
 # これらのファイルは security_mode に関係なく常に保護
+# CONTEXT.md は .archive に退避済み（開発履歴）
 HARD_BLOCK_FILES=(
-    "CONTEXT.md"
     "CLAUDE.md"
     ".claude/protected-files.txt"
 )

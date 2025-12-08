@@ -176,8 +176,9 @@ else
     for FILE in $STAGED_FILES; do
         echo -e "      - $FILE"
 
-        # always_editable: state.md, README.md, CONTEXT.md
-        if [[ "$FILE" == "state.md" ]] || [[ "$FILE" == "README.md" ]] || [[ "$FILE" == "CONTEXT.md" ]]; then
+        # always_editable: state.md, README.md
+        # CONTEXT.md は .archive に退避済み
+        if [[ "$FILE" == "state.md" ]] || [[ "$FILE" == "README.md" ]]; then
             continue
         fi
 
@@ -213,7 +214,7 @@ else
 fi
 
 # ========================================
-# History 更新検知（state.md sub vs CONTEXT.md History）
+# History 更新検知（state.md 変更履歴確認）
 # ========================================
 echo -e "  --- History Update Detection ---"
 
@@ -222,20 +223,7 @@ VERSION=$(echo "$SUB" | grep -oE "^v[0-9]+" || echo "")
 
 if [ -n "$VERSION" ]; then
     echo -e "    Current version: $VERSION"
-
-    # CONTEXT.md に対応する History エントリがあるか確認
-    if [ -f "CONTEXT.md" ]; then
-        # 表形式（| v15 |）またはヘッダ形式（### v15:）を検出
-        HISTORY_ENTRY=$(grep -E "(^### $VERSION:|^\| $VERSION \|)" CONTEXT.md 2>/dev/null || echo "")
-
-        if [ -z "$HISTORY_ENTRY" ]; then
-            echo -e "    ${YELLOW}[WARN]${NC} CONTEXT.md History に $VERSION がありません"
-            echo -e "    → 変遷（History）セクションに追加してください"
-            WARNINGS=$((WARNINGS + 1))
-        else
-            echo -e "    ${GREEN}[OK]${NC} CONTEXT.md History に $VERSION が存在"
-        fi
-    fi
+    echo -e "    ${GREEN}[OK]${NC} バージョン形式の sub を検出"
 else
     echo -e "    ${YELLOW}[SKIP]${NC} バージョン形式でない sub: $SUB"
 fi
