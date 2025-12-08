@@ -11,7 +11,7 @@
 
 ```yaml
 current: product             # plan-template | workspace | setup | product
-session: discussion          # Issue #11 完了処理中
+session: task                # 動作検証と spec.yaml 更新
 ```
 
 ---
@@ -30,7 +30,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          null    # Issue #11 完了、次タスク開始準備
+product:          plan/active/playbook-validation.md    # 動作検証と spec.yaml 更新
 ```
 
 ---
@@ -151,17 +151,17 @@ playbook: null
 
 ```yaml
 phase: done
-current_phase: 全 Phase 完了
-task: 全 13 タスク完了
+current_phase: p6 - 総合評価完了
+task: 動作検証と spec.yaml 更新
 assignee: claude
 
 done_criteria:
-  - 全タスク実装完了 ✓
-  - project.md 更新済み ✓
-  - git commit 完了 ✓
+  - spec.yaml が現状を正確に反映 ✓
+  - 新規 SubAgents/Skills の形式検証済み ✓
+  - QUICKSTART.md を .archive/ に退避 ✓
 ```
 
-> **全 13 タスク完了！Issue #8〜#11 + task-01〜13 全て実装済み。**
+> **playbook-validation 完了。spec.yaml v8.0.0、QUICKSTART 退避。**
 
 ---
 
@@ -217,6 +217,7 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | playbook-validation 完了。spec.yaml v8.0.0、QUICKSTART 退避。 |
 | 2025-12-08 | 全タスク完了。13件実装：SubAgents(reviewer, health-checker), Skills(context-mgmt, exec-mgmt, learning), playbook拡張。 |
 | 2025-12-08 | Issue #11 完了。p1-p4 全 Phase critic PASS。test PASS=15。 |
 | 2025-12-08 | Issue #11 開始。ロールバック機能 p1 設計フェーズ。 |
