@@ -39,27 +39,12 @@ completed:
   - Issue #9: 回帰テスト機能（task-06）
   - Issue #10: 自動 /clear 判断（task-08）
   - Issue #11: ロールバック機能（task-11）
+  - task-07: レビュー機能（reviewer SubAgent）
+  - task-01: タイムボックス機能（playbook スキーマ拡張: time_limit）
+  - task-02: 優先順位管理（playbook スキーマ拡張: priority）
+  - task-03: 依存関係管理（playbook スキーマ拡張: depends_on 強化）
 
 remaining_tasks:
-  # 計画管理（3件）
-  - id: task-01
-    name: タイムボックス機能
-    category: 計画管理
-    description: Phase に時間制限を設定し、超過時に警告
-    priority: medium
-
-  - id: task-02
-    name: 優先順位管理
-    category: 計画管理
-    description: タスク間の優先順位を明示的に管理
-    priority: medium
-
-  - id: task-03
-    name: 依存関係管理
-    category: 計画管理
-    description: タスク間の依存関係を可視化・強制
-    priority: medium
-
   # 実行管理（2件）
   - id: task-04
     name: 並列実行制御
@@ -72,13 +57,6 @@ remaining_tasks:
     category: 実行管理
     description: コンテキスト・時間のリソース配分最適化
     priority: low
-
-  # 品質管理（1件）
-  - id: task-07
-    name: レビュー機能
-    category: 品質管理
-    description: コード・設計のレビュープロセス強化
-    priority: medium
 
   # コンテキスト管理（2件）
   - id: task-09

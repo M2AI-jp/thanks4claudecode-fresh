@@ -84,7 +84,27 @@ done_when:
 | prerequisites | 前提条件（環境、ツールなど） |
 | test_method | **推奨**: done_criteria を検証する具体的な手順 |
 | max_iterations | **推奨**: LOOP 回数上限（デフォルト: 10）。デッドロック防止 |
+| time_limit | **推奨**: 想定作業時間（例: 30min, 1h）。超過時は警告 |
+| priority | **推奨**: 優先度（high / medium / low）。LLM が実行順序を判断 |
 | notes | 補足情報 |
+
+### 計画管理フィールドの使い方
+
+```yaml
+# タイムボックス機能（task-01）
+time_limit: 30min  # 超過時は LLM が [自認] で警告を表示
+
+# 優先順位管理（task-02）
+priority: high  # high > medium > low の順で実行を優先
+
+# 依存関係管理（task-03）
+depends_on: [p1, p2]  # 依存 Phase が未完了なら実行不可
+```
+
+**LLM の行動ルール**:
+- `time_limit` 超過 → 「Phase {id} の想定時間を超過しています」と警告
+- `priority: high` → 他の Phase より優先して実行
+- `depends_on` 未完了 → 「依存 Phase {ids} が未完了です」と警告し実行しない
 
 ---
 
