@@ -136,7 +136,7 @@ playbook: null  # テンプレートは pending のまま（正常）
 
 ```yaml
 state: implementing
-sub: rollback-p2
+sub: rollback-p3
 playbook: plan/active/playbook-rollback.md
 ```
 
@@ -151,18 +151,18 @@ playbook: plan/active/playbook-rollback.md
 
 ```yaml
 phase: implementing
-current_phase: p2: git ロールバック機能実装
+current_phase: p3: state.md ロールバック機構実装
 task: Issue #11 - ロールバック機能
 assignee: claude
 
 done_criteria:
-  - rollback.sh スクリプトが作成される
-  - git reset/revert の自動実行機能が実装される
-  - commit/push 失敗時の自動復元が動作する
-  - /rollback コマンドが実装される
+  - .claude/state-history/ ディレクトリが作成される
+  - state.md 変更時に自動バックアップが作成される
+  - /state-rollback コマンドが実装される
+  - 世代管理ルールが明記される
 ```
 
-> **Issue #11: ロールバック機能。p2 実装フェーズ。残り 11 タスク。**
+> **Issue #11: ロールバック機能。p3 state.md ロールバック。残り 11 タスク。**
 
 ---
 
