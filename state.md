@@ -11,7 +11,7 @@
 
 ```yaml
 current: product             # plan-template | workspace | setup | product
-session: discussion          # Issue #10 完了処理中（一時的）
+session: task                # task | discussion
 ```
 
 ---
@@ -30,7 +30,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          null    # Issue #10 完了 → Issue #11 開始準備
+product:          plan/active/playbook-rollback.md    # Issue #11: ロールバック機能
 ```
 
 ---
@@ -135,33 +135,35 @@ playbook: null  # テンプレートは pending のまま（正常）
 ## layer: product
 
 ```yaml
-state: state_update
-sub: issue10-complete
-playbook: null
+state: implementing
+sub: rollback-p1
+playbook: plan/active/playbook-rollback.md
 ```
 
 ### 概要
 > ユーザーが実際にプロダクトを開発するためのレイヤー。
 > setup 完了後、plan/project.md を参照して TDD で開発。
-> **Issue #10 完了。Issue #11（ロールバック機能）開始準備中**
+> **Issue #11: ロールバック機能 - p1 設計フェーズ**
 
 ---
 
 ## goal
 
 ```yaml
-phase: state_update
-current_phase: Issue #10 完了コミット
-task: Issue #10 完了処理
+phase: implementing
+current_phase: p1: ロールバック機構設計
+task: Issue #11 - ロールバック機能
 assignee: claude
 
 done_criteria:
-  - Issue #10 playbook をアーカイブ ✓
-  - state.md 更新 ✓
-  - git コミット完了
+  - playbook-rollback-design.md が作成される
+  - 復元ポイントの定義が明記される
+  - ロールバック対象の分類が定義される
+  - エラーシナリオの分類が完了する
+  - 実装ガイドが作成される
 ```
 
-> **Issue #10 完了処理中。残り 11 タスク。**
+> **Issue #11: ロールバック機能。p1 設計フェーズ。残り 11 タスク。**
 
 ---
 
@@ -217,6 +219,7 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | Issue #11 開始。ロールバック機能 p1 設計フェーズ。 |
 | 2025-12-08 | Issue #10 完了。playbook-auto-clear.md 全 Phase critic PASS。残り 11 タスク。 |
 | 2025-12-08 | Issue #8 開始: 自律性強化。playbook-autonomy-enhancement.md 作成。p1 開始。 |
 | 2025-12-08 | 全コアタスク完了（p1-p7）。Issue #6, #7 クローズ。メンテナンスフェーズへ移行。 |
