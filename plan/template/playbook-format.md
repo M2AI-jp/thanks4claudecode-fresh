@@ -37,7 +37,8 @@ done_when:
 - id: p1
   name: {フェーズ名}
   goal: {このフェーズの目標}
-  executor: {codex | user}
+  executor: {claudecode | codex | coderabbit | user}
+  executor_config: {}  # オプション: executor 固有の設定
   done_criteria:
     - {完了条件1}
     - {完了条件2}
@@ -51,7 +52,7 @@ done_when:
 - id: p2
   name: {フェーズ名}
   goal: {このフェーズの目標}
-  executor: {codex | user}
+  executor: {claudecode | codex | coderabbit | user}
   depends_on: [p1]
   done_criteria:
     - {完了条件1}
@@ -72,7 +73,7 @@ done_when:
 | id | Phase 識別子（p1, p2, ...） |
 | name | フェーズ名 |
 | goal | このフェーズの目標（1行） |
-| executor | 実行者（codex または user） |
+| executor | 実行者（claudecode / codex / coderabbit / user） |
 | done_criteria | 完了条件のリスト |
 | status | 状態（pending / in_progress / done） |
 
@@ -80,6 +81,7 @@ done_when:
 
 | 項目 | 説明 |
 |------|------|
+| executor_config | executor 固有の設定（model, reasoning, type, instruction など） |
 | depends_on | 依存する Phase の id リスト |
 | prerequisites | 前提条件（環境、ツールなど） |
 | test_method | **推奨**: done_criteria を検証する具体的な手順 |
@@ -140,23 +142,82 @@ depends_on: [p1, p2]  # 依存 Phase が未完了なら実行不可
 ## executor 判定ガイド
 
 ```yaml
-codex:
-  - コード実装
-  - テスト実行
-  - ファイル操作
-  - ドキュメント生成
+executor の種類:
+  claudecode:
+    説明: Claude Code が直接実行（デフォルト）
+    用途:
+      - 自然言語タスク（ドキュメント、設計、計画）
+      - 軽量なコード修正
+      - ファイル操作
+      - コマンド実行
+    config: なし
 
-user:
-  - 外部サービス登録（Vercel, GCP, Stripe）
-  - API キー取得
-  - 意思決定
-  - 支払い情報入力
+  codex:
+    説明: Codex MCP に委譲してコード生成
+    用途:
+      - 本格的なコード実装
+      - 複雑なロジック
+      - 大規模なリファクタリング
+    config:
+      model: gpt-5.1-codex  # オプション
+      reasoning: medium     # minimal | low | medium | high
+
+  coderabbit:
+    説明: CodeRabbit CLI でコードレビュー
+    用途:
+      - PR 前のコードレビュー
+      - セキュリティ・品質チェック
+    config:
+      type: uncommitted    # all | committed | uncommitted
+      base: main           # 比較ベースブランチ
+
+  user:
+    説明: CLI 外の手動作業
+    用途:
+      - 外部サービス登録（Vercel, GCP, Stripe）
+      - API キー取得
+      - 意思決定
+      - 支払い情報入力
+    config:
+      instruction: "具体的な操作手順"
 
 キーワード判定:
+  - "レビュー" "品質チェック" → coderabbit
   - "登録" "サインアップ" "契約" → user
   - "API キー" "シークレット" → user
   - "選んでください" → user
-  - それ以外 → codex
+  - 本格的なコード実装 → codex
+  - それ以外 → claudecode
+
+Phase 記述例:
+  - id: p1
+    name: 認証機能実装
+    executor: codex
+    executor_config:
+      model: gpt-5.1-codex
+      reasoning: high
+    done_criteria:
+      - auth.ts が存在する
+      - npm test が通る
+
+  - id: p2
+    name: コードレビュー
+    executor: coderabbit
+    executor_config:
+      type: uncommitted
+    done_criteria:
+      - CodeRabbit が PASS
+
+  - id: p3
+    name: Vercel デプロイ設定
+    executor: user
+    executor_config:
+      instruction: |
+        1. Vercel ダッシュボードにログイン
+        2. 環境変数を設定
+        3. Deploy ボタンをクリック
+    done_criteria:
+      - デプロイ URL が 200 を返す
 ```
 
 ---
@@ -338,6 +399,7 @@ enforcement:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | V8: executor を拡張（claudecode/codex/coderabbit/user）。executor_config 追加。 |
 | 2025-12-08 | V7: max_iterations フィールド追加。デッドロック防止。 |
 | 2025-12-02 | V6: ダブルチェック機能追加。自己報酬詐欺防止の構造的強制。 |
 | 2025-12-01 | V5: executor:user 完了確認ガイドを追加。 |

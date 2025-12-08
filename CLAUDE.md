@@ -147,28 +147,47 @@ while true:
 
 ---
 
-## ROADMAP_CHECK（roadmap 整合性チェック）
+## PROMPT_VALIDATION（全プロンプト検証）【必須】
 
-> **ユーザープロンプトが roadmap.current_focus と整合しているか検証する。**
+> **すべてのユーザープロンプトを project.md と playbook に照合する。**
+> **plan-guard ロジックに従って判定。乖離を検出したら報告。**
 
 ```yaml
-実行タイミング: INIT 完了後、作業開始前
+実行タイミング: 全ユーザープロンプト受信時（例外なし）
 
-チェック項目:
-  - プロンプトが roadmap.current_focus.milestone と関連しているか
-  - プロンプトが roadmap.next_actions に含まれているか
+検証順序:
+  1. project.md の done_when を読む
+  2. playbook の goal.summary を読む
+  3. ユーザープロンプトを解析
+  4. 整合性を判定:
+     - PROJECT_ALIGNED: project.md の達成に寄与 → 続行
+     - PLAYBOOK_ALIGNED: playbook と整合（project は N/A）→ 続行
+     - EXTENSION: 関連するが scope 外 → 選択肢提示
+     - DRIFT: 矛盾または無関係 → 乖離報告
 
-整合している場合:
+PROJECT_ALIGNED の場合:
   - 通常通り作業を進める
 
-整合していない場合:
-  - 「計画と異なります。計画を更新して進めます。」と宣言
-  - playbook/roadmap を自動更新
-  - 作業開始（確認なし）
+PLAYBOOK_ALIGNED の場合:
+  - playbook に沿って作業を進める
 
-例外（確認が必要な場合）:
-  - 計画を大幅に変更する場合（破壊的変更）
-  - → この場合のみ「計画を大幅に変更しますがよいですか？」
+EXTENSION の場合:
+  1. 「project.md の scope を拡張する提案です」
+  2. 選択肢を提示:
+     a) project.md に新ゴールとして追加
+     b) 別プロジェクトとして切り離し
+  3. ユーザー選択後、計画を更新して続行
+
+DRIFT の場合:
+  1. 「project.md との乖離を検出しました」
+  2. 乖離の内容を説明
+  3. 選択肢を提示:
+     a) project.md を改訂
+     b) 現在の要求をスコープ外として拒否
+     c) 現在の project 完了後に対応
+
+⚠️ 検証スキップ禁止: session=discussion でも project 乖離は報告する
+⚠️ 参照: .claude/agents/plan-guard.md
 ```
 
 ---
@@ -254,6 +273,7 @@ MCP の使い分け:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | V3.4: PROMPT_VALIDATION 追加。全プロンプトを project.md と照合。ROADMAP_CHECK を置換。 |
 | 2025-12-08 | V3.3: CONTEXT.md 廃止。state.md/project.md/playbook を真実源に。INIT 簡素化。 |
 | 2025-12-08 | V3.2: 報酬詐欺防止強化。LOOP に根拠確認、CRITIQUE に検証項目追加。 |
 | 2025-12-02 | V3.1: 複数階層 plan 運用（roadmap）対応。 |
