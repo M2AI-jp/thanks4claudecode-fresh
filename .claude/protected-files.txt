@@ -25,6 +25,7 @@ HARD_BLOCK:.claude/hooks/init-guard.sh
 HARD_BLOCK:.claude/hooks/critic-guard.sh
 HARD_BLOCK:.claude/hooks/scope-guard.sh
 HARD_BLOCK:.claude/hooks/executor-guard.sh
+HARD_BLOCK:.claude/hooks/playbook-guard.sh
 
 # === BLOCK: 運用でゆるめ可能（strict: ブロック / trusted: WARN） ===
 BLOCK:plan/template/playbook-format.md

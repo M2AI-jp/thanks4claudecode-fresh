@@ -29,7 +29,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-plan-chain.md  # 計画の連鎖的導出システム
+product:          plan/active/playbook-mechanism-completion.md  # 仕組みの完成
 ```
 
 ---
@@ -134,9 +134,9 @@ playbook: null  # テンプレートは pending のまま（正常）
 ## layer: product
 
 ```yaml
-state: pending
-sub: next-task-prep
-playbook: null
+state: state_update
+sub: mechanism-complete
+playbook: plan/active/playbook-mechanism-completion.md
 ```
 
 ### 概要
@@ -149,27 +149,26 @@ playbook: null
 ## goal
 
 ```yaml
-phase: done
-current_phase: 全 Phase 完了（p0-p5）
-task: 計画の連鎖的導出システム
+phase: state_update
+current_phase: 仕組みの完成
+task: 仕組みの完成 - LLM 自律制御システムの構築
 assignee: claude
 
 done_criteria:
-  - project.done_when に decomposition（分解指針）が構造化されている
-  - pm SubAgent が計画の導出を支援できる
-  - /playbook-init が decomposition を参照して playbook を生成できる
-  - CLAUDE.md に計画の連鎖ルールが明記されている
-  - 実際に project.done_when から playbook を自動導出できることを検証
+  - 構造的強制（Hooks）が機能している ✓
+  - CLAUDE.md のルールが LLM に内面化されている ✓
+  - 各コンポーネントが連動している ✓
+  - 仕組みが文書化されている ✓
 ```
 
-> **playbook-plan-chain: p0-p5 全完了、コミット準備中**
+> **仕組みの完成。全 done_criteria が critic PASS。**
 
 ---
 
 ## verification
 
 ```yaml
-self_complete: false     # playbook-e2e-validation 進行中
+self_complete: true      # playbook-mechanism-completion 全 Phase critic PASS
 user_verified: false
 ```
 
@@ -199,7 +198,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-08 20:24:47
+last_start: 2025-12-09 01:08:19
 last_end: 2025-12-08 02:20:49
 uncommitted_warning: false
 ```
@@ -221,6 +220,7 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-09 | 仕組みの完成。playbook-mechanism-completion 全 Phase critic PASS。project.md done_criteria 全項目 done。 |
 | 2025-12-08 | docs/ フォルダ新設。current-implementation.md を Single Source of Truth に。spec.yaml/architecture-*.md 廃止。 |
 | 2025-12-08 | アクションベース Guards 完了: session 分類ロジック完全削除。Edit/Write 時のみ playbook チェック。 |
 | 2025-12-08 | p8 完了（構造的強制）: Hook が session を TASK にリセット → NLU 判断 → 安全側フォール。 |
