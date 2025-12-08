@@ -112,6 +112,38 @@ achieved:
 # 未達成（ユーザー視点）
 # ========================================
 not_achieved:
+  自動化基盤強化:
+    id: DW-000
+    definition: 公式リファレンスに基づく Hooks/SubAgents の最適化と未活用イベントの設計
+    priority: critical
+    status: in_progress
+
+    decomposition:
+      playbook_summary: Claude Code 公式リファレンスに基づき、拡張システムを最適化する
+
+      phase_hints:
+        - name: 公式リファレンス深読
+          what: hooks, sub-agents, skills, slash-commands, plugins-reference を徹底読み込み
+          why: 現在の実装が公式仕様のどこまで活用しているかを把握するため
+        - name: 体系化ドキュメント作成
+          what: 発火タイミング・トリガー・連携の完全ガイドを作成
+          why: LLM が参照できる形で整理するため
+        - name: 現状棚卸し・ギャップ分析
+          what: 現在実装の全機能を整理し、未活用の Hook イベント等を特定
+        - name: 最適化設計
+          what: UserPromptSubmit, Stop, SubagentStop 等の活用設計
+        - name: 実装
+          what: 設計に基づき Hooks/SubAgents を拡張
+
+      success_indicators:
+        - docs/extension-system.md が公式リファレンスを反映している
+        - docs/current-implementation.md が全機能を発火タイミング・トリガーで整理
+        - 未活用 Hook イベント（UserPromptSubmit, Stop, SubagentStop 等）の活用設計がある
+        - spec.yaml との整合性が取れている
+
+      depends_on: []  # 他の全てに先行
+      estimated_effort: "2-3 sessions"
+
   フォーク即使用:
     id: DW-001
     definition: 新規ユーザーがフォーク後、30分以内に最初の playbook を作成できる

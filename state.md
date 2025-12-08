@@ -199,7 +199,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-08 19:29:02
+last_start: 2025-12-08 20:24:47
 last_end: 2025-12-08 02:20:49
 uncommitted_warning: false
 ```
@@ -212,7 +212,8 @@ uncommitted_warning: false
 |----------|------|
 | CLAUDE.md | LLM の振る舞いルール |
 | plan/project.md | Macro 計画（最終目標） |
-| architecture-*.md | システム設計図（Mermaid） |
+| docs/current-implementation.md | 現在実装の棚卸し（Single Source of Truth） |
+| docs/extension-system.md | Claude Code 公式リファレンス |
 
 ---
 
@@ -220,6 +221,7 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | docs/ フォルダ新設。current-implementation.md を Single Source of Truth に。spec.yaml/architecture-*.md 廃止。 |
 | 2025-12-08 | アクションベース Guards 完了: session 分類ロジック完全削除。Edit/Write 時のみ playbook チェック。 |
 | 2025-12-08 | p8 完了（構造的強制）: Hook が session を TASK にリセット → NLU 判断 → 安全側フォール。 |
 | 2025-12-08 | checkpoint: done_when 再定義 + アーキテクチャ図作成。main マージ。 |
