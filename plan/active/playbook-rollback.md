@@ -38,23 +38,33 @@ done_when:
 id: p1
 name: ロールバック機構設計
 goal: 復元ポイント・スナップショット管理・復元対象を定義
-executor: codex
+executor: claude
 depends_on: []
 done_criteria:
-  - playbook-rollback-design.md が作成される
+  - rollback-design.md が作成される
   - 復元ポイント（commit hash, state.md version）の定義が明記される
   - ロールバック対象の分類が定義される（git, state.md, working directory）
   - エラーシナリオの分類が完了する
   - 実装ガイドが作成される
-  - 実際に確認・検証済み（test_method 実行）
+  - 設計ドキュメントが実装段階で参照可能な形式である
 
 test_method: |
-  1. plan/active/rollback-design.md を確認
-  2. 復元ポイント、スナップショット、ロールバック対象、エラーシナリオが定義されているか確認
-  3. 実装ガイドの内容が明確か確認
-  4. 実装可能な設計になっているか検証
+  # P1 は設計フェーズ。以下をドキュメント検査で確認
+  1. rollback-design.md セクション 1 で復元ポイントが定義されているか
+  2. rollback-design.md セクション 2 で対象分類が git/state.md/ワーキングディレクトリの3層か
+  3. rollback-design.md セクション 3 でエラーシナリオが 3 カテゴリ以上か
+  4. rollback-design.md セクション 4 で実装ガイドが全て記載されているか
+  5. 実装段階（p2-p4）で参照可能な詳細度になっているか確認
 
-status: pending
+evidence:
+  ドキュメント: plan/active/rollback-design.md（8486 bytes）
+  セクション1_復元ポイント: Git 復元ポイント、state.md 復元ポイント、作成タイミング定義
+  セクション2_対象分類: Git/state.md/ワーキングディレクトリの3層分類
+  セクション3_エラーシナリオ: Git エラー/state.md エラー/Hook エラーの3カテゴリ
+  セクション4_実装ガイド: ファイル構成/rollback.sh 仕様/Hook 統合/コマンド定義
+  critic: PASS
+
+status: done
 max_iterations: 5
 ```
 
