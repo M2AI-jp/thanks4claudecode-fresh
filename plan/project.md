@@ -36,6 +36,7 @@ phase: implementation
 focus: 欠落機能の実装
 completed:
   - Issue #8: 自律性強化（PDCA自動回転・妥当性評価フレームワーク）
+  - Issue #9: 回帰テスト機能（task-06）
 
 remaining_tasks:
   # 計画管理（3件）
@@ -70,13 +71,7 @@ remaining_tasks:
     description: コンテキスト・時間のリソース配分最適化
     priority: low
 
-  # 品質管理（2件）
-  - id: task-06
-    name: 回帰テスト
-    category: 品質管理
-    description: 変更後の既存機能テストを自動化
-    priority: high
-
+  # 品質管理（1件）
   - id: task-07
     name: レビュー機能
     category: 品質管理
@@ -129,7 +124,6 @@ remaining_tasks:
 ```yaml
 # 優先度順の実装順序
 high:
-  - task-06: 回帰テスト
   - task-08: 自動 /clear 判断
   - task-11: ロールバック機能
 

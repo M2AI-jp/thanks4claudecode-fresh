@@ -30,7 +30,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-regression-test.md  # Issue #9
+product:          plan/active/playbook-auto-clear.md  # Issue #10
 ```
 
 ---
@@ -136,14 +136,14 @@ playbook: null  # テンプレートは pending のまま（正常）
 
 ```yaml
 state: implementing
-sub: regression-test
-playbook: plan/active/playbook-regression-test.md
+sub: auto-clear
+playbook: plan/active/playbook-auto-clear.md
 ```
 
 ### 概要
 > ユーザーが実際にプロダクトを開発するためのレイヤー。
 > setup 完了後、plan/project.md を参照して TDD で開発。
-> **Issue #9: 回帰テスト機能**
+> **Issue #10: 自動 /clear 判断機能**
 
 ---
 
@@ -152,16 +152,16 @@ playbook: plan/active/playbook-regression-test.md
 ```yaml
 phase: done
 current_phase: 全 Phase 完了
-task: Issue #9 完了処理
+task: Issue #10 完了処理
 assignee: claude
 
 done_criteria:
-  - p1-p4 全て critic PASS
-  - git commit 完了
+  - p1-p3 全て critic PASS
+  - git コミット完了
   - Issue クローズ
 ```
 
-> **Issue #9: 回帰テスト機能完了。バグ修正適用済み。**
+> **Issue #10: 自動 /clear 判断機能。全 Phase 完了。**
 
 ---
 

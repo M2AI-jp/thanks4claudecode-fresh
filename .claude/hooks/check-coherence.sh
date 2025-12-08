@@ -324,6 +324,35 @@ else
     echo -e "  ${GREEN}[SKIP]${NC} state.md not in staged files"
 fi
 
+# ==============================================================================
+# Phase 完了時の /clear リマインダー（Issue #10: 自動 /clear 判断）
+# ==============================================================================
+echo ""
+echo "--- Context Management Reminder ---"
+
+# playbook が staged にある場合、status: done への変更をチェック
+PLAYBOOK_STAGED=$(git diff --cached --name-only 2>/dev/null | grep "playbook-" || echo "")
+
+if [ -n "$PLAYBOOK_STAGED" ]; then
+    # status: done への変更を検出
+    PHASE_DONE=$(git diff --cached 2>/dev/null | grep -E "^\+.*status: done" | wc -l | tr -d ' ')
+
+    if [ "$PHASE_DONE" -gt 0 ]; then
+        echo -e ""
+        echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+        echo -e "    📊 Phase 完了 - コンテキスト確認推奨" >&2
+        echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+        echo -e "    /context でコンテキスト使用率を確認してください。" >&2
+        echo -e "    80% 超過の場合は /clear を実行してください。" >&2
+        echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+        echo -e ""
+    else
+        echo -e "  ${GREEN}[OK]${NC} No phase completion detected"
+    fi
+else
+    echo -e "  ${GREEN}[SKIP]${NC} No playbook in staged files"
+fi
+
 echo ""
 echo "=========================================="
 if [ $ERRORS -gt 0 ]; then
