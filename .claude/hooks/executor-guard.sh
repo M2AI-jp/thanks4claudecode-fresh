@@ -4,9 +4,9 @@
 # 目的: executor: codex/coderabbit/user の Phase で Claude が直接作業することを防止
 # トリガー: PreToolUse(Edit), PreToolUse(Write)
 #
-# 動的分類対応:
-#   prompt_type=TASK: executor 強制
-#   prompt_type=CHAT/QUESTION/META: スキップ
+# session 定義（prompt-validator.sh が自動更新）:
+#   TASK: executor 強制
+#   CHAT/QUESTION/META: スキップ
 #
 # 動作:
 #   1. 現在の playbook を特定
@@ -22,14 +22,14 @@ set -euo pipefail
 
 STATE_FILE="${STATE_FILE:-state.md}"
 
-# prompt_type を取得（動的分類）
-PROMPT_TYPE=""
+# session を取得（prompt-validator.sh が自動更新）
+SESSION=""
 if [[ -f "$STATE_FILE" ]]; then
-    PROMPT_TYPE=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^prompt_type:" | head -1 | sed 's/prompt_type: *//' | sed 's/ *#.*//' | tr -d ' ')
+    SESSION=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^session:" | head -1 | sed 's/session: *//' | sed 's/ *#.*//' | tr -d ' ')
 fi
 
-# prompt_type が TASK 以外ならスキップ
-if [[ "$PROMPT_TYPE" != "TASK" && "$PROMPT_TYPE" != "null" && -n "$PROMPT_TYPE" ]]; then
+# session が TASK 以外ならスキップ
+if [[ "$SESSION" != "TASK" ]]; then
     exit 0
 fi
 

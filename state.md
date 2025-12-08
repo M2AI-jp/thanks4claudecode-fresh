@@ -11,12 +11,61 @@
 
 ```yaml
 current: product             # plan-template | workspace | setup | product
-session: discussion          # checkpoint: アーキテクチャ整理・ディスカッション
-prompt_type: null            # TASK | CHAT | QUESTION | META（毎プロンプトで更新）
+session: QUESTION            # TASK | CHAT | QUESTION | META（Hook が自動更新）
 ```
 
-> **prompt_type**: 各ユーザープロンプトを即時分類し、このフィールドを更新する。
-> Hooks は prompt_type を参照して可変動作する。
+> **session**: prompt-validator.sh がプロンプト受信時にキーワード判定し、自動更新する。
+> 後続の Hooks は session を参照して動作を変える。
+
+---
+
+## session_definition
+
+> **session の値と動作の定義。prompt-validator.sh が判定に使用。**
+
+```yaml
+TASK:
+  意味: 作業指示（コード作成、機能実装、バグ修正など）
+  キーワード:
+    ja: [作って, 実装, 追加, 修正, 直して, 書いて, 削除, 変更, 作成, リファクタ]
+    en: [create, implement, add, fix, write, delete, change, build, make]
+  動作:
+    - playbook 必須（なければ /playbook-init）
+    - 全 guard 発動
+    - LOOP に入る
+
+CHAT:
+  意味: 雑談・挨拶（技術的な作業を伴わない）
+  キーワード:
+    ja: [こんにちは, ありがとう, お疲れ, おはよう, さようなら, よろしく]
+    en: [hello, hi, thanks, bye, good]
+  動作:
+    - guard スキップ
+    - playbook 不要
+    - 簡潔に応答
+
+QUESTION:
+  意味: 質問・確認（情報収集、理解確認）
+  キーワード:
+    ja: [？, 何, どう, ですか, って, どこ, いつ, なぜ, 教えて]
+    en: [?, what, how, where, when, why, which, can, does, is]
+  動作:
+    - guard スキップ
+    - playbook 不要
+    - 必要なら Read/Grep で調査
+
+META:
+  意味: 計画変更・scope 変更（既存計画への追加・変更要求）
+  キーワード:
+    ja: [ついでに, 別の, 計画, scope, 予定, 変更したい, あと, 追加で]
+    en: [also, another, plan, scope, schedule, change, btw, additionally]
+  動作:
+    - plan-guard SubAgent 呼び出し
+    - 計画との整合性を確認
+    - scope creep を検出
+
+default: QUESTION  # キーワードに一致しない場合
+```
 
 ---
 
@@ -34,7 +83,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-structure-optimization.md  # 構造最適化
+product:          plan/active/playbook-session-redesign.md  # session 再設計
 ```
 
 ---
@@ -155,16 +204,18 @@ playbook: null
 
 ```yaml
 phase: done
-current_phase: p5 - 最終確認・コミット
-task: 構造最適化（CONTEXT.md 整理 + 物語形式 + plan/setup）
+current_phase: p6 - 統合テスト完了
+task: session 自動判定システム構築
 assignee: claude
 
 done_criteria:
-  - 全ファイルがコミット済み ✓
-  - critic PASS ✓
+  - prompt-validator.sh がキーワード判定 ✓
+  - state.md の session を自動更新 ✓
+  - 後続 Hooks が session を参照 ✓
+  - 統合テスト全 PASS ✓
 ```
 
-> **playbook-structure-optimization: 全 Phase 完了（p0-p5 critic PASS）**
+> **playbook-session-redesign: 全 Phase 完了（p0-p6 critic PASS）**
 
 ---
 
@@ -201,7 +252,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-08 16:30:08
+last_start: 2025-12-08 17:48:34
 last_end: 2025-12-08 02:20:49
 uncommitted_warning: false
 ```

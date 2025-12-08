@@ -147,48 +147,36 @@ while true:
 
 ---
 
-## PROMPT_VALIDATION（全プロンプト検証）【絶対ルール】
+## SESSION（自動プロンプト分類）
 
-> **すべてのユーザープロンプトを即時分類し、state.md に反映する。**
-> **Hooks は prompt_type を参照して可変動作する。**
+> **prompt-validator.sh がプロンプト受信時にキーワード判定し、state.md の session を自動更新する。**
+> **後続の Hooks は session を参照して動作を変える。Claude の行動に依存しない。**
 
 ```yaml
-実行タイミング: 全ユーザープロンプト受信時（例外なし）
-
-【ステップ 1: 即時分類】
-プロンプトを以下のいずれかに分類:
-  TASK: 作業指示（コード書いて、機能作って、バグ直して、テストして）
-  CHAT: 雑談・挨拶（こんにちは、ありがとう、好きですか）
-  QUESTION: 質問・確認（これは何？どうやるの？〇〇できる？）
-  META: 計画変更・scope変更（これもやりたい、予定変更、新機能追加）
-
-【ステップ 2: state.md 更新】
-分類結果を state.md の prompt_type に書き込む:
-  Edit state.md: prompt_type: {TASK|CHAT|QUESTION|META}
-
-【ステップ 3: 分類に応じた行動】
+session の値と動作:
   TASK:
-    - playbook 必須（なければ /playbook-init）
-    - 全 guard 発動
-    - LOOP に入る
+    意味: 作業指示（コード書いて、機能作って、バグ直して）
+    動作: playbook 必須、全 guard 発動、LOOP に入る
 
   CHAT:
-    - 簡潔に応答
-    - guard 不要
-    - ツール使用不要
+    意味: 雑談・挨拶（こんにちは、ありがとう）
+    動作: guard スキップ、簡潔に応答
 
   QUESTION:
-    - 質問に回答
-    - 必要なら Read/Grep で調査
-    - playbook 不要
+    意味: 質問・確認（これは何？どうやるの？）
+    動作: guard スキップ、必要なら Read/Grep で調査
 
   META:
-    - plan-guard SubAgent を呼び出す
-    - 計画変更を検討
-    - ユーザー確認後に実行
+    意味: 計画変更・scope 変更（ついでに、別の）
+    動作: plan-guard 呼び出し、計画との整合性を確認
 
-⚠️ state.md 更新なしで作業開始は禁止（TASK の場合）
-⚠️ prompt_type=TASK なのに playbook=null は禁止
+キーワード判定:
+  - prompt-validator.sh（UserPromptSubmit Hook）が自動実行
+  - 日本語・英語のキーワードでマッチング
+  - デフォルト: QUESTION
+  - 詳細は state.md の session_definition を参照
+
+⚠️ session=TASK なのに playbook=null は禁止（playbook-guard.sh がブロック）
 ```
 
 ---
@@ -274,7 +262,7 @@ MCP の使い分け:
 
 | 日時 | 内容 |
 |------|------|
-| 2025-12-08 | V3.5: 動的プロンプト分類システム。prompt_type(TASK/CHAT/QUESTION/META)導入。Hooks が可変動作。 |
+| 2025-12-08 | V4.0: session 自動判定システム。prompt-validator.sh がキーワード判定 → state.md 自動更新。Claude 依存を排除。 |
 | 2025-12-08 | V3.4: PROMPT_VALIDATION 追加。全プロンプトを project.md と照合。ROADMAP_CHECK を置換。 |
 | 2025-12-08 | V3.3: CONTEXT.md 廃止。state.md/project.md/playbook を真実源に。INIT 簡素化。 |
 | 2025-12-08 | V3.2: 報酬詐欺防止強化。LOOP に根拠確認、CRITIQUE に検証項目追加。 |

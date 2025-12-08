@@ -147,9 +147,9 @@ fi
 echo ""
 
 # ========================================
-# 3. session=task の場合の追加チェック
+# 3. session=TASK の場合の追加チェック
 # ========================================
-if [ "$SESSION" = "task" ]; then
+if [ "$SESSION" = "TASK" ]; then
     echo -e "${BOLD}--- Task Session チェック ---${NC}"
 
     # critic リマインド
