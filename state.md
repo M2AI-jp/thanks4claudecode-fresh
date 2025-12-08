@@ -11,35 +11,6 @@
 
 ```yaml
 current: product             # plan-template | workspace | setup | product
-session: TASK                # TASK | CHAT | QUESTION | META（Claude が NLU で判断）
-```
-
-> **session**: Claude が NLU で判断し更新。後続 Guards が参照して動作を変える。
-
----
-
-## session_definition
-
-> **session の値と動作の定義。Claude が NLU で判断し更新する。**
-
-```yaml
-TASK:
-  意味: 作業指示（実装、修正、テスト、進めて、やって等）
-  動作: playbook 必須、全 guard 発動、LOOP
-
-CHAT:
-  意味: 雑談・挨拶
-  動作: guard スキップ、簡潔応答
-
-QUESTION:
-  意味: 質問・確認
-  動作: guard スキップ、調査可
-
-META:
-  意味: 計画変更・scope 変更
-  動作: plan-guard 確認
-
-判定: Claude が自然言語理解で行う（キーワードマッチではない）
 ```
 
 ---
@@ -58,7 +29,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-session-redesign.md  # session 再設計
+product:          plan/active/playbook-action-based-guards.md  # アクションベース Guards
 ```
 
 ---
@@ -179,18 +150,18 @@ playbook: null
 
 ```yaml
 phase: done
-current_phase: p8 - 構造的強制完了
-task: session 分類システム（Hook + LLM + 構造的強制）
+current_phase: p6 - 統合テスト完了
+task: アクションベース Guards への移行
 assignee: claude
 
 done_criteria:
-  - Hook が発火して session を TASK にリセット ✓
-  - Claude が NLU で分類し、TASK 以外なら Edit で変更 ✓
-  - Claude が忘れても TASK として Guards が発動 ✓
-  - キーワード判定は一切使用していない ✓
+  - session 分類ロジックが完全に削除されている ✓
+  - Edit/Write の PreToolUse でのみ playbook-guard が発動する ✓
+  - Read/Grep/WebSearch 等は playbook なしでも許可される ✓
+  - 「おはよう」でも「調査して」でも、Edit しない限りブロックされない ✓
 ```
 
-> **playbook-session-redesign: 全 Phase 完了（p0-p8 critic PASS）**
+> **playbook-action-based-guards: 全 Phase 完了（p0-p6）**
 
 ---
 
@@ -227,7 +198,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-08 18:26:34
+last_start: 2025-12-08 19:06:21
 last_end: 2025-12-08 02:20:49
 uncommitted_warning: false
 ```
@@ -248,6 +219,7 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | アクションベース Guards 完了: session 分類ロジック完全削除。Edit/Write 時のみ playbook チェック。 |
 | 2025-12-08 | p8 完了（構造的強制）: Hook が session を TASK にリセット → NLU 判断 → 安全側フォール。 |
 | 2025-12-08 | checkpoint: done_when 再定義 + アーキテクチャ図作成。main マージ。 |
 | 2025-12-08 | playbook-e2e-validation 開始。done_when 達成に向けた検証。 |

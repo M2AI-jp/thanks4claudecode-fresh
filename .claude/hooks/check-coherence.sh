@@ -23,16 +23,6 @@ if [ ! -f "state.md" ]; then
     exit 2
 fi
 
-# session タイプを取得
-SESSION=$(grep -A5 "## focus" state.md | grep "session:" | sed 's/.*session: *//' | sed 's/ *#.*//')
-echo -e "  Session: ${GREEN}$SESSION${NC}"
-
-# discussion モードなら整合性チェックをスキップ
-if [ "$SESSION" = "discussion" ]; then
-    echo -e "  ${YELLOW}[SKIP]${NC} session=discussion, coherence check skipped"
-    exit 0
-fi
-
 # focus.current を取得
 CURRENT=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*current: *//' | sed 's/ *#.*//')
 echo -e "  Focus: ${GREEN}$CURRENT${NC}"
@@ -146,14 +136,7 @@ if [ -n "$FOCUS_PLAYBOOK" ] && [ "$FOCUS_PLAYBOOK" != "null" ] && [ -f "$FOCUS_P
         echo -e "    ${YELLOW}[SKIP]${NC} Playbook has no branch constraint (initial/setup state)"
     fi
 else
-    # session=task かつ playbook=null はエラー（setup レイヤーは除外）
-    if [ "$SESSION" = "task" ] && [ "$CURRENT" != "setup" ]; then
-        echo -e "    ${RED}[ERROR]${NC} session=task but playbook=null"
-        echo -e "    → /playbook-init で playbook を作成するか、session を discussion に変更"
-        ERRORS=$((ERRORS + 1))
-    else
-        echo -e "    ${YELLOW}[SKIP]${NC} No playbook to check branch against"
-    fi
+    echo -e "    ${YELLOW}[SKIP]${NC} No playbook to check branch against"
 fi
 
 echo ""

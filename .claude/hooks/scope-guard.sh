@@ -4,10 +4,9 @@
 # 目的: pm を経由せずにスコープを拡張することを防止
 # トリガー: PreToolUse(Edit), PreToolUse(Write)
 #
-# session 定義（prompt-validator.sh が自動更新）:
-#   TASK: 警告発動
-#   META: pm 呼び出しを促す（より強い警告）
-#   CHAT/QUESTION: スキップ
+# 設計思想（アクションベース Guards）:
+#   - Edit/Write 時に常にチェック
+#   - playbook/project.md のスコープ変更を検出
 #
 # 検出対象:
 #   - playbook ファイルの done_when/done_criteria セクション
@@ -21,17 +20,6 @@ set -euo pipefail
 
 STATE_FILE="${STATE_FILE:-state.md}"
 PROJECT_FILE="plan/project.md"
-
-# session を取得（prompt-validator.sh が自動更新）
-SESSION=""
-if [[ -f "$STATE_FILE" ]]; then
-    SESSION=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^session:" | head -1 | sed 's/session: *//' | sed 's/ *#.*//' | tr -d ' ')
-fi
-
-# session が CHAT/QUESTION ならスキップ
-if [[ "$SESSION" == "CHAT" || "$SESSION" == "QUESTION" ]]; then
-    exit 0
-fi
 
 # stdin から JSON を読み込む
 INPUT=$(cat)

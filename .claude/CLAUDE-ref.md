@@ -168,7 +168,7 @@
 
 動的セクションの編集タイミング:
   - セッション開始時: session_tracking（自動）
-  - 作業開始時: focus.session, goal.phase
+  - 作業開始時: goal.phase
   - 作業完了時: layer.*.state, verification.self_complete
   - Phase 変更時: goal.done_criteria, active_playbooks
 ```
@@ -359,7 +359,7 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 - 現在の playbook にない作業をしようとしているとき
 
 **playbook=null エラー:**
-- session=task なのに playbook が null のとき
+- Edit/Write 時に playbook が null のとき（playbook-guard がブロック）
 
 ❌ **pm を呼ばずに新 playbook を作成してはならない**
 ❌ **スコープ外には NO と言う**

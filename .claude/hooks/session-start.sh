@@ -56,7 +56,6 @@ touch "$INIT_DIR/pending"
 [ ! -f "state.md" ] && echo "[WARN] state.md not found" && exit 0
 
 FOCUS=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*: *//' | sed 's/ *#.*//')
-SESSION=$(grep -A5 "## focus" state.md | grep "session:" | sed 's/.*: *//' | sed 's/ *#.*//')
 PHASE=$(grep -A5 "## goal" state.md | grep "phase:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//')
 CRITERIA=$(awk '/## goal/,/^## [^g]/' state.md | grep -A20 "done_criteria:" | grep "^  -" | head -6)
 BRANCH=$(git branch --show-current 2>/dev/null || echo "")
@@ -108,7 +107,7 @@ EOF
 fi
 
 # playbook/branch 不一致警告（branch: null は除外）
-if [ "$SESSION" = "task" ] && [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
+if [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
     EXP_BR=$(grep -E "^branch:" "$PLAYBOOK" 2>/dev/null | head -1 | sed 's/branch: *//' | sed 's/ *#.*//')
     if [ -n "$EXP_BR" ] && [ "$EXP_BR" != "null" ] && [ "$BRANCH" != "$EXP_BR" ]; then
         cat <<EOF
@@ -122,10 +121,10 @@ EOF
 fi
 
 # playbook 未作成警告（setup レイヤーでは抑制）
-if [ "$SESSION" = "task" ] && [ "$PLAYBOOK" = "null" ] && [ "$FOCUS" != "setup" ]; then
+if [ "$PLAYBOOK" = "null" ] && [ "$FOCUS" != "setup" ]; then
     cat <<EOF
 $SEP
-  🚨 PLAYBOOK 未作成（session=task）
+  🚨 PLAYBOOK 未作成
 $SEP
   1. Read: plan/template/playbook-format.md
   2. plan/active/playbook-{name}.md を作成
@@ -142,7 +141,7 @@ $SEP
   pdca: playbook完了 → 自動次タスク
   tdd: done_criteria = テスト仕様（根拠必須）
   validation: critic → .claude/frameworks/
-  plan: session=task → playbook必須
+  plan: Edit/Write → playbook必須（アクションベース）
   git: 1 playbook = 1 branch
 
 EOF
@@ -267,7 +266,7 @@ EOF
 esac
 
 # === Playbook in_progress Phase 抽出 ===
-if [ "$SESSION" = "task" ] && [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
+if [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
     # in_progress の phase を抽出（name, goal, done_criteria を表示）
     IN_PROGRESS=$(grep -n "status: in_progress" "$PLAYBOOK" 2>/dev/null | head -1 | cut -d: -f1)
     if [ -n "$IN_PROGRESS" ]; then
@@ -292,7 +291,6 @@ $SEP
 $SEP
 what: $FOCUS
 phase: $PHASE
-session: $SESSION
 branch: $BRANCH
 EOF
 

@@ -7,16 +7,10 @@
 @.claude/CLAUDE-ref.md
 
 ```yaml
-# session 分類（構造的強制）
-Hook: 発火時に session を TASK にリセット（安全側フォール）
-NLU: TASK 以外と判断したら state.md を Edit で変更
-忘却: 変更しなければ TASK として Guards が発動
-
-# session 別の行動
-TASK: INIT → LOOP → critic（guard 発動）
-CHAT: 簡潔応答（guard スキップ）→ session を CHAT に変更
-QUESTION: 調査可（guard スキップ）→ session を QUESTION に変更
-META: plan-guard 確認 → session を META に変更
+# アクションベース Guards
+制御点: Edit/Write ツール使用時のみ playbook チェック
+許可: Read/Grep/WebSearch 等は playbook なしでも常に許可
+設計思想: プロンプトの「意図」ではなく「アクション」を制御
 ```
 
 ---
@@ -39,11 +33,11 @@ META: plan-guard 確認 → session を META に変更
 
   4. Bash: `git rev-parse --abbrev-ref HEAD`
   5. Bash: `git status -sb`
-  6. main ブランチ AND session=task → ブランチを切る
+  6. main ブランチ → ブランチを切る
 
 【フェーズ 3: playbook 準備】
 
-  7. playbook=null AND session=task → /playbook-init を実行
+  7. playbook=null → /playbook-init を実行（Edit/Write 時にブロックされる前に）
 
 【フェーズ 4: 宣言】
 
@@ -73,7 +67,6 @@ META: plan-guard 確認 → session を META に変更
 [自認]
 what: {focus.current}
 phase: {goal.phase}
-session: {focus.session}
 branch: {現在のブランチ名}
 macro_goal: {plan/project.md の summary | "Phase 8 で生成"}
 remaining_tasks: {project.md の残タスク | playbook の残 Phase}
@@ -104,7 +97,7 @@ validation:
   禁止: 都度生成の評価基準
 
 plan_based:
-  条件: session=task AND playbook=null → 作業禁止
+  条件: playbook=null で Edit/Write → ブロック（アクションベース Guards）
 
 issue_context:
   rule: playbook.meta.issue に Issue 番号記載
@@ -160,33 +153,30 @@ while true:
 
 ---
 
-## SESSION（プロンプト分類 - 構造的強制）
+## ACTION_GUARDS（アクションベース制御）
 
-> **Hook が発火時に session を TASK にリセット。Claude が NLU で判断し、TASK 以外なら変更。**
-> **変更しなければ TASK として Guards が発動（安全側フォール）。**
+> **プロンプトの「意図」ではなく「アクション」を制御する。**
 
 ```yaml
 設計思想:
-  - デフォルト = TASK（最も厳しいモード）
-  - Claude が忘れても安全（Guards が発動）
-  - キーワード判定なし（NLU の強みを活かす）
-  - Hook が書き込み（構造的強制、100% 動作）
+  - Edit/Write 時のみ playbook チェック
+  - Read/Grep/WebSearch 等は常に許可
+  - プロンプト分類（session）は廃止
 
-分類の流れ:
-  1. prompt-validator.sh が発火
-  2. Hook が session を TASK にリセット（state.md を sed で更新）
-  3. Claude が NLU で分類
-  4. TASK 以外なら Claude が Edit で session を変更
-  5. 後続 Guards が session を読んで強制
+制御の流れ:
+  1. ユーザーがプロンプトを送信
+  2. Claude が自由に調査（Read/Grep/WebSearch）
+  3. Edit/Write を使おうとしたとき:
+     - playbook あり → 許可
+     - playbook なし → ブロック（playbook-guard.sh）
 
-session の値と動作:
-  TASK: playbook 必須、全 guard 発動、LOOP に入る
-  CHAT: guard スキップ、簡潔に応答
-  QUESTION: guard スキップ、必要なら調査
-  META: plan-guard 確認、計画との整合性を検証
+利点:
+  - 「意図」の推測が不要
+  - 「おはよう」も「調査して」も自由に対応可能
+  - 実際にコードを変更するときだけ計画を要求
 
-⚠️ session=TASK なのに playbook=null は禁止（playbook-guard.sh がブロック）
-⚠️ 忘れても TASK になる → 安全（無駄な guard 発動だけ）
+⚠️ playbook なしで Edit/Write → ブロック
+⚠️ 調査・報告は playbook なしでも可能
 ```
 
 ---
@@ -226,7 +216,7 @@ BLOCK ファイルを編集したい場合:
 ❌ 確認を求める、許可を求める、選ばせる（安全上の例外を除く）
 ❌ done_criteria 確認なしで「完了しました」
 ❌ 保護対象ファイルを無断で編集
-❌ session=task で playbook=null のまま作業開始
+❌ playbook=null で Edit/Write を実行
 ❌ main ブランチで直接作業
 ❌ critic なしで Phase/layer を done にする（絶対禁止）
 ❌ forbidden 遷移を実行する
@@ -272,6 +262,7 @@ MCP の使い分け:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | V5.0: アクションベース Guards。session 分類廃止。Edit/Write 時のみ playbook チェック。意図推測不要に。 |
 | 2025-12-08 | V4.1: 構造的強制。Hook が session を TASK にリセット → NLU で判断 → 安全側フォール。キーワード判定完全廃止。 |
 | 2025-12-08 | V4.0: session 自動判定システム。prompt-validator.sh がキーワード判定 → state.md 自動更新。Claude 依存を排除。 |
 | 2025-12-08 | V3.4: PROMPT_VALIDATION 追加。全プロンプトを project.md と照合。ROADMAP_CHECK を置換。 |

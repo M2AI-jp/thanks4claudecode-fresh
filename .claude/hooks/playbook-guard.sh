@@ -1,12 +1,13 @@
 #!/bin/bash
-# playbook-guard.sh - session=TASK AND playbook=null で作業をブロック
+# playbook-guard.sh - Edit/Write 時に playbook=null ならブロック
 #
-# 目的: playbook なしでの作業開始を構造的に防止
+# 目的: playbook なしでのコード変更を構造的に防止
 # トリガー: PreToolUse(Edit), PreToolUse(Write)
 #
-# session 定義（prompt-validator.sh が自動更新）:
-#   TASK: playbook 必須（ブロック）
-#   CHAT/QUESTION/META: スキップ（playbook 不要）
+# 設計思想（アクションベース Guards）:
+#   - プロンプトの「意図」ではなく「アクション」を制御
+#   - Read/Grep/WebSearch 等は常に許可
+#   - Edit/Write のみ playbook チェック
 #
 # 注意: このスクリプトは matcher: "Edit" と "Write" でのみ登録すること
 #       matcher: "*" で登録すると stdin を消費し、後続の Hook に影響する
@@ -34,14 +35,6 @@ if [[ "$FILE_PATH" == *"state.md" ]]; then
     exit 0
 fi
 
-# session を取得（prompt-validator.sh が自動更新）
-SESSION=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^session:" | head -1 | sed 's/session: *//' | sed 's/ *#.*//' | tr -d ' ')
-
-# session が TASK 以外ならスキップ（CHAT/QUESTION/META は playbook 不要）
-if [[ "$SESSION" != "TASK" ]]; then
-    exit 0
-fi
-
 # focus.current を取得
 FOCUS=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^current:" | head -1 | sed 's/current: *//' | sed 's/ *#.*//' | tr -d ' ')
 
@@ -55,7 +48,7 @@ if [[ -z "$PLAYBOOK" || "$PLAYBOOK" == "null" ]]; then
   ⛔ playbook 必須
 ========================================
 
-  session=TASK では playbook が必要です。
+  Edit/Write には playbook が必要です。
 
   対処法（いずれかを実行）:
 
@@ -68,7 +61,6 @@ if [[ -z "$PLAYBOOK" || "$PLAYBOOK" == "null" ]]; then
   現在の状態:
 EOF
     echo "    focus: $FOCUS" >&2
-    echo "    session: $SESSION (TASK)" >&2
     echo "    playbook: null" >&2
     echo "" >&2
     echo "========================================" >&2

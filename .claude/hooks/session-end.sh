@@ -93,9 +93,7 @@ fi
 
 # focus.current を取得
 CURRENT=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*current: *//' | sed 's/ *#.*//')
-SESSION=$(grep -A5 "## focus" state.md | grep "session:" | sed 's/.*session: *//' | sed 's/ *#.*//')
 echo -e "  Focus: ${GREEN}$CURRENT${NC}"
-echo -e "  Session: ${GREEN}$SESSION${NC}"
 
 # playbook を取得
 PLAYBOOK=$(awk "/## layer: $CURRENT/,/^## [^l]/" state.md | grep "playbook:" | head -1 | sed 's/.*playbook: *//' | sed 's/ *#.*//')
@@ -147,44 +145,42 @@ fi
 echo ""
 
 # ========================================
-# 3. session=TASK の場合の追加チェック
+# 3. 追加チェック（critic リマインド）
 # ========================================
-if [ "$SESSION" = "TASK" ]; then
-    echo -e "${BOLD}--- Task Session チェック ---${NC}"
+echo -e "${BOLD}--- CRITIQUE リマインド ---${NC}"
 
-    # critic リマインド
-    echo -e "  ${RED}[CRITIQUE 必須]${NC}"
-    echo -e "  Phase を done にする前に critic を呼び出しましたか？"
-    echo ""
-    echo -e "  ${YELLOW}呼び出し方法:${NC}"
-    echo "    Task(subagent_type='critic')"
-    echo "    または /crit コマンド"
-    echo ""
+# critic リマインド
+echo -e "  ${RED}[CRITIQUE 必須]${NC}"
+echo -e "  Phase を done にする前に critic を呼び出しましたか？"
+echo ""
+echo -e "  ${YELLOW}呼び出し方法:${NC}"
+echo "    Task(subagent_type='critic')"
+echo "    または /crit コマンド"
+echo ""
 
-    # state.md が更新されているか
-    if git diff --name-only 2>/dev/null | grep -q "state.md"; then
-        echo -e "  ${GREEN}[OK]${NC} state.md は更新済み"
+# state.md が更新されているか
+if git diff --name-only 2>/dev/null | grep -q "state.md"; then
+    echo -e "  ${GREEN}[OK]${NC} state.md は更新済み"
+else
+    if git diff --cached --name-only 2>/dev/null | grep -q "state.md"; then
+        echo -e "  ${GREEN}[OK]${NC} state.md は staged"
     else
-        if git diff --cached --name-only 2>/dev/null | grep -q "state.md"; then
-            echo -e "  ${GREEN}[OK]${NC} state.md は staged"
-        else
-            echo -e "  ${YELLOW}[CHECK]${NC} state.md は更新されていません"
-            WARNINGS=$((WARNINGS + 1))
-        fi
+        echo -e "  ${YELLOW}[CHECK]${NC} state.md は更新されていません"
+        WARNINGS=$((WARNINGS + 1))
     fi
-
-    # playbook が更新されているか
-    if git diff --name-only 2>/dev/null | grep -q "playbook"; then
-        echo -e "  ${GREEN}[OK]${NC} playbook は更新済み"
-    else
-        if git diff --cached --name-only 2>/dev/null | grep -q "playbook"; then
-            echo -e "  ${GREEN}[OK]${NC} playbook は staged"
-        else
-            echo -e "  ${YELLOW}[CHECK]${NC} playbook は更新されていません"
-        fi
-    fi
-    echo ""
 fi
+
+# playbook が更新されているか
+if git diff --name-only 2>/dev/null | grep -q "playbook"; then
+    echo -e "  ${GREEN}[OK]${NC} playbook は更新済み"
+else
+    if git diff --cached --name-only 2>/dev/null | grep -q "playbook"; then
+        echo -e "  ${GREEN}[OK]${NC} playbook は staged"
+    else
+        echo -e "  ${YELLOW}[CHECK]${NC} playbook は更新されていません"
+    fi
+fi
+echo ""
 
 # ========================================
 # 4. 未 push コミットの検知

@@ -4,10 +4,6 @@
 # 目的: executor: codex/coderabbit/user の Phase で Claude が直接作業することを防止
 # トリガー: PreToolUse(Edit), PreToolUse(Write)
 #
-# session 定義（prompt-validator.sh が自動更新）:
-#   TASK: executor 強制
-#   CHAT/QUESTION/META: スキップ
-#
 # 動作:
 #   1. 現在の playbook を特定
 #   2. in_progress の Phase を特定
@@ -21,17 +17,6 @@
 set -euo pipefail
 
 STATE_FILE="${STATE_FILE:-state.md}"
-
-# session を取得（prompt-validator.sh が自動更新）
-SESSION=""
-if [[ -f "$STATE_FILE" ]]; then
-    SESSION=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^session:" | head -1 | sed 's/session: *//' | sed 's/ *#.*//' | tr -d ' ')
-fi
-
-# session が TASK 以外ならスキップ
-if [[ "$SESSION" != "TASK" ]]; then
-    exit 0
-fi
 
 # stdin から JSON を読み込む
 INPUT=$(cat)
