@@ -124,11 +124,15 @@ done_when:
     - コミット完了 ✓
   evidence:
     総合評価:
-      - spec.yaml: v8.0.0 更新済み
+      - spec.yaml: v8.0.0 更新済み、YAML validation PASS
       - SubAgents: 形式正しい、次回セッションで利用可能
       - Skills: 形式正しい、次回セッションで利用可能
       - playbook フィールド: LLM 判断ベース設計
       - QUICKSTART: .archive/ に退避
+    yaml_validation:
+      - 検証コマンド: ruby -ryaml YAML.safe_load(File.read('spec.yaml'))
+      - 結果: PASS（有効な YAML 構文）
+      - 修正箇所: [自認] 引用符追加、changelog 簡略化
     制限事項:
       - セッション中に作成した SubAgents/Skills は即時利用不可
       - これは Claude Code の仕様（セッション開始時スキャン）

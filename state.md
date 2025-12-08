@@ -198,7 +198,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-08 13:37:48
+last_start: 2025-12-08 14:01:15
 last_end: 2025-12-08 02:20:49
 uncommitted_warning: false
 ```
@@ -217,6 +217,7 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-08 | spec.yaml YAML validation PASS。構文エラー修正完了。 |
 | 2025-12-08 | playbook-validation 完了。spec.yaml v8.0.0、QUICKSTART 退避。 |
 | 2025-12-08 | 全タスク完了。13件実装：SubAgents(reviewer, health-checker), Skills(context-mgmt, exec-mgmt, learning), playbook拡張。 |
 | 2025-12-08 | Issue #11 完了。p1-p4 全 Phase critic PASS。test PASS=15。 |

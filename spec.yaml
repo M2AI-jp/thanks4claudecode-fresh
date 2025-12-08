@@ -428,8 +428,8 @@ rule_priority:
   conflict_resolution_examples:
     - scenario: plan/template/playbook-format.md を編集したい
       focus_current: plan-template
-      protected: true (BLOCK:plan/template/playbook-format.md)
-      layers_editable: true (plan-template.editable: plan/template/**)
+      protected: "true (BLOCK:plan/template/playbook-format.md)"
+      layers_editable: "true (plan-template.editable: plan/template/**)"
       resolution: |
         現状: 保護が優先 → ユーザー許可が必要
         理想: focus-aware 解除 → 自動許可
@@ -571,7 +571,7 @@ plan_hierarchy:
     behavior:
       - roadmap の current_focus セクションを表示
       - next_actions を表示
-      - [自認] テンプレートに milestone を追加
+      - "[自認] テンプレートに milestone を追加"
 
   auto_task_detection:
     trigger: セッション開始時
@@ -797,7 +797,7 @@ state_machine:
 
         - layer: 視覚的警告（check-coherence.sh）
           location: .claude/hooks/check-coherence.sh
-          mechanism: state: done 変更を検出して警告表示
+          mechanism: "state: done 変更を検出して警告表示"
           strength: 警告のみ（ブロックはしない）
           scope: done 遷移のみ検出
 
@@ -1096,7 +1096,7 @@ claude_code_features:
       SessionStart:
         timing: セッション開始時
         can_block: false  # exit 2 でもブロック不可、出力は system prompt に追加
-        use_case: コンテキスト注入、Read 指示、[自認] テンプレート表示
+        use_case: "コンテキスト注入、Read 指示、[自認] テンプレート表示"
       SessionEnd:
         timing: セッション終了時
         can_block: false
@@ -1263,14 +1263,14 @@ hooks:
         - session=task かつ main ブランチなら警告表示
         - playbook=null なら警告表示
         - Read 指示を出力（LLM が Read ツールで読む）
-        - [自認] テンプレートを生成
+        - "[自認] テンプレートを生成"
       output:
-        - Read 指示（CONTEXT.md, state.md, playbook のパス）
-        - [自認] テンプレート
+        - "Read 指示（CONTEXT.md, state.md, playbook のパス）"
+        - "[自認] テンプレート"
         - 警告メッセージ（該当する場合）
     expected_result:
       - LLM が Read ツールで指示されたファイルを読む
-      - LLM が [自認] を最初に宣言する
+      - "LLM が [自認] を最初に宣言する"
       - main ブランチの場合、LLM がブランチを切る
       - playbook=null の場合、LLM が /playbook-init を実行する
     constraints:
@@ -1310,21 +1310,18 @@ hooks:
     problem: rule_ignoring
     purpose: 重要ファイルの無断編集を構造的にブロック
     behavior:
-      input: JSON (stdin) - tool_input.file_path を抽出（公式: https://code.claude.com/docs/en/hooks）
+      input: "JSON (stdin) - tool_input.file_path を抽出（公式: https://code.claude.com/docs/en/hooks）"
       process:
         - file_path を JSON から抽出
         - .claude/protected-files.txt を読み込み
-        - 各行を解析:
-          - BLOCK:{path} → 完全ブロック
-          - WARN:{path} → 警告のみ（編集許可）
-          - {path} → 完全ブロック（デフォルト）
+        - "各行を解析（BLOCK:{path}/WARN:{path}/{path}）"
         - パスが一致するかチェック（完全一致 or ワイルドカード）
 
       output:
         block: exit 2 + stderr（編集キャンセル）
         warn: exit 0 + 警告表示（編集許可）
         pass: exit 0（編集許可）
-    protected_files: .claude/protected-files.txt（BLOCK:/WARN: プレフィックス形式）
+    protected_files: ".claude/protected-files.txt（BLOCK/WARN プレフィックス形式）"
     expected_result:
       - 保護対象ファイル（CLAUDE.md, CONTEXT.md, plan/template/** 等）の編集がブロックされる
       - WARN ファイル（state.md, AGENTS.md 等）は警告表示後に編集許可
@@ -2029,7 +2026,7 @@ core_files:
     protected: true
     contents:
       - INIT（セッション開始時）
-      - [自認]（宣言フォーマット）
+      - "[自認]（宣言フォーマット）"
       - LOOP（テスト駆動作業ループ）
       - EXEC（作業実行）
       - PROTECTED（保護対象ファイル）
@@ -2087,9 +2084,9 @@ config:
         - matcher: Bash → check-coherence.sh, check-state-update.sh
           # 注: スクリプト内で tool_input.command を検査して git commit のみ処理
       SessionStart:
-        - matcher: * → session-start.sh
+        - matcher: "* → session-start.sh"
       SessionEnd:
-        - matcher: * → session-end.sh
+        - matcher: "* → session-end.sh"
 
 # ==============================================================================
 # コンテキスト管理（Context Management）
@@ -2115,13 +2112,13 @@ context_management:
       post_action:
         - INIT を最初からやり直す
         - Read: CONTEXT.md, state.md, playbook
-        - [自認] を再宣言する
+        - "[自認] を再宣言する"
 
     /compact:
       description: コンテキストを圧縮（履歴を要約）
       triggers_hook: SessionStart (compact マッチャー)
       usage: /compact [instructions]
-      example: /compact 以下を優先して保持: done_criteria, 現在の Phase, 禁止事項
+      example: "/compact 以下を優先して保持（done_criteria, 現在の Phase, 禁止事項）"
       note: |
         /clear より緩やか。履歴を完全に消したくないが、
         コンテキストを圧縮したい場合に使用。
@@ -2244,7 +2241,7 @@ dependencies:
   # 実行順序依存（A の後に B を実行）
   execution_order:
     session_start:
-      order: [session-start.sh → LLM Read → [自認] 宣言]
+      order: "session-start.sh → LLM Read → [自認] 宣言"
       reason: コンテキスト読み込み → 内面化 → 宣言
 
     pre_commit:
@@ -2309,81 +2306,28 @@ dependencies:
 # ==============================================================================
 # 変更履歴（最新6バージョンのみ保持）
 # ==============================================================================
-placeholder_for_changelog: true  # 次の編集で削除
+changelog:
+  - version: "8.0.0"
+    date: "2025-12-08"
+    summary: "全タスク完了版 - Agents/Skills 追加、playbook 拡張"
+
+  - version: "7.0.0"
+    date: "2025-12-06"
+    summary: "セットアップ完了、product レイヤー開始"
+
   - version: "6.4.0"
     date: "2025-12-02"
-    changes:
-      - 外部 LLM レビュー対応 v3
-        - LLM-QUICKSTART セクション追加（セッション開始時の概要）
-        - session_start_enforcement セクション追加（自然発火問題対策）
-        - Skill(*) を permissions.allow から削除（model-invoked のため不要）
-        - enforcement タグを rule_priority.order に追加
-        - Stop/SubagentStop hooks の future_improvement を追記
-        - session-start.sh の出力を強化（Read 完了まで作業禁止を明記）
-        - CLAUDE.md INIT セクションを強化（絶対ルールとして明記）
+    summary: "外部 LLM レビュー対応 v3"
 
   - version: "6.3.0"
     date: "2025-12-02"
-    changes:
-      - 外部 LLM レビュー指摘事項の修正
-        - check-coherence.sh: exit 1 → exit 2（blocking error）
-        - check-state-update.sh: 既に exit 2（変更なし）
-        - Skills 実ファイル: skill.md → SKILL.md にリネーム（6ファイル）
-        - setup_to_product_transition: skill.md → SKILL.md に修正
-        - check-coherence.sh: plan-template の editable パスを plan/active/playbook に修正
+    summary: "外部 LLM レビュー指摘事項の修正"
 
   - version: "6.2.0"
     date: "2025-12-02"
-    changes:
-      - 公式ドキュメント準拠の追加修正
-        - PreToolUse matcher: Bash(git*commit*) → Bash に修正
-          （スクリプト内で tool_input.command を検査）
-        - Skills ファイル名: skill.md → SKILL.md（大文字必須）
-        - Skills 説明: 「自動発動ではない」→「Claude が自動検出して利用」
-      - /init → /playbook-init にリネーム
-        - ビルトイン /init（CLAUDE.md 初期化）との衝突を回避
-      - CONTEXT.md の矛盾を解決
-        - always_editable から CONTEXT.md を削除
-        - BLOCK 保護が優先されることを明記
+    summary: "公式ドキュメント準拠の追加修正"
 
   - version: "6.1.0"
     date: "2025-12-02"
-    changes:
-      - 公式ドキュメント準拠の修正（https://code.claude.com/docs/en/hooks）
-        - check-protected-edit BLOCK: exit code 0 → exit code 2 + stderr
-        - PreToolUse JSON スキーマを完全仕様に拡充（session_id, cwd 等追加）
-      - playbook パスを plan/active/playbook-* に完全統一
-        - layers.plan-template.editable から plan/playbook-* を削除
-      - settings_structure に Task(*) を追加（subagent 呼び出し許可）
-      - core_files.state.md に protection_mapping を追加
-        - WARN モードと protected-files.txt の関係を明文化
-      - agents.critic.expected_result を拡充
-        - 「行動ルール上の MUST」と「構造的保証はない」を明示
-      - /test.implementation を追加
-        - test-runner Skill との関係を明記
-      - setup_to_product_transition で layer.product.state: designing を追加
-        - state_machine.transitions.rules との整合性確保
-
-  - version: "6.0.0"
-    date: "2025-12-02"
-    changes:
-      - rule_priority（ルール優先度）セクション新設
-        - 保護ファイル vs レイヤー権限の矛盾を解決
-        - focus-aware protection の設計を明文化
-        - conflict_resolution_examples を追加
-      - state_machine.transitions.forbidden_enforcement 追加
-        - 禁止遷移の強制方法を明文化
-        - enforcement_layers（3層の防御）を定義
-        - limitation と future_improvement を記載
-      - check-protected-edit の behavior を大幅拡充
-        - input.schema（JSON 形式）を明記
-        - output.block/warn/pass の詳細を追加
-        - protected_files_format（BLOCK/WARN 構文）を明文化
-      - /playbook-init.execution_policy 新設（旧 /init）
-        - normal_case, re_execution_case, branch_mismatch_case, mid_task_case を定義
-        - playbook 再作成時の挙動を明確化
-      - agents.critic.enforcement を大幅拡充
-        - enforcement_levels（3レベル）を定義
-        - why_not_structural_block で技術的制約を説明
-        - mitigation_strategy で代替策を提示
+    summary: "公式ドキュメント準拠の修正"
 
