@@ -18,12 +18,12 @@ issue: null
 ## goal
 
 ```yaml
-summary: session を TASK/CHAT/QUESTION/META に再定義し、prompt-validator.sh が自動判定・更新する仕組みを構築
+summary: session を TASK/CHAT/QUESTION/META に再定義し、Hook + LLM で分類・強制する仕組みを構築
 done_when:
-  - prompt-validator.sh がキーワードでプロンプトを判定している
-  - prompt-validator.sh が state.md の session を直接更新している
-  - 後続の Hooks が session を参照して動作を変えている
-  - テスト: 各種プロンプトで正しく判定・更新される
+  - Hook が発火して Claude に分類を指示している
+  - Claude が NLU で分類し state.md を更新している
+  - 後続の Guards が session を参照して動作を変えている
+  - テスト: 各 session で Guards が正しく動作する
 ```
 
 ---
@@ -169,6 +169,30 @@ done_when:
     - META: echo '{"prompt":"計画変更"}' → session=META（ログ 17:53:05）
     - 全テストで state.md が実際に更新された
     - critic: 1-4 全て PASS
+
+- id: p7
+  name: NLU ベースへの移行
+  goal: キーワード判定から LLM の自然言語理解に移行
+  executor: claudecode
+  depends_on: [p6]
+  done_criteria:
+    - prompt-validator.sh からキーワード判定ロジックが削除されている
+    - prompt-validator.sh は発火・指示出力のみ行う
+    - CLAUDE.md に「Claude が NLU で分類し state.md を更新」が明記されている
+    - session=CHAT で Guards がスキップされる
+    - session=TASK で Guards が発動する
+  test_method: |
+    1. prompt-validator.sh を Read してキーワード判定がないことを確認
+    2. CLAUDE.md を Read して分類フローを確認
+    3. session を切り替えて Guard の動作を確認
+  status: done
+  evidence:
+    - grep -c "grep -qE" prompt-validator.sh → 0（キーワード判定削除）
+    - 51行にスリム化（元145行 → 62%削減）
+    - CLAUDE.md 5行「NLU で判断」、159行「Claude が NLU で判断」
+    - session=CHAT → Guard スキップ（exit 0）
+    - session=TASK → Guard 発動（playbook チェック）
+    - critic PASS
 ```
 
 ---
