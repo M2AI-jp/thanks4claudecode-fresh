@@ -213,7 +213,7 @@ done_criteria:
 ## verification
 
 ```yaml
-self_complete: true       # playbook-artifact-health 全10Phase完了 (critic PASS)
+self_complete: true
 user_verified: false
 ```
 

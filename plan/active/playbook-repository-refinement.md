@@ -147,7 +147,7 @@ done_when:
     2. 新規セッションを開始
     3. [自認] が正常出力
     4. critic を呼び出して PASS
-  status: pending
+  status: in_progress
 ```
 
 ---
@@ -318,7 +318,29 @@ p5:
     - plan-management
     - state
     - test-runner
-p6: {}
+p6:
+  verification_summary:
+    p2_security_mode:
+      implemented: true
+      test_result: "admin モードで Edit/Write がバイパスされている（本 playbook 編集が成功）"
+    p3_deadlock_fix:
+      implemented: true
+      test_result: "init-guard.sh に存在確認追加、非存在 playbook は REQUIRED_FILES から除外"
+    p4_hooks_sync:
+      implemented: true
+      test_result: "settings.json: 19, .claude/hooks/: 19, 完全一致"
+    p5_skills_frontmatter:
+      implemented: true
+      test_result: "全 9 Skills に frontmatter 存在"
+  session_check:
+    current_session_errors: 0
+    admin_mode_bypass: "confirmed (Edit/Write 許可)"
+    hooks_firing: "confirmed (init-guard, playbook-guard, critic-guard 等)"
+  goal_achievement:
+    security_mode_referenced: true
+    unregistered_hooks_processed: true
+    incomplete_skills_processed: true
+    init_guard_deadlock_fixed: true
 ```
 
 ---
