@@ -305,8 +305,8 @@ sync_mechanism:
 # ========================================
 
 coherence_check:
-  hook: check-coherence.sh（※現在 settings.json 未登録）
-  alternative: critic SubAgent による手動チェック
+  hook: check-coherence.sh（settings.json 登録済み - PreToolUse:Bash）
+  発火: git commit 前に自動発火
   タイミング:
     - git commit 前
     - state.md 編集後
@@ -483,17 +483,18 @@ integration:
 # 実装状態
 # ========================================
 
-status: designed
+status: implemented
 implementation:
   consent_guard_sh: created (.claude/hooks/consent-guard.sh)
-  settings_json: NOT_REGISTERED (設計検証段階)
-  claude_md: NOT_ADDED (BLOCK ファイル、提案として作成)
-  test_executed: false (settings.json 未登録のため)
+  settings_json: REGISTERED (PreToolUse:Edit/Write)
+  session_start_sh: INTEGRATED (consent ファイル作成機能追加)
+  claude_md: PROPOSAL_CREATED (BLOCK ファイル、ユーザー承認待ち)
+  test_executed: true (pending 方式でネガティブ/ポジティブテスト完了)
 
 known_issues:
-  - consent-guard.sh は settings.json 未登録（設計検証段階）
   - CLAUDE.md への追加はユーザー許可が必要（BLOCK ファイル）
-  - 実際の運用には session-start.sh との統合が必要
+  - [理解確認] 自動出力は CLAUDE.md 追加後に完成
+  - 現在は手動で consent ファイル削除が必要
 ```
 
 ---
@@ -501,7 +502,7 @@ known_issues:
 ## current_state
 
 ```yaml
-phase: システム設計完了
+phase: システム改善完了
 
 completed:
   - 三位一体アーキテクチャ設計
@@ -511,12 +512,22 @@ completed:
   - Phase 完了出力の構造化
   - project.md と playbook の相互監視設計
   - 入力→処理→出力の連鎖設計
+  - playbook-system-improvements 全10Phase完了:
+    - check-coherence.sh 登録
+    - depends-check.sh 実装
+    - consent-guard.sh 統合
+    - scope-guard.sh STRICT_MODE
+    - check-main-branch.sh 検証
+    - archive-playbook.sh 実装
+    - executor_design 設計
+    - learning_skill_design 設計
+    - CLAUDE.md CONSENT 提案
 
 in_progress: []
 
 next:
-  - ユーザーの確認事項（docs/current-implementation.md）の GAP 解消
-  - 実動作での検証（ループ的試験）
+  - (オプション) CLAUDE.md CONSENT セクション追加（ユーザー承認後）
+  - 新規ユーザー向けテンプレート検証
 ```
 
 ---

@@ -29,7 +29,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-system-improvements.md
+product:          null
 ```
 
 ---
@@ -66,15 +66,15 @@ archive:
 
 # Medium: 単機能実装の中期計画（1ブランチ = 1playbook）
 medium:
-  file: plan/active/playbook-system-improvements.md
-  exists: true
-  goal: test-results.md の改善項目 + エラー修正を一括処理
+  file: null
+  exists: false
+  goal: null  # playbook-system-improvements 完了・アーカイブ済み
 
 # Micro: セッション単位の作業（playbook の 1 Phase）
 micro:
-  phase: done
-  name: 全 Phase 完了
-  status: done
+  phase: null
+  name: null
+  status: idle  # 次タスク待ち
 
 # 上位計画参照（.archive/ に退避済み、必要時のみ復元）
 upper_plans:
@@ -134,37 +134,30 @@ playbook: null  # テンプレートは pending のまま（正常）
 ## layer: product
 
 ```yaml
-state: implementing
-sub: system-improvements-p9
-playbook: plan/active/playbook-system-improvements.md
+state: idle
+sub: system-improvements-complete
+playbook: null
 ```
 
 ### 概要
 > ユーザーが実際にプロダクトを開発するためのレイヤー。
 > setup 完了後、plan/project.md を参照して TDD で開発。
-> **Issue #11: ロールバック機能 - p1 設計フェーズ**
+> **playbook-system-improvements 完了。次タスク待ち。**
 
 ---
 
 ## goal
 
 ```yaml
-phase: done
-current_phase: playbook 完了
-task: システム改善タスク一括処理 (playbook-system-improvements)
-assignee: claude
+phase: idle
+current_phase: null
+task: null
+assignee: null
 
-done_criteria:
-  - stop-check.sh エラー解消
-  - check-coherence.sh が settings.json に登録され自動発火
-  - depends_on チェック Hook が実装・登録
-  - consent-guard.sh が session-start.sh と統合
-  - scope-guard.sh に strict モード追加
-  - playbook アーカイブ Hook 実装
-  - Low Priority 項目は設計ドキュメント完成
+done_criteria: []  # 次タスク待ち
 ```
 
-> **確認事項 #1, #5, #7, #8, #9, #11 に対応。実装完了 → 実動作検証へ移行。**
+> **playbook-system-improvements 完了・アーカイブ済み。次のユーザー指示を待機中。**
 
 ---
 
@@ -223,6 +216,7 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-09 | **playbook-system-improvements 完了・アーカイブ**: 全10Phase完了。.archive/plan/ に退避。次タスク待ち。 |
 | 2025-12-09 | **playbook 完了**: playbook-trinity-validation 全 12 Phase 完了。三位一体アーキテクチャ検証完了。 |
 | 2025-12-09 | **p12 完了**: 合意プロセス設計 PASS (critic 1回目)。consent-guard.sh 作成。設計フェーズ完了。 |
 | 2025-12-09 | **p11 完了**: ドキュメント・学習資料の整備 PASS (critic 1回目)。docs/test-results.md 作成。p12 開始。 |
