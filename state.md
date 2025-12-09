@@ -179,15 +179,15 @@ playbook: null  # テンプレートは pending のまま（正常）
 ## layer: product
 
 ```yaml
-state: implementing
+state: done
 sub: repository-refinement
-playbook: plan/active/playbook-repository-refinement.md
+playbook: null
 ```
 
 ### 概要
 > ユーザーが実際にプロダクトを開発するためのレイヤー。
 > setup 完了後、plan/project.md を参照して TDD で開発。
-> **playbook-repository-refinement 進行中。** 「設定はあるが機能していない」問題の構造的解決。
+> playbook-repository-refinement 完了（critic PASS）。問題の構造的解決。
 
 ---
 
