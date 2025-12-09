@@ -47,24 +47,43 @@
 
   8. [自認] を出力
 
+【フェーズ 4.5: 合意プロセス（CONSENT）】★重要
+
+  条件: playbook=null の場合のみ実行（計画がない = 新規タスク）
+
+  9. ユーザープロンプトを「要件定義」として解釈
+  10. [理解確認] を出力（構造化）
+  11. ユーザー応答を待つ（★例外的に許可）
+      - OK / 了解 → consent ファイル削除 → フェーズ 5 へ
+      - 修正指示 → 再解釈 → [理解確認] 再出力
+      - 却下 / やめて → 作業中止
+
+  スキップ条件:
+    - playbook が既に存在する（計画済み = 合意済み）
+    - ユーザーが「スキップ」「すぐやって」等を指示
+    - 調査・質問のみ（Edit/Write を使わない）
+
+  ⚠️ [理解確認] なしで playbook 作成 → 禁止
+  ⚠️ ユーザー OK なしで作業開始 → 禁止
+
 【フェーズ 5: Macro チェック & 計画の導出】
 
-  9. plan/project.md の存在を確認
-  10. playbook=null かつ Macro が存在する場合:
+  12. plan/project.md の存在を確認
+  13. playbook=null かつ Macro が存在する場合:
       - project.md の not_achieved を確認
       - depends_on を分析し、着手可能な done_when を特定
       - decomposition を参照して playbook を作成（または pm を呼び出す）
       - 「Macro: {summary} / 次: {done_when.name} を進めます。」
-  11. playbook がある場合:
+  14. playbook がある場合:
       - 現在の Phase を確認し LOOP に入る
-  12. Macro が存在しない場合（setup レイヤー）:
+  15. Macro が存在しない場合（setup レイヤー）:
       - 「Macro は Phase 8 で生成されます。setup を進めます。」
       - playbook の Phase 0 から開始
-  13. LOOP に入る（ユーザーが止めない限り進む）
+  16. LOOP に入る（ユーザーが止めない限り進む）
 
-  ⚠️ 禁止: 「よろしいですか？」と聞く
+  ⚠️ 禁止: 「よろしいですか？」と聞く（CONSENT 以外で）
   ⚠️ 禁止: 「何か続けますか？」と聞く
-  ⚠️ 禁止: ユーザーの応答を待つ
+  ⚠️ 例外: フェーズ 4.5 ではユーザー応答を待つ
 ```
 
 ---
@@ -112,6 +131,136 @@ issue_context:
 
 git_branch_sync:
   rule: 1 playbook = 1 branch
+```
+
+---
+
+## CONSENT（合意プロセス）
+
+> **ユーザープロンプトの誤解釈防止。「入力→LLM処理→出力」ではなく「LLM処理→構造化出力→合意→出力」を強制。**
+
+```yaml
+# ========================================
+# 問題
+# ========================================
+
+problem: |
+  Claude がユーザープロンプトを「良かれと思って省略」し、
+  意図しない大規模変更や方向性のずれが発生する。
+
+# ========================================
+# 解決: [理解確認] ブロック
+# ========================================
+
+solution: |
+  Edit/Write 前に処理結果を構造化出力し、ユーザー合意を取得。
+  Hook（consent-guard.sh）で合意ファイルの有無をチェック。
+
+# ========================================
+# [理解確認] フォーマット
+# ========================================
+
+format: |
+  [理解確認]
+  what: 「〇〇をすること」と理解しました
+  why: 目的は「△△」と推測します
+  how: 以下の手順で進めます
+    1. ...
+    2. ...
+    3. ...
+  scope: 変更対象ファイル
+    - file1.ts
+    - file2.ts
+  exclusions: 以下は変更しません
+    - config.json
+    - CLAUDE.md
+
+# ========================================
+# ユーザー応答フロー
+# ========================================
+
+user_response:
+  OK: |
+    「了解」または「OK」→ Claude がファイルを削除（.claude/.session-init/consent）→ 処理開始
+  修正: |
+    「〇〇ではなく△△です」→ Claude が [理解確認] を再出力 → 再合意
+  却下: |
+    「やめて」または「キャンセル」→ 処理中止
+
+# ========================================
+# Hook 統合
+# ========================================
+
+hook_integration:
+  hook_name: consent-guard.sh
+  trigger: PreToolUse:Edit/Write
+  location: .claude/hooks/consent-guard.sh
+
+  workflow: |
+    1. session-start.sh:
+       → .claude/.session-init/pending 作成
+       → .claude/.session-init/consent 作成
+
+    2. init-guard.sh:
+       → pending 存在 → Read 強制
+       → Read 完了 → pending 削除
+
+    3. [理解確認]:
+       → Claude が処理結果を構造化出力
+       → ユーザー応答待機
+
+    4. consent-guard.sh:
+       → consent ファイル存在?
+       → YES（ユーザー OK) → ファイル削除 → 通過 → Edit/Write 実行
+       → NO（未承認） → exit 2 ブロック → [理解確認] 再表示
+
+    5. playbook-guard.sh:
+       → playbook チェック → 通過
+
+    6. LOOP:
+       → done_criteria 検証 → 実行
+
+file_locations:
+  pending: .claude/.session-init/pending
+  consent: .claude/.session-init/consent
+
+# ========================================
+# 実装状態
+# ========================================
+
+status: implemented
+
+components:
+  consent_guard_sh:
+    file: .claude/hooks/consent-guard.sh
+    status: created
+    functionality: consent ファイルの有無を確認、exit 2 でブロック
+
+  settings_json:
+    file: .claude/settings.json
+    status: REGISTERED
+    hook: PreToolUse:Edit/Write
+    script: consent-guard.sh
+
+  session_start_sh:
+    file: .claude/hooks/session-start.sh
+    status: INTEGRATED
+    new_functionality: consent ファイル作成機能追加
+
+  claude_md:
+    file: CLAUDE.md
+    section: CONSENT
+    status: DOCUMENTED
+    purpose: workflow および Hook 統合を記載
+
+# ========================================
+# 禁止パターン
+# ========================================
+
+forbidden:
+  - [理解確認] なしで Edit/Write 実行
+  - ユーザー応答なしで consent ファイル削除
+  - consent ファイル作成後、[理解確認] を出力しない
 ```
 
 ---
@@ -273,6 +422,7 @@ MCP の使い分け:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-09 | V5.2: 合意プロセス（CONSENT）。INIT に フェーズ 4.5 追加。playbook=null 時に [理解確認] を強制。ユーザー応答待ちを例外許可。 |
 | 2025-12-08 | V5.1: 計画の連鎖（Plan Derivation）。project.done_when → playbook の自動導出。INIT/POST_LOOP 更新。 |
 | 2025-12-08 | V5.0: アクションベース Guards。session 分類廃止。Edit/Write 時のみ playbook チェック。意図推測不要に。 |
 | 2025-12-08 | V4.1: 構造的強制。Hook が session を TASK にリセット → NLU で判断 → 安全側フォール。キーワード判定完全廃止。 |

@@ -29,7 +29,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          null
+product:          plan/active/playbook-consent-integration.md
 ```
 
 ---
@@ -135,14 +135,14 @@ playbook: null  # テンプレートは pending のまま（正常）
 
 ```yaml
 state: idle
-sub: system-improvements-complete
+sub: consent-integration-complete
 playbook: null
 ```
 
 ### 概要
 > ユーザーが実際にプロダクトを開発するためのレイヤー。
 > setup 完了後、plan/project.md を参照して TDD で開発。
-> **playbook-system-improvements 完了。次タスク待ち。**
+> **playbook-consent-integration 全 Phase 完了。次タスク待ち。**
 
 ---
 
@@ -157,7 +157,7 @@ assignee: null
 done_criteria: []  # 次タスク待ち
 ```
 
-> **playbook-system-improvements 完了・アーカイブ済み。次のユーザー指示を待機中。**
+> **playbook-consent-integration 全 Phase 完了・アーカイブ待ち。次のユーザー指示を待機中。**
 
 ---
 
