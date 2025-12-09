@@ -18,6 +18,11 @@
 
 set -euo pipefail
 
+# 環境変数で動作モードを制御
+# STRICT_MODE=true: exit 2 でブロック
+# STRICT_MODE=false (default): 警告のみ
+STRICT_MODE="${STRICT_MODE:-false}"
+
 STATE_FILE="${STATE_FILE:-state.md}"
 PROJECT_FILE="plan/project.md"
 
@@ -105,9 +110,19 @@ if [[ "$MODIFYING_SCOPE" == true ]]; then
 EOF
     echo "  対象ファイル: $RELATIVE_PATH"
     echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
+
+    if [[ "$STRICT_MODE" == "true" ]]; then
+        echo "  🚫 STRICT_MODE=true: この変更はブロックされます"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        exit 2
+    else
+        echo "  ⚠️ 警告のみ（STRICT_MODE=true でブロック可能）"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+    fi
 fi
 
-# 警告のみ、ブロックはしない
 exit 0

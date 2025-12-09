@@ -305,8 +305,8 @@ sync_mechanism:
 # ========================================
 
 coherence_check:
-  hook: check-coherence.sh（※現在 settings.json 未登録）
-  alternative: critic SubAgent による手動チェック
+  hook: check-coherence.sh（settings.json 登録済み - PreToolUse:Bash）
+  発火: git commit 前に自動発火
   タイミング:
     - git commit 前
     - state.md 編集後
@@ -483,17 +483,18 @@ integration:
 # 実装状態
 # ========================================
 
-status: designed
+status: implemented
 implementation:
   consent_guard_sh: created (.claude/hooks/consent-guard.sh)
-  settings_json: NOT_REGISTERED (設計検証段階)
-  claude_md: NOT_ADDED (BLOCK ファイル、提案として作成)
-  test_executed: false (settings.json 未登録のため)
+  settings_json: REGISTERED (PreToolUse:Edit/Write)
+  session_start_sh: INTEGRATED (consent ファイル作成機能追加)
+  claude_md: PROPOSAL_CREATED (BLOCK ファイル、ユーザー承認待ち)
+  test_executed: true (pending 方式でネガティブ/ポジティブテスト完了)
 
 known_issues:
-  - consent-guard.sh は settings.json 未登録（設計検証段階）
   - CLAUDE.md への追加はユーザー許可が必要（BLOCK ファイル）
-  - 実際の運用には session-start.sh との統合が必要
+  - [理解確認] 自動出力は CLAUDE.md 追加後に完成
+  - 現在は手動で consent ファイル削除が必要
 ```
 
 ---
@@ -501,7 +502,7 @@ known_issues:
 ## current_state
 
 ```yaml
-phase: システム設計完了
+phase: システム改善完了
 
 completed:
   - 三位一体アーキテクチャ設計
@@ -511,12 +512,151 @@ completed:
   - Phase 完了出力の構造化
   - project.md と playbook の相互監視設計
   - 入力→処理→出力の連鎖設計
+  - playbook-system-improvements 全10Phase完了:
+    - check-coherence.sh 登録
+    - depends-check.sh 実装
+    - consent-guard.sh 統合
+    - scope-guard.sh STRICT_MODE
+    - check-main-branch.sh 検証
+    - archive-playbook.sh 実装
+    - executor_design 設計
+    - learning_skill_design 設計
+    - CLAUDE.md CONSENT 提案
 
 in_progress: []
 
 next:
-  - ユーザーの確認事項（docs/current-implementation.md）の GAP 解消
-  - 実動作での検証（ループ的試験）
+  - (オプション) CLAUDE.md CONSENT セクション追加（ユーザー承認後）
+  - 新規ユーザー向けテンプレート検証
+```
+
+---
+
+## executor_design
+
+> **将来の executor 拡張に向けた設計（設計のみ、実装は将来）**
+
+```yaml
+# ========================================
+# 複数 Executor アーキテクチャ
+# ========================================
+
+concept: |
+  playbook の各 Phase に executor を指定し、
+  適切なツール/サービスにタスクを委譲する。
+
+executors:
+  claude_code:
+    description: Claude Code（デフォルト）
+    use_case: 一般的なコーディング、ファイル操作、分析
+    trigger: executor: claude_code または指定なし
+
+  codex:
+    description: OpenAI Codex（大規模コード生成）
+    use_case: |
+      - 大量のボイラープレートコード生成
+      - 複数ファイルの一括生成
+      - 定型パターンの展開
+    trigger: executor: codex
+    integration: MCP server (mcp__codex__codex)
+    status: designed
+
+  coderabbit:
+    description: CodeRabbit（コードレビュー）
+    use_case: |
+      - PR レビュー
+      - コード品質チェック
+      - セキュリティスキャン
+    trigger: executor: coderabbit
+    integration: GitHub App or MCP server
+    status: designed
+
+  user:
+    description: ユーザー手動実行
+    use_case: |
+      - 手動テスト
+      - 外部サービス操作
+      - 機密情報を扱う操作
+    trigger: executor: user
+    behavior: Claude がガイダンスを出力、ユーザーが実行
+
+# ========================================
+# 実装計画
+# ========================================
+
+implementation_plan:
+  phase_1:
+    name: executor-guard.sh 拡張
+    description: executor フィールドを解析し、適切な処理を振り分け
+    status: future
+
+  phase_2:
+    name: Codex MCP 統合
+    description: mcp__codex__codex を活用した大規模生成
+    status: future
+
+  phase_3:
+    name: CodeRabbit 統合
+    description: PR 作成時に自動レビュー依頼
+    status: future
+```
+
+---
+
+## learning_skill_design
+
+> **失敗パターン自動学習の設計（設計のみ、実装は将来）**
+
+```yaml
+# ========================================
+# Learning Skill 強化設計
+# ========================================
+
+concept: |
+  critic FAIL や playbook の known_issues を自動記録し、
+  類似タスク開始時に過去の教訓を自動参照する。
+
+components:
+  failure_recorder:
+    trigger: critic FAIL 時
+    action: |
+      1. 失敗パターンを .claude/logs/failures.log に記録
+      2. JSONL 形式: {timestamp, phase, playbook, criteria, reason}
+      3. 最新 100 件を保持
+
+  lesson_retriever:
+    trigger: 新 playbook 作成時
+    action: |
+      1. playbook のキーワードを抽出
+      2. failures.log から類似パターンを検索
+      3. 関連する教訓を提示
+
+  archive_analyzer:
+    trigger: Phase 開始時（オプション）
+    action: |
+      1. .archive/plan/ の完了 playbook を参照
+      2. 類似 Phase の evidence/known_issues を抽出
+      3. 成功/失敗パターンを提示
+
+# ========================================
+# 実装計画
+# ========================================
+
+implementation_plan:
+  phase_1:
+    name: failures.log 自動記録
+    description: critic FAIL 時に自動記録する Hook
+    status: future
+
+  phase_2:
+    name: 類似パターン検索
+    description: キーワードマッチングで過去の失敗を検索
+    status: future
+
+  phase_3:
+    name: 自動提示
+    description: Phase 開始時に関連教訓を自動表示
+    status: future
 ```
 
 ---
@@ -525,6 +665,7 @@ next:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-09 | executor_design, learning_skill_design セクション追加（設計のみ）。 |
 | 2025-12-09 | 三位一体アーキテクチャとして再設計。ユーザー確認事項 #1,#2,#5,#7,#8,#9,#11 に対応。 |
 | 2025-12-09 | 0から再設計。「整合性確認」から「動作実証」へ転換。13テストケースを定義。 |
 | 2025-12-08 | ディスカッション用に全面改訂。ユーザー視点の done_when を追加。 |

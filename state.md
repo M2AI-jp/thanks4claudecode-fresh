@@ -29,7 +29,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-trinity-validation.md
+product:          null
 ```
 
 ---
@@ -66,15 +66,15 @@ archive:
 
 # Medium: 単機能実装の中期計画（1ブランチ = 1playbook）
 medium:
-  file: plan/active/playbook-trinity-validation.md
-  exists: true
-  goal: 13テストケースによる三位一体アーキテクチャの実動作検証
+  file: null
+  exists: false
+  goal: null  # playbook-system-improvements 完了・アーカイブ済み
 
 # Micro: セッション単位の作業（playbook の 1 Phase）
 micro:
-  phase: p12
-  name: 合意プロセス（Consent Protocol）の実装
-  status: done
+  phase: null
+  name: null
+  status: idle  # 次タスク待ち
 
 # 上位計画参照（.archive/ に退避済み、必要時のみ復元）
 upper_plans:
@@ -134,36 +134,30 @@ playbook: null  # テンプレートは pending のまま（正常）
 ## layer: product
 
 ```yaml
-state: state_update
-sub: trinity-validation-complete
-playbook: plan/active/playbook-trinity-validation.md
+state: idle
+sub: system-improvements-complete
+playbook: null
 ```
 
 ### 概要
 > ユーザーが実際にプロダクトを開発するためのレイヤー。
 > setup 完了後、plan/project.md を参照して TDD で開発。
-> **Issue #11: ロールバック機能 - p1 設計フェーズ**
+> **playbook-system-improvements 完了。次タスク待ち。**
 
 ---
 
 ## goal
 
 ```yaml
-phase: p12
-current_phase: 合意プロセス（Consent Protocol）の実装
-task: 三位一体アーキテクチャの実動作検証 (playbook-trinity-validation)
-assignee: claude
+phase: idle
+current_phase: null
+task: null
+assignee: null
 
-done_criteria:
-  - 三位一体アーキテクチャが全確認事項に対応していることを実証
-  - 13テストケース全て PASS
-  - ユーザープロンプト群に対して同一ワークフロー発火を実証
-  - project.md と playbook の相互監視が機能することを実証
-  - TDD と報酬詐欺防止の5層防御が実装・動作することを実証
-  - 入力→処理→出力フローが完全につながっていることをログで証明
+done_criteria: []  # 次タスク待ち
 ```
 
-> **確認事項 #1, #5, #7, #8, #9, #11 に対応。実装完了 → 実動作検証へ移行。**
+> **playbook-system-improvements 完了・アーカイブ済み。次のユーザー指示を待機中。**
 
 ---
 
@@ -200,7 +194,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-09 04:41:17
+last_start: 2025-12-09 12:53:59
 last_end: 2025-12-09 02:00:00
 uncommitted_warning: false
 ```
@@ -222,6 +216,7 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-09 | **playbook-system-improvements 完了・アーカイブ**: 全10Phase完了。.archive/plan/ に退避。次タスク待ち。 |
 | 2025-12-09 | **playbook 完了**: playbook-trinity-validation 全 12 Phase 完了。三位一体アーキテクチャ検証完了。 |
 | 2025-12-09 | **p12 完了**: 合意プロセス設計 PASS (critic 1回目)。consent-guard.sh 作成。設計フェーズ完了。 |
 | 2025-12-09 | **p11 完了**: ドキュメント・学習資料の整備 PASS (critic 1回目)。docs/test-results.md 作成。p12 開始。 |
