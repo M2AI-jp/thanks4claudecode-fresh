@@ -114,6 +114,76 @@ on_success_after_failure:
   3. 同種の問題への対策を一般化
 ```
 
+## 過去 playbook 参照機能（確認事項 #8 対応）
+
+> 中断時に**自動で**以前の playbook を参照し、過去の教訓を活用する。
+
+### アーカイブ構造
+
+```yaml
+location: .archive/plan/
+contents:
+  - playbook-*.md: 完了または中断した playbook
+  - vision.md, roadmap.md: 上位計画
+  - test-history.md: テスト履歴
+```
+
+### 参照トリガー
+
+```yaml
+triggers:
+  - Phase が行き詰まったとき
+  - critic FAIL が連続したとき
+  - 同種のタスクを開始するとき
+  - エラーが繰り返されるとき
+```
+
+### 参照手順
+
+```yaml
+on_phase_block:
+  1. 現在の Phase 名と done_criteria を取得
+  2. .archive/plan/playbook-*.md を検索
+  3. 類似の Phase 名または done_criteria を持つ playbook を特定:
+     grep -l "類似キーワード" .archive/plan/playbook-*.md
+  4. 該当 playbook の evidence / known_issues を参照
+  5. 「過去の教訓」として出力:
+     - 成功パターン: 何が効果的だったか
+     - 失敗パターン: 何を避けるべきか
+     - workaround: 代替手段
+
+on_similar_task:
+  1. 新しい playbook のタスク名を取得
+  2. .archive/plan/ で類似のタスクを検索
+  3. 過去の所要時間、問題点、解決策を参照
+  4. 計画に反映
+```
+
+### 参照出力フォーマット
+
+```yaml
+past_reference:
+  source: .archive/plan/playbook-xxx.md
+  phase: p3
+  similarity: "done_criteria に類似の項目あり"
+  lessons:
+    - success: "テスト駆動で evidence を先に収集"
+    - failure: "シミュレーションのみで PASS は NG"
+    - workaround: "直接スクリプト実行で検証"
+```
+
+### 自動参照の実装
+
+```yaml
+implementation:
+  hook: session-start.sh 拡張（オプション）
+  trigger: phase_block 検出時
+  action:
+    1. Read: .archive/plan/playbook-*.md
+    2. Grep: 現在の Phase キーワード
+    3. 該当あれば「過去の教訓」セクションを出力
+```
+
 ## 失敗ログの例
 
 ```json

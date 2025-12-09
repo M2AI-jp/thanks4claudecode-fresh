@@ -117,6 +117,18 @@
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/prompt-guard.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "*",
@@ -149,6 +161,18 @@
             "type": "command",
             "command": "bash .claude/hooks/session-end.sh",
             "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/stop-summary.sh",
+            "timeout": 3000
           }
         ]
       }

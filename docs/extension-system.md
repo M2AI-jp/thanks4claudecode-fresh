@@ -4,9 +4,6 @@
 >
 > Sources:
 > - https://code.claude.com/docs/ja/hooks
-> - https://code.claude.com/docs/ja/sub-agents
-> - https://code.claude.com/docs/ja/skills
-> - https://code.claude.com/docs/ja/slash-commands
 > - https://code.claude.com/docs/ja/plugins-reference
 
 ---
