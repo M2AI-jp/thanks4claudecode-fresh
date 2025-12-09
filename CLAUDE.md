@@ -333,6 +333,16 @@ Phase 完了時の自動コミット★直接実行（git-ops.md 参照）:
      - `git status --porcelain` で未コミット変更を確認
      - 変更あり → `git add -A && git commit -m "feat: {playbook 名} 完了"`
      - 変更なし → スキップ
+  0.5. 完了 playbook のアーカイブ★直接実行:
+     - archive-playbook.sh の提案が出力されている場合
+     - 以下を実行:
+       ```bash
+       mkdir -p .archive/plan
+       mv plan/active/playbook-{name}.md .archive/plan/
+       ```
+     - state.md の active_playbooks.{layer} を null に更新
+     - 注意: アーカイブ前に git add/commit を完了すること
+     - 参照: docs/archive-operation-rules.md
   1. 自動マージ★直接実行:
      ```bash
      BRANCH=$(git branch --show-current)

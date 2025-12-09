@@ -4,10 +4,19 @@
 # 発火条件: PostToolUse:Edit
 # 目的: playbook の全 Phase が done になったら .archive/plan/ に移動を提案
 #
-# 設計思想:
+# 設計思想（2025-12-09 改善）:
 #   - playbook 完了を自動検出
-#   - 移動は提案のみ（自動実行しない）
-#   - ユーザー判断でアーカイブを実行
+#   - 移動は提案のみ（自動実行しない）★安全側設計
+#   - Claude が POST_LOOP で実行（CLAUDE.md 行動 0.5）
+#   - 現在進行中の playbook（state.md active_playbooks）はアーカイブ対象外
+#
+# 実行経路:
+#   1. playbook を Edit → このスクリプト発火
+#   2. 全 Phase done を検出 → 「アーカイブ推奨」を出力
+#   3. Claude が POST_LOOP に入る
+#   4. POST_LOOP 行動 0.5 で mv 実行
+#
+# 参照: docs/archive-operation-rules.md
 
 set -e
 
@@ -53,6 +62,17 @@ fi
 # 全 Phase が done でない場合はスキップ
 if [ "$DONE_PHASES" -ne "$TOTAL_PHASES" ]; then
     exit 0
+fi
+
+# 現在進行中の playbook（state.md active_playbooks）かチェック
+# 進行中ならアーカイブ提案しない（安全策）
+if grep -q "$(basename "$FILE_PATH")" state.md 2>/dev/null; then
+    # active_playbooks に含まれているか確認
+    ACTIVE_SECTION=$(awk '/^## active_playbooks/,/^## [^a]/' state.md 2>/dev/null || true)
+    if echo "$ACTIVE_SECTION" | grep -q "$(basename "$FILE_PATH")"; then
+        # 現在進行中なのでスキップ（完了後に再度発火する）
+        exit 0
+    fi
 fi
 
 # 相対パスに変換

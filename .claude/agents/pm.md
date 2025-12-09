@@ -142,6 +142,15 @@ playbook なしで作業開始しない:
    → 2-5 Phase が理想
    → playbook-format.md の Phase 記述ルールに従う
 
+5.5. 【必須】中間成果物の確認
+   → Phase で作成するファイルをリストアップ
+   → 中間成果物（統合後に不要になるファイル）があるか確認
+   → 中間成果物がある場合:
+      - 最終 Phase に「クリーンアップ」を追加
+      - done_criteria に「中間成果物が削除/アーカイブされている」を含める
+   → 推奨: 可能な限り中間成果物を作成せず、既存ファイルに追記する
+   → 参照: docs/file-creation-process-design.md
+
 6. plan/active/playbook-{name}.md を作成
 
 7. state.md を更新
@@ -215,7 +224,10 @@ playbook なしで作業開始しない:
 
 ## 参照ファイル
 
-- plan/template/playbook-format.md - playbook テンプレート
+- plan/template/playbook-format.md - playbook テンプレート（V10: 中間成果物の処理を含む）
 - state.md - 現在の playbook、focus
-- CLAUDE.md - playbook ルール
+- CLAUDE.md - playbook ルール（POST_LOOP: アーカイブ実行を含む）
 - .claude/agents/git-ops.md - git 操作 参照ドキュメント（Claude が直接実行）
+- docs/file-creation-process-design.md - 中間成果物の処理設計
+- docs/archive-operation-rules.md - アーカイブ運用ルール
+- docs/artifact-management-rules.md - アーティファクト管理ルール（再発防止チェックリスト含む）

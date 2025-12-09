@@ -214,7 +214,11 @@ done_when:
     2. CLAUDE.md POST_LOOP セクションでアーカイブについて記載されていることを確認
     3. docs/archive-operation-rules.md が存在することを確認
     4. ロールバック手順を試行（シミュレーション可）
-  status: pending
+  evidence:
+    - archive-playbook.sh 改善: 設計思想コメント更新、active_playbooks チェック追加
+    - docs/archive-operation-rules.md 作成（判定基準・手順・ロールバック）
+    - CLAUDE.md POST_LOOP に「行動 0.5: アーカイブ実行」追加
+  status: done
 
 - id: p8
   name: 改善案実装 - ファイル作成プロセスの改善と自動検証
@@ -233,7 +237,12 @@ done_when:
     1. pm.md を読んで改善内容を確認
     2. 新 playbook を作成するたびに phase-*.md が生成されないことを確認（シミュレーション）
     3. Hook がある場合、実際に発火することを確認
-  status: pending
+  evidence:
+    - pm.md に「5.5. 中間成果物の確認」ステップを追加
+    - playbook-format.md に「中間成果物の処理」セクションを追加（V10）
+    - pm.md の参照ファイルに設計ドキュメントを追加
+    - Hook 作成は見送り（警告のみのため優先度低）
+  status: done
 
 - id: p9
   name: 検証フェーズ - 仕組み健全性の確認
@@ -254,7 +263,13 @@ done_when:
     2. 各ファイルが参照される経路を確認
     3. plan/active/ に新しい完了済み playbook を手動作成して、アーカイブプロセスが機能するか確認
     4. 検証結果を docs/artifact-health-verification.md に記載
-  status: pending
+  evidence:
+    - docs/artifact-health-verification.md 作成
+    - plan/active/ に進行中 playbook のみ存在（stray files なし）
+    - アーカイブプロセス: Hook + POST_LOOP 連携確認済み
+    - ファイル作成プロセス: pm.md + playbook-format.md 更新済み
+    - 総合判定: PASS
+  status: done
 
 - id: p10
   name: 文書化 - 再発防止ルール
@@ -274,7 +289,12 @@ done_when:
     1. docs/artifact-management-rules.md が存在することを確認
     2. CLAUDE.md で該当セクションが存在することを確認
     3. pm.md の playbook 作成手順に「ファイル生成チェック」が含まれていることを確認
-  status: pending
+  evidence:
+    - docs/artifact-management-rules.md 作成
+    - CLAUDE.md POST_LOOP に行動 0.5（アーカイブ）追加済み
+    - pm.md にステップ 5.5（中間成果物確認）と参照ドキュメント追加済み
+    - playbook-format.md に中間成果物セクション追加済み（V10）
+  status: done
 
 ```
 
