@@ -29,7 +29,7 @@ mode: admin                  # strict | trusted | developer | admin
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-trinity-validation.md
+product:          plan/active/playbook-system-improvements.md
 ```
 
 ---
@@ -66,15 +66,15 @@ archive:
 
 # Medium: 単機能実装の中期計画（1ブランチ = 1playbook）
 medium:
-  file: plan/active/playbook-trinity-validation.md
+  file: plan/active/playbook-system-improvements.md
   exists: true
-  goal: 13テストケースによる三位一体アーキテクチャの実動作検証
+  goal: test-results.md の改善項目 + エラー修正を一括処理
 
 # Micro: セッション単位の作業（playbook の 1 Phase）
 micro:
-  phase: p12
-  name: 合意プロセス（Consent Protocol）の実装
-  status: done
+  phase: p5
+  name: check-main-branch.sh 設計検証
+  status: in_progress
 
 # 上位計画参照（.archive/ に退避済み、必要時のみ復元）
 upper_plans:
@@ -134,9 +134,9 @@ playbook: null  # テンプレートは pending のまま（正常）
 ## layer: product
 
 ```yaml
-state: state_update
-sub: trinity-validation-complete
-playbook: plan/active/playbook-trinity-validation.md
+state: implementing
+sub: system-improvements-p5
+playbook: plan/active/playbook-system-improvements.md
 ```
 
 ### 概要
@@ -149,18 +149,19 @@ playbook: plan/active/playbook-trinity-validation.md
 ## goal
 
 ```yaml
-phase: p12
-current_phase: 合意プロセス（Consent Protocol）の実装
-task: 三位一体アーキテクチャの実動作検証 (playbook-trinity-validation)
+phase: p5
+current_phase: check-main-branch.sh 設計検証
+task: システム改善タスク一括処理 (playbook-system-improvements)
 assignee: claude
 
 done_criteria:
-  - 三位一体アーキテクチャが全確認事項に対応していることを実証
-  - 13テストケース全て PASS
-  - ユーザープロンプト群に対して同一ワークフロー発火を実証
-  - project.md と playbook の相互監視が機能することを実証
-  - TDD と報酬詐欺防止の5層防御が実装・動作することを実証
-  - 入力→処理→出力フローが完全につながっていることをログで証明
+  - stop-check.sh エラー解消
+  - check-coherence.sh が settings.json に登録され自動発火
+  - depends_on チェック Hook が実装・登録
+  - consent-guard.sh が session-start.sh と統合
+  - scope-guard.sh に strict モード追加
+  - playbook アーカイブ Hook 実装
+  - Low Priority 項目は設計ドキュメント完成
 ```
 
 > **確認事項 #1, #5, #7, #8, #9, #11 に対応。実装完了 → 実動作検証へ移行。**
@@ -200,7 +201,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-09 04:41:17
+last_start: 2025-12-09 12:28:23
 last_end: 2025-12-09 02:00:00
 uncommitted_warning: false
 ```

@@ -47,10 +47,12 @@ WS="$(pwd)"
 
 # === 初期化ペンディングフラグの設定 ===
 # init-guard.sh が必須ファイル Read 完了まで他ツールをブロックするために使用
+# consent-guard.sh が [理解確認] 完了まで Edit/Write をブロックするために使用
 INIT_DIR=".claude/.session-init"
 rm -rf "$INIT_DIR" 2>/dev/null || true
 mkdir -p "$INIT_DIR"
 touch "$INIT_DIR/pending"
+touch "$INIT_DIR/consent"  # consent-guard.sh 用 - [理解確認] 完了で削除
 
 # === state.md から情報抽出 ===
 [ ! -f "state.md" ] && echo "[WARN] state.md not found" && exit 0
