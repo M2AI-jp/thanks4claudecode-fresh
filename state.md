@@ -74,7 +74,7 @@ expert:
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-system-completion.md
+product:          null  # playbook-system-completion 完了・アーカイブ済み (2025-12-09)
 ```
 
 ---
@@ -111,15 +111,15 @@ archive:
 
 # Medium: 単機能実装の中期計画（1ブランチ = 1playbook）
 medium:
-  file: plan/active/playbook-system-completion.md
-  exists: true
-  goal: システム完成度向上 - 品質の一貫性と運用効率化
+  file: null
+  exists: false
+  goal: null  # 次タスク待ち
 
 # Micro: セッション単位の作業（playbook の 1 Phase）
 micro:
-  phase: 4
-  name: playbook 完了
-  status: done
+  phase: null
+  name: 次タスク待ち
+  status: idle
 
 # 上位計画参照（.archive/ に退避済み、必要時のみ復元）
 upper_plans:
@@ -181,7 +181,7 @@ playbook: null  # テンプレートは pending のまま（正常）
 ```yaml
 state: implementing
 sub: system-completion
-playbook: plan/active/playbook-system-completion.md
+playbook: null  # playbook-system-completion 完了・アーカイブ済み
 ```
 
 ### 概要
@@ -194,20 +194,16 @@ playbook: plan/active/playbook-system-completion.md
 ## goal
 
 ```yaml
-phase: done
-current_phase: 4
-task: playbook-system-completion 全 Phase 完了
-assignee: claude_code
+phase: idle
+current_phase: null
+task: 次タスク待ち
+assignee: null
 
-done_criteria:
-  - Phase 1: タスク開始プロセス標準化 - critic PASS
-  - Phase 2: git 自動化 - critic PASS
-  - Phase 3: 全ファイル棚卸しドキュメント作成 - critic PASS
-  - Phase 4: setup 完成 - critic PASS
+done_criteria: []
 ```
 
-> **playbook-system-completion 完了。**
-> 全 4 Phase critic PASS。POST_LOOP 実行中。
+> **playbook-system-completion 完了・アーカイブ済み。**
+> 全 4 Phase critic PASS。次の指示を待ちます。
 
 ---
 
@@ -266,6 +262,7 @@ uncommitted_warning: true
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-09 | **playbook-system-completion 完了・アーカイブ**: 全4Phase完了。タスク標準化、git自動化、ファイル棚卸し、setup完成。main マージ済み。 |
 | 2025-12-09 | **playbook-system-completion 開始**: Phase 1 タスク開始プロセス標準化。project.md に system_completion セクション追加。 |
 | 2025-12-09 | **playbook-ecosystem-improvements 完了**: 全5Phase完了。setup CodeRabbit/Codex選択、Linter/Formatter実装、CLAUDE.md更新、学習モード動作確認、セッションサマリーアーカイブ機能。 |
 | 2025-12-09 | **playbook-engineering-ecosystem 完了**: 全6Phase完了。CodeRabbit評価、Linter/Formatter統合、TDD LOOP静的解析、学習モード、ShellCheck導入、ドキュメント更新。 |

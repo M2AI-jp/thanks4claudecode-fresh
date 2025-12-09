@@ -739,7 +739,7 @@ philosophy: |
 done_when:
   dw_sc_1_task_standardization:
     name: タスク開始プロセス標準化
-    status: not_achieved
+    status: achieved  # playbook-system-completion Phase 1 完了 (2025-12-09)
     description: |
       全てのタスク開始は project.md からの導出を経由する。
       playbook から直接組み立てたり、単一タスクで開始したりするバラつきを解消。
@@ -753,7 +753,7 @@ done_when:
 
   dw_sc_2_git_automation:
     name: git 自動化
-    status: not_achieved
+    status: achieved  # playbook-system-completion Phase 2 完了 (2025-12-09)
     description: |
       コミット、マージ、ブランチ作成を SubAgent で自動化。
       Phase 完了時の自動コミット、playbook 完了時の自動マージ。
@@ -768,7 +768,7 @@ done_when:
 
   dw_sc_3_file_inventory:
     name: 全ファイル棚卸し
-    status: not_achieved
+    status: achieved  # playbook-system-completion Phase 3 完了 (2025-12-09)
     description: |
       全ファイルの存在理由を明確化。
       削除候補・統合候補を詳細な理由付きでドキュメント化。
@@ -782,7 +782,7 @@ done_when:
 
   dw_sc_4_setup_completion:
     name: setup 完成
-    status: not_achieved
+    status: achieved  # playbook-system-completion Phase 4 完了 (2025-12-09)
     description: |
       現在の機能増加を反映した setup の完成。
       このリポジトリ自体を参照可能なテンプレートとして整備。
