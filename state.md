@@ -78,7 +78,7 @@ expert:
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-context-architecture.md
+product:          null                       # context-architecture 完了・アーカイブ済み
 ```
 
 ---
@@ -115,15 +115,15 @@ archive:
 
 # Medium: 単機能実装の中期計画（1ブランチ = 1playbook）
 medium:
-  file: plan/active/playbook-context-architecture.md
-  exists: true
-  goal: コンテキストを機能として管理し、リポジトリの完成形を実現する
+  file: null                                 # context-architecture 完了
+  exists: false
+  goal: null
 
 # Micro: セッション単位の作業（playbook の 1 Phase）
 micro:
-  phase: p1
-  name: state.md 機能分離
-  status: implementing
+  phase: null
+  name: null
+  status: idle
 
 # 上位計画参照（.archive/ に退避済み、必要時のみ復元）
 upper_plans:
@@ -183,35 +183,30 @@ playbook: null  # テンプレートは pending のまま（正常）
 ## layer: product
 
 ```yaml
-state: implementing
-sub: context-architecture-p1
-playbook: plan/active/playbook-context-architecture.md
+state: idle
+sub: context-architecture-complete
+playbook: null
 ```
 
 ### 概要
 > ユーザーが実際にプロダクトを開発するためのレイヤー。
 > setup 完了後、plan/project.md を参照して TDD で開発。
-> playbook-context-architecture 進行中（p1: state.md 機能分離）。
+> playbook-context-architecture 完了。リポジトリ完成形。
 
 ---
 
 ## goal
 
 ```yaml
-phase: p6
-current_phase: 機能検証
-task: 全機能が正常に動作することを確認
-assignee: claudecode
+phase: null
+current_phase: null
+task: null
+assignee: null
 
-done_criteria:
-  - 全機能が正常に動作している
-  - Skill 化した機能が正しく参照される
-  - Hook が正常に発火する
-  - SubAgent が正常に呼び出される
-  - critic PASS
+done_criteria: []
 ```
 
-> **p6 実行中。** 最終検証と critic PASS を取得中。
+> **playbook-context-architecture 完了。** リポジトリ完成形。次のタスクを待機中。
 
 ---
 
@@ -272,4 +267,4 @@ uncommitted_warning: false
 
 | 日時 | 内容 |
 |------|------|
-| 2025-12-10 | **playbook-context-architecture p1**: state.md 機能分離。履歴を .claude/context/history.md に移動。 |
+| 2025-12-10 | **playbook-context-architecture 完了**: p1-p6 全完了。リポジトリ完成形。main マージ。 |
