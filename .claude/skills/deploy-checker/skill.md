@@ -1,3 +1,8 @@
+---
+name: deploy-checker
+description: デプロイ準備・検証専門スキル。git push 前の最終確認、環境変数チェック、ビルドチェック、セキュリティチェックを実行する。
+---
+
 # deploy-checker
 
 > **デプロイ準備・検証専門スキル**

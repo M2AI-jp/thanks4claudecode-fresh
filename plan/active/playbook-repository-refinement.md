@@ -130,7 +130,7 @@ done_when:
   test_method: |
     1. .claude/skills/*/skill.md の frontmatter を確認
     2. 全て有効な形式であることを確認
-  status: pending
+  status: done
 
 - id: p6
   name: 検証
@@ -297,7 +297,27 @@ p4:
     - session-end.sh
     - session-start.sh
     - stop-summary.sh
-p5: {}
+p5:
+  action: frontmatter 追加（4件）
+  updated_skills:
+    - deploy-checker: "frontmatter 追加（name, description）"
+    - frontend-design: "frontmatter 追加（name, description）"
+    - lint-checker: "frontmatter 追加（name, description）"
+    - test-runner: "frontmatter 追加（name, description）"
+  verification:
+    total_skills: 9
+    with_frontmatter: 9
+    all_start_with_delimiter: true
+  complete_list:
+    - context-management
+    - deploy-checker
+    - execution-management
+    - frontend-design
+    - learning
+    - lint-checker
+    - plan-management
+    - state
+    - test-runner
 p6: {}
 ```
 

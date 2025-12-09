@@ -194,17 +194,19 @@ playbook: plan/active/playbook-repository-refinement.md
 ## goal
 
 ```yaml
-phase: p5
-current_phase: p5
+phase: p6
+current_phase: p6
 task: playbook-repository-refinement
 assignee: claudecode
 
 done_criteria:
-  - 全 Skill に有効な frontmatter が存在する
-  - または不要な Skill が削除されている
+  - 新規セッションでエラーなし
+  - admin モードで適切にバイパス
+  - 全 Hook が正常発火
+  - critic PASS
 ```
 
-> **playbook-repository-refinement p5 進行中。** 不完全 Skills の処理。
+> **playbook-repository-refinement p6 進行中。** 最終検証。
 
 ---
 
