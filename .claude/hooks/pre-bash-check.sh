@@ -29,10 +29,12 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 
 # === HARD_BLOCK ファイルへのアクセス検出 ===
 # これらのファイルは security_mode に関係なく常に保護
+# CONTEXT.md は .archive に退避済み（開発履歴）
 HARD_BLOCK_FILES=(
-    "CONTEXT.md"
     "CLAUDE.md"
     ".claude/protected-files.txt"
+    ".claude/.session-init/consent"
+    ".claude/.session-init/pending"
 )
 
 # BLOCK ファイル（strict モードでのみ保護）
@@ -42,7 +44,7 @@ BLOCK_FILES=(
     "plan/template/"
 )
 
-# 書き込み系パターン
+# 書き込み・削除系パターン
 WRITE_PATTERNS=(
     "sed -i"
     "sed -i ''"
@@ -54,6 +56,9 @@ WRITE_PATTERNS=(
     "tee "
     " > "
     " >> "
+    "rm "
+    "rm -f"
+    "rm -rf"
 )
 
 # HARD_BLOCK チェック（常時ブロック）
@@ -121,7 +126,31 @@ if [ "$SECURITY_MODE" = "strict" ]; then
 fi
 
 # === git commit チェック ===
-if [[ "$COMMAND" == *"git commit"* ]] || [[ "$COMMAND" == *"git "* && "$COMMAND" == *" commit"* ]]; then
+# 注意: "commit" を含む文字列（コメント等）で誤発動しないよう、パターンを厳密に
+# パターン: "git commit" で始まる、または "&&" や ";" の後に "git commit" がある
+GIT_COMMIT_PATTERN='^git[[:space:]]+commit|&&[[:space:]]*git[[:space:]]+commit|;[[:space:]]*git[[:space:]]+commit'
+if [[ "$COMMAND" =~ $GIT_COMMIT_PATTERN ]]; then
+    # 回帰テストを実行（stdout 出力: stderr は Claude Code にエラーと解釈される）
+    if [ -f ".claude/tests/regression-test.sh" ]; then
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  🧪 回帰テスト実行中..."
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        if ! bash .claude/tests/regression-test.sh; then
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo -e "  ${RED}❌ 回帰テスト失敗 - コミットをブロック${NC}"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "回帰テストが失敗しました。"
+            echo "問題を修正してから再度コミットしてください。"
+            echo ""
+            exit 1
+        fi
+        echo ""
+        echo -e "  ✅ 回帰テスト PASS"
+        echo ""
+    fi
+
     # 整合性チェックを実行
     bash .claude/hooks/check-coherence.sh
 

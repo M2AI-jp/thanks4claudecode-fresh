@@ -184,7 +184,7 @@ user（人間）:
 ```yaml
 Phase 完了時に確認すること:
   - 新規ファイルが保護対象に干渉していないか
-  - 既存の CONTEXT.md / CLAUDE.md を意図せず変更していないか
+  - 既存の CLAUDE.md を意図せず変更していないか
   - state.md との整合性が保たれているか
 
 done_criteria に含めるべき項目:

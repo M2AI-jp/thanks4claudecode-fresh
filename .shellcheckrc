@@ -1,0 +1,28 @@
+# .shellcheckrc - ShellCheck 設定ファイル
+#
+# SC コード別対応方針:
+#   修正必須 (error):
+#     - SC2053: Quote the right-hand side of == in [[ ]] (バグの原因)
+#     - SC2086: Double quote to prevent globbing (セキュリティ)
+#
+#   警告 (warning):
+#     - SC2155: Declare and assign separately (可読性優先で許容する場合あり)
+#     - SC2254: Quote expansions in case patterns (意図的なglob使用は許容)
+#
+#   無視 (disable):
+#     - SC2034: Appears unused (出力用変数やテンプレートで使用)
+#     - SC2011: Use 'find' instead of 'ls' (短いスクリプトでは許容)
+#
+# 運用方針:
+#   - 新規スクリプトは全 warning をクリアすること
+#   - 既存スクリプトは段階的に修正
+#   - 意図的な無視は # shellcheck disable=SCXXXX で明示
+
+# グローバル無視（プロジェクト全体）
+disable=SC2034,SC2011
+
+# 外部ソース許可
+external-sources=true
+
+# シェル指定
+shell=bash

@@ -23,77 +23,56 @@ if [ ! -f "state.md" ]; then
     exit 2
 fi
 
-# session タイプを取得
-SESSION=$(grep -A5 "## focus" state.md | grep "session:" | sed 's/.*session: *//' | sed 's/ *#.*//')
-echo -e "  Session: ${GREEN}$SESSION${NC}"
-
-# discussion モードなら整合性チェックをスキップ
-if [ "$SESSION" = "discussion" ]; then
-    echo -e "  ${YELLOW}[SKIP]${NC} session=discussion, coherence check skipped"
-    exit 0
-fi
-
 # focus.current を取得
 CURRENT=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*current: *//' | sed 's/ *#.*//')
 echo -e "  Focus: ${GREEN}$CURRENT${NC}"
 echo ""
 
-# 全レイヤーをチェック
-for LAYER in "plan-template" "workspace" "setup"; do
-    echo -e "  --- Layer: $LAYER ---"
+# active_playbooks セクションから全て のplaybook を取得してチェック
+echo -e "  --- Active Playbooks Check ---"
 
-    # レイヤーの state を取得
-    LAYER_STATE=$(awk "/## layer: $LAYER/,/^## [^l]/" state.md | grep "state:" | head -1 | sed 's/.*state: *//' | sed 's/ *#.*//')
+# active_playbooks セクションを抽出（macOS 互換、YAML コードブロック除外）
+ACTIVE_PLAYBOOKS=$(awk '/## active_playbooks/,/^## [^a]/' state.md | tail -n +2 | sed '$d' | grep -v '^\`\`\`' | grep -v '^---$' | grep -v '^$')
 
-    # playbook を取得
-    PLAYBOOK=$(awk "/## layer: $LAYER/,/^## [^l]/" state.md | grep "playbook:" | head -1 | sed 's/.*playbook: *//' | sed 's/ *#.*//')
+if [ -z "$ACTIVE_PLAYBOOKS" ]; then
+    echo -e "    ${YELLOW}[SKIP]${NC} active_playbooks セクション not found"
+else
+    # active_playbooks 内の各行を処理（key: value 形式）
+    while IFS=':' read -r KEY VALUE; do
+        KEY=$(echo "$KEY" | tr -d ' ')
+        VALUE=$(echo "$VALUE" | sed 's/^ *//' | sed 's/ *#.*//')
 
-    if [ -z "$LAYER_STATE" ]; then
-        echo -e "    ${YELLOW}[SKIP]${NC} Layer not found in state.md"
-        continue
-    fi
-
-    echo -e "    State: $LAYER_STATE"
-
-    # playbook がある場合、phase の status と state を比較
-    if [ -n "$PLAYBOOK" ] && [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
-        echo -e "    Playbook: $PLAYBOOK"
-
-        # playbook 内の全 phase の status をカウント
-        DONE_COUNT=$(grep -E "status: done" "$PLAYBOOK" 2>/dev/null | wc -l | tr -d ' ')
-        PENDING_COUNT=$(grep -E "status: pending" "$PLAYBOOK" 2>/dev/null | wc -l | tr -d ' ')
-        IN_PROGRESS_COUNT=$(grep -E "status: in_progress" "$PLAYBOOK" 2>/dev/null | wc -l | tr -d ' ')
-
-        echo -e "    Phases: done=$DONE_COUNT, in_progress=$IN_PROGRESS_COUNT, pending=$PENDING_COUNT"
-
-        # state と playbook の整合性チェック
-        if [ "$LAYER_STATE" = "pending" ] && [ "$DONE_COUNT" -gt 0 ]; then
-            echo -e "    ${RED}[ERROR]${NC} state=pending but playbook has done phases"
-            ERRORS=$((ERRORS + 1))
+        if [ -z "$KEY" ] || [ "$VALUE" = "null" ]; then
+            continue
         fi
 
-        if [ "$LAYER_STATE" = "done" ] && [ "$PENDING_COUNT" -gt 0 ]; then
-            echo -e "    ${RED}[ERROR]${NC} state=done but playbook has pending phases"
-            ERRORS=$((ERRORS + 1))
-        fi
+        echo -e "    Playbook: $VALUE (layer=$KEY)"
 
-        if [ "$LAYER_STATE" = "implementing" ] && [ "$IN_PROGRESS_COUNT" -eq 0 ] && [ "$PENDING_COUNT" -eq 0 ]; then
-            echo -e "    ${YELLOW}[WARN]${NC} state=implementing but no in_progress/pending phases"
+        # playbook ファイルが存在するかチェック
+        if [ -f "$VALUE" ]; then
+            # playbook 内の全 phase の status をカウント
+            DONE_COUNT=$(grep -E "status: done" "$VALUE" 2>/dev/null | wc -l | tr -d ' ')
+            PENDING_COUNT=$(grep -E "status: pending" "$VALUE" 2>/dev/null | wc -l | tr -d ' ')
+            IN_PROGRESS_COUNT=$(grep -E "status: in_progress" "$VALUE" 2>/dev/null | wc -l | tr -d ' ')
+
+            echo -e "      Phases: done=$DONE_COUNT, in_progress=$IN_PROGRESS_COUNT, pending=$PENDING_COUNT"
+        else
+            echo -e "      ${YELLOW}[WARN]${NC} Playbook file not found: $VALUE"
         fi
-    fi
-    echo ""
-done
+    done <<< "$ACTIVE_PLAYBOOKS"
+fi
+echo ""
 
 # focus.current のレイヤーの詳細チェック
 echo -e "  --- Focus Layer Detail: $CURRENT ---"
 
-# sub を取得
-SUB=$(awk "/## layer: $CURRENT/,/^## [^l]/" state.md | grep "sub:" | head -1 | sed 's/.*sub: *//' | sed 's/ *#.*//')
-echo -e "    Sub: $SUB"
-
 # goal.phase を取得
-GOAL_PHASE=$(grep -A5 "## goal" state.md | grep "phase:" | head -1 | sed 's/.*phase: *//' | sed 's/ *#.*//')
+GOAL_PHASE=$(grep -A10 "## goal" state.md | grep "phase:" | head -1 | sed 's/.*phase: *//' | sed 's/ *#.*//')
 echo -e "    Goal phase: $GOAL_PHASE"
+
+# goal.name を取得（参考情報）
+GOAL_NAME=$(grep -A10 "## goal" state.md | grep "name:" | head -1 | sed 's/.*name: *//' | sed 's/ *#.*//')
+echo -e "    Goal: $GOAL_NAME"
 
 echo ""
 
@@ -146,14 +125,7 @@ if [ -n "$FOCUS_PLAYBOOK" ] && [ "$FOCUS_PLAYBOOK" != "null" ] && [ -f "$FOCUS_P
         echo -e "    ${YELLOW}[SKIP]${NC} Playbook has no branch constraint (initial/setup state)"
     fi
 else
-    # session=task かつ playbook=null はエラー（setup レイヤーは除外）
-    if [ "$SESSION" = "task" ] && [ "$CURRENT" != "setup" ]; then
-        echo -e "    ${RED}[ERROR]${NC} session=task but playbook=null"
-        echo -e "    → /playbook-init で playbook を作成するか、session を discussion に変更"
-        ERRORS=$((ERRORS + 1))
-    else
-        echo -e "    ${YELLOW}[SKIP]${NC} No playbook to check branch against"
-    fi
+    echo -e "    ${YELLOW}[SKIP]${NC} No playbook to check branch against"
 fi
 
 echo ""
@@ -176,8 +148,9 @@ else
     for FILE in $STAGED_FILES; do
         echo -e "      - $FILE"
 
-        # always_editable: state.md, README.md, CONTEXT.md
-        if [[ "$FILE" == "state.md" ]] || [[ "$FILE" == "README.md" ]] || [[ "$FILE" == "CONTEXT.md" ]]; then
+        # always_editable: state.md, README.md
+        # CONTEXT.md は .archive に退避済み
+        if [[ "$FILE" == "state.md" ]] || [[ "$FILE" == "README.md" ]]; then
             continue
         fi
 
@@ -204,6 +177,11 @@ else
                     WARNINGS=$((WARNINGS + 1))
                 fi
                 ;;
+            "product")
+                # product: 全ファイル editable（本番開発モード）
+                # .claude/**, plan/**, docs/**, src/** など全て許可
+                # 保護対象ファイルは check-protected-edit.sh で別途チェック
+                ;;
             *)
                 # 未知のレイヤー
                 echo -e "        ${YELLOW}[WARN]${NC} Unknown focus: $CURRENT"
@@ -213,33 +191,19 @@ else
 fi
 
 # ========================================
-# History 更新検知（state.md sub vs CONTEXT.md History）
+# Version 情報確認（参考情報）
 # ========================================
-echo -e "  --- History Update Detection ---"
+echo -e "  --- Version Information ---"
 
-# state.md の sub からバージョン番号を抽出 (例: v13-system-integrity → v13)
-VERSION=$(echo "$SUB" | grep -oE "^v[0-9]+" || echo "")
-
-if [ -n "$VERSION" ]; then
-    echo -e "    Current version: $VERSION"
-
-    # CONTEXT.md に対応する History エントリがあるか確認
-    if [ -f "CONTEXT.md" ]; then
-        # 表形式（| v15 |）またはヘッダ形式（### v15:）を検出
-        HISTORY_ENTRY=$(grep -E "(^### $VERSION:|^\| $VERSION \|)" CONTEXT.md 2>/dev/null || echo "")
-
-        if [ -z "$HISTORY_ENTRY" ]; then
-            echo -e "    ${YELLOW}[WARN]${NC} CONTEXT.md History に $VERSION がありません"
-            echo -e "    → 変遷（History）セクションに追加してください"
-            WARNINGS=$((WARNINGS + 1))
-        else
-            echo -e "    ${GREEN}[OK]${NC} CONTEXT.md History に $VERSION が存在"
-        fi
+# playbook の derived_from（参考情報）
+if [ -n "$FOCUS_PLAYBOOK" ] && [ -f "$FOCUS_PLAYBOOK" ]; then
+    DERIVED_FROM=$(grep -E "^derives_from:" "$FOCUS_PLAYBOOK" 2>/dev/null | head -1 | sed 's/derives_from: *//')
+    if [ -n "$DERIVED_FROM" ]; then
+        echo -e "    Derived from: $DERIVED_FROM"
     fi
-else
-    echo -e "    ${YELLOW}[SKIP]${NC} バージョン形式でない sub: $SUB"
 fi
 
+echo -e "    ${GREEN}[OK]${NC} Version check completed"
 echo ""
 
 # ========================================
@@ -322,6 +286,40 @@ if git diff --cached --name-only 2>/dev/null | grep -q "^state.md$"; then
     fi
 else
     echo -e "  ${GREEN}[SKIP]${NC} state.md not in staged files"
+fi
+
+# ==============================================================================
+# Phase 完了時の /clear リマインダー（Issue #10: 自動 /clear 判断）
+# ==============================================================================
+echo ""
+echo "--- Context Management Reminder ---"
+
+# playbook が staged にある場合、status: done への変更をチェック
+PLAYBOOK_STAGED=$(git diff --cached --name-only 2>/dev/null | grep "playbook-" || echo "")
+
+if [ -n "$PLAYBOOK_STAGED" ]; then
+    # status: done への変更を検出
+    PHASE_DONE=$(git diff --cached 2>/dev/null | grep -E "^\+.*status: done" | wc -l | tr -d ' ')
+
+    if [ "$PHASE_DONE" -gt 0 ]; then
+        # CLAUDE_VERBOSE が設定されている場合のみリマインダーを表示
+        # 通常時はメッセージを出さない（ユーザーフリクション軽減）
+        if [ -n "$CLAUDE_VERBOSE" ]; then
+            echo -e ""
+            echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+            echo -e "    📊 Phase 完了 - コンテキスト確認推奨" >&2
+            echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+            echo -e "    /context でコンテキスト使用率を確認してください。" >&2
+            echo -e "    80% 超過の場合は /clear を実行してください。" >&2
+            echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+            echo -e ""
+        fi
+        echo -e "  ${GREEN}[OK]${NC} Phase completion detected"
+    else
+        echo -e "  ${GREEN}[OK]${NC} No phase completion detected"
+    fi
+else
+    echo -e "  ${GREEN}[SKIP]${NC} No playbook in staged files"
 fi
 
 echo ""

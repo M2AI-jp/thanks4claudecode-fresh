@@ -74,20 +74,21 @@ A: 現在は Mac のみ対応しています。
 
 ```
 .
-├── CLAUDE.md           # LLM への指示（最優先）
-├── CONTEXT.md          # 設計思想（唯一の真実源）
-├── state.md            # 現在の状態（Single Source of Truth）
-├── setup/              # セットアップガイド
+├── CLAUDE.md               # LLM への指示（最優先）
+├── state.md                # 現在の状態（Single Source of Truth）
+├── architecture-*.md       # システム設計図（Mermaid）
+├── setup/                  # セットアップガイド
 │   ├── playbook-setup.md   # 環境構築フロー（Phase 0-8）
 │   └── CATALOG.md          # 技術詳細リファレンス
-├── plan/               # 計画関連
+├── plan/                   # 計画関連
+│   ├── project.md          # Macro 計画（最終目標）
 │   ├── template/           # playbook/project テンプレート
 │   └── active/             # 現在進行中の playbook
-└── .claude/            # Claude Code 拡張
+└── .claude/                # Claude Code 拡張
     ├── hooks/              # 自動実行スクリプト
     ├── agents/             # サブエージェント定義
     ├── skills/             # 専門知識（デプロイ、テスト等）
     └── commands/           # カスタムコマンド
 ```
 
-詳細は [CONTEXT.md](CONTEXT.md) を参照してください。
+詳細は [CLAUDE.md](CLAUDE.md) と [architecture-plan.md](architecture-plan.md) を参照してください。

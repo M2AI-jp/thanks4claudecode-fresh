@@ -1,3 +1,8 @@
+---
+name: lint-checker
+description: コード品質チェック専門スキル。TypeScript/JavaScript ファイルの ESLint、型チェック、コーディング規約を検証する。
+---
+
 # lint-checker
 
 > **コード品質チェック専門スキル**

@@ -19,6 +19,19 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // {}')
 
 # --------------------------------------------------
+# security.mode チェック（admin モードはバイパス）
+# --------------------------------------------------
+SECURITY_MODE=""
+if [[ -f "state.md" ]]; then
+    SECURITY_MODE=$(grep -A5 "## security" state.md | grep "mode:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//' | tr -d ' ')
+fi
+
+# admin モードは全ての制限をバイパス
+if [[ "$SECURITY_MODE" == "admin" ]]; then
+    exit 0
+fi
+
+# --------------------------------------------------
 # 必須ファイルの定義（focus 別に分岐）
 # --------------------------------------------------
 # focus を state.md から取得
@@ -27,23 +40,25 @@ if [[ -f "state.md" ]]; then
     FOCUS=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*: *//' | sed 's/ *#.*//')
 fi
 
-# focus=setup の場合、CONTEXT.md は不要（playbook-setup.md で完結）
-if [[ "$FOCUS" == "setup" ]]; then
-    REQUIRED_FILES=(
-        "state.md"
-    )
-else
-    REQUIRED_FILES=(
-        "CONTEXT.md"
-        "state.md"
-    )
-fi
+# 必須ファイル: mission.md（最上位概念）+ state.md
+# mission.md は全ての判断の基準。ユーザープロンプトに引っ張られないために必須。
+REQUIRED_FILES=(
+    "plan/mission.md"
+    "state.md"
+)
 
 # playbook は state.md から動的に取得（session-start.sh で設定済み）
+# デッドロック対策: playbook ファイルが実際に存在する場合のみ REQUIRED_FILES に追加
 if [[ -f "$INIT_DIR/required_playbook" ]]; then
     PLAYBOOK=$(cat "$INIT_DIR/required_playbook")
     if [[ -n "$PLAYBOOK" && "$PLAYBOOK" != "null" ]]; then
-        REQUIRED_FILES+=("$PLAYBOOK")
+        if [[ -f "$PLAYBOOK" ]]; then
+            REQUIRED_FILES+=("$PLAYBOOK")
+        else
+            # フォールバック: 存在しない playbook は必須から除外（デッドロック回避）
+            echo "⚠️ playbook ファイルが存在しません: $PLAYBOOK" >&2
+            echo "  → 必須 Read 対象から除外しました（デッドロック回避）" >&2
+        fi
     fi
 fi
 

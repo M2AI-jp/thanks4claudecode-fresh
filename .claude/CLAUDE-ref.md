@@ -18,7 +18,7 @@
 
 行動ルール:
   新タスク開始と判断した場合、必ず INIT を最初からやり直す:
-    1. Read: CONTEXT.md, state.md, playbook, plan/project.md
+    1. Read: state.md, plan/project.md, playbook
     2. git branch / status の再取得
     3. [自認] の再宣言
     4. LOOP に入る
@@ -168,7 +168,7 @@
 
 動的セクションの編集タイミング:
   - セッション開始時: session_tracking（自動）
-  - 作業開始時: focus.session, goal.phase
+  - 作業開始時: goal.phase
   - 作業完了時: layer.*.state, verification.self_complete
   - Phase 変更時: goal.done_criteria, active_playbooks
 ```
@@ -208,7 +208,7 @@
 
 ```
 基本ルール:
-  1. CONTEXT.md を再読
+  1. state.md / project.md / playbook を再読
   2. 答えがあるか? → YES なら質問するな、即実行
 
 質問してはいけない例:
@@ -223,7 +223,7 @@
 以下のケースでは「例外的に確認・説明を行ってよい」:
 
 1. BLOCK 指定された保護ファイルの編集提案:
-   - 対象: CLAUDE.md, CONTEXT.md, .claude/hooks/*.sh など
+   - 対象: CLAUDE.md, .claude/hooks/*.sh など
    - 行動: 直接編集せず、変更案をテキストで提示
    - 説明: 「適用するかどうかはユーザーの判断が必要です」
 
@@ -277,7 +277,7 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 ## 許可事項
 
 ```
-✅ CONTEXT.md から読み取れないことだけ質問（BEFORE_ASK必須）
+✅ state.md / project.md から読み取れないことだけ質問（BEFORE_ASK必須）
 ✅ done_criteria を満たしたら次のPhaseに進む
 ✅ 問題発見 → 即座に修正（許可不要）
 ✅ 複数の選択肢 → 最適なものを自分で選んで実行
@@ -290,7 +290,7 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 ## END（LOOP終了条件）
 
 ```
-1. CONTEXT.md を読んでも次に何をすべきかわからない
+1. state.md / project.md を読んでも次に何をすべきかわからない
 2. 全てのPhaseが完了した（CRITIQUE経由、critic PASS 必須）
 3. ユーザーからの新しい指示を待つ必要がある
 ```
@@ -359,33 +359,33 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 - 現在の playbook にない作業をしようとしているとき
 
 **playbook=null エラー:**
-- session=task なのに playbook が null のとき
+- Edit/Write 時に playbook が null のとき（playbook-guard がブロック）
 
 ❌ **pm を呼ばずに新 playbook を作成してはならない**
 ❌ **スコープ外には NO と言う**
 
 ---
 
-### coherence【推奨】
+### coherence【自動・Hook】
 
-以下の状況では、**必ず** `Task(subagent_type='coherence')` を使用すること：
+整合性チェックは **check-coherence.sh Hook** が自動実行します。
 
-- git commit する直前
-- state.md を編集した後
-- 「整合性が怪しい」と感じたとき
+- **自動発火**: git commit 前（PreToolUse:Bash）
+- **手動実行**: `bash .claude/hooks/check-coherence.sh`
 
-手動: `/lint`
+SubAgent は削除されました（Hook で十分なため）。
 
 ---
 
-### state-mgr【自動】
+### state 管理【Skill】
 
-以下の状況では、**必ず** `Task(subagent_type='state-mgr')` を使用すること：
+state.md の管理は **state Skill** が提供します。
 
-- focus を切り替えたいとき（例: workspace → product）
-- state.md の構造的な更新が必要なとき
+- **場所**: .claude/skills/state/skill.md
+- **用途**: focus 切り替え、state.md の構造理解
+- **呼び出し**: `Skill: "state"`
 
-手動: `/focus`
+SubAgent は削除されました（Skill で十分なため）。
 
 ---
 
@@ -398,12 +398,15 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 
 ---
 
-### beginner-advisor【自動】
+### beginner-advisor【Skill】
 
-以下の状況では、**必ず** `Task(subagent_type='beginner-advisor')` を使用すること：
+初学者向け説明は **beginner-advisor Skill** が提供します。
 
-- ユーザーが「〇〇って何？」「わからない」と言ったとき
-- git commit / git push / デプロイなど重要操作の直前
+- **場所**: .claude/skills/beginner-advisor/skill.md
+- **自動発火**: state.md の learning_mode.expertise = beginner 時
+- **呼び出し**: `Skill: "beginner-advisor"`
+
+SubAgent は削除されました（Skill で十分なため）。
 
 ---
 
@@ -445,8 +448,8 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 
 | ファイル | 内容 |
 |----------|------|
-| CONTEXT.md | ユーザー意図、設計思想、ビジョン |
 | state.md | 現在地、goal、done_criteria |
+| plan/project.md | Macro 計画（最終目標） |
 | playbook | タスク管理、Phase定義 |
 
 **他のドキュメントを参照するな。新規作成するな。**

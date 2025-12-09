@@ -5,6 +5,65 @@
 
 ---
 
+## Quickstart（5分で開始）
+
+> **最速で始めたい方向け。詳細は後述の Phase を参照。**
+
+```bash
+# 1. このリポジトリをクローン
+git clone https://github.com/your-username/thanks4claudecode.git my-project
+cd my-project
+
+# 2. Claude Code で開く
+claude .
+
+# 3. Claude に「setup を始めて」と伝える
+# → Phase 0 から自動でガイドが始まります
+```
+
+**必要なもの:**
+- Mac（Intel / Apple Silicon）
+- Claude Pro 契約（$20/月）
+- GitHub アカウント
+
+**所要時間:**
+- Tutorial Route: 10分
+- Production Route: 30-60分
+
+---
+
+## このリポジトリの活用方法
+
+> **このリポジトリ自体が「完成した実例」として参照可能です。**
+
+```yaml
+実例として参照できるもの:
+  .claude/:
+    hooks/: 22個の Hook 実装例（構造的強制）
+    agents/: 10個の SubAgent 定義（検証・自動化）
+    skills/: 9個の Skill 定義（自動発火）
+    commands/: 7個のコマンド定義
+    frameworks/: 評価フレームワーク
+
+  CLAUDE.md: LLM 振る舞い制御の実例（三位一体の思考制御層）
+  state.md: 統合状態管理の実例
+  plan/: 計画管理の実例
+  docs/: ドキュメント体系の実例
+
+学習の流れ:
+  1. まず setup を完了（Phase 0-8）
+  2. plan/project.md を生成
+  3. 実際にプロダクトを開発しながら仕組みを体験
+  4. 必要に応じて .claude/ の中身を参照・カスタマイズ
+
+参照ドキュメント:
+  - docs/current-implementation.md: 現在実装の詳細仕様
+  - docs/extension-system.md: Claude Code 公式リファレンス
+  - docs/file-inventory.md: 全ファイルの存在理由
+```
+
+---
+
 ## meta
 
 ```yaml
@@ -31,7 +90,108 @@ done_when:
 
 ---
 
+## 最低要件
+
+```yaml
+必須サブスクリプション:
+  - Claude Pro: $20/月
+    用途: Claude Code の利用
+    URL: https://claude.ai/
+
+  - ChatGPT Plus: $20/月
+    用途: Codex（大規模コード生成）
+    URL: https://chat.openai.com/
+
+推奨オプション:
+  - CodeRabbit: Free / Lite ($12/月) / Pro ($24/月)
+    用途: PR レビュー自動化
+    URL: https://coderabbit.ai/
+
+合計最低費用: $40/月（Claude Pro + ChatGPT Plus）
+```
+
+---
+
+## レビューツール選択
+
+```yaml
+# Phase 4 でツールインストール後、ユーザーに選択させる
+
+選択肢:
+  coderabbit:
+    説明: AI コードレビュー専用ツール
+    プラン:
+      - Free: 無料（1時間1レビュー制限）
+      - Lite: $12/月（制限緩和）
+      - Pro: $24/月（無制限）
+    利点:
+      - PR 作成時に自動レビュー（GitHub App）
+      - 詳細なコード品質分析
+      - セキュリティ脆弱性検出
+    欠点:
+      - 外部サービス依存
+      - Free tier はレートリミットあり
+
+  codex:
+    説明: OpenAI のコード生成・分析ツール
+    利用条件: ChatGPT Plus 契約必須
+    利点:
+      - プロンプトベースで柔軟なレビュー
+      - 大規模コード生成も可能
+      - MCP 経由で Claude Code から呼び出せる
+    欠点:
+      - 専用レビュー機能ではない
+      - プロンプト作成が必要
+
+  both:
+    説明: 両方を使い分け
+    推奨ケース:
+      - CodeRabbit: PR 作成時の自動レビュー
+      - Codex: 大規模コード生成、詳細分析
+
+LLM の発言テンプレート（Phase 4 完了後）:
+  ```
+  開発ツールのインストールが完了しました。
+
+  【レビューツールの選択】
+  コードレビューをどのツールで行いますか？
+
+  A: CodeRabbit（推奨）
+     → PR 作成時に自動レビュー
+     → Free: 無料（1時間1回制限）/ Lite: $12/月
+
+  B: Codex
+     → ChatGPT Plus 契約が必要
+     → プロンプトベースで柔軟にレビュー
+
+  C: 両方
+     → CodeRabbit で自動レビュー + Codex で詳細分析
+
+  D: なし（後で設定）
+
+  どれにしますか？（A/B/C/D）
+  ```
+
+設定方法（A を選んだ場合）:
+  1. https://coderabbit.ai/ でアカウント作成
+  2. GitHub 連携を設定
+  3. 対象リポジトリで GitHub App をインストール
+  4. PR 作成時に自動でレビューが走る
+
+設定方法（B を選んだ場合）:
+  1. ChatGPT Plus に加入していることを確認
+  2. Claude Code から mcp__codex__codex で呼び出し可能
+  3. 「このコードをレビューして」とプロンプトで依頼
+```
+
+---
+
 ## 設計思想
+
+> **三位一体アーキテクチャ**: Hooks（構造的強制）+ SubAgents（検証）+ CLAUDE.md（思考制御）
+> 単独では機能しない。組み合わせて初めて強制力を持つ。
+
+### 基本原則
 
 ```yaml
 ターゲット: 初心者〜経験者（スキルレベルで分岐）
@@ -48,6 +208,101 @@ LLM の性質を活用:
   - 最初に決めたことに引っ張られる → setup で全て決める
   - plan/project.md をセッション開始時に読む → 決定が維持される
   - 曖昧さを排除 → 後のセッションで迷わない
+```
+
+### 三位一体アーキテクチャ
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CLAUDE.md（思考制御）                     │
+│    INIT / LOOP / POST_LOOP / CRITIQUE / CONSENT             │
+│    → LLM の行動パターンを規定（自己拘束ルール）              │
+└────────────────────────────┬────────────────────────────────┘
+                             │ 参照・従う
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Hooks（構造的強制）                        │
+│    PreToolUse / PostToolUse / SessionStart / SessionEnd     │
+│    → ツール実行時に bash スクリプトで強制ブロック            │
+│    → LLM の意思とは無関係に発火                              │
+└────────────────────────────┬────────────────────────────────┘
+                             │ 呼び出す
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    SubAgents（検証）                         │
+│    critic / pm / reviewer / health-checker                  │
+│    → 外部視点からの検証（報酬詐欺防止）                      │
+│    → done_criteria の達成を第三者判定                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### アクションベース Guards
+
+```yaml
+設計思想:
+  - プロンプトの「意図」ではなく「アクション」を制御
+  - Edit/Write 時のみ playbook チェック
+  - Read/Grep/WebSearch 等は playbook なしでも常に許可
+
+利点:
+  - 「意図」の推測が不要
+  - 調査・報告は自由に対応可能
+  - 実際にコードを変更するときだけ計画を要求
+
+実装:
+  - playbook-guard.sh: Edit/Write 前に playbook 存在チェック
+  - consent-guard.sh: 合意プロセス未完了時にブロック
+```
+
+### 報酬詐欺防止
+
+```yaml
+問題:
+  - LLM は「完了しました」と自己申告する傾向がある
+  - done_criteria を満たしていないのに done と報告
+
+解決:
+  - critic SubAgent による第三者検証
+  - critic PASS なしで done 不可（critic-guard.sh でブロック）
+  - 5層防御: CLAUDE.md → Hooks → critic → evidence → test
+
+禁止パターン:
+  - 「〇〇した」だけで証拠なし
+  - 「〇〇のはず」「思う」という曖昧表現
+  - シミュレーションのみで実際の動作確認なし
+```
+
+### 計画の連鎖（Plan Derivation）
+
+```yaml
+構造:
+  Macro（project.md）→ Medium（playbook）→ Micro（Phase）
+
+フロー:
+  1. project.md の done_when を分析
+  2. depends_on を解決し、着手可能なタスクを特定
+  3. decomposition を参照して playbook を自動生成
+  4. Phase ごとに done_criteria を検証
+  5. playbook 完了 → project.md の done_when を achieved に
+  6. 次の playbook を自動導出
+
+必須経由点:
+  - 全タスク開始は pm SubAgent 経由
+  - derives_from なしの playbook は禁止
+```
+
+### コンテキスト外部化
+
+```yaml
+問題:
+  - チャット履歴が長くなるとルールが効かなくなる
+  - LLM が「何をやっているか」が不明確になる
+
+解決:
+  - state.md / project.md / playbook を唯一の真実源に
+  - チャット履歴に依存しない
+  - .claude/logs/context-log.md で処理経過を記録
+  - 80% コンテキスト超過時は /clear を推奨
 ```
 
 ---
@@ -589,6 +844,8 @@ done_criteria:
   - Git がインストール済み（git --version で確認）
   - GitHub CLI が認証済み（gh auth status で確認）
   - dotenvx がインストール済み（dotenvx --version で確認）
+  - ShellCheck がインストール済み（shellcheck --version で確認）
+  - pre-commit がインストール済み（pre-commit --version で確認）
 status: pending
 ```
 
@@ -597,6 +854,7 @@ status: pending
 1. まず確認:
    ```bash
    brew --version && git --version && node --version && pnpm --version && dotenvx --version
+   shellcheck --version && pre-commit --version
    ```
 
 2. 不足があればインストール:
@@ -615,6 +873,10 @@ status: pending
 
    # dotenvx（暗号化された環境変数管理）
    brew install dotenvx/brew/dotenvx
+
+   # Linter/Formatter ツール（言語共通）
+   brew install shellcheck shfmt  # Shell
+   pip install pre-commit ruff    # pre-commit フック、Python Linter
    ```
 
 3. dotenvx の説明（初心者向け）:
@@ -625,7 +887,16 @@ status: pending
    - 詳細: https://dotenvx.com/
    ```
 
-3. 参照: CATALOG.md セクション 1（トラブルシューティング）
+4. Linter/Formatter の説明（初心者向け）:
+   ```
+   Linter はコードの問題を自動検出するツールです。
+   Formatter はコードスタイルを統一するツールです。
+   - ShellCheck: シェルスクリプトの問題検出
+   - pre-commit: コミット前に自動チェック
+   - 詳細: .claude/templates/linter-formatter-config.md
+   ```
+
+5. 参照: CATALOG.md セクション 1（トラブルシューティング）
 
 ---
 
@@ -685,6 +956,118 @@ pnpm add hono
 ⚠️ 初心者がこれを選んだ場合:
   - 「画面がないプロジェクトになりますが大丈夫ですか？」と確認
   - 迷っている場合は Next.js（フロントあり）を推奨
+```
+
+---
+
+### Phase 5-A: Linter/Formatter 設定
+
+```yaml
+id: p5a
+name: Linter/Formatter 設定
+goal: プロジェクトに言語別 Linter/Formatter を設定
+executor: llm
+depends_on: [p5]
+done_criteria:
+  - 言語に応じた Linter 設定ファイルが存在する
+  - 言語に応じた Formatter 設定ファイルが存在する
+  - .pre-commit-config.yaml が設定されている
+  - pre-commit install が実行済み
+  - pnpm lint（または同等コマンド）が成功する
+status: pending
+```
+
+**LLM の行動:**
+
+1. プロジェクトの言語を判定:
+   ```yaml
+   判定基準:
+     - package.json 存在 → JavaScript/TypeScript
+     - pyproject.toml 存在 → Python
+     - go.mod 存在 → Go
+     - Cargo.toml 存在 → Rust
+     - .sh ファイル存在 → Shell
+   ```
+
+2. 言語別設定ファイルを作成:
+   ```bash
+   # テンプレート参照
+   cat .claude/templates/linter-formatter-config.md
+   ```
+
+3. JavaScript/TypeScript の場合:
+   ```bash
+   cd projects/{name}
+
+   # Prettier 追加（ESLint は create-next-app で含まれる）
+   pnpm add -D prettier eslint-config-prettier
+
+   # .prettierrc 作成
+   cat > .prettierrc << 'EOF'
+   {
+     "semi": true,
+     "singleQuote": true,
+     "tabWidth": 2,
+     "trailingComma": "es5",
+     "printWidth": 100
+   }
+   EOF
+
+   # package.json に lint スクリプト追加
+   # "lint": "eslint . --fix",
+   # "format": "prettier --write ."
+   ```
+
+4. pre-commit 設定:
+   ```bash
+   cd projects/{name}
+
+   # .pre-commit-config.yaml 作成
+   cat > .pre-commit-config.yaml << 'EOF'
+   repos:
+     - repo: local
+       hooks:
+         - id: eslint
+           name: ESLint
+           entry: pnpm eslint --fix
+           language: system
+           files: \.(js|jsx|ts|tsx)$
+           pass_filenames: false
+
+         - id: prettier
+           name: Prettier
+           entry: pnpm prettier --write
+           language: system
+           files: \.(js|jsx|ts|tsx|json|md|css)$
+   EOF
+
+   # pre-commit インストール
+   pre-commit install
+   ```
+
+5. 動作確認:
+   ```bash
+   pnpm lint
+   pre-commit run --all-files
+   ```
+
+**初心者向け説明:**
+```
+Linter と Formatter を設定しました。
+
+【Linter（ESLint）】
+- コードの問題（バグの可能性、未使用変数）を検出
+- pnpm lint で実行
+
+【Formatter（Prettier）】
+- コードスタイルを自動整形
+- 保存時に自動実行（VSCode 設定済みなら）
+
+【pre-commit】
+- コミット前に自動チェック
+- 問題があるとコミットが止まる（安全装置）
+
+これで「きれいなコード」を書く習慣が身につきます。
 ```
 
 ---
@@ -1079,3 +1462,73 @@ Skills:
   .claude/skills/ に自動生成
   lint-checker, test-runner, deploy-checker
 ```
+
+---
+
+## 現在のシステム構成（2025-12-09 時点）
+
+> **setup 完了後に利用可能になる機能の一覧**
+
+### コンポーネント数
+
+| カテゴリ | 数 | 説明 |
+|---------|---|------|
+| Hooks | 22 | 構造的強制（settings.json に 16 個登録） |
+| SubAgents | 10 | 検証・自動化エージェント |
+| Skills | 9 | 自動発火スキル（4 個はテンプレート） |
+| Commands | 7 | スラッシュコマンド |
+| Frameworks | 1 | 評価フレームワーク |
+
+### 主要機能
+
+```yaml
+タスク管理:
+  - pm SubAgent: タスク開始の必須経由点
+  - /task-start: 標準タスク開始コマンド
+  - playbook-guard: playbook なしの Edit/Write をブロック
+
+品質保証:
+  - critic SubAgent: done_criteria の第三者検証
+  - critic-guard: critic PASS なしの done をブロック
+  - reviewer SubAgent: コードレビュー
+
+git 自動化:
+  - Phase 完了時: 自動コミット
+  - playbook 完了時: 自動マージ
+  - 新タスク時: 自動ブランチ作成
+
+状態管理:
+  - state.md: 統合状態管理（Single Source of Truth）
+  - state-mgr SubAgent: 状態遷移管理
+  - state-rollback: 状態巻き戻し
+
+セキュリティ:
+  - protected-files.txt: 保護ファイル定義
+  - check-protected-edit: 保護ファイル編集チェック
+  - check-main-branch: main ブランチ保護
+
+コンテキスト:
+  - session-start/end: セッション管理
+  - context-log.md: コンテキスト外部化
+  - stop-summary: セッション終了サマリー
+```
+
+### 参照ドキュメント
+
+| ファイル | 内容 |
+|---------|------|
+| docs/current-implementation.md | 現在実装の詳細仕様（復旧手順含む） |
+| docs/extension-system.md | Claude Code 公式リファレンス |
+| docs/file-inventory.md | 全ファイルの存在理由 |
+| docs/task-initiation-flow.md | タスク開始フロー図 |
+| CLAUDE.md | LLM 振る舞いルール |
+
+---
+
+## 変更履歴
+
+| 日時 | 内容 |
+|------|------|
+| 2025-12-09 | V2.0: 設計思想強化、クイックスタート追加、実例参照セクション追加、現在のシステム構成追加 |
+| 2025-12-08 | V1.1: レビューツール選択（CodeRabbit/Codex）追加、Linter/Formatter Phase 追加 |
+| 2025-12-01 | V1.0: 初版作成 |

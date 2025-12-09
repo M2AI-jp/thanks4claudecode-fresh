@@ -37,15 +37,6 @@ FILE_DEPS="$WORKSPACE_ROOT/.claude/file-dependencies.yaml"
 # state.md からの値取得関数
 # ------------------------------------------------------------------------------
 
-# session タイプを取得（task | discussion）
-get_session() {
-    if [ -f "$STATE_MD" ]; then
-        grep -A5 "^## focus" "$STATE_MD" | grep "session:" | head -1 | sed 's/.*session:[[:space:]]*//' | sed 's/[[:space:]]*#.*//'
-    else
-        echo "discussion"
-    fi
-}
-
 # focus.current を取得（plan-template | workspace | setup | product）
 get_focus() {
     if [ -f "$STATE_MD" ]; then
@@ -203,11 +194,6 @@ print_separator() {
 # ------------------------------------------------------------------------------
 # Hook 共通チェック関数
 # ------------------------------------------------------------------------------
-
-# session=discussion ならスキップ
-should_skip_for_discussion() {
-    [ "$(get_session)" = "discussion" ]
-}
 
 # state.md への編集は常に許可（デッドロック回避）
 is_state_md_edit() {

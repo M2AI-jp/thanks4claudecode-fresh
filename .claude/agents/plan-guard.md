@@ -119,6 +119,49 @@ action:
 output: MEDIUM_REQUIRED
 ```
 
+### S6: Project との乖離を検出
+
+```yaml
+condition: |
+  以下のいずれか:
+  - ユーザープロンプトが project.md の done_when と矛盾
+  - ユーザープロンプトが project.md にないゴールを要求
+  - 現在の playbook が project.md の scope 外
+  - 完了した playbook 群が project.md の done_when を満たしていない
+
+detection:
+  1. project.md の done_when を読む
+  2. ユーザープロンプトのキーワードを抽出
+  3. done_when との整合性を判定:
+     - ALIGNED: done_when の達成に寄与
+     - EXTENSION: done_when にないが関連する
+     - DRIFT: done_when と矛盾 or 全く無関係
+
+action:
+  ALIGNED の場合:
+    - S3 に移行（計画に沿った要求）
+
+  EXTENSION の場合:
+    1. 「project.md の scope を拡張する提案です」
+    2. 選択肢を提示:
+       a) project.md に新ゴールとして追加
+       b) 別プロジェクトとして切り離し
+    3. ユーザー選択後、計画を更新して続行
+
+  DRIFT の場合:
+    1. 「project.md との乖離を検出しました」
+    2. 乖離の内容を説明:
+       - 「現在の目標: {project.done_when}」
+       - 「要求された内容: {prompt_summary}」
+       - 「乖離の理由: {reason}」
+    3. 選択肢を提示:
+       a) project.md を改訂（目標変更）
+       b) 現在の要求をスコープ外として拒否
+       c) 現在の project を完了させてから新 project 開始
+
+output: PROJECT_DRIFT | PROJECT_EXTENSION
+```
+
 ## 整合性チェックロジック
 
 ```yaml
@@ -138,13 +181,32 @@ check_micro:
   pass: status: in_progress の Phase が存在
   fail_action: 「次の Phase を開始しますか？」
 
-check_alignment:
+check_project_alignment:
+  method: |
+    1. project.md の done_when を読む
+    2. ユーザープロンプトのキーワードを抽出
+    3. done_when との整合性を判定:
+       - ALIGNED: 達成に寄与する
+       - EXTENSION: 関連するが scope 外
+       - DRIFT: 矛盾または無関係
+  pass: ALIGNED
+  warn_action: EXTENSION → S6 を発動（選択肢提示）
+  fail_action: DRIFT → S6 を発動（乖離説明）
+
+check_playbook_alignment:
   method: |
     1. ユーザープロンプトのキーワードを抽出
     2. playbook の goal.summary, done_criteria と比較
     3. 関連度を判定（高/中/低/無関係）
   pass: 関連度が「高」または「中」
   fail_action: S2 を発動
+
+check_alignment:
+  order: |
+    1. check_project_alignment を先に実行
+    2. ALIGNED なら check_playbook_alignment を実行
+    3. 両方 PASS なら S3（計画に沿った要求）
+  note: project.md が存在しない場合は check_playbook_alignment のみ
 ```
 
 ## LLM 主導の原則
@@ -174,10 +236,11 @@ OK パターン:
 
 ```yaml
 result:
-  status: PLAN_PRESENTED | PLAN_REQUIRED | PLAN_MISMATCH | PLAN_ALIGNED | MACRO_REQUIRED | MEDIUM_REQUIRED
+  status: PLAN_PRESENTED | PLAN_REQUIRED | PLAN_MISMATCH | PLAN_ALIGNED | MACRO_REQUIRED | MEDIUM_REQUIRED | PROJECT_DRIFT | PROJECT_EXTENSION
   macro:
     exists: true | false
     summary: "..."
+    done_when: [...]
   medium:
     exists: true | false
     playbook: "..."
@@ -186,6 +249,9 @@ result:
     exists: true | false
     phase: "..."
     done_criteria: [...]
+  alignment:
+    project: ALIGNED | EXTENSION | DRIFT | N/A
+    playbook: ALIGNED | MISMATCH | N/A
   recommendation: "..."
 ```
 

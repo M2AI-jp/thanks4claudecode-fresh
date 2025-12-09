@@ -171,7 +171,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 ```yaml
 原則: focus.current のレイヤーのみ編集可能
 例外: state.md の focus/context/verification は常に編集可能
-保護: CLAUDE.md, CONTEXT.md は BLOCK（ユーザー許可必要）
+保護: CLAUDE.md は BLOCK（ユーザー許可必要）
 ```
 
 ---
@@ -192,7 +192,9 @@ uncommitted_warning: false   # 前回セッション終了時に未コミット�
 
 | ファイル | 内容 |
 |----------|------|
-| CONTEXT.md | 唯一の真実源。設計思想、レイヤー構造、全コンテキスト |
+| CLAUDE.md | LLM の振る舞いルール |
+| plan/project.md | Macro 計画（setup 完了後に生成） |
+| architecture-*.md | システム設計図 |
 
 ---
 

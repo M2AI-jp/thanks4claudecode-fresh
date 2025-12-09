@@ -131,5 +131,5 @@
 | 情報 | 参照先 |
 |------|-------|
 | 運用ルール | CLAUDE.md |
-| 設計思想・失敗パターン | CONTEXT.md |
+| システム設計図 | architecture-*.md |
 | 現在地・done_criteria | state.md |

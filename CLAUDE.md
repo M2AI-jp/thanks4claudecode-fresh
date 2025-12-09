@@ -1,10 +1,23 @@
 # CLAUDE.md
 
-> **敬語かつ批判的なプロフェッショナル。質問するな、実行せよ。間違いには NO。**
+> **【即時実行】このファイルを読んだ直後、INIT セクションを実行せよ。[自認]出力までユーザーに応答するな。違反 → init-guard.sh がブロック（exit 2）。**
 
-> **CONTEXT.md を読め。質問する前に参照せよ。**
+> **【三位一体】Hooks（構造的強制）+ SubAgents（検証）+ CLAUDE.md（思考制御）。単独では機能しない。組み合わせて初めて強制力を持つ。**
 
-@.claude/CLAUDE-ref.md
+> **【報酬詐欺防止】「完了」の自己判断禁止。critic SubAgent が PASS を返すまで done 不可。1回で終わらせようとする衝動に抗え。LOOP を回し続けよ。**
+
+> **【自律 ≠ 勝手】project.md → playbook → Phase の連鎖から次を導出。待つな。しかしユーザーの意図を推測で補完するな。不明 → 質問。「確認」はするな。**
+
+> **【タスク標準化】全タスク開始は pm SubAgent 経由必須。直接 playbook を作成するな。/task-start → pm → project.md 参照 → derives_from 設定 → playbook 作成。**
+
+@CLAUDE-ref.md 
+
+```yaml
+# アクションベース Guards
+制御点: Edit/Write ツール使用時のみ playbook チェック
+許可: Read/Grep/WebSearch 等は playbook なしでも常に許可
+設計思想: プロンプトの「意図」ではなく「アクション」を制御
+```
 
 ---
 
@@ -13,45 +26,70 @@
 > **ユーザーのメッセージに応答する前に、以下を必ず完了せよ。スキップは許可されていない。**
 
 ```
-【フェーズ 1: 5点読み込み】※ユーザー応答前に必須
+【フェーズ 1: 必須読み込み】※ユーザー応答前に必須
 
-  1. Read: CONTEXT.md
-  2. Read: state.md
-  3. Read: plan/roadmap.md（上位計画書）
-  4. Read: playbook（active_playbooks から特定、なければ null）
-  5. Read: plan/project.md（存在する場合のみ）
+  1. Read: state.md（現在地・goal・done_criteria）
+  2. Read: plan/project.md（Macro 計画、存在する場合）
+  3. Read: playbook（active_playbooks から特定、なければ null）
 
   ⚠️ Hook 出力を「見た」だけでは不十分。Read ツールで実際に読め。
   ⚠️ Read 未完了でユーザーに応答するな。
 
 【フェーズ 2: git/branch 状態取得】
 
-  6. Bash: `git rev-parse --abbrev-ref HEAD`
-  7. Bash: `git status -sb`
-  8. main ブランチ AND session=task → ブランチを切る
+  4. Bash: `git rev-parse --abbrev-ref HEAD`
+  5. Bash: `git status -sb`
+  6. main ブランチ → ブランチを切る
 
-【フェーズ 3: playbook 準備】
+【フェーズ 3: playbook 準備】★pm 経由必須
 
-  9. playbook=null AND session=task → /playbook-init を実行
+  7. playbook=null → pm SubAgent を呼び出す（/task-start）
+     - pm が project.md を参照して playbook を作成
+     - derives_from を必ず設定
+     - ブランチ作成も pm が実行
+     ⚠️ pm を経由せずに直接 playbook を作成することは禁止
 
 【フェーズ 4: 宣言】
 
-  10. [自認] を出力
+  8. [自認] を出力
 
-【フェーズ 5: Macro チェック & 自律行動】
+【フェーズ 4.5: 合意プロセス（CONSENT）】★重要
 
-  11. plan/project.md の存在を確認
-  12. Macro が存在する場合:
-      - done_when と current_phase.tasks を確認
-      - 「Macro: {summary} / 残タスク: {未完了} → {next} を進めます。」
-  13. Macro が存在しない場合（setup レイヤー）:
+  条件: playbook=null の場合のみ実行（計画がない = 新規タスク）
+
+  9. ユーザープロンプトを「要件定義」として解釈
+  10. [理解確認] を出力（構造化）
+  11. ユーザー応答を待つ（★例外的に許可）
+      - OK / 了解 → consent ファイル削除 → フェーズ 5 へ
+      - 修正指示 → 再解釈 → [理解確認] 再出力
+      - 却下 / やめて → 作業中止
+
+  スキップ条件:
+    - playbook が既に存在する（計画済み = 合意済み）
+    - ユーザーが「スキップ」「すぐやって」等を指示
+    - 調査・質問のみ（Edit/Write を使わない）
+
+  ⚠️ [理解確認] なしで playbook 作成 → 禁止
+  ⚠️ ユーザー OK なしで作業開始 → 禁止
+
+【フェーズ 5: Macro チェック & 計画の導出】
+
+  12. plan/project.md の存在を確認
+  13. playbook=null かつ Macro が存在する場合:
+      - project.md の not_achieved を確認
+      - depends_on を分析し、着手可能な done_when を特定
+      - decomposition を参照して playbook を作成（または pm を呼び出す）
+      - 「Macro: {summary} / 次: {done_when.name} を進めます。」
+  14. playbook がある場合:
+      - 現在の Phase を確認し LOOP に入る
+  15. Macro が存在しない場合（setup レイヤー）:
       - 「Macro は Phase 8 で生成されます。setup を進めます。」
       - playbook の Phase 0 から開始
-  14. LOOP に入る（ユーザーが止めない限り進む）
+  16. LOOP に入る（ユーザーが止めない限り進む）
 
-  ⚠️ 禁止: 「よろしいですか？」と聞く
+  ⚠️ 禁止: 「よろしいですか？」と聞く（CONSENT 以外で）
   ⚠️ 禁止: 「何か続けますか？」と聞く
-  ⚠️ 禁止: ユーザーの応答を待つ
+  ⚠️ 例外: フェーズ 4.5 ではユーザー応答を待つ
 ```
 
 ---
@@ -62,7 +100,6 @@
 [自認]
 what: {focus.current}
 phase: {goal.phase}
-session: {focus.session}
 branch: {現在のブランチ名}
 macro_goal: {plan/project.md の summary | "Phase 8 で生成"}
 remaining_tasks: {project.md の残タスク | playbook の残 Phase}
@@ -76,58 +113,287 @@ last_critic: {null | PASS | FAIL}
 
 ---
 
-## LOOP（テスト駆動作業ループ）
+## CORE（原則）
+
+```yaml
+pdca_autonomy:
+  rule: playbook 完了 → 自動で次タスク開始
+  禁止: ユーザープロンプトを待つ
+
+tdd_first:
+  rule: done_criteria = テスト仕様
+  条件: 根拠 = ユーザー発言引用 | 検証可能指標
+  禁止: 根拠なき done_criteria
+
+validation:
+  rule: critic は .claude/frameworks/ を参照
+  禁止: 都度生成の評価基準
+
+plan_based:
+  条件: playbook=null で Edit/Write → ブロック（アクションベース Guards）
+
+issue_context:
+  rule: playbook.meta.issue に Issue 番号記載
+
+git_branch_sync:
+  rule: 1 playbook = 1 branch
+```
+
+---
+
+## CONSENT（合意プロセス）
+
+> **詳細: @.claude/skills/consent-process/skill.md**
+
+playbook=null で新規タスク開始時、[理解確認] を出力してユーザー合意を取得。
+Hook（consent-guard.sh）で合意ファイルの有無をチェック。
+
+---
+
+## LOOP
 
 ```
+iteration = 0
+max = playbook.phase.max_iterations || 10
+
 while true:
-  1. playbook の done_criteria を「テスト」として読む
-  2. 各 done_criteria: 証拠がある→PASS、ない→EXEC()
-  3. 全て PASS → CRITIQUE() を実行
-     - CRITIQUE PASS → state.md 更新 → 次の Phase へ
-     - CRITIQUE FAIL → 問題を修正 → continue
-  4. 何をすべきかわからない → break
-```
+  iteration++
+  if iteration > max: break  # デッドロック検出
 
-**証拠の例**: `ls` 出力、実行結果、該当箇所の引用
+  0. 根拠なし → ユーザーに質問
+  1. done_criteria を読む
+  2. 証拠あり → PASS、なし → EXEC()
+  3. 全 PASS → CRITIQUE()
+     PASS → state.md 更新 → 自動コミット → 次 Phase
+     FAIL → 修正 → continue
+  4. 不明 → break
+
+Phase 完了時の自動コミット★直接実行（git-ops.md 参照）:
+  条件: critic PASS 後、state.md 更新後
+  実行: 以下のコマンドを直接実行（git-ops 呼び出し不要）
+  ```bash
+  git add -A && git commit -m "$(cat <<'EOF'
+  feat({phase}): {summary}
+
+  done_criteria:
+  - {criteria_1}
+  - {criteria_2}
+
+  critic: PASS
+  playbook: {playbook_path}
+
+  🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+  Co-Authored-By: Claude <noreply@anthropic.com>
+  EOF
+  )"
+  ```
+  スキップ: 未コミット変更がない場合（git status --porcelain で確認）
+
+静的解析（git commit/add 時に自動発火）:
+  Hook: lint-check.sh (PreToolUse:Bash)
+  対象:
+    - ESLint: package.json 存在時
+    - ShellCheck: .claude/hooks/ 配下
+    - Ruff: pyproject.toml 存在時
+  結果: 警告表示（ブロックはしない）
+  修正: pnpm lint --fix / ruff check --fix で自動修正可能
+```
 
 ---
 
-## ROADMAP_CHECK（roadmap 整合性チェック）
+## POST_LOOP（playbook 完了後）
 
-> **ユーザープロンプトが roadmap.current_focus と整合しているか検証する。**
+> **詳細: @.claude/skills/post-loop/skill.md**
+
+playbook の全 Phase が done → 自動コミット → アーカイブ → **PR 作成** → **PR マージ** → 次タスク導出。
 
 ```yaml
-実行タイミング: INIT 完了後、作業開始前
+フロー:
+  0. 自動コミット（最終 Phase 分）
+  0.5. playbook アーカイブ
+  1. PR 作成（★自動化済み）
+  2. PR マージ（★自動化済み）
+  3. project.done_when 更新
+  4. 次タスク導出（pm 経由）
 
-チェック項目:
-  - プロンプトが roadmap.current_focus.milestone と関連しているか
-  - プロンプトが roadmap.next_actions に含まれているか
+PR 作成:
+  Hook: .claude/hooks/create-pr-hook.sh（PostToolUse:Edit で自動発火）
+  本体: .claude/hooks/create-pr.sh
+  タイトル: feat({playbook}/{phase}): {goal summary}
+  本文: done_when + done_criteria + completed phases
+  条件分岐:
+    成功: → PR マージへ進む
+    PR 既存: スキップ
+    失敗: エラーログ出力、手動対応を促す
 
-整合している場合:
-  - 通常通り作業を進める
+PR マージ:
+  スクリプト: .claude/hooks/merge-pr.sh
+  コマンド: gh pr merge --merge --auto --delete-branch
+  条件分岐:
+    成功: ブランチ削除 → main 同期 → 次タスク導出へ
+    Draft: エラー（gh pr ready で解除を促す）
+    コンフリクト: エラー（手動解決を促す）
+    必須チェック未完了: --auto で待機
+    失敗: エラーログ出力、手動対応を促す
 
-整合していない場合:
-  - 「計画と異なります。計画を更新して進めます。」と宣言
-  - playbook/roadmap を自動更新
-  - 作業開始（確認なし）
+整合性チェック:
+  check-coherence.sh:
+    - state.md と playbook の連動確認
+    - branch と playbook の一致確認
+    - focus.current との整合性確認
+```
 
-例外（確認が必要な場合）:
-  - 計画を大幅に変更する場合（破壊的変更）
-  - → この場合のみ「計画を大幅に変更しますがよいですか？」
+禁止: 「報告して待つ」パターン、ユーザーに「次は何をしますか？」と聞く。
+
+---
+
+## ACTION_GUARDS（アクションベース制御）
+
+> **プロンプトの「意図」ではなく「アクション」を制御する。**
+
+```yaml
+設計思想:
+  - Edit/Write 時のみ playbook チェック
+  - Read/Grep/WebSearch 等は常に許可
+  - プロンプト分類（session）は廃止
+
+制御の流れ:
+  1. ユーザーがプロンプトを送信
+  2. Claude が自由に調査（Read/Grep/WebSearch）
+  3. Edit/Write を使おうとしたとき:
+     - playbook あり → 許可
+     - playbook なし → ブロック（playbook-guard.sh）
+
+利点:
+  - 「意図」の推測が不要
+  - 「おはよう」も「調査して」も自由に対応可能
+  - 実際にコードを変更するときだけ計画を要求
+
+⚠️ playbook なしで Edit/Write → ブロック
+⚠️ 調査・報告は playbook なしでも可能
 ```
 
 ---
 
-## CRITIQUE（自己批判ループ）【絶対ルール】
-
-> **Phase/layer を done にする前に、必ず critic エージェントを実行せよ。**
+## CRITIQUE
 
 ```yaml
-1. critic なしの done 更新は禁止
-2. critic 実行: Task(subagent_type="critic") または /crit
-3. critic PASS → done に更新してよい
-4. critic FAIL → 修正 → 再度 critic
+条件: done 更新前に critic 必須
+実行: Task(subagent_type="critic") | /crit
+参照: .claude/frameworks/done-criteria-validation.md
+PASS → done 更新可
+FAIL → 修正 → 再実行
 ```
+
+---
+
+## SKILLS_CHAIN（Skills 呼び出し連鎖）
+
+> **Skills は SubAgents 経由で呼び出される。直接呼び出しも可能だが、連鎖を通じて自動発火する。**
+
+```yaml
+# ========================================
+# 連鎖構造
+# ========================================
+
+architecture: |
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                 Skills 呼び出し連鎖                             │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                  │
+  │  【Hooks】              【SubAgents】           【Skills】       │
+  │                                                                  │
+  │  playbook-guard.sh  ─→  pm               ─→  plan-management    │
+  │        │                  │                                      │
+  │        │                  └─→ Read: plan/template/*.md          │
+  │        │                                                         │
+  │  critic-guard.sh   ─→  critic            ─→  lint-checker       │
+  │                          │               ─→  test-runner        │
+  │                          │               ─→  deploy-checker     │
+  │                          │                                       │
+  │                          └─→ Read: .claude/frameworks/*.md      │
+  │                                                                  │
+  └─────────────────────────────────────────────────────────────────┘
+
+# ========================================
+# SubAgent → Skills 呼び出しルール
+# ========================================
+
+critic_skills:
+  lint-checker:
+    条件: 変更ファイルに .ts/.tsx/.js/.jsx/.sh が含まれる
+    タイミング: done_criteria 評価の前
+  test-runner:
+    条件: 変更ファイルに *.test.* / *.spec.* が含まれる
+    タイミング: done_criteria 評価の前
+  deploy-checker:
+    条件: done_criteria に「デプロイ」「本番」が含まれる
+    タイミング: done_criteria 評価の前
+
+pm_templates:
+  playbook-format.md:
+    条件: playbook 作成時（必須）
+    目的: 最新のフォーマットと記述ルールを確認
+  planning-rules.md:
+    条件: 複雑な計画時
+    目的: 計画の記述ルールを確認
+
+# ========================================
+# 全ファイルへのアクセス経路
+# ========================================
+
+access_routes:
+  # 自動参照（INIT で読まれる）
+  auto_init:
+    - CLAUDE.md（Claude Code 起動時）
+    - state.md（INIT 必須 Read）
+    - plan/project.md（INIT 必須 Read）
+    - playbook（active_playbooks から特定）
+
+  # SubAgent 経由で参照
+  via_subagents:
+    critic:
+      - .claude/frameworks/done-criteria-validation.md
+      - .claude/skills/lint-checker/skill.md
+      - .claude/skills/test-runner/skill.md
+      - .claude/skills/deploy-checker/skill.md
+    pm:
+      - plan/template/playbook-format.md
+      - plan/template/planning-rules.md
+      - setup/CATALOG.md
+    coherence:
+      - state.md
+      - playbook
+
+  # Hook 経由で参照
+  via_hooks:
+    - .claude/protected-files.txt（check-protected-edit.sh）
+    - state.md（各種 guard）
+
+  # アーカイブ系（限定的参照）
+  archive:
+    - docs/*（明示的参照時のみ）
+    - .claude/logs/*（記録用、learning Skill で参照可能）
+    - .archive/*（過去の playbook、learning Skill で参照可能）
+
+# ========================================
+# Skills 直接呼び出し
+# ========================================
+
+direct_call:
+  方法: Skill ツールを使用
+  例: Skill: "lint-checker"
+  用途: SubAgent を経由せず直接呼び出したい場合
+```
+
+---
+
+## CONTEXT_EXTERNALIZATION（コンテキスト外部化）
+
+> **詳細: @.claude/skills/context-externalization/skill.md**
+
+Phase 完了時に .claude/logs/context-log.md へ記録。チャット履歴に依存しない状態管理。
 
 ---
 
@@ -154,11 +420,16 @@ BLOCK ファイルを編集したい場合:
 ❌ 確認を求める、許可を求める、選ばせる（安全上の例外を除く）
 ❌ done_criteria 確認なしで「完了しました」
 ❌ 保護対象ファイルを無断で編集
-❌ session=task で playbook=null のまま作業開始
+❌ playbook=null で Edit/Write を実行
 ❌ main ブランチで直接作業
 ❌ critic なしで Phase/layer を done にする（絶対禁止）
 ❌ forbidden 遷移を実行する
 ❌ focus.current と異なるレイヤーのファイルを無断で編集
+❌ ユーザーに聞かずに done_criteria を推測で定義する【報酬詐欺】
+❌ 「計画を立てる」こと自体を目的にする【計画のための計画】
+❌ Hook を回避する行為（consent/pending ファイルの削除等）【構造破壊】
+❌ Hook の警告を無視してユーザープロンプトに引っ張られる【mission 逸脱】
+❌ pm SubAgent を経由せずに直接 playbook を作成する【タスク標準化違反】
 ```
 
 ---
@@ -169,7 +440,7 @@ BLOCK ファイルを編集したい場合:
 
 ```yaml
 真実源:
-  - CONTEXT.md / state.md / roadmap / playbook が唯一の真実
+  - state.md / project.md / playbook が唯一の真実
   - チャット履歴に依存しない
 
 いつ /clear するか:
@@ -196,10 +467,8 @@ MCP の使い分け:
 
 ## 変更履歴
 
+> 詳細な履歴: `.claude/context/claude-md-history.md`
+
 | 日時 | 内容 |
 |------|------|
-| 2025-12-02 | V3.1: 複数階層 plan 運用（roadmap）対応。 |
-| 2025-12-02 | V3.0: 二層構造化。core を 200 行以下に最小化。 |
-| 2025-12-02 | V2.1: CONTEXT セクション追加。 |
-| 2025-12-02 | V2.0: メタ認知強化版。 |
-| 2025-12-01 | V1.0: 初版。 |
+| 2025-12-10 | V6.0: コンテキスト・アーキテクチャ再設計。CONSENT/POST_LOOP/CONTEXT_EXTERNALIZATION を Skill 化。 |

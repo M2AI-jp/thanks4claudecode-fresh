@@ -334,6 +334,44 @@ GitHub: https://github.com/upstash/context7
 料金: https://ai.google.dev/pricing
 ```
 
+### 2.6 CodeRabbit CLI（AI コードレビュー）
+
+```yaml
+種類: AI コードレビューツール
+必須度: オプション
+料金: 無料（レート制限あり）
+
+概要:
+  AI によるコードレビューをターミナルで実行。
+  コミット前にバグ・セキュリティ問題・コード品質を検出。
+  Claude Code や Codex と連携して自動修正も可能。
+
+インストール:
+  curl -fsSL https://cli.coderabbit.ai/install.sh | sh
+  source ~/.zshrc
+
+認証:
+  coderabbit auth login
+
+主なコマンド:
+  coderabbit                    # インタラクティブレビュー
+  coderabbit --prompt-only      # AI 向け出力（Claude Code 連携用）
+  coderabbit --type uncommitted # 未コミット変更のみレビュー
+
+オプション:
+  -t, --type <type>    # all | committed | uncommitted
+  --base <branch>      # 比較ベースブランチ
+  -c, --config <file>  # 追加設定ファイル
+
+注意:
+  - レビュー実行に 7-30 分かかる場合あり
+  - バックグラウンド実行推奨
+  - 全コミットに必須ではない（PR 前の最終チェック向け）
+
+公式: https://www.coderabbit.ai/cli
+ドキュメント: https://docs.coderabbit.ai/cli/overview
+```
+
 ---
 
 ## 3. デプロイ先

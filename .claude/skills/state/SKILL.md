@@ -37,7 +37,7 @@ layer: product               # ユーザーのプロダクト開発
 | setup | setup/** |
 | product | projects/**, 実装コード |
 
-**常に編集可能**: state.md, README.md, CONTEXT.md
+**常に編集可能**: state.md, README.md
 
 ## session の違い
 

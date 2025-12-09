@@ -1,8 +1,13 @@
 #!/bin/bash
-# playbook-guard.sh - session=task AND playbook=null で作業をブロック
+# playbook-guard.sh - Edit/Write 時に playbook=null ならブロック
 #
-# 目的: playbook なしでの作業開始を構造的に防止
+# 目的: playbook なしでのコード変更を構造的に防止
 # トリガー: PreToolUse(Edit), PreToolUse(Write)
+#
+# 設計思想（アクションベース Guards）:
+#   - プロンプトの「意図」ではなく「アクション」を制御
+#   - Read/Grep/WebSearch 等は常に許可
+#   - Edit/Write のみ playbook チェック
 #
 # 注意: このスクリプトは matcher: "Edit" と "Write" でのみ登録すること
 #       matcher: "*" で登録すると stdin を消費し、後続の Hook に影響する
@@ -30,28 +35,35 @@ if [[ "$FILE_PATH" == *"state.md" ]]; then
     exit 0
 fi
 
-# session を取得（yaml ブロック対応）
-SESSION=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^session:" | head -1 | sed 's/session: *//' | sed 's/ *#.*//' | tr -d ' ')
+# --------------------------------------------------
+# security チェック（admin モードはバイパス）
+# --------------------------------------------------
+SECURITY_MODE=$(grep -A10 "^## config" "$STATE_FILE" | grep "^security:" | head -1 | sed 's/security: *//' | sed 's/ *#.*//' | tr -d ' ')
 
-# session=discussion ならスキップ（空の場合も）
-if [[ "$SESSION" != "task" ]]; then
+# admin モードは playbook チェックをバイパス
+if [[ "$SECURITY_MODE" == "admin" ]]; then
     exit 0
 fi
 
 # focus.current を取得
 FOCUS=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^current:" | head -1 | sed 's/current: *//' | sed 's/ *#.*//' | tr -d ' ')
 
-# active_playbooks から現在の focus の playbook を取得
-PLAYBOOK=$(grep -A8 "^## active_playbooks" "$STATE_FILE" | grep "^${FOCUS}:" | head -1 | sed "s/${FOCUS}: *//" | sed 's/ *#.*//' | tr -d ' ')
+# playbook セクションから active を取得
+PLAYBOOK=$(grep -A6 "^## playbook" "$STATE_FILE" | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//' | tr -d ' ')
 
 # playbook が null または空なら ブロック
 if [[ -z "$PLAYBOOK" || "$PLAYBOOK" == "null" ]]; then
+    # 失敗を記録（学習ループ用）
+    if [[ -f ".claude/hooks/failure-logger.sh" ]]; then
+        echo '{"hook": "playbook-guard", "context": "playbook=null", "action": "Edit/Write blocked"}' | bash .claude/hooks/failure-logger.sh 2>/dev/null || true
+    fi
+
     cat >&2 << 'EOF'
 ========================================
   ⛔ playbook 必須
 ========================================
 
-  session=task では playbook が必要です。
+  Edit/Write には playbook が必要です。
 
   対処法（いずれかを実行）:
 
@@ -61,18 +73,41 @@ if [[ -z "$PLAYBOOK" || "$PLAYBOOK" == "null" ]]; then
     または /playbook-init を実行:
       /playbook-init
 
-    または session を discussion に変更:
-      Edit state.md: session: discussion
-
   現在の状態:
 EOF
     echo "    focus: $FOCUS" >&2
-    echo "    session: $SESSION" >&2
     echo "    playbook: null" >&2
     echo "" >&2
     echo "========================================" >&2
     exit 2
 fi
 
-# playbook があればパス
+# --------------------------------------------------
+# playbook の reviewed チェック
+# --------------------------------------------------
+# playbook 自体の編集は許可（reviewed を更新するため）
+if [[ "$FILE_PATH" == *"playbook-"* ]]; then
+    exit 0
+fi
+
+# playbook ファイルが存在するか確認
+if [[ ! -f "$PLAYBOOK" ]]; then
+    exit 0
+fi
+
+# reviewed フラグを取得
+REVIEWED=$(grep -E "^reviewed:" "$PLAYBOOK" 2>/dev/null | head -1 | sed 's/reviewed: *//' | sed 's/ *#.*//' | tr -d ' ')
+
+# reviewed: false の場合は警告（ブロックではない）
+if [[ "$REVIEWED" == "false" ]]; then
+    cat << 'EOF'
+{
+  "decision": "allow",
+  "systemMessage": "[playbook-guard] ⚠️ playbook 未レビュー\n\n実装開始前に reviewer による検証を推奨します:\n  Task(subagent_type='reviewer', prompt='playbook をレビュー')\n\nレビュー完了後、playbook の reviewed: true に更新してください。"
+}
+EOF
+    exit 0
+fi
+
+# playbook があり、reviewed: true（または未設定）ならパス
 exit 0

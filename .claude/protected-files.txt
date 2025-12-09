@@ -17,9 +17,18 @@
 #   admin     - 全て通過（ワークスペース開発者用）
 
 # === HARD_BLOCK: 絶対守護（admin モードでのみ編集可能） ===
-HARD_BLOCK:CONTEXT.md
+# CONTEXT.md は .archive に退避済み（開発履歴）
 HARD_BLOCK:CLAUDE.md
 HARD_BLOCK:.claude/protected-files.txt
+# Hook 回避防止: consent ファイルの削除を禁止
+HARD_BLOCK:.claude/.session-init/consent
+HARD_BLOCK:.claude/.session-init/pending
+# ガバナンス上重要な Hook（admin でも警告付き編集）
+HARD_BLOCK:.claude/hooks/init-guard.sh
+HARD_BLOCK:.claude/hooks/critic-guard.sh
+HARD_BLOCK:.claude/hooks/scope-guard.sh
+HARD_BLOCK:.claude/hooks/executor-guard.sh
+HARD_BLOCK:.claude/hooks/playbook-guard.sh
 
 # === BLOCK: 運用でゆるめ可能（strict: ブロック / trusted: WARN） ===
 BLOCK:plan/template/playbook-format.md

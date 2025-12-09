@@ -93,9 +93,7 @@ fi
 
 # focus.current を取得
 CURRENT=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*current: *//' | sed 's/ *#.*//')
-SESSION=$(grep -A5 "## focus" state.md | grep "session:" | sed 's/.*session: *//' | sed 's/ *#.*//')
 echo -e "  Focus: ${GREEN}$CURRENT${NC}"
-echo -e "  Session: ${GREEN}$SESSION${NC}"
 
 # playbook を取得
 PLAYBOOK=$(awk "/## layer: $CURRENT/,/^## [^l]/" state.md | grep "playbook:" | head -1 | sed 's/.*playbook: *//' | sed 's/ *#.*//')
@@ -147,44 +145,42 @@ fi
 echo ""
 
 # ========================================
-# 3. session=task の場合の追加チェック
+# 3. 追加チェック（critic リマインド）
 # ========================================
-if [ "$SESSION" = "task" ]; then
-    echo -e "${BOLD}--- Task Session チェック ---${NC}"
+echo -e "${BOLD}--- CRITIQUE リマインド ---${NC}"
 
-    # critic リマインド
-    echo -e "  ${RED}[CRITIQUE 必須]${NC}"
-    echo -e "  Phase を done にする前に critic を呼び出しましたか？"
-    echo ""
-    echo -e "  ${YELLOW}呼び出し方法:${NC}"
-    echo "    Task(subagent_type='critic')"
-    echo "    または /crit コマンド"
-    echo ""
+# critic リマインド
+echo -e "  ${RED}[CRITIQUE 必須]${NC}"
+echo -e "  Phase を done にする前に critic を呼び出しましたか？"
+echo ""
+echo -e "  ${YELLOW}呼び出し方法:${NC}"
+echo "    Task(subagent_type='critic')"
+echo "    または /crit コマンド"
+echo ""
 
-    # state.md が更新されているか
-    if git diff --name-only 2>/dev/null | grep -q "state.md"; then
-        echo -e "  ${GREEN}[OK]${NC} state.md は更新済み"
+# state.md が更新されているか
+if git diff --name-only 2>/dev/null | grep -q "state.md"; then
+    echo -e "  ${GREEN}[OK]${NC} state.md は更新済み"
+else
+    if git diff --cached --name-only 2>/dev/null | grep -q "state.md"; then
+        echo -e "  ${GREEN}[OK]${NC} state.md は staged"
     else
-        if git diff --cached --name-only 2>/dev/null | grep -q "state.md"; then
-            echo -e "  ${GREEN}[OK]${NC} state.md は staged"
-        else
-            echo -e "  ${YELLOW}[CHECK]${NC} state.md は更新されていません"
-            WARNINGS=$((WARNINGS + 1))
-        fi
+        echo -e "  ${YELLOW}[CHECK]${NC} state.md は更新されていません"
+        WARNINGS=$((WARNINGS + 1))
     fi
-
-    # playbook が更新されているか
-    if git diff --name-only 2>/dev/null | grep -q "playbook"; then
-        echo -e "  ${GREEN}[OK]${NC} playbook は更新済み"
-    else
-        if git diff --cached --name-only 2>/dev/null | grep -q "playbook"; then
-            echo -e "  ${GREEN}[OK]${NC} playbook は staged"
-        else
-            echo -e "  ${YELLOW}[CHECK]${NC} playbook は更新されていません"
-        fi
-    fi
-    echo ""
 fi
+
+# playbook が更新されているか
+if git diff --name-only 2>/dev/null | grep -q "playbook"; then
+    echo -e "  ${GREEN}[OK]${NC} playbook は更新済み"
+else
+    if git diff --cached --name-only 2>/dev/null | grep -q "playbook"; then
+        echo -e "  ${GREEN}[OK]${NC} playbook は staged"
+    else
+        echo -e "  ${YELLOW}[CHECK]${NC} playbook は更新されていません"
+    fi
+fi
+echo ""
 
 # ========================================
 # 4. 未 push コミットの検知
@@ -220,6 +216,104 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
     fi
 fi
 
+echo ""
+
+# ========================================
+# 5. セッションサマリー生成
+# ========================================
+echo -e "${BOLD}--- セッションサマリー生成 ---${NC}"
+
+SESSIONS_DIR=".claude/logs/sessions"
+mkdir -p "$SESSIONS_DIR"
+
+# セッション番号を決定（その日の連番）
+TODAY=$(date '+%Y-%m-%d')
+SESSION_NUM=$(ls "$SESSIONS_DIR" 2>/dev/null | grep "^${TODAY}" | wc -l | tr -d ' ')
+SESSION_NUM=$((SESSION_NUM + 1))
+SESSION_FILE="${SESSIONS_DIR}/${TODAY}_session-$(printf '%03d' $SESSION_NUM).md"
+
+# state.md から情報取得
+SESSION_START=""
+if [ -f "state.md" ]; then
+    SESSION_START=$(grep "last_start:" state.md 2>/dev/null | sed 's/.*last_start: *//' | head -1)
+fi
+SESSION_END=$(date '+%Y-%m-%d %H:%M:%S')
+
+# playbook の phase 情報取得
+PHASE_INFO=""
+if [ -n "$PLAYBOOK" ] && [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
+    DONE_PHASES=$(grep -E "status: done" "$PLAYBOOK" 2>/dev/null | wc -l | tr -d ' ')
+    PENDING_PHASES=$(grep -E "status: pending" "$PLAYBOOK" 2>/dev/null | wc -l | tr -d ' ')
+    PHASE_INFO="完了: $DONE_PHASES, 残り: $PENDING_PHASES"
+fi
+
+# セッション中のコミット取得
+COMMITS=""
+if [ -n "$SESSION_START" ]; then
+    START_EPOCH=$(date -j -f "%Y-%m-%d %H:%M:%S" "$SESSION_START" "+%s" 2>/dev/null || echo "0")
+    if [ "$START_EPOCH" != "0" ]; then
+        COMMITS=$(git log --since="@$START_EPOCH" --oneline 2>/dev/null | head -10)
+    fi
+fi
+
+# 変更ファイル数
+CHANGED_FILES=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+
+# サマリーファイル生成
+{
+    echo "# セッションサマリー"
+    echo ""
+    echo "## 基本情報"
+    echo ""
+    echo "| 項目 | 内容 |"
+    echo "|------|------|"
+    echo "| 日時 | ${SESSION_START:-不明} → $SESSION_END |"
+    echo "| ブランチ | $CURRENT_BRANCH |"
+    echo "| Focus | $CURRENT |"
+    echo "| Playbook | ${PLAYBOOK:-なし} |"
+    echo "| Phase 進捗 | ${PHASE_INFO:-N/A} |"
+    echo ""
+    echo "## このセッションでの作業"
+    echo ""
+    if [ -n "$COMMITS" ]; then
+        echo "### コミット履歴"
+        echo ""
+        echo '```'
+        echo "$COMMITS"
+        echo '```'
+        echo ""
+    else
+        echo "_このセッションではコミットされていません_"
+        echo ""
+    fi
+    echo "### 変更ファイル（未コミット）"
+    echo ""
+    if [ "$CHANGED_FILES" -gt 0 ]; then
+        echo '```'
+        git status --porcelain 2>/dev/null | head -20
+        if [ "$CHANGED_FILES" -gt 20 ]; then
+            echo "... 他 $((CHANGED_FILES - 20)) 件"
+        fi
+        echo '```'
+    else
+        echo "_変更ファイルなし_"
+    fi
+    echo ""
+    echo "## 結果"
+    echo ""
+    if [ $WARNINGS -gt 0 ]; then
+        echo "- 警告: $WARNINGS 件"
+    else
+        echo "- 正常終了"
+    fi
+    echo ""
+    echo "---"
+    echo ""
+    echo "_自動生成: session-end.sh_"
+} > "$SESSION_FILE"
+
+echo -e "  ${GREEN}[OK]${NC} サマリーを生成しました"
+echo -e "  → ${BLUE}$SESSION_FILE${NC}"
 echo ""
 
 # ========================================

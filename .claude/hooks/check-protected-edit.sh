@@ -9,7 +9,7 @@
 #   BLOCK      - strict: ブロック / trusted: WARN
 #   WARN       - 警告のみ（編集は許可）
 #
-# 設計思想（CONTEXT.md 8.5 準拠）:
+# 設計思想（spec.yaml 8.5 準拠）:
 #   - 軽量（10KB 以下の出力）
 #   - LLMは「ルールを書いても守らない」ため、構造的にブロックする
 #   - このスクリプト自体も保護対象（自己防衛）
@@ -54,10 +54,10 @@ fi
 SECURITY_MODE="strict"
 if [ -f "$STATE_FILE" ]; then
     # ## security セクションから mode: を探す（コードブロック内を考慮）
-    MODE_LINE=$(grep -A 5 "^## security" "$STATE_FILE" 2>/dev/null | grep "mode:" | head -1 || echo "")
+    MODE_LINE=$(grep -A 10 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | head -1 || echo "")
     if [ -n "$MODE_LINE" ]; then
         # コメントを除去してから値を取得
-        SECURITY_MODE=$(echo "$MODE_LINE" | sed "s/#.*//" | sed "s/mode:[[:space:]]*//" | tr -d " ")
+        SECURITY_MODE=$(echo "$MODE_LINE" | sed "s/#.*//" | sed "s/security:[[:space:]]*//" | tr -d " ")
     fi
 fi
 
@@ -70,6 +70,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     [[ -z "$line" ]] && continue
     if [[ "$line" =~ ^HARD_BLOCK:(.+)$ ]]; then
         PROTECTED_PATH="${BASH_REMATCH[1]}"
+        # shellcheck disable=SC2053  # Intentional glob matching for wildcard patterns
         if [[ "$RELATIVE_PATH" == "$PROTECTED_PATH" ]] || [[ "$RELATIVE_PATH" == $PROTECTED_PATH ]]; then
             IS_HARD_BLOCK=true
             break
@@ -158,6 +159,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     fi
 
     # パスが一致するかチェック
+    # shellcheck disable=SC2053  # Intentional glob matching for wildcard patterns
     if [[ "$RELATIVE_PATH" == "$PROTECTED_PATH" ]] || [[ "$RELATIVE_PATH" == $PROTECTED_PATH ]]; then
         
         # HARD_BLOCK: 常にブロック
