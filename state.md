@@ -36,18 +36,18 @@ branch: feat/pr-automation
 ## goal
 
 ```yaml
-phase: p3
-name: playbook-pr-automation / PR 自動作成フック統合
-task: create-pr-hook.sh 作成と settings.json 統合
+phase: p4
+name: playbook-pr-automation / マージ自動化スクリプト強化
+task: merge-pr.sh 作成と PR マージ処理の実装
 assignee: claudecode
 
 done_criteria:
-  - create-pr-hook.sh が .claude/hooks/ に存在する
-  - POST_LOOP で PR 作成が自動呼び出しされる
-  - CLAUDE.md POST_LOOP セクションに「PR 作成」を記載
-  - .claude/settings.json に hook 登録が追加される
-  - settings.json の JSON 形式が正しい
-  - check-coherence.sh が PASS する
+  - merge-pr.sh が .claude/hooks/ に存在する
+  - PR のステータスを確認する処理を含む（draft → ready）
+  - gh pr merge コマンドで自動マージを実行する処理を含む
+  - マージコンフリクト検出とエラー通知を含む
+  - マージコミットメッセージが CLAUDE.md に従っている
+  - ShellCheck でエラーなしに通る
   - 実際に動作確認済み（test_method 実行）
 ```
 
@@ -65,7 +65,7 @@ user_verified: false
 ## session
 
 ```yaml
-last_start: 2025-12-10 04:00:44
+last_start: 2025-12-10 04:26:57
 last_end: 2025-12-09 21:22:42
 ```
 

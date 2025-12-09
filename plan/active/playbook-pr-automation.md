@@ -112,7 +112,7 @@ done_when:
     3. CLAUDE.md 更新内容を視認確認
     4. test 環境で hook の呼び出し順序を確認
     5. git log で正しく記録されているか確認
-  status: pending
+  status: done
 
 # Phase 4: マージ自動化スクリプト強化
 - id: p4
