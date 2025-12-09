@@ -63,7 +63,6 @@ mkdir -p "$INIT_DIR"
 # user-intent.md は保持（compact 後の復元に必要）、セッション管理ファイルのみリセット
 rm -f "$INIT_DIR/pending" "$INIT_DIR/consent" "$INIT_DIR/required_playbook" 2>/dev/null || true
 touch "$INIT_DIR/pending"
-touch "$INIT_DIR/consent"  # consent-guard.sh 用 - [理解確認] 完了で削除
 
 # === state.md から情報抽出 ===
 [ ! -f "state.md" ] && echo "[WARN] state.md not found" && exit 0
@@ -79,6 +78,12 @@ BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 
 # init-guard.sh 用に playbook パスを記録
 echo "$PLAYBOOK" > "$INIT_DIR/required_playbook"
+
+# consent ファイルは playbook が存在しない場合のみ作成
+# playbook 存在 = 計画済み = 合意済み → consent 不要
+if [ "$PLAYBOOK" = "null" ] || [ ! -f "$PLAYBOOK" ]; then
+    touch "$INIT_DIR/consent"  # [理解確認] 完了で削除
+fi
 
 # roadmap 取得（workspace レイヤー用）
 ROADMAP=$(grep -A10 "## plan_hierarchy" state.md 2>/dev/null | grep "roadmap:" | sed 's/.*: *//' | sed 's/ *#.*//')

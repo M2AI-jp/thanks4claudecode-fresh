@@ -36,17 +36,19 @@ branch: feat/pr-automation
 ## goal
 
 ```yaml
-phase: p1
-name: playbook-pr-automation / 現状分析と設計
-task: PR 作成・マージフローの現状分析
+phase: p2
+name: playbook-pr-automation / PR 作成スクリプト実装
+task: create-pr.sh スクリプトの実装
 assignee: claudecode
 
 done_criteria:
-  - docs/git-operations.md の「PR 作成・マージ」セクションを読んだ
-  - CLAUDE.md の「POST_LOOP」セクションを読んだ
-  - GitHub API vs gh CLI の比較表を作成した
-  - 実装方針（gh CLI 使用）を決定した
-  - 実装予定の Phase を列挙した
+  - create-pr.sh が .claude/hooks/ に存在する
+  - スクリプトが gh CLI で PR を作成する処理を含む
+  - PR の説明文に done_criteria を含める仕様が実装されている
+  - PR タイトルに playbook 名と phase 名を含める仕様が実装されている
+  - エラーハンドリング（PR 既存の場合の対応）が実装されている
+  - ShellCheck でエラーなしに通る
+  - 実際に動作確認済み（test_method 実行）
 ```
 
 ---
