@@ -117,8 +117,8 @@ medium:
 
 # Micro: セッション単位の作業（playbook の 1 Phase）
 micro:
-  phase: 3
-  name: 全ファイル棚卸し
+  phase: 4
+  name: setup 完成
   status: implementing
 
 # 上位計画参照（.archive/ に退避済み、必要時のみ復元）
@@ -195,20 +195,20 @@ playbook: plan/active/playbook-system-completion.md
 
 ```yaml
 phase: implementing
-current_phase: 3
-task: 全ファイル棚卸しドキュメント作成
+current_phase: 4
+task: setup 完成
 assignee: claude_code
 
 done_criteria:
-  - docs/file-inventory.md が作成されている
-  - 全ファイル（100+ 件）の存在理由が記載されている
-  - 削除候補が理由付きでリストされている
-  - 統合候補が理由付きでリストされている
-  - カテゴリ別に整理されている
+  - setup/playbook-setup.md が現在の全機能を反映している
+  - 設計思想セクションが強化されている
+  - Phase 構成が現状に合わせて見直されている
+  - 新規ユーザー向けクイックスタートがある
+  - このリポジトリを実例として参照するセクションがある
 ```
 
-> **playbook-system-completion Phase 3 開始。**
-> 全ファイルの存在理由を明確化し、削除候補・統合候補をドキュメント化する。
+> **playbook-system-completion Phase 4 開始。**
+> setup/playbook-setup.md を現在の機能増加を反映して完成させる。
 
 ---
 
