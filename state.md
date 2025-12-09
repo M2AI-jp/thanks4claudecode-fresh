@@ -74,7 +74,7 @@ expert:
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-skills-integration.md
+product:          plan/active/playbook-artifact-health.md
 ```
 
 ---
@@ -195,19 +195,19 @@ playbook: null  # playbook-system-completion 完了・アーカイブ済み
 
 ```yaml
 phase: implementing
-current_phase: p4
-task: Skills 統合 - コンテキスト0から検証
+current_phase: p1
+task: 仕組みの健全化 - アーティファクト管理最適化
 assignee: claudecode
 
 done_criteria:
-  - /clear 実行後、INIT で必要なファイルが全て参照される
-  - Skills への呼び出しルートが SubAgents 経由で確立
-  - template/ への参照ルートが pm 経由で確立
-  - 「仕組みとして参照されないファイル」が存在しない（アーカイブ系を除く）
+  - 完了済み playbook が plan/active/ に残存する根本原因が特定されている
+  - phase-*.md ファイルの作成目的が明確化されている
+  - アーカイブプロセスが「提案のみ」から改善されている
+  - 再発防止ルールが文書化されている
 ```
 
-> **playbook-skills-integration 進行中。**
-> SubAgents → Skills の連鎖を確立し、全ファイルへのアクセス経路を整備。
+> **playbook-artifact-health 開始。**
+> playbook-skills-integration p4 を代替し、仕組みの根本的な健全化を実施。
 
 ---
 
@@ -244,8 +244,8 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-09 20:57:11
-last_end: 2025-12-09 20:57:09
+last_start: 2025-12-09 21:22:44
+last_end: 2025-12-09 21:22:42
 uncommitted_warning: false
 ```
 

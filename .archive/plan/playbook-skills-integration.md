@@ -1,6 +1,9 @@
 # playbook-skills-integration.md
 
 > **Skills と template/ が仕組みとして機能するよう、SubAgents 経由の呼び出しルートを確立する**
+>
+> **注記**: このタスク（p4）の設計に問題があったため、
+> playbook-artifact-health に置き換え。p1-p3 は完了済み。
 
 ---
 
@@ -12,6 +15,7 @@ branch: feat/skills-integration
 created: 2025-12-09
 issue: null
 derives_from: null  # 独立タスク（コンテキスト参照の構造的欠陥修正）
+status: archived  # p4 を artifact-health に代替
 ```
 
 ---
@@ -98,7 +102,20 @@ done_when:
     2. INIT を実行
     3. 各ファイルカテゴリへのアクセス経路を確認
     4. 経路がないファイルをリストアップ
-  status: pending
+  status: cancelled  # playbook-artifact-health に統合・置換
+  notes: |
+    問題点:
+      1. done_criteria 4「仕組みとして参照されないファイルが存在しない」が曖昧
+      2. 対処療法でアーカイブに移動させようとしていた（根本改善なし）
+      3. 根本原因「なぜアーカイブされないのか」が不明
+
+    解決策:
+      playbook-artifact-health.md が完全な分析と改善を実施:
+        - p1: 完了済み playbook の未アーカイブ原因分析
+        - p2: phase-*.md 作成目的の明確化
+        - p3-p4: アーカイブ/ファイル作成プロセス改善
+        - p5-p8: 健全化実行
+        - p9-p10: 検証と再発防止ルール化
 ```
 
 ---
@@ -107,4 +124,5 @@ done_when:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-09 | playbook-artifact-health に置換。p4 の根本設計を再考。p1-p3 は成果物（CLAUDE.md SKILLS_CHAIN セクション）として保持。 |
 | 2025-12-09 | 初版作成。Skills 統合タスク。 |
