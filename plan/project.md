@@ -21,10 +21,11 @@ solution: 三位一体アーキテクチャによる多層防御
 ```yaml
 三位一体:
   Hooks: 構造的強制（exit 2 でブロック）
-  SubAgents: 検証（critic/pm/coherence）
+  SubAgents: 検証（critic/pm/plan-reviewer/coherence）
   CLAUDE.md: 思考制御（ガイドライン遵守）
 
 核心: 単独では機能しない。組み合わせて初めて強制力を持つ。
+計画品質: pm（作成）→ plan-reviewer（検証）で「作成者 ≠ 検証者」を強制。
 
 workflow:
   1. SessionStart → pending 作成 → Read 強制
@@ -74,6 +75,15 @@ workflow:
 > **完了済みタスク（サマリーのみ）**
 
 ```yaml
+plan-double-check:
+  date: 2025-12-10
+  summary: 計画ダブルチェック機能 + フォルダ構造統合
+  result:
+    - plan-reviewer SubAgent 新規作成（普遍的レビュー基準6項目）
+    - pm.md に plan-reviewer 必須呼び出し追加
+    - plan/active/ 廃止 → plan/ 直下に playbook 配置
+    - 「作成者 ≠ 検証者」原則の構造的強制
+
 playbook-system-foundation-redesign:
   date: 2025-12-10
   summary: システム基盤再設計
@@ -139,6 +149,7 @@ old_roadmap: .archive/plan/roadmap.md
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-10 | plan-double-check 完了。plan-reviewer SubAgent 追加、フォルダ構造統合。 |
 | 2025-12-10 | playbook-system-foundation-redesign 完了。project.md/state.md 大幅削減。 |
 | 2025-12-10 | playbook-context-architecture 完了。 |
 | 2025-12-09 | system_completion/engineering_ecosystem 完了。 |
