@@ -36,18 +36,16 @@ branch: main
 ## goal
 
 ```yaml
-phase: p7
-name: playbook-pr-automation / ドキュメント更新とクリーンアップ
-task: PR 自動化機能の実装完了をドキュメントに反映
+phase: complete
+name: playbook-pr-automation 完了
+task: POST_LOOP 実行（アーカイブ → 次タスク導出）
 assignee: claudecode
 
 done_criteria:
-  - docs/git-operations.md の「PR 作成・マージ」セクションを「実装済み」に更新
-  - docs/current-implementation.md が自動更新されている
-  - 実装関連のメモファイルが削除されている（temp-*.md など）
-  - README.md に「PR 自動化」機能を追加
-  - check-coherence.sh が PASS する
-  - 実際に動作確認済み（test_method 実行）
+  - playbook の全 Phase が done
+  - playbook がアーカイブされている
+  - project.md の milestone が更新されている
+  - 次タスクが導出されている
 ```
 
 ---
@@ -64,7 +62,7 @@ user_verified: false
 ## session
 
 ```yaml
-last_start: 2025-12-10 04:26:57
+last_start: 2025-12-10 04:56:25
 last_end: 2025-12-09 21:22:42
 ```
 

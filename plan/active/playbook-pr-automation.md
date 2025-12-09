@@ -215,7 +215,7 @@ done_when:
     3. README.md を読んで機能説明が正確か確認
     4. test ブランチで git status を実行して stray file がないか確認
     5. check-coherence.sh を実行して整合性を確認
-  status: pending
+  status: done
 ```
 
 ---

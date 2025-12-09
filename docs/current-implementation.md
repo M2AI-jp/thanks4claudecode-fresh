@@ -7,7 +7,7 @@
 
 ---
 
-最終更新: 2025-12-10 03:23:10
+最終更新: 2025-12-10 04:53:24
 
 ---
 
@@ -39,6 +39,7 @@
 | log-subagent | PostToolUse:Task | # log-subagent.sh - Subagent 発動ログ記録 + critic 結果処理 |
 | doc-freshness-check | PostToolUse:Read | # doc-freshness-check.sh - PostToolUse:Read Hook: ドキュメント鮮度チェック |
 | archive-playbook | PostToolUse:Edit | # archive-playbook.sh - playbook 完了時の自動アーカイブ提案 |
+| create-pr-hook | PostToolUse:Edit | # create-pr-hook.sh - playbook 完了時の PR 自動作成フック |
 | update-tracker | PostToolUse:Edit | # update-tracker.sh - PostToolUse:Edit/Write Hook: 変更追跡と自動更新提案 |
 | update-tracker | PostToolUse:Write | # update-tracker.sh - PostToolUse:Edit/Write Hook: 変更追跡と自動更新提案 |
 | pre-compact | PreCompact | # pre-compact.sh - PreCompact Hook: 完全な状態スナップショット保存 |
@@ -101,7 +102,7 @@
 
 ## 統計
 
-- Hooks: 26 個
+- Hooks: 29 個
 - SubAgents: 6 個
 - Skills: 13 個
 - Frameworks: 2 個
@@ -112,4 +113,4 @@
 
 | 日時 | 内容 |
 |------|------|
-| 2025-12-10 03:23:10 | 自動生成 |
+| 2025-12-10 04:53:24 | 自動生成 |

@@ -72,29 +72,48 @@ auto_branch:
   Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-### 2. 自動マージ（playbook 完了時）
+### 2. PR 作成・マージ（playbook 完了時）★実装済み
 
 ```yaml
 トリガー: playbook の全 Phase が done
 前提条件:
   - 全 Phase critic PASS
   - 未コミット変更がない（自動コミット済み）
-  - main ブランチが最新
+  - リモートに push 済み
 
-実行内容:
-  1. 現在のブランチ名を取得
-  2. git checkout main
-  3. git pull origin main（リモートがあれば）
-  4. git merge {branch} --no-edit
-  5. マージ成功を確認
-  6. （オプション）git push
+実行内容（自動化）:
+  1. create-pr-hook.sh が PostToolUse:Edit で自動発火
+  2. create-pr.sh で GitHub に PR を作成
+  3. merge-pr.sh で PR をマージ（gh pr merge --auto）
+  4. ローカルブランチを main に同期
 
-マージコミットメッセージ:
-  Merge branch '{branch}' - {playbook 名} 完了
+スクリプト:
+  - .claude/hooks/create-pr-hook.sh（PR 作成フック）
+  - .claude/hooks/create-pr.sh（PR 作成本体）
+  - .claude/hooks/merge-pr.sh（PR マージ）
 
-注意:
-  - コンフリクト発生時は手動解決を促す
-  - main への直接 push は行わない（ユーザー許可後）
+PR タイトル形式:
+  feat({playbook}/{phase}): {goal summary}
+
+PR 本文形式:
+  ## Summary
+  {playbook.goal.summary}
+
+  ## Done When (Playbook Goal)
+  - {done_when 1}
+  - {done_when 2}
+
+  ## Done Criteria (Current Phase)
+  - {criteria 1}
+  - {criteria 2}
+
+マージオプション:
+  gh pr merge --merge --auto --delete-branch
+
+条件分岐:
+  - Draft PR: エラー（gh pr ready で解除を促す）
+  - コンフリクト: エラー（手動解決を促す）
+  - 必須チェック未完了: --auto で待機
 ```
 
 ### 3. 自動ブランチ作成（新タスク開始時）
@@ -228,5 +247,6 @@ branch_on_task: true      # 新タスク開始時の自動ブランチ
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-10 | PR 作成・マージ自動化を「実装済み」に更新。create-pr.sh, merge-pr.sh 追加。 |
 | 2025-12-09 | docs/ へ移動（SubAgent から参照ドキュメントへ変更）。 |
 | 2025-12-09 | 初版作成。git 自動化参照ドキュメント。 |
