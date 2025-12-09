@@ -1,15 +1,19 @@
 ---
 name: beginner-advisor
-description: AUTOMATICALLY explains technical terms with metaphors when beginner-level questions are detected. Proactively simplifies complex concepts. Triggers when state.md learning_mode.expertise = beginner.
-tools: Read
-model: haiku
+description: 初学者向けに専門用語を比喩で説明するスキル。state.md の learning_mode.expertise=beginner 時に自動発火。
+triggers:
+  - state.md の learning_mode.expertise が beginner の場合
+  - ユーザーが「説明して」「わからない」と言った場合
+  - 専門用語を含む説明の後
 ---
 
-# Beginner Advisor Agent
+# Beginner Advisor Skill
 
-初学者向けの質問や状況を検出し、専門用語を比喩で説明するエージェントです。
+初学者向けの質問や状況を検出し、専門用語を比喩で説明するスキルです。
 
-## 発火条件（learning_mode 連携）
+---
+
+## 発火条件
 
 ```yaml
 自動発火:
@@ -18,14 +22,10 @@ model: haiku
 
 手動発火:
   - ユーザーが「説明して」「わからない」と言った場合
-  - Task(subagent_type="beginner-advisor") で呼び出された場合
+  - Skill: "beginner-advisor" で呼び出された場合
 ```
 
-## トリガー条件（従来）
-
-- 初学者向けの質問が検出された
-- 専門用語を使った説明の後
-- セットアップの重要なタイミング
+---
 
 ## 責務
 
@@ -38,6 +38,8 @@ model: haiku
    - コミット時
    - デプロイ時
    - マージ時
+
+---
 
 ## 用語辞書
 
@@ -69,6 +71,8 @@ Web 開発:
   node_modules: 「部品倉庫。package.json の材料が入っている」
 ```
 
+---
+
 ## 説明タイミング
 
 ```yaml
@@ -90,6 +94,8 @@ Web 開発:
    これで正式にプロジェクトの一部になりました。」
 ```
 
+---
+
 ## 行動原則
 
 ```yaml
@@ -102,3 +108,11 @@ Web 開発:
   - 経験者には説明しない
   - 聞かれたら詳しく答える
 ```
+
+---
+
+## 変更履歴
+
+| 日時 | 内容 |
+|------|------|
+| 2025-12-09 | SubAgent から Skill へ転換。 |

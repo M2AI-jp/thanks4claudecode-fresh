@@ -1,16 +1,11 @@
----
-name: git-ops
-description: Git operations reference document. Defines auto-commit, auto-merge, auto-branch procedures. Operations are executed directly by Claude (not via SubAgent call).
-tools: Read, Bash, Grep
-model: haiku
----
-
 # Git Operations Reference
 
 git 操作の標準手順を定義する参照ドキュメントです。
 
 > **設計方針**: git 操作は Claude が CLAUDE.md の指示に従って直接実行します。
 > SubAgent 呼び出しではなく、bash コマンドの直接実行による自動化です。
+
+---
 
 ## 実行方式
 
@@ -105,7 +100,7 @@ auto_branch:
 ### 3. 自動ブランチ作成（新タスク開始時）
 
 ```yaml
-トリガー: pm から呼び出し（/task-start 経由）
+トリガー: pm SubAgent 経由（/task-start）
 前提条件:
   - 現在 main ブランチにいる、または main からの分岐
   - 未コミット変更がない
@@ -131,7 +126,7 @@ auto_branch:
 タスク開始フロー:
   1. ユーザーが /task-start を実行
   2. pm が project.md を参照
-  3. pm が git-ops を呼び出してブランチ作成
+  3. pm がブランチ作成を実行
   4. pm が playbook を作成
   5. pm が state.md を更新
 
@@ -139,12 +134,12 @@ Phase 完了フロー:
   1. Claude が Phase の作業を完了
   2. critic が PASS を返す
   3. Claude が state.md を更新
-  4. git-ops を呼び出して自動コミット
+  4. Claude が自動コミットを実行
 
 playbook 完了フロー:
   1. 最終 Phase が done
   2. POST_LOOP が発動
-  3. git-ops を呼び出して自動マージ
+  3. Claude が自動マージを実行
   4. pm を呼び出して次タスク導出
 ```
 
@@ -233,4 +228,5 @@ branch_on_task: true      # 新タスク開始時の自動ブランチ
 
 | 日時 | 内容 |
 |------|------|
-| 2025-12-09 | 初版作成。git 自動化 SubAgent。 |
+| 2025-12-09 | docs/ へ移動（SubAgent から参照ドキュメントへ変更）。 |
+| 2025-12-09 | 初版作成。git 自動化参照ドキュメント。 |

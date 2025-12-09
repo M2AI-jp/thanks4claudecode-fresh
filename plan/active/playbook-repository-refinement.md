@@ -147,7 +147,7 @@ done_when:
     2. 新規セッションを開始
     3. [自認] が正常出力
     4. critic を呼び出して PASS
-  status: in_progress
+  status: done
 ```
 
 ---

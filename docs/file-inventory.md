@@ -91,16 +91,16 @@
 
 | ファイル | 存在理由 | 状態 |
 |---------|---------|------|
-| beginner-advisor.md | 初心者向け説明 SubAgent | **必須** |
-| coherence.md | 整合性チェック SubAgent | **必須** |
+| ~~beginner-advisor.md~~ | Skill へ転換（.claude/skills/beginner-advisor/） | - |
+| ~~coherence.md~~ | 削除済み（check-coherence.sh Hook で代替） | - |
 | critic.md | done_criteria 検証 SubAgent | **必須**（報酬詐欺防止） |
-| git-ops.md | git 操作参照ドキュメント | **必須**（git 自動化） |
+| ~~git-ops.md~~ | docs/git-operations.md へ移動 | - |
 | health-checker.md | システム健全性チェック | **必須** |
 | plan-guard.md | 計画整合性チェック | **必須** |
 | pm.md | プロジェクト管理 SubAgent | **必須**（タスク開始必須経由点） |
 | reviewer.md | コードレビュー SubAgent | **必須** |
 | setup-guide.md | セットアップガイド SubAgent | **必須** |
-| state-mgr.md | state.md 管理 SubAgent | **必須** |
+| ~~state-mgr.md~~ | 削除済み（state Skill で代替） | - |
 
 ### 2.3 Commands（commands/ - 7 件）
 
@@ -171,10 +171,11 @@
 | state-rollback.sh | state.md ロールバック | **必須** |
 | test-rollback.sh | ロールバックテスト | **検討**（テスト用） |
 
-### 2.8 Skills（skills/ - 9 件）
+### 2.8 Skills（skills/ - 10 件）
 
 | ファイル | 存在理由 | 状態 |
 |---------|---------|------|
+| beginner-advisor/skill.md | 初学者向け説明スキル（SubAgent から転換） | **必須** |
 | context-management/SKILL.md | コンテキスト管理スキル | **必須** |
 | deploy-checker/skill.md | デプロイチェックスキル | **検討**（テンプレート） |
 | execution-management/SKILL.md | 実行管理スキル | **必須** |

@@ -366,26 +366,26 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 
 ---
 
-### coherence【推奨】
+### coherence【自動・Hook】
 
-以下の状況では、**必ず** `Task(subagent_type='coherence')` を使用すること：
+整合性チェックは **check-coherence.sh Hook** が自動実行します。
 
-- git commit する直前
-- state.md を編集した後
-- 「整合性が怪しい」と感じたとき
+- **自動発火**: git commit 前（PreToolUse:Bash）
+- **手動実行**: `bash .claude/hooks/check-coherence.sh`
 
-手動: `/lint`
+SubAgent は削除されました（Hook で十分なため）。
 
 ---
 
-### state-mgr【自動】
+### state 管理【Skill】
 
-以下の状況では、**必ず** `Task(subagent_type='state-mgr')` を使用すること：
+state.md の管理は **state Skill** が提供します。
 
-- focus を切り替えたいとき（例: workspace → product）
-- state.md の構造的な更新が必要なとき
+- **場所**: .claude/skills/state/skill.md
+- **用途**: focus 切り替え、state.md の構造理解
+- **呼び出し**: `Skill: "state"`
 
-手動: `/focus`
+SubAgent は削除されました（Skill で十分なため）。
 
 ---
 
@@ -398,12 +398,15 @@ MCP: context7 を活用（ライブラリの公式ドキュメント取得）
 
 ---
 
-### beginner-advisor【自動】
+### beginner-advisor【Skill】
 
-以下の状況では、**必ず** `Task(subagent_type='beginner-advisor')` を使用すること：
+初学者向け説明は **beginner-advisor Skill** が提供します。
 
-- ユーザーが「〇〇って何？」「わからない」と言ったとき
-- git commit / git push / デプロイなど重要操作の直前
+- **場所**: .claude/skills/beginner-advisor/skill.md
+- **自動発火**: state.md の learning_mode.expertise = beginner 時
+- **呼び出し**: `Skill: "beginner-advisor"`
+
+SubAgent は削除されました（Skill で十分なため）。
 
 ---
 

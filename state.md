@@ -74,7 +74,7 @@ expert:
 plan-template:    null
 workspace:        null                       # 完了した playbook は .archive/plan/ に退避
 setup:            null                       # テンプレートは常に pending（正常）
-product:          plan/active/playbook-repository-refinement.md
+product:          plan/active/playbook-component-refinement.md
 ```
 
 ---
@@ -179,41 +179,43 @@ playbook: null  # テンプレートは pending のまま（正常）
 ## layer: product
 
 ```yaml
-state: done
-sub: repository-refinement
-playbook: null
+state: implementing
+sub: component-refinement
+playbook: plan/active/playbook-component-refinement.md
 ```
 
 ### 概要
 > ユーザーが実際にプロダクトを開発するためのレイヤー。
 > setup 完了後、plan/project.md を参照して TDD で開発。
-> playbook-repository-refinement 完了（critic PASS）。問題の構造的解決。
+> playbook-component-refinement 開始。コンポーネント構造改善。
 
 ---
 
 ## goal
 
 ```yaml
-phase: p6
-current_phase: p6
-task: playbook-repository-refinement
+phase: p1
+current_phase: p1
+task: playbook-component-refinement
 assignee: claudecode
 
 done_criteria:
-  - 新規セッションでエラーなし
-  - admin モードで適切にバイパス
-  - 全 Hook が正常発火
+  - coherence SubAgent が削除されている
+  - state-mgr SubAgent が削除されている
+  - git-ops が docs/ に移動されている
+  - beginner-advisor が Skill に転換されている
+  - pre-bash-check.sh のメッセージが条件化されている
   - critic PASS
 ```
 
-> **playbook-repository-refinement p6 進行中。** 最終検証。
+> **playbook-component-refinement p1 開始。** coherence SubAgent 削除。
 
 ---
 
 ## verification
 
 ```yaml
-self_complete: true
+self_complete: false
 user_verified: false
 ```
 
@@ -243,7 +245,7 @@ forbidden: [pending→implementing], [pending→done], [*→done without state_u
 > **Hooks による自動更新。LLM の行動に依存しない。**
 
 ```yaml
-last_start: 2025-12-09 22:34:12
+last_start: 2025-12-09 23:15:52
 last_end: 2025-12-09 21:22:42
 uncommitted_warning: false
 ```
