@@ -79,15 +79,33 @@ playbook の全 Phase が done
      # - playbooks[] に playbook 名を追記
      ```
 
-4. /clear アナウンス（★新機能 M004）:
+4. /clear アナウンス（★改善 M008）:
    - playbook 完了時にユーザーに以下を案内:
      ```
-     [playbook 完了]
-     playbook-{name} が全 Phase 完了しました。
-
-     コンテキスト使用率を確認し、必要に応じて /clear を実行してください。
-     /context で確認 → /clear で リセット可能です。
+     ┌────────────────────────────────────────────────┐
+     │ 🎉 playbook 完了: playbook-{name}              │
+     │                                                │
+     │ 📝 元のタスク:                                 │
+     │    {user-intent.md から最新のプロンプト要約}   │
+     │                                                │
+     │ ✅ 成果物:                                     │
+     │    - {作成したファイル}                        │
+     │    - {更新したファイル}                        │
+     │                                                │
+     │ 📊 project 進捗: {X}/{Y} milestones            │
+     │                                                │
+     │ 🔜 ネクストアクション:                         │
+     │    次の milestone: {M00X} - {name}             │
+     │    または「全 milestone 達成済み」             │
+     │                                                │
+     │ ⚠️ /clear を実行してください                   │
+     └────────────────────────────────────────────────┘
      ```
+   - 情報源:
+     - 元のタスク: .claude/.session-init/user-intent.md
+     - 成果物: playbook の done_criteria
+     - 進捗: project.md の milestones
+   - archive-playbook.sh が自動で出力（実装済み）
 
 5. 次タスクの導出（計画の連鎖）★pm 経由必須:
    - pm SubAgent を呼び出す

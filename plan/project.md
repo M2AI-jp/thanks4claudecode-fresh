@@ -146,6 +146,25 @@ success_criteria:
     - [x] SubAgent 一覧（8種類）が記載されている
     - [x] Skill 一覧（13個）が記載されている
     - [x] ファイル間の依存関係が図解されている
+
+- id: M008
+  name: "Clear時コンテキスト継承 & Tech Stack & 5W1H理解確認"
+  description: |
+    1. /clear 推奨アナウンス時に「元のプロンプト」「成果物」「次のアクション」を
+       明示し、clear 前後の混乱を防止する。
+    2. project.md の tech_stack を人間にも読みやすい自然言語ドキュメントとして
+       独立ファイル（docs/tech-stack.md）に展開する。
+    3. [理解確認] 機能を 5W1H 形式で構造化し、理解の精度を向上させる。
+  status: achieved
+  achieved_at: 2025-12-13
+  depends_on: [M007]
+  playbooks: [playbook-clear-context-enhancement.md]
+  done_when:
+    - [x] Clear時アナウンスに「元のプロンプト要約」が含まれる
+    - [x] Clear時アナウンスに「成果物サマリー」が含まれる
+    - [x] Clear時アナウンスに「ネクストアクション提案」が含まれる
+    - [x] docs/tech-stack.md が存在し、自然言語で充実した説明がある
+    - [x] [理解確認] が 5W1H 形式で出力される
 ```
 
 ---

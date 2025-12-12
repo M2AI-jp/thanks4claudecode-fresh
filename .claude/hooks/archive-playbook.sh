@@ -86,23 +86,67 @@ PLAYBOOK_NAME=$(basename "$FILE_PATH")
 ARCHIVE_DIR=".archive/plan"
 ARCHIVE_PATH="$ARCHIVE_DIR/$PLAYBOOK_NAME"
 
+# === 追加情報の収集 ===
+
+# 1. 元のプロンプト（user-intent.md から最新を取得）
+INTENT_FILE=".claude/.session-init/user-intent.md"
+ORIGINAL_PROMPT=""
+if [ -f "$INTENT_FILE" ]; then
+    # 最新のユーザー意図を1件取得（## [timestamp] の次の行からコードブロック終了まで）
+    ORIGINAL_PROMPT=$(awk '/^## \[/{found=1; next} found && /^```/{in_block=!in_block; next} found && in_block{print; if(NR>5) exit}' "$INTENT_FILE" 2>/dev/null | head -3)
+    [ -z "$ORIGINAL_PROMPT" ] && ORIGINAL_PROMPT="(記録なし)"
+fi
+
+# 2. 成果物サマリー（playbook の done_criteria から抽出）
+ARTIFACTS=""
+if [ -f "$FILE_PATH" ]; then
+    # done_criteria から「作成」「更新」「実装」を含む行を抽出
+    ARTIFACTS=$(grep -E "^\s+- .*(作成|更新|実装|追加|生成|完了)" "$FILE_PATH" 2>/dev/null | head -5 | sed 's/^\s*- /  - /')
+    [ -z "$ARTIFACTS" ] && ARTIFACTS="  - (playbook の done_criteria を参照)"
+fi
+
+# 3. ネクストアクション（project.md から次の milestone を検索）
+NEXT_ACTION=""
+if [ -f "plan/project.md" ]; then
+    # status: not_started または in_progress の milestone を検索
+    NEXT_MILESTONE=$(awk '/^- id: M[0-9]+/,/^- id: M[0-9]+/{if(/status: (not_started|in_progress)/){found=1} if(found && /name:/){print; exit}}' plan/project.md 2>/dev/null | sed 's/.*name: *//' | sed 's/"//g')
+    if [ -n "$NEXT_MILESTONE" ]; then
+        NEXT_ACTION="次の milestone: $NEXT_MILESTONE"
+    else
+        NEXT_ACTION="全 milestone 達成済み - 次のタスクをお知らせください"
+    fi
+fi
+
+# 4. project 進捗（達成/全体）
+TOTAL_MILESTONES=$(grep -c "^- id: M[0-9]" plan/project.md 2>/dev/null || echo "0")
+ACHIEVED_MILESTONES=$(grep -c "status: achieved" plan/project.md 2>/dev/null || echo "0")
+
 # 全 Phase が done の場合、アーカイブを提案
 cat << EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📦 Playbook 完了検出
+  🎉 Playbook 完了: $PLAYBOOK_NAME
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Playbook: $RELATIVE_PATH
-  Status: 全 $TOTAL_PHASES Phase が done
+  📝 元のタスク:
+$ORIGINAL_PROMPT
 
-  アーカイブを推奨します:
+  ✅ 成果物:
+$ARTIFACTS
+
+  📊 project 進捗: $ACHIEVED_MILESTONES/$TOTAL_MILESTONES milestones
+
+  🔜 ネクストアクション:
+     $NEXT_ACTION
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⚠️ /clear を実行してください
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  コンテキストがリフレッシュされ、動作が安定します。
+
+  アーカイブコマンド:
     mkdir -p $ARCHIVE_DIR
     mv $RELATIVE_PATH $ARCHIVE_PATH
-
-  アーカイブ後:
-    1. state.md の active_playbooks を null に更新
-    2. 新しい playbook を作成（必要に応じて）
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
