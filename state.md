@@ -18,7 +18,7 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-clear-context-enhancement.md
+active: null  # M008 完了、アーカイブ済み
 branch: feat/clear-context-enhancement
 ```
 
@@ -27,14 +27,9 @@ branch: feat/clear-context-enhancement
 ## goal
 
 ```yaml
-milestone: M008  # Clear時コンテキスト継承 & Tech Stack & 5W1H理解確認
-phase: done  # 全 Phase 完了
-done_criteria:
-  - [x] Clear時アナウンスに「元のプロンプト要約」が含まれる
-  - [x] Clear時アナウンスに「成果物サマリー」が含まれる
-  - [x] Clear時アナウンスに「ネクストアクション」が含まれる
-  - [x] docs/tech-stack.md が自然言語で充実した説明を持つ
-  - [x] [理解確認] が 5W1H 形式で構造化される
+milestone: null  # M008 完了、次の milestone 待ち
+phase: null
+done_criteria: []
 ```
 
 ---
