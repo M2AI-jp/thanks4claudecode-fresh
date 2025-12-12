@@ -128,6 +128,24 @@ success_criteria:
       - done_criteria の曖昧表現が自動検出される
       - criteria: test_command が1:1で紐付けられている
       - critic が criteria 品質をチェックできる
+
+- id: M007
+  name: "システムアーキテクチャ可視化"
+  description: |
+    リポジトリ内の全 Hooks、SubAgents、Skills を
+    発火タイミング別に整理し、入出力と依存関係を明示する。
+    docs/feature-map.md として成果物を作成。
+  status: achieved
+  achieved_at: 2025-12-13
+  depends_on: [M006]
+  playbooks: [playbook-system-architecture-map.md]
+  done_when:
+    - [x] docs/feature-map.md が存在する
+    - [x] 全 Hook（29ファイル）が発火タイミング別に整理されている
+    - [x] 各 Hook の入力（stdin JSON）・出力（exit code）が明示されている
+    - [x] SubAgent 一覧（8種類）が記載されている
+    - [x] Skill 一覧（13個）が記載されている
+    - [x] ファイル間の依存関係が図解されている
 ```
 
 ---
