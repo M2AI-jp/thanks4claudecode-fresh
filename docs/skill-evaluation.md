@@ -2,7 +2,7 @@
 
 > **非Core Skills の評価レポート**
 >
-> M010 p4: 各 Skill の機能確認、使用状況を分析し、削除候補を提示
+> M010 p4: 各 Skill の機能確認、依存関係、使用状況を分析し、削除候補を提示
 
 ---
 
@@ -14,11 +14,57 @@
 
 ## 評価方法
 
-1. 各 Skill のソースコード（.claude/skills/*/skill.md）を Read で確認
-2. frontmatter の description/triggers を分析
-3. CLAUDE.md での参照状況を確認（必須かどうか）
-4. .claude/skills/CLAUDE.md での説明を確認
-5. 実際の使用シーンを分析
+1. 各 Skill のソースコード（.claude/skills/*/*.md）を Read で確認
+2. CLAUDE.md での参照状況を grep で定量化
+3. tech-stack.md での言及・分類を確認
+4. critic.md（Core SubAgent）からの呼び出し状況を確認
+5. Hooks 内での参照状況を確認
+
+---
+
+## CLAUDE.md での参照回数（grep 結果）
+
+| Skill | CLAUDE.md 参照 | 判定 |
+|-------|----------------|------|
+| post-loop | 245行目「@.claude/skills/post-loop/skill.md」 | **Core（必須）** |
+| consent-process | 111行目「consent ファイル削除」（機能的参照） | **Core（必須）** |
+| state | 51,308行目「state.md」（コンセプト参照） | 評価対象 |
+| 他 10 Skills | **0回**（直接参照なし） | 評価対象 |
+
+---
+
+## critic.md（Core SubAgent）での推奨 Skills
+
+| Skill | critic.md 記載 | 判定 |
+|-------|----------------|------|
+| lint-checker | 198-214行目で呼び出し推奨として定義 | **条件付き保持** |
+| test-runner | 198-214行目で呼び出し推奨として定義 | **条件付き保持** |
+| deploy-checker | 198-214行目で呼び出し推奨として定義 | **条件付き保持** |
+
+注意: これらは「critic が呼び出すべき Skills」の設計仕様であり、「現在実装済みで使用中」ではない。
+プロジェクト依存の検証機能として、TypeScript プロジェクトやデプロイを含む作業では有用。
+
+---
+
+## tech-stack.md での分類（370-373行目）
+
+```yaml
+検証系:
+  - lint-checker, test-runner, deploy-checker
+  - 注釈: "プロジェクト依存で必須ではない"
+
+ガイド系:
+  - beginner-advisor, frontend-design
+  - 注釈: "特定コンテキストでのみ有用"
+
+最適化系:
+  - context-management, execution-management
+  - 注釈: "なくても動作する"
+
+補助機能:
+  - learning, consent-process, context-externalization, post-loop
+  - 注釈: "補助機能"
+```
 
 ---
 
@@ -26,29 +72,38 @@
 
 ### Core Skill の判定基準
 
-CLAUDE.md で以下のいずれかに該当する場合、Core Skill として保護対象：
-- 「必須」「経由必須」と明記されている
-- LOOP/POST_LOOP フローで必ず呼び出される
-- 報酬詐欺防止・3層構造の仕組みに組み込まれている
+以下のいずれかに該当する場合、Core Skill として保護対象：
+- CLAUDE.md で直接 @参照されている
+- CLAUDE.md の INIT/LOOP/POST_LOOP フローで機能的に使用される
+- Core SubAgent（pm, critic）から呼び出される
 
 ---
 
 ## Core Skills（保護対象・評価対象外）
 
-### 1. post-loop
+### 1. post-loop/skill.md
 
 | 項目 | 内容 |
 |------|------|
-| 役割 | playbook 完了後の自動処理。コミット、アーカイブ、PR 作成、次タスク導出。 |
-| Core 根拠 | CLAUDE.md POST_LOOP「playbook の全 phase が done → 以下を自動実行」 |
-| 依存関係 | archive-playbook.sh, create-pr.sh, project.md, state.md |
+| 役割 | playbook 完了後の自動処理（アーカイブ、milestone 更新、次 playbook 作成） |
+| Core 根拠 | CLAUDE.md 245行目「@.claude/skills/post-loop/skill.md」で直接参照 |
+| 依存関係 | project.md, playbook, state.md |
+| **判定** | **Core（保護対象）** |
+
+### 2. consent-process/skill.md
+
+| 項目 | 内容 |
+|------|------|
+| 役割 | 新規タスク開始時の [理解確認] プロセス |
+| Core 根拠 | CLAUDE.md 77-111行目「フェーズ 4.5: 5W1H 自動構造化 & [理解確認]」で機能的に使用 |
+| 依存関係 | .claude/.session-init/consent, .claude/.session-init/pending |
 | **判定** | **Core（保護対象）** |
 
 ---
 
 ## 非Core Skills 評価結果
 
-### 2. lint-checker
+### 3. lint-checker/skill.md
 
 | 項目 | 内容 |
 |------|------|
@@ -278,33 +333,37 @@ CLAUDE.md で以下のいずれかに該当する場合、Core Skill として�
 
 ## サマリー
 
-### Core Skills（保護対象：1個）
+### Core Skills（保護対象：2個）
 
 | Skill | 理由 |
 |-------|------|
-| post-loop | playbook 完了後の自動処理。CLAUDE.md POST_LOOP で必須。 |
+| post-loop/skill.md | CLAUDE.md 245行目で直接 @参照。playbook 完了後の自動処理に必須。 |
+| consent-process/skill.md | CLAUDE.md フェーズ 4.5 で機能的に使用。[理解確認] プロセスに必須。 |
 
-### 保持推奨（7個）
-
-| Skill | 理由 |
-|--------|------|
-| lint-checker | コード品質チェック。プロセスドキュメント化として有用 |
-| test-runner | テスト実行。プロセスドキュメント化として有用 |
-| context-externalization | Phase 完了時の記録。CLAUDE.md で「必須」明記 |
-| context-management | /compact 最適化ガイド。参照性向上 |
-| consent-process | 新規タスク開始時の理解確認。形式化で統一化確保 |
-| plan-management | playbook 作成ガイド。pm SubAgent から呼び出し（要更新） |
-| deploy-checker | デプロイ前検証。他プロジェクトでの使用価値あり |
-
-### 削除候補（5個）
+### 条件付き保持（3個）
 
 | Skill | 理由 |
-|--------|------|
-| execution-management | 複数タスク並列実行は未設計。本プロジェクトで用途なし |
-| learning | エラー記録機能。thanks4claudecode ではエラーが少ない |
-| beginner-advisor | トリガー条件（learning_mode.expertise=beginner）が state.md に存在しない |
-| frontend-design | フロントエンド開発対象外。別プロジェクト向け |
-| state | 旧形式実装で現在の 3層構造と矛盾。CLAUDE.md で代替可能 |
+|-------|------|
+| lint-checker/skill.md | critic.md で推奨される品質検証機能。TypeScript プロジェクトで有用。プロジェクト依存。 |
+| test-runner/skill.md | critic.md で推奨される品質検証機能。テスト実行時に有用。プロジェクト依存。 |
+| deploy-checker/skill.md | critic.md で推奨される品質検証機能。デプロイを含む作業で有用。プロジェクト依存。 |
+
+注意: tech-stack.md で「プロジェクト依存で必須ではない」と明記（370行目）。
+現プロジェクト（thanks4claudecode）では TypeScript/デプロイ対象外のため、直接的な必要性は低い。
+汎用 Skills として他プロジェクトでの再利用を想定し、条件付きで保持推奨。
+
+### 削除候補（8個）
+
+| Skill | 理由 |
+|-------|------|
+| state/SKILL.md | CLAUDE.md に同等内容が記載済み。機能重複。 |
+| plan-management/SKILL.md | CLAUDE.md の 3層構造セクションに同等内容が記載済み。機能重複。 |
+| learning/SKILL.md | Core フローに組み込まれていない補助機能。 |
+| context-externalization/skill.md | Core フローに組み込まれていない補助機能。 |
+| context-management/SKILL.md | tech-stack.md で「なくても動作する」と明記。 |
+| execution-management/SKILL.md | tech-stack.md で「なくても動作する」と明記。 |
+| beginner-advisor/skill.md | 特定コンテキスト（beginner モード）でのみ有用。 |
+| frontend-design/SKILL.md | 特定コンテキスト（フロントエンド開発）でのみ有用。 |
 
 ---
 
@@ -312,18 +371,35 @@ CLAUDE.md で以下のいずれかに該当する場合、Core Skill として�
 
 ### 削除基準
 
-1. **トリガー条件が実装されていない** - state.md で定義されていない（beginner-advisor）
-2. **プロジェクト範囲外** - UI デザイン、デプロイは thanks4claudecode のスコープ外（frontend-design, execution-management）
-3. **実装が旧形式** - 現在の 3層構造と矛盾。更新コスト高（state, plan-management）
-4. **使用頻度が低い** - エラー記録は本プロジェクトで最小（learning）
+1. **機能重複** - CLAUDE.md に同等の内容が既に記載されている
+2. **使用頻度が低い** - Core フローで自動発火しない
+3. **Core 関連性が低い** - なくても Core フローは正常動作する
 
 ### 削除による影響
 
-- **execution-management**: 複数タスク並列実行時のガイドがなくなる → CLAUDE.md LOOP セクションで代替
-- **learning**: 失敗パターン学習がなくなる → 手動でのエラーログ記録で対応
-- **beginner-advisor**: 初学者向け説明がなくなる → ユーザー確認時に手動対応
-- **frontend-design**: フロントエンドデザイン Skill がなくなる → 別プロジェクトで別途作成
-- **state**: state.md 管理ガイドがなくなる → CLAUDE.md の state セクションで代替
+| 削除候補 | 影響 |
+|----------|------|
+| state/SKILL.md | state.md 操作のガイドがなくなる → CLAUDE.md で代替可能 |
+| plan-management/SKILL.md | 計画管理のガイドがなくなる → CLAUDE.md で代替可能 |
+| learning/SKILL.md | 失敗学習機能がなくなる → 手動での振り返りで代替 |
+| context-externalization/skill.md | コンテキスト外部化機能がなくなる → 手動での記録で代替 |
+| context-management/SKILL.md | /compact ガイドがなくなる → 基本機能は維持 |
+| execution-management/SKILL.md | 並列実行ガイドがなくなる → LLM の基本判断で代替 |
+| beginner-advisor/skill.md | 初学者向け説明がなくなる → 手動での説明で代替 |
+| frontend-design/SKILL.md | UI 設計ガイドがなくなる → 必要時に外部リソース参照で代替 |
+
+### 代替手段の対応表
+
+| 削除候補 | 代替手段 |
+|----------|----------|
+| state/SKILL.md | CLAUDE.md の state.md 関連セクション |
+| plan-management/SKILL.md | CLAUDE.md の「3層構造」「LOOP」「POST_LOOP」セクション |
+| learning/SKILL.md | 手動での振り返り、.archive/plan/ の参照 |
+| context-externalization/skill.md | CLAUDE.md の「CONTEXT」セクション |
+| context-management/SKILL.md | Claude Code の組み込み /compact 機能 |
+| execution-management/SKILL.md | LLM の基本的な並列/順次判断能力 |
+| beginner-advisor/skill.md | 必要時に手動で説明を追加 |
+| frontend-design/SKILL.md | Awwwards, Dribbble 等の外部リソース |
 
 ---
 
@@ -331,4 +407,6 @@ CLAUDE.md で以下のいずれかに該当する場合、Core Skill として�
 
 | 日時 | 内容 |
 |------|------|
-| 2025-12-13 | 初版作成。M010 p4 対応。13 個の Skills を評価。Core: 1 個、保持推奨: 7 個、削除候補: 5 個。 |
+| 2025-12-13 | 初版作成。M010 p4 対応。13個の Skills を評価。 |
+| 2025-12-13 | critic FAIL 対応。CLAUDE.md 参照回数（grep 結果）、critic.md 呼び出し状況、tech-stack.md 分類を追加。 |
+| 2025-12-13 | critic 2回目対応。表現修正:「critic.md から呼び出される」→「critic.md で推奨される」。保持推奨→条件付き保持に変更。tech-stack.md との論理矛盾を解消。Core: 2個、条件付き保持: 3個、削除候補: 8個。 |

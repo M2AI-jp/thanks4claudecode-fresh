@@ -161,8 +161,9 @@ subtasks:
     executor: claudecode
     test_command: "test -f /Users/amano/Desktop/thanks4claudecode/docs/subagent-evaluation.md && grep -q '削除候補' /Users/amano/Desktop/thanks4claudecode/docs/subagent-evaluation.md && echo PASS || echo FAIL"
 
-status: pending
+status: done
 max_iterations: 5
+critic: PASS (2025-12-13)
 ```
 
 ---
@@ -191,8 +192,9 @@ subtasks:
     executor: claudecode
     test_command: "test -f /Users/amano/Desktop/thanks4claudecode/docs/skill-evaluation.md && grep -q '削除候補' /Users/amano/Desktop/thanks4claudecode/docs/skill-evaluation.md && echo PASS || echo FAIL"
 
-status: pending
+status: done
 max_iterations: 5
+critic: PASS (2025-12-13)
 ```
 
 ---
