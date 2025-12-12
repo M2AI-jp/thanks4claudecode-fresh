@@ -83,7 +83,7 @@ done_when:
       executor: claudecode
       test_command: "echo PASS"
 
-  status: in_progress
+  status: done
   max_iterations: 5
 
 - id: p2
@@ -102,7 +102,7 @@ done_when:
       executor: claudecode
       test_command: "echo PASS"
 
-  status: pending
+  status: done
   max_iterations: 3
 
 - id: p3
@@ -131,7 +131,7 @@ done_when:
       executor: claudecode
       test_command: "grep -c 'HARD_BLOCK:' .claude/protected-files.txt | awk '{if($1>=5) print \"PASS\"; else print \"FAIL\"}'"
 
-  status: pending
+  status: in_progress
   max_iterations: 5
 ```
 

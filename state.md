@@ -28,11 +28,12 @@ branch: feat/tech-stack-refinement
 
 ```yaml
 milestone: M009  # Tech Stack 精査・不要ファイル削除・Core機能保護
-phase: p1
+phase: p3
 done_criteria:
-  - [ ] リポジトリ内全ファイル一覧が作成されている
-  - [ ] 各ファイルの寄与度評価が完了している
-  - [ ] 削除候補リストがユーザーに提示されている
+  - [ ] Core Hooks が特定されている（10個以下に厳選）
+  - [ ] Core SubAgents が特定されている
+  - [ ] Core Skills が特定されている
+  - [ ] protected-files.txt に HARD_BLOCK として追加されている
 ```
 
 ---
