@@ -1,0 +1,49 @@
+# docs.moved.txt
+# M010 p1: ドキュメント監査によるアーカイブ移動記録
+# 日時: 2025-12-13
+# 根拠: docs/doc-reference-audit.md
+
+## 移動ファイル一覧
+
+### docs/ (7ファイル)
+archive: .archive/docs/artifact-management-rules.md
+archive: .archive/docs/file-inventory.md
+archive: .archive/docs/git-operations.md
+archive: .archive/docs/state-injection-guide.md
+archive: .archive/docs/task-initiation-flow.md
+archive: .archive/docs/test-results.md
+archive: .archive/docs/design/pr-automation-design.md
+
+### plan/ (7ファイル)
+archive: .archive/plan/README.md
+archive: .archive/plan/design/README.md
+archive: .archive/plan/design/mission.md
+archive: .archive/plan/design/plan-chain-system.md
+archive: .archive/plan/design/self-healing-system.md
+archive: .archive/plan/template/CLAUDE.md
+archive: .archive/plan/template/state-initial.md
+
+### .claude/ (13ファイル + state-history 3ファイル)
+archive: .archive/.claude/CLAUDE-ref.md
+archive: .archive/.claude/agents/CLAUDE.md
+archive: .archive/.claude/commands/crit.md
+archive: .archive/.claude/commands/focus.md
+archive: .archive/.claude/commands/lint.md
+archive: .archive/.claude/commands/playbook-init.md
+archive: .archive/.claude/commands/task-start.md
+archive: .archive/.claude/commands/test.md
+archive: .archive/.claude/context/CLAUDE.md
+archive: .archive/.claude/context/claude-md-history.md
+archive: .archive/.claude/context/history.md
+archive: .archive/.claude/frameworks/CLAUDE.md
+archive: .archive/.claude/tests/regression-targets.md
+archive: .archive/.claude/scripts/test-rollback.sh
+archive: .archive/.claude/state-history/state-20251208-133005.md
+archive: .archive/.claude/state-history/state-20251208-133150.md
+archive: .archive/.claude/state-history/state-20251208-133252.md
+
+## 合計: 27ファイル
+
+## 復元方法
+各ファイルを元のパスに mv で戻す
+例: mv .archive/docs/file-inventory.md docs/

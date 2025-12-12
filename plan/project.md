@@ -183,6 +183,43 @@ success_criteria:
     - [x] 不要ファイル削除候補リストが作成されている
     - [x] ユーザー承認後、不要ファイルが削除されている
     - [x] Core機能が特定され、protected-files.txt に追加されている
+
+- id: M010
+  name: "ドキュメント・コンポーネント監査"
+  description: |
+    tech-stack.md 以外の不要ドキュメント削除、非Core Hooks/SubAgents/Skills の評価・削除検討。
+    リポジトリ全体のコンテキスト品質をさらに向上させ、参照されないファイルを整理する。
+  status: not_started
+  depends_on: [M009]
+  playbooks: [playbook-doc-audit-component-eval.md]
+  done_when:
+    - [ ] ドキュメント参照状況の最終確認リストが作成されている
+    - [ ] 未参照ドキュメントがアーカイブに移動されている
+    - [ ] 非Core Hooks の評価が完了している
+    - [ ] 非Core SubAgents の評価が完了している
+    - [ ] 非Core Skills の評価が完了している
+    - [ ] Codex による第三者評価・最終レポートが作成されている
+  decomposition:
+    playbook_summary: |
+      ドキュメント・コンポーネント監査を実施し、参照されないファイルを削除、
+      非Core Hooks/SubAgents/Skills の必要性を評価・改善する。
+    phase_hints:
+      - name: "ドキュメント参照状況の最終確認・リスト作成"
+        what: tech-stack.md を除く全ドキュメントの参照状況を確認し、リストを作成
+      - name: "未参照ドキュメントをアーカイブに移動"
+        what: 未参照ドキュメントを archive/ に移動し、削除せずに保管
+      - name: "非Core Hooks の評価"
+        what: 各 Hook のコード確認、使用頻度、代替手段の有無を評価
+      - name: "非Core SubAgents の評価"
+        what: 各 SubAgent の依存関係、使用状況を確認・評価
+      - name: "非Core Skills の評価"
+        what: 各 Skill の機能、使用可能性を確認・評価
+      - name: "Codex による第三者評価・最終レポート"
+        what: 削除予定ファイル・コンポーネントを Codex に提示し、第三者視点での評価・改善提案を取得
+    success_indicators:
+      - 参照されないドキュメントが特定される
+      - 非Core コンポーネントの必要性が評価される
+      - Codex による客観的な改善提案が得られる
 ```
 
 ---
