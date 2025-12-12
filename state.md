@@ -28,7 +28,7 @@ branch: feat/strict-criteria
 
 ```yaml
 milestone: M006  # 厳密な done_criteria 定義システム
-phase: p0
+phase: p3
 done_criteria:
   - done_criteria が Given/When/Then 形式で定義される
   - 各 criteria に test_command が紐付けられている

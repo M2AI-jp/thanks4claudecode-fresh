@@ -113,7 +113,7 @@ subtasks:
     executor: claudecode
     test_command: "grep -c 'test -f\\|grep -q\\|exit' plan/template/playbook-format.md | awk '{if($1>=3) print \"PASS\"; else print \"FAIL\"}'"
 
-status: pending
+status: done
 max_iterations: 5
 ```
 
@@ -132,9 +132,9 @@ subtasks:
     test_command: "test -f docs/criterion-validation-rules.md && echo PASS"
 
   - id: p2.2
-    criterion: "禁止パターンが15個以上列挙されている"
+    criterion: "禁止パターンが15個以上列挙されている（テーブル形式）"
     executor: claudecode
-    test_command: "grep -cE '^- 「|^- \\*\\*' docs/criterion-validation-rules.md | awk '{if($1>=15) print \"PASS\"; else print \"FAIL\"}'"
+    test_command: "grep -c '^| 「' docs/criterion-validation-rules.md | awk '{if($1>=15) print \"PASS: \" $1; else print \"FAIL: \" $1}'"
 
   - id: p2.3
     criterion: "各禁止パターンに「なぜダメか」と「修正例」が記載されている"
@@ -152,7 +152,7 @@ subtasks:
     executor: user
     test_command: "手動確認: サンプル criterion を入力し、禁止パターンが検出されるか確認"
 
-status: pending
+status: done
 max_iterations: 5
 ```
 
