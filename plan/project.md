@@ -99,13 +99,14 @@ success_criteria:
     done_criteria の事前定義精度を向上させる。
     自然言語の曖昧な定義ではなく、検証可能な形式で定義し、
     「テストをクリアするためのテスト」という構造的問題を解消する。
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-13
   depends_on: [M005]
-  playbooks: []
+  playbooks: [playbook-strict-criteria.md]
   done_when:
-    - [ ] done_criteria が Given/When/Then 形式で定義される
-    - [ ] 各 criteria に test_command が紐付けられている
-    - [ ] 曖昧な表現（「動作する」「正しく」等）が検出・拒否される
+    - [x] done_criteria が Given/When/Then 形式で定義される
+    - [x] 各 criteria に test_command が紐付けられている
+    - [x] 曖昧な表現（「動作する」「正しく」等）が検出・拒否される
   decomposition:
     playbook_summary: |
       done_criteria の定義精度を向上させるシステムを構築。
