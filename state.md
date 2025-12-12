@@ -18,7 +18,7 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-doc-audit-component-eval.md  # M010
+active: null  # M010 完了、アーカイブ済み
 branch: feat/doc-audit-component-eval
 ```
 
@@ -27,16 +27,16 @@ branch: feat/doc-audit-component-eval
 ## goal
 
 ```yaml
-milestone: M010  # ドキュメント・コンポーネント監査
-phase: p2
-self_complete: false
+milestone: M010  # ドキュメント・コンポーネント監査（achieved）
+phase: null
+self_complete: true
 done_criteria:
-  - ドキュメント参照状況の最終確認リストが作成されている
-  - 未参照ドキュメントがアーカイブに移動されている
-  - 非Core Hooks の評価が完了している
-  - 非Core SubAgents の評価が完了している
-  - 非Core Skills の評価が完了している
-  - Codex による第三者評価・最終レポートが作成されている
+  - [x] ドキュメント参照状況の最終確認リストが作成されている
+  - [x] 未参照ドキュメントがアーカイブに移動されている
+  - [x] 非Core Hooks の評価が完了している
+  - [x] 非Core SubAgents の評価が完了している
+  - [x] 非Core Skills の評価が完了している
+  - [x] Codex による第三者評価・最終レポートが作成されている
 ```
 
 ---
@@ -44,7 +44,7 @@ done_criteria:
 ## session
 
 ```yaml
-last_start: 2025-12-13 04:05:14
+last_start: 2025-12-13 04:29:28
 last_clear: 2025-12-13 00:30:00
 ```
 

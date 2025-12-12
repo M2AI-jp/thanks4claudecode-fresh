@@ -189,16 +189,17 @@ success_criteria:
   description: |
     tech-stack.md 以外の不要ドキュメント削除、非Core Hooks/SubAgents/Skills の評価・削除検討。
     リポジトリ全体のコンテキスト品質をさらに向上させ、参照されないファイルを整理する。
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-13
   depends_on: [M009]
   playbooks: [playbook-doc-audit-component-eval.md]
   done_when:
-    - [ ] ドキュメント参照状況の最終確認リストが作成されている
-    - [ ] 未参照ドキュメントがアーカイブに移動されている
-    - [ ] 非Core Hooks の評価が完了している
-    - [ ] 非Core SubAgents の評価が完了している
-    - [ ] 非Core Skills の評価が完了している
-    - [ ] Codex による第三者評価・最終レポートが作成されている
+    - [x] ドキュメント参照状況の最終確認リストが作成されている
+    - [x] 未参照ドキュメントがアーカイブに移動されている
+    - [x] 非Core Hooks の評価が完了している
+    - [x] 非Core SubAgents の評価が完了している
+    - [x] 非Core Skills の評価が完了している
+    - [x] Codex による第三者評価・最終レポートが作成されている
   decomposition:
     playbook_summary: |
       ドキュメント・コンポーネント監査を実施し、参照されないファイルを削除、
