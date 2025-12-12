@@ -173,15 +173,16 @@ success_criteria:
        機能・発火タイミング・依存関係を厳密に明文化する。
     2. リポジトリ内の不要ファイルを特定し、コンテキスト腐食を防止するため削除する。
     3. Core機能を厳選し、protected-files.txt に HARD_BLOCK として保護指定する。
-  status: in_progress
+  status: achieved
+  achieved_at: 2025-12-13
   depends_on: [M008]
   playbooks: [playbook-tech-stack-refinement.md]
   done_when:
-    - [ ] tech-stack.md に全 Hooks の依存関係が明文化されている
-    - [ ] tech-stack.md に全 SubAgents/Skills の依存関係が明文化されている
-    - [ ] 不要ファイル削除候補リストが作成されている
-    - [ ] ユーザー承認後、不要ファイルが削除されている
-    - [ ] Core機能が特定され、protected-files.txt に追加されている
+    - [x] tech-stack.md に全 Hooks の依存関係が明文化されている
+    - [x] tech-stack.md に全 SubAgents/Skills の依存関係が明文化されている
+    - [x] 不要ファイル削除候補リストが作成されている
+    - [x] ユーザー承認後、不要ファイルが削除されている
+    - [x] Core機能が特定され、protected-files.txt に追加されている
 ```
 
 ---

@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-tech-stack-refinement.md
-branch: feat/tech-stack-refinement
+active: null  # M009 完了。次の milestone 待ち
+branch: null
 ```
 
 ---
@@ -27,13 +27,9 @@ branch: feat/tech-stack-refinement
 ## goal
 
 ```yaml
-milestone: M009  # Tech Stack 精査・不要ファイル削除・Core機能保護
-phase: p3
-done_criteria:
-  - [ ] Core Hooks が特定されている（10個以下に厳選）
-  - [ ] Core SubAgents が特定されている
-  - [ ] Core Skills が特定されている
-  - [ ] protected-files.txt に HARD_BLOCK として追加されている
+milestone: null  # M009 achieved
+phase: null
+done_criteria: []
 ```
 
 ---

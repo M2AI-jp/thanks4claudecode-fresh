@@ -17,30 +17,48 @@
 #   admin     - 全て通過（ワークスペース開発者用）
 
 # === HARD_BLOCK: 絶対守護（admin モードでのみ編集可能） ===
-# CONTEXT.md は .archive に退避済み（開発履歴）
+# コアドキュメント
 HARD_BLOCK:CLAUDE.md
 HARD_BLOCK:.claude/protected-files.txt
+HARD_BLOCK:state.md
+HARD_BLOCK:plan/project.md
+
 # Hook 回避防止: consent ファイルの削除を禁止
 HARD_BLOCK:.claude/.session-init/consent
 HARD_BLOCK:.claude/.session-init/pending
-# ガバナンス上重要な Hook（admin でも警告付き編集）
+
+# Core Hooks（10個厳選 - システムの根幹）
+HARD_BLOCK:.claude/hooks/session-start.sh
+HARD_BLOCK:.claude/hooks/prompt-guard.sh
 HARD_BLOCK:.claude/hooks/init-guard.sh
+HARD_BLOCK:.claude/hooks/playbook-guard.sh
+HARD_BLOCK:.claude/hooks/consent-guard.sh
 HARD_BLOCK:.claude/hooks/critic-guard.sh
+HARD_BLOCK:.claude/hooks/check-coherence.sh
+HARD_BLOCK:.claude/hooks/log-subagent.sh
 HARD_BLOCK:.claude/hooks/scope-guard.sh
 HARD_BLOCK:.claude/hooks/executor-guard.sh
-HARD_BLOCK:.claude/hooks/playbook-guard.sh
+
+# Core SubAgents
+HARD_BLOCK:.claude/agents/pm.md
+HARD_BLOCK:.claude/agents/critic.md
+HARD_BLOCK:.claude/agents/plan-guard.md
+
+# Core Skills
+HARD_BLOCK:.claude/skills/state/SKILL.md
+HARD_BLOCK:.claude/skills/plan-management/SKILL.md
+
+# 設定ファイル
+HARD_BLOCK:.claude/settings.json
 
 # === BLOCK: 運用でゆるめ可能（strict: ブロック / trusted: WARN） ===
 BLOCK:plan/template/playbook-format.md
-BLOCK:.claude/settings.json
 BLOCK:.claude/hooks/check-protected-edit.sh
-BLOCK:.claude/hooks/session-start.sh
 BLOCK:.claude/hooks/session-end.sh
-BLOCK:.claude/hooks/check-coherence.sh
-BLOCK:.claude/hooks/check-state-update.sh
 BLOCK:.claude/hooks/pre-bash-check.sh
 
 # === WARN: 警告のみ（慎重に扱うべきファイル） ===
-WARN:state.md
 WARN:AGENTS.md
 WARN:README.md
+WARN:docs/tech-stack.md
+WARN:docs/feature-map.md

@@ -326,6 +326,54 @@ Skill は特定の状況で参照される専門知識です。Skill ツール�
 
 ---
 
+## Core 機能選定基準
+
+システムの根幹を担う「Core」機能は以下の基準で選定されています。
+
+### 選定基準
+
+1. **必須性**: その機能がなければシステムが動作しない
+2. **代替不可**: 他の機能で代替できない固有の役割を持つ
+3. **連鎖起点**: 他の機能の前提条件となる（依存されている）
+
+### Core Hooks（10個）
+
+| Hook | 選定理由 |
+|------|---------|
+| session-start.sh | セッション初期化の唯一の起点。pending/consent 作成。 |
+| prompt-guard.sh | State Injection の実装。systemMessage 注入の唯一手段。 |
+| init-guard.sh | Read 必須チェック。INIT フェーズの強制。 |
+| playbook-guard.sh | Edit/Write ブロック。計画駆動開発の強制。 |
+| consent-guard.sh | [理解確認] 強制。報酬詐欺防止の入口。 |
+| critic-guard.sh | critic PASS 強制。報酬詐欺防止の出口。 |
+| check-coherence.sh | 5層報酬詐欺防御の中核。整合性検証。 |
+| log-subagent.sh | SubAgent 追跡。監査証跡の記録。 |
+| scope-guard.sh | スコープ変更検出。計画逸脱の防止。 |
+| executor-guard.sh | executor 検証。実行権限の制御。 |
+
+### Core SubAgents（3個）
+
+| SubAgent | 選定理由 |
+|----------|---------|
+| pm | playbook 作成・milestone 管理。3層構造の運用者。 |
+| critic | Phase 完了判定。報酬詐欺防止の判定者。 |
+| plan-guard | 計画整合性チェック。3層構造の検証者。 |
+
+### Core Skills（2個）
+
+| Skill | 選定理由 |
+|-------|---------|
+| state/SKILL.md | state.md 管理。Single Source of Truth の運用知識。 |
+| plan-management/SKILL.md | 3層構造運用。project→playbook→phase の管理知識。 |
+
+**除外理由**:
+- lint-checker, test-runner, deploy-checker: 検証系。プロジェクト依存で必須ではない。
+- beginner-advisor, frontend-design: ガイド系。特定コンテキストでのみ有用。
+- context-management, execution-management: 最適化。なくても動作する。
+- learning, consent-process, context-externalization, post-loop: 補助機能。
+
+---
+
 ## 関連ドキュメント
 
 | ドキュメント | 内容 |

@@ -131,7 +131,7 @@ done_when:
       executor: claudecode
       test_command: "grep -c 'HARD_BLOCK:' .claude/protected-files.txt | awk '{if($1>=5) print \"PASS\"; else print \"FAIL\"}'"
 
-  status: in_progress
+  status: done
   max_iterations: 5
 ```
 
