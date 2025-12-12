@@ -18,7 +18,7 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-system-architecture-map.md
+active: null  # M007 完了、アーカイブ済み
 branch: feat/system-architecture-map
 ```
 
@@ -27,14 +27,9 @@ branch: feat/system-architecture-map
 ## goal
 
 ```yaml
-milestone: M007  # システムアーキテクチャ可視化 - achieved
-phase: done
-done_criteria:
-  - [x] docs/feature-map.md が存在する
-  - [x] 全 Hook（29ファイル）が発火タイミング別に整理
-  - [x] SubAgent 一覧（8種類）が記載
-  - [x] Skill 一覧（13個）が記載
-  - [x] ファイル間の依存関係が図解
+milestone: null  # M007 完了、次の milestone 待ち
+phase: null
+done_criteria: []
 ```
 
 ---
