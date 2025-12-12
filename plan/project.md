@@ -165,6 +165,23 @@ success_criteria:
     - [x] Clear時アナウンスに「ネクストアクション提案」が含まれる
     - [x] docs/tech-stack.md が存在し、自然言語で充実した説明がある
     - [x] [理解確認] が 5W1H 形式で出力される
+
+- id: M009
+  name: "Tech Stack 精査・不要ファイル削除・Core機能保護"
+  description: |
+    1. tech-stack.md を精査・拡充し、全 Hooks/SubAgents/Skills の
+       機能・発火タイミング・依存関係を厳密に明文化する。
+    2. リポジトリ内の不要ファイルを特定し、コンテキスト腐食を防止するため削除する。
+    3. Core機能を厳選し、protected-files.txt に HARD_BLOCK として保護指定する。
+  status: in_progress
+  depends_on: [M008]
+  playbooks: [playbook-tech-stack-refinement.md]
+  done_when:
+    - [ ] tech-stack.md に全 Hooks の依存関係が明文化されている
+    - [ ] tech-stack.md に全 SubAgents/Skills の依存関係が明文化されている
+    - [ ] 不要ファイル削除候補リストが作成されている
+    - [ ] ユーザー承認後、不要ファイルが削除されている
+    - [ ] Core機能が特定され、protected-files.txt に追加されている
 ```
 
 ---
@@ -217,38 +234,6 @@ phase (作業単位)
 ├── test_method: 検証手順
 └── status: pending | in_progress | done
 ```
-
----
-
-## 自動運用フロー
-
-```yaml
-phase_complete:
-  trigger: critic PASS
-  action:
-    - phase.status = done
-    - 次の phase へ（または playbook 完了へ）
-
-playbook_complete:
-  trigger: 全 phase が done
-  action:
-    - playbook をアーカイブ
-    - project.milestone を自動更新
-      - status = achieved
-      - achieved_at = now()
-      - playbooks[] に追記
-    - /clear 推奨をアナウンス
-    - 次の milestone を特定（depends_on 分析）
-    - pm で新 playbook を自動作成
-
-project_complete:
-  trigger: 全 milestone が achieved
-  action:
-    - project.status = completed
-    - 「次の方向性を教えてください」と人間に確認
-```
-
----
 
 ## 変更履歴
 

@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null  # M008 完了、アーカイブ済み
-branch: feat/clear-context-enhancement
+active: plan/active/playbook-tech-stack-refinement.md
+branch: feat/tech-stack-refinement
 ```
 
 ---
@@ -27,9 +27,12 @@ branch: feat/clear-context-enhancement
 ## goal
 
 ```yaml
-milestone: null  # M008 完了、次の milestone 待ち
-phase: null
-done_criteria: []
+milestone: M009  # Tech Stack 精査・不要ファイル削除・Core機能保護
+phase: p1
+done_criteria:
+  - [ ] リポジトリ内全ファイル一覧が作成されている
+  - [ ] 各ファイルの寄与度評価が完了している
+  - [ ] 削除候補リストがユーザーに提示されている
 ```
 
 ---
@@ -37,7 +40,7 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-13 02:25:05
+last_start: 2025-12-13 03:15:20
 last_clear: 2025-12-13 00:30:00
 ```
 
