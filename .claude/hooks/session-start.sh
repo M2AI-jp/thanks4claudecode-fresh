@@ -122,6 +122,11 @@ if [ -f ".claude/hooks/system-health-check.sh" ]; then
     bash .claude/hooks/system-health-check.sh 2>/dev/null || true
 fi
 
+# CHANGELOG 自動チェック（24時間キャッシュ）
+if [ -f ".claude/hooks/changelog-checker.sh" ]; then
+    bash .claude/hooks/changelog-checker.sh 2>/dev/null || true
+fi
+
 # === ドキュメント自動更新: 変更が蓄積されていれば自動実行 ===
 CHANGE_LOG=".claude/logs/changes.log"
 GEN_SCRIPT=".claude/hooks/generate-implementation-doc.sh"
