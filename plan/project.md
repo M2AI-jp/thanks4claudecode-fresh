@@ -128,6 +128,43 @@ success_criteria:
       - done_criteria の曖昧表現が自動検出される
       - criteria: test_command が1:1で紐付けられている
       - critic が criteria 品質をチェックできる
+
+- id: M014
+  name: "フォルダ管理ルール確立 & クリーンアップ機構実装"
+  description: |
+    1. 全フォルダの役割を明確化（テンポラリ/永続）
+    2. tmp/ フォルダを新設し、テンポラリファイルを統一配置
+    3. playbook 完了時の自動クリーンアップ機構を実装
+    4. フォルダ管理ルールをドキュメント化
+  status: achieved
+  achieved_at: 2025-12-13
+  depends_on: [M006]
+  playbooks: [playbook-m014-folder-management.md]
+  done_when:
+    - [x] 不要ファイルが .archive/ に移動されている
+    - [x] tmp/ フォルダが新設され、.gitignore に登録されている
+    - [x] .claude/hooks/cleanup-hook.sh が実装されている
+    - [x] 全 playbook テンプレートに cleanup phase が追加されている
+    - [x] docs/folder-management.md が作成されている
+    - [x] project.md に参照が追加されている
+
+- id: M015
+  name: "フォルダ管理ルール検証テスト"
+  description: |
+    M014 で実装したフォルダ管理ルールとクリーンアップ機構の動作検証。
+    1. tmp/ にテストファイルを生成
+    2. 永続フォルダ（docs/）にも別途ファイルを生成
+    3. playbook 完了時の cleanup-hook.sh 発火を確認
+    4. tmp/ のファイルが削除され、永続ファイルは保持されることを検証
+  status: in_progress
+  depends_on: [M014]
+  playbooks: [playbook-m015-folder-test.md]
+  done_when:
+    - [ ] tmp/ にテストファイルが生成されている
+    - [ ] 永続フォルダにテストファイルが生成されている
+    - [ ] playbook 完了時に cleanup-hook.sh が発火している
+    - [ ] tmp/ のテストファイルが削除されている
+    - [ ] 永続ファイルは保持されている
 ```
 
 ---

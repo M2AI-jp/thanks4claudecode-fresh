@@ -18,7 +18,7 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-m014-folder-management.md
+active: null  # M015 完了
 branch: feat/folder-management
 ```
 
@@ -27,16 +27,15 @@ branch: feat/folder-management
 ## goal
 
 ```yaml
-milestone: M014  # フォルダ管理ルール確立 & クリーンアップ機構実装
-phase: p0  # アーカイブ候補ファイルの整理
-self_complete: false
+milestone: M015  # フォルダ管理ルール検証テスト（完了）
+phase: done
+self_complete: true
 done_criteria:
-  - 不要ファイルが .archive/ に移動されている
-  - tmp/ フォルダが新設され、.gitignore に登録されている
-  - .claude/hooks/cleanup-hook.sh が実装されている
-  - 全 playbook テンプレートに cleanup phase が追加されている
-  - docs/folder-management.md が作成されている
-  - project.md に参照が追加されている
+  - tmp/ にテストファイルが生成されている ✓
+  - 永続フォルダにテストファイルが生成されている ✓
+  - cleanup-hook.sh が正常動作（手動検証済み）✓
+  - tmp/ のテストファイルが削除されている ✓
+  - 永続ファイルは保持されている ✓
 ```
 
 ---
@@ -44,7 +43,7 @@ done_criteria:
 ## session
 
 ```yaml
-last_start: 2025-12-13 01:58:01
+last_start: 2025-12-13 17:08:47
 last_clear: 2025-12-13 00:30:00
 ```
 
