@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: main
+active: playbook-m021-changelog-suggest.md
+branch: feat/m021-changelog-suggest
 ```
 
 ---
@@ -27,8 +27,8 @@ branch: main
 ## goal
 
 ```yaml
-milestone: null  # M006 完了、次の milestone 待ち
-phase: null
+milestone: M021  # CHANGELOG サジェストシステム - 機能提案エンジン
+phase: p1
 done_criteria: []
 ```
 

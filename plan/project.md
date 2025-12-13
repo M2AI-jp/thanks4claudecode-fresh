@@ -128,6 +128,70 @@ success_criteria:
       - done_criteria の曖昧表現が自動検出される
       - criteria: test_command が1:1で紐付けられている
       - critic が criteria 品質をチェックできる
+
+- id: M020
+  name: "Claude Code CHANGELOG モニタリングシステム"
+  description: |
+    Claude Code は頻繁にアップデートされている（現在 v2.0.69）。
+    新機能・Hook トリガー・設定オプション等を定期的に検出し、
+    このリポジトリに取り込む仕組みを構築する。
+    24時間キャッシュで公式リポジトリを監視し、新バージョン検出時に通知する。
+  status: achieved
+  achieved_at: 2025-12-13
+  depends_on: [M019]
+  priority: high
+  playbooks: [playbook-m020-changelog-monitor.md]
+  done_when:
+    - [x] .claude/cache/ ディレクトリが作成されている
+    - [x] changelog-checker.sh が SessionStart で発火する
+    - [x] 24時間経過時のみ CHANGELOG を取得する
+    - [x] /changelog コマンドで最新情報を表示できる
+    - [x] 新バージョン検出時に通知が表示される
+
+- id: M021
+  name: "CHANGELOG サジェストシステム - 機能提案エンジン"
+  description: |
+    M020 で実装した CHANGELOG モニタリングを拡張。
+    新バージョン検出時に、このリポジトリに関連する新機能を自動提案する。
+    リポジトリプロファイル（使用技術、関心領域）を定義し、
+    新機能とのマッチング、優先度付け、具体的な活用方法を提示する。
+  status: pending
+  depends_on: [M020]
+  priority: high
+  estimated_effort: 8h
+  playbooks: [playbook-m021-changelog-suggest.md]
+  done_when:
+    - [ ] repo-profile.json が作成され、リポジトリ特性が定義されている
+    - [ ] changelog-checker.sh がキーワード抽出とマッチングを行う
+    - [ ] 新バージョン通知に関連機能のサジェストが含まれる
+    - [ ] /changelog --suggest で詳細な適用可能性分析が表示される
+    - [ ] 優先度（高・中・低）で機能が分類される
+  decomposition:
+    playbook_summary: |
+      CHANGELOG の新機能をこのリポジトリの特性に基づいて分析し、
+      自動的に活用可能な機能を優先度付きで提案するシステム。
+    phase_hints:
+      - name: "リポジトリプロファイル定義"
+        what: |
+          .claude/cache/repo-profile.json を作成。
+          このリポジトリが使用している機能（Hooks, SubAgents, Skills等）、
+          関心領域（automation, validation, planning等）、
+          優先度キーワードを定義。
+      - name: "changelog-checker.sh の拡張"
+        what: |
+          CHANGELOG からキーワード抽出（静的解析）を実装。
+          repo-profile.json とマッチングし、関連機能を検出。
+          新バージョン通知メッセージに関連機能を追加。
+      - name: "/changelog --suggest オプション実装"
+        what: |
+          /changelog コマンドに --suggest オプションを追加。
+          LLM による詳細な適用可能性分析を実行。
+          優先度付け（高・中・低）と具体的な活用方法を提示。
+    success_indicators:
+      - repo-profile.json に5つ以上の機能カテゴリが定義されている
+      - changelog-checker.sh が3つ以上のキーワードマッチングを行う
+      - サジェストメッセージに優先度と活用方法が含まれる
+      - /changelog --suggest が実行可能である
 ```
 
 ---
@@ -164,7 +228,10 @@ project (永続)
 │   ├── M002: achieved
 │   ├── M003: achieved
 │   ├── M004: achieved
-│   └── M005: achieved ← 最新完了
+│   ├── M005: achieved
+│   ├── M006: achieved
+│   ├── M020: achieved
+│   └── M021: pending ← 次タスク
 └── constraints: 制約条件
 
 playbook (一時的)
@@ -217,6 +284,8 @@ project_complete:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-13 | M021 追加: CHANGELOG サジェストシステム - 機能提案エンジン |
+| 2025-12-13 | M020 追加: Claude Code CHANGELOG モニタリングシステム |
 | 2025-12-13 | M005（StateInjection）達成。systemMessage で状態を自動注入。 |
 | 2025-12-13 | 3層構造の自動運用システム設計。用語統一。milestone に ID 追加。 |
 | 2025-12-10 | 初版作成。 |
