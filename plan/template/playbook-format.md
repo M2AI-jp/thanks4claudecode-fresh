@@ -628,6 +628,65 @@ enforcement:
 
 ---
 
+## テンポラリファイルとクリーンアップ
+
+> **playbook 実行中に生成する一時ファイルの管理ルール**
+
+### tmp/ フォルダの使用
+
+```yaml
+用途:
+  - テスト結果・シナリオ
+  - 一時的な分析ファイル
+  - デバッグ出力
+  - 中間成果物（後で削除予定のもの）
+
+配置例:
+  - tmp/test-results.md
+  - tmp/analysis-draft.md
+  - tmp/debug-output.log
+
+注意:
+  - tmp/ は .gitignore に登録されており、git に追跡されない
+  - 重要なファイルは tmp/ に置かない
+  - 永続化が必要な場合は docs/ または .archive/ に移動
+```
+
+### 自動クリーンアップ
+
+```yaml
+トリガー:
+  - playbook の全 Phase が done になったとき
+
+実行内容:
+  - tmp/ 内のファイルを自動削除
+  - tmp/CLAUDE.md と tmp/README.md は保持
+
+実装:
+  - .claude/hooks/cleanup-hook.sh が PostToolUse:Edit で発火
+  - archive-playbook.sh と同様のロジックで playbook 完了を検出
+```
+
+### playbook 設計時の考慮
+
+```yaml
+推奨:
+  - 一時ファイルは必ず tmp/ に配置
+  - 中間成果物も tmp/ を使用（最終的に削除されるため）
+  - 永続化が必要なファイルは最初から docs/ に配置
+
+禁止:
+  - ルート直下に一時ファイルを作成
+  - docs/ に中間成果物を作成（後で削除が必要になる）
+```
+
+### 参照ドキュメント
+
+- tmp/CLAUDE.md - tmp/ フォルダの役割説明
+- docs/folder-management.md - フォルダ管理ルール全般
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |

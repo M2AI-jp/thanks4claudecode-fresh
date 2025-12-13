@@ -197,6 +197,11 @@
           },
           {
             "type": "command",
+            "command": "bash .claude/hooks/cleanup-hook.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
             "command": "bash .claude/hooks/create-pr-hook.sh",
             "timeout": 30000
           },

@@ -68,3 +68,4 @@ learning:
 | CLAUDE.md | LLM の振る舞いルール |
 | plan/project.md | プロジェクト計画 |
 | docs/feature-map.md | 機能マップ |
+| docs/folder-management.md | フォルダ管理ルール |

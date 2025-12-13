@@ -151,6 +151,8 @@ database: none (file-based: state.md, playbook, project.md)
 - critic なしで phase 完了は禁止
 - main ブランチでの直接作業は禁止
 - 1 playbook = 1 branch
+- テンポラリファイルは tmp/ に配置（playbook 完了時に自動削除）
+- 完了した playbook は plan/archive/ にアーカイブ
 
 ---
 

@@ -38,6 +38,9 @@ Thumbs.db
 # Temporary files
 .tmp/
 out/
+tmp/*
+!tmp/CLAUDE.md
+!tmp/README.md
 
 # Coverage
 coverage/
