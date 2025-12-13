@@ -211,12 +211,57 @@ project_complete:
     - 「次の方向性を教えてください」と人間に確認
 ```
 
+- id: M020
+  name: "Claude Code CHANGELOG モニタリングシステム"
+  description: |
+    Claude Code は頻繁にアップデートされている（現在 v2.0.69）。
+    新機能・Hook トリガー・設定オプション等を定期的に検出し、
+    このリポジトリに取り込む仕組みを構築する。
+    24時間キャッシュで公式リポジトリを監視し、新バージョン検出時に通知する。
+  status: not_started
+  depends_on: [M019]
+  priority: high
+  done_when:
+    - [ ] .claude/cache/ ディレクトリが作成されている
+    - [ ] changelog-checker.sh が SessionStart で発火する
+    - [ ] 24時間経過時のみ CHANGELOG を取得する
+    - [ ] /changelog コマンドで最新情報を表示できる
+    - [ ] 新バージョン検出時に通知が表示される
+  decomposition:
+    playbook_summary: |
+      Claude Code の CHANGELOG を定期的にチェックし、
+      新機能を検出・キャッシュ・通知するシステム。
+    phase_hints:
+      - name: "キャッシュディレクトリ & メタデータ構造"
+        what: |
+          .claude/cache/ ディレクトリを作成。
+          changelog-latest.md（最新CHANGELOG）と changelog-meta.json（メタデータ）の
+          ファイル構造を設計。
+      - name: "SessionStart Hook実装"
+        what: |
+          changelog-checker.sh を作成し、SessionStart で発火するよう登録。
+          24時間キャッシュ時間を検証。
+      - name: "/changelog コマンド実装"
+        what: |
+          .claude/commands/ に /changelog コマンドを追加。
+          キャッシュの強制更新オプションも実装。
+      - name: "新バージョン検出 & 通知機構"
+        what: |
+          current_version と latest_version を比較し、差分がある場合に通知。
+          システムメッセージ経由での通知仕様を設計。
+    success_indicators:
+      - キャッシュシステムが正常に動作している
+      - 24時間以内の再実行で CHANGELOG が取得されない
+      - 24時間経過後に自動再取得される
+      - 新バージョン検出で通知が表示される
+
 ---
 
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-13 | M020 追加: Claude Code CHANGELOG モニタリングシステム |
 | 2025-12-13 | M005（StateInjection）達成。systemMessage で状態を自動注入。 |
 | 2025-12-13 | 3層構造の自動運用システム設計。用語統一。milestone に ID 追加。 |
 | 2025-12-10 | 初版作成。 |

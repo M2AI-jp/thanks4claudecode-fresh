@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: main
+active: plan/active/playbook-m020-changelog-monitor.md
+branch: feat/m020-changelog-monitor
 ```
 
 ---
@@ -27,9 +27,10 @@ branch: main
 ## goal
 
 ```yaml
-milestone: null  # M006 完了、次の milestone 待ち
-phase: null
-done_criteria: []
+milestone: M020  # Claude Code CHANGELOG モニタリングシステム
+phase: p0  # キャッシュディレクトリ & メタデータ構造設計
+self_complete: false
+last_completed_milestone: M019 (achieved: 2025-12-13)
 ```
 
 ---
@@ -37,8 +38,9 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-13 01:58:01
-last_clear: 2025-12-13 00:30:00
+last_start: 2025-12-13 21:29:47
+last_clear: 2025-12-13 20:59:00
+last_playbook_completed: 2025-12-13 20:59:00
 ```
 
 ---
