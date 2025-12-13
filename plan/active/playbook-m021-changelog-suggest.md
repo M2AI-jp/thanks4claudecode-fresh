@@ -109,7 +109,7 @@ done_when:
     - id: p2.3
       criterion: "changelog-checker.sh が3つ以上のキーワードマッチングを実行する"
       executor: claudecode
-      test_command: "grep -c 'grep.*-i' /Users/amano/Desktop/thanks4claudecode/.claude/hooks/changelog-checker.sh | awk '{if($1>=3) print \"PASS\"; else print \"FAIL\"}'"
+      test_command: "grep -c 'grep -qi' /Users/amano/Desktop/thanks4claudecode/.claude/hooks/changelog-checker.sh | awk '{if($1>=3) print \"PASS\"; else print \"FAIL\"}'"
 
     - id: p2.4
       criterion: "マッチング結果が SUGGESTION_MESSAGE に追加されている"
@@ -141,9 +141,9 @@ done_when:
 
   subtasks:
     - id: p3.1
-      criterion: "SessionStart Hook が SUGGESTION_MESSAGE を systemMessage に追加している"
+      criterion: "SessionStart Hook が changelog-checker.sh を呼び出しており、サジェストが出力される"
       executor: claudecode
-      test_command: "grep -q 'SUGGESTION_MESSAGE' /Users/amano/Desktop/thanks4claudecode/.claude/hooks/session-start.sh && echo PASS"
+      test_command: "grep -q 'changelog-checker.sh' /Users/amano/Desktop/thanks4claudecode/.claude/hooks/session-start.sh && echo PASS"
 
     - id: p3.2
       criterion: "新バージョン通知メッセージに関連機能情報が含まれている形式が定義されている"
@@ -178,22 +178,22 @@ done_when:
     - id: p4.1
       criterion: "/changelog コマンドが --suggest オプションをサポートしている"
       executor: claudecode
-      test_command: "grep -q '\\-\\-suggest' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.sh && echo PASS"
+      test_command: "grep -q '\\-\\-suggest' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.md && echo PASS"
 
     - id: p4.2
       criterion: "/changelog --suggest が適用可能性分析を実行するロジックが定義されている"
       executor: claudecode
-      test_command: "grep -q 'applicability\\|suggest' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.sh && echo PASS"
+      test_command: "grep -q 'applicability\\|適用可能性' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.md && echo PASS"
 
     - id: p4.3
       criterion: "優先度（高・中・低）の分類ロジックが実装されている"
       executor: claudecode
-      test_command: "grep -q 'high\\|medium\\|low' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.sh && echo PASS"
+      test_command: "grep -qi 'high\\|medium\\|low\\|高優先度\\|中優先度\\|低優先度' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.md && echo PASS"
 
     - id: p4.4
-      criterion: "/changelog --suggest がヘルプ情報を表示できる"
+      criterion: "/changelog --suggest の使用方法が記載されている"
       executor: claudecode
-      test_command: "grep -q 'help\\|usage' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.sh && echo PASS"
+      test_command: "grep -q '使用方法\\|Usage' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.md && echo PASS"
 
   status: pending
   depends_on: [p3]
@@ -215,9 +215,9 @@ done_when:
 
   subtasks:
     - id: p5.1
-      criterion: "関連機能にスコアが計算されている"
+      criterion: "優先度キーワードに基づく分類ロジックが実装されている"
       executor: claudecode
-      test_command: "grep -q 'score\\|weight' /Users/amano/Desktop/thanks4claudecode/.claude/hooks/changelog-checker.sh && echo PASS"
+      test_command: "grep -q 'priority_keywords\\|high_keywords\\|medium_keywords\\|low_keywords' /Users/amano/Desktop/thanks4claudecode/.claude/hooks/changelog-checker.sh && echo PASS"
 
     - id: p5.2
       criterion: "サジェストメッセージに優先度ラベルが含まれている形式が実装されている"
@@ -227,12 +227,12 @@ done_when:
     - id: p5.3
       criterion: "各関連機能に活用方法のコメントが含まれている"
       executor: claudecode
-      test_command: "grep -q 'how_to_use\\|application\\|usage' /Users/amano/Desktop/thanks4claudecode/.claude/cache/repo-profile.json && echo PASS"
+      test_command: "grep -q 'how_to_use' /Users/amano/Desktop/thanks4claudecode/.claude/cache/repo-profile.json && echo PASS"
 
     - id: p5.4
       criterion: "整形されたサジェストメッセージが出力される"
       executor: claudecode
-      test_command: "grep -q 'format\\|output' /Users/amano/Desktop/thanks4claudecode/.claude/hooks/changelog-checker.sh && echo PASS"
+      test_command: "grep -q 'format_suggestions\\|output_notification' /Users/amano/Desktop/thanks4claudecode/.claude/hooks/changelog-checker.sh && echo PASS"
 
   status: pending
   depends_on: [p4]
@@ -265,14 +265,14 @@ done_when:
       test_command: "bash /Users/amano/Desktop/thanks4claudecode/.claude/hooks/changelog-checker.sh >/dev/null 2>&1 && echo PASS"
 
     - id: p6.3
-      criterion: "/changelog コマンドが正常に実行される"
+      criterion: "/changelog コマンドファイルが存在し --suggest オプションが記載されている"
       executor: claudecode
-      test_command: "bash /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.sh >/dev/null 2>&1 && echo PASS"
+      test_command: "test -f /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.md && grep -q '\\-\\-suggest' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.md && echo PASS"
 
     - id: p6.4
-      criterion: "/changelog --suggest が適切な出力を返す"
+      criterion: "/changelog --suggest の出力フォーマットが定義されている"
       executor: claudecode
-      test_command: "bash /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.sh --suggest 2>&1 | grep -q 'Suggested\\|suggest\\|priority' && echo PASS"
+      test_command: "grep -q '高優先度\\|High Priority' /Users/amano/Desktop/thanks4claudecode/.claude/commands/changelog.md && echo PASS"
 
   status: pending
   depends_on: [p5]

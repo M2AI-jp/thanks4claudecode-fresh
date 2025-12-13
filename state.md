@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null  # M020 完了。次の playbook を待機中
-branch: main
+active: plan/active/playbook-m021-changelog-suggest.md
+branch: feat/m021-changelog-suggest
 ```
 
 ---
@@ -27,8 +27,8 @@ branch: main
 ## goal
 
 ```yaml
-milestone: null  # 次の milestone を待機中
-phase: null
+milestone: M021  # CHANGELOG サジェストシステム
+phase: p2
 self_complete: false
 last_completed_milestone: M020 (achieved: 2025-12-13)
 ```
