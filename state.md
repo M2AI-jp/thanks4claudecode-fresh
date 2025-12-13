@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-m020-changelog-monitor.md
-branch: feat/m020-changelog-monitor
+active: null  # M020 完了。次の playbook を待機中
+branch: main
 ```
 
 ---
@@ -27,10 +27,10 @@ branch: feat/m020-changelog-monitor
 ## goal
 
 ```yaml
-milestone: M020  # Claude Code CHANGELOG モニタリングシステム
-phase: p0  # キャッシュディレクトリ & メタデータ構造設計
+milestone: null  # 次の milestone を待機中
+phase: null
 self_complete: false
-last_completed_milestone: M019 (achieved: 2025-12-13)
+last_completed_milestone: M020 (achieved: 2025-12-13)
 ```
 
 ---
@@ -40,7 +40,7 @@ last_completed_milestone: M019 (achieved: 2025-12-13)
 ```yaml
 last_start: 2025-12-13 21:29:47
 last_clear: 2025-12-13 20:59:00
-last_playbook_completed: 2025-12-13 20:59:00
+last_playbook_completed: 2025-12-13 22:15:00
 ```
 
 ---

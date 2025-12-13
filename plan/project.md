@@ -218,15 +218,17 @@ project_complete:
     新機能・Hook トリガー・設定オプション等を定期的に検出し、
     このリポジトリに取り込む仕組みを構築する。
     24時間キャッシュで公式リポジトリを監視し、新バージョン検出時に通知する。
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-13
   depends_on: [M019]
   priority: high
+  playbooks: [playbook-m020-changelog-monitor.md]
   done_when:
-    - [ ] .claude/cache/ ディレクトリが作成されている
-    - [ ] changelog-checker.sh が SessionStart で発火する
-    - [ ] 24時間経過時のみ CHANGELOG を取得する
-    - [ ] /changelog コマンドで最新情報を表示できる
-    - [ ] 新バージョン検出時に通知が表示される
+    - [x] .claude/cache/ ディレクトリが作成されている
+    - [x] changelog-checker.sh が SessionStart で発火する
+    - [x] 24時間経過時のみ CHANGELOG を取得する
+    - [x] /changelog コマンドで最新情報を表示できる
+    - [x] 新バージョン検出時に通知が表示される
   decomposition:
     playbook_summary: |
       Claude Code の CHANGELOG を定期的にチェックし、
