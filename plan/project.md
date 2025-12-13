@@ -155,17 +155,17 @@ success_criteria:
     新バージョン検出時に、このリポジトリに関連する新機能を自動提案する。
     リポジトリプロファイル（使用技術、関心領域）を定義し、
     新機能とのマッチング、優先度付け、具体的な活用方法を提示する。
-  status: pending
+  status: achieved
+  achieved_at: 2025-12-13
   depends_on: [M020]
   priority: high
-  estimated_effort: 8h
   playbooks: [playbook-m021-changelog-suggest.md]
   done_when:
-    - [ ] repo-profile.json が作成され、リポジトリ特性が定義されている
-    - [ ] changelog-checker.sh がキーワード抽出とマッチングを行う
-    - [ ] 新バージョン通知に関連機能のサジェストが含まれる
-    - [ ] /changelog --suggest で詳細な適用可能性分析が表示される
-    - [ ] 優先度（高・中・低）で機能が分類される
+    - [x] repo-profile.json が作成され、リポジトリ特性が定義されている
+    - [x] changelog-checker.sh がキーワード抽出とマッチングを行う
+    - [x] 新バージョン通知に関連機能のサジェストが含まれる
+    - [x] /changelog --suggest で詳細な適用可能性分析が表示される
+    - [x] 優先度（高・中・低）で機能が分類される
   decomposition:
     playbook_summary: |
       CHANGELOG の新機能をこのリポジトリの特性に基づいて分析し、
