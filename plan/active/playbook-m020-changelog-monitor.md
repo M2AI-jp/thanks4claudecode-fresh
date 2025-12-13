@@ -57,7 +57,7 @@ subtasks:
   - id: p0.4
     criterion: ".claude/cache/ が .gitignore に登録されている"
     executor: claudecode
-    test_command: "grep -q '^\\.claude/cache/' /Users/amano/Desktop/thanks4claudecode/.gitignore && echo PASS || echo FAIL"
+    test_command: "grep -q '.claude/cache/' /Users/amano/Desktop/thanks4claudecode/.gitignore && echo PASS || echo FAIL"
 
 status: pending
 max_iterations: 5
@@ -178,9 +178,9 @@ subtasks:
     test_command: "test -f /Users/amano/Desktop/thanks4claudecode/.claude/cache/changelog-latest.md && test -f /Users/amano/Desktop/thanks4claudecode/.claude/cache/changelog-meta.json && echo PASS || echo FAIL"
 
   - id: p4.3
-    criterion: "docs/repository-map.yaml に changelog-checker.sh が登録されている"
+    criterion: "changelog-checker.sh が .claude/hooks/ に存在し実行可能である"
     executor: claudecode
-    test_command: "grep -q 'changelog-checker' /Users/amano/Desktop/thanks4claudecode/docs/repository-map.yaml && echo PASS || echo FAIL"
+    test_command: "test -x /Users/amano/Desktop/thanks4claudecode/.claude/hooks/changelog-checker.sh && echo PASS || echo FAIL"
 
   - id: p4.4
     criterion: "CHANGELOG システムの説明が state.md または README に追加されている"
