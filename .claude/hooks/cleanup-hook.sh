@@ -81,19 +81,30 @@ find tmp -type f ! -name "CLAUDE.md" ! -name "README.md" -delete 2>/dev/null || 
 # 空のサブディレクトリを削除
 find tmp -type d -empty -delete 2>/dev/null || true
 
+# リポジトリマップを自動更新
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAP_SCRIPT="$SCRIPT_DIR/generate-repository-map.sh"
+MAP_RESULT=""
+if [ -x "$MAP_SCRIPT" ]; then
+    MAP_RESULT=$(bash "$MAP_SCRIPT" 2>&1 || true)
+fi
+
 # 通知を出力
 cat << EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🧹 テンポラリファイル クリーンアップ完了
+  🧹 Playbook 完了処理
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Playbook: $(basename "$FILE_PATH")
-  削除ファイル数: $TMP_FILES
 
-  保持したファイル:
-    - tmp/CLAUDE.md
-    - tmp/README.md
+  [1] テンポラリファイル クリーンアップ
+      削除ファイル数: $TMP_FILES
+      保持: tmp/CLAUDE.md, tmp/README.md
+
+  [2] リポジトリマップ 自動更新
+      出力: docs/repository-map.yaml
+      $MAP_RESULT
 
   ℹ️ tmp/ は次の playbook で再利用されます
 

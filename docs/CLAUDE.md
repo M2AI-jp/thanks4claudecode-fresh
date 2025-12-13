@@ -2,7 +2,7 @@
 
 > **ドキュメント - 仕様書・運用ルール**
 >
-> ファイル管理は `docs/manifest.yaml` で行う（追加/削除時は必ず更新）
+> 全ファイルマッピングは `docs/repository-map.yaml`（自動生成）
 
 ---
 
@@ -15,13 +15,17 @@
 
 ## ファイル一覧
 
-### コア仕様
+### マスターマップ（自動生成）
+
+| ファイル | 役割 | 更新タイミング |
+|----------|------|----------------|
+| repository-map.yaml | 全ファイルマッピング | playbook 完了時（自動） |
+
+### 仕様書
 
 | ファイル | 役割 | 参照タイミング |
 |----------|------|----------------|
-| current-implementation.md | 現在実装の棚卸し（自動生成） | 構造変更時、復旧時 |
 | extension-system.md | Claude Code 公式リファレンス | 拡張機能確認時 |
-| feature-map.md | Hooks/SubAgents/Skills 一覧 | 機能確認時 |
 | folder-management.md | フォルダ管理ルール | ファイル配置時 |
 
 ### 運用ルール
@@ -35,20 +39,27 @@
 
 ---
 
-## ファイル管理
+## 自動マッピングシステム
 
 ```yaml
-manifest: docs/manifest.yaml  # 全ファイルのメタデータ
+マスターマップ: docs/repository-map.yaml
 
-新規作成時:
-  1. docs/ にファイルを作成
-  2. manifest.yaml に追記
-  3. このファイル（CLAUDE.md）を更新
+自動更新:
+  トリガー: playbook 完了時
+  実行: .claude/hooks/cleanup-hook.sh
+         → .claude/hooks/generate-repository-map.sh
 
-削除時:
-  1. ファイルを削除
-  2. manifest.yaml から削除
-  3. このファイル（CLAUDE.md）を更新
+手動更新:
+  bash .claude/hooks/generate-repository-map.sh
+
+マッピング内容:
+  - Hooks（トリガー、説明）
+  - SubAgents（説明）
+  - Skills（説明）
+  - Commands（説明）
+  - Docs（説明）
+  - Plan（active/archive/template）
+  - Root files
 ```
 
 ---
@@ -57,14 +68,13 @@ manifest: docs/manifest.yaml  # 全ファイルのメタデータ
 
 ```yaml
 原則:
-  - 必要なドキュメントのみ保持
-  - manifest.yaml で一元管理
-  - 必要な時にのみ参照される
+  - repository-map.yaml で全ファイルを一元管理
+  - playbook 完了時に自動更新
+  - 手動編集は上書きされる
 
 禁止:
   - テスト目的のファイル配置（tmp/ を使用）
   - 中間成果物の配置（tmp/ を使用）
-  - manifest.yaml を更新せずにファイル追加
 ```
 
 ---
@@ -74,4 +84,4 @@ manifest: docs/manifest.yaml  # 全ファイルのメタデータ
 - **state.md** → 参照ファイル一覧で docs/ を指定
 - **CLAUDE.md** → 必要に応じて @参照で呼び出し
 - **playbook** → Phase 作業中に必要なドキュメントを参照
-- **manifest.yaml** → docs/ 内ファイルのメタデータ管理
+- **repository-map.yaml** → 全ファイルの自動マッピング

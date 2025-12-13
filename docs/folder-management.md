@@ -67,34 +67,33 @@
 | ファイル | 区分 | 役割 |
 |----------|------|------|
 | `CLAUDE.md` | 永続 | フォルダ役割説明 |
-| `manifest.yaml` | 永続 | ファイル一元管理マニフェスト（★必須更新） |
-| `current-implementation.md` | 永続 | 現在実装の棚卸し |
+| `repository-map.yaml` | 永続 | 全ファイルマッピング（★自動生成） |
 | `extension-system.md` | 永続 | Claude Code 公式リファレンス |
-| `feature-map.md` | 永続 | Hooks/SubAgents/Skills 一覧 |
 | `criterion-validation-rules.md` | 永続 | done_criteria 検証ルール |
 | `folder-management.md` | 永続 | フォルダ管理ルール（このファイル） |
 | `archive-operation-rules.md` | 永続 | アーカイブ操作ルール |
 | `artifact-management-rules.md` | 永続 | 成果物管理ルール |
 | `git-operations.md` | 永続 | git 操作ガイド |
 
-#### docs/ のファイル管理
+#### 全ファイル自動マッピング
 
 ```yaml
-管理ファイル: docs/manifest.yaml
+マスターマップ: docs/repository-map.yaml
 
-ファイル追加時:
-  1. docs/ にファイルを作成
-  2. manifest.yaml に追記
-  3. CLAUDE.md のファイル一覧を更新
+自動更新タイミング:
+  - playbook 完了時（cleanup-hook.sh 経由）
 
-ファイル削除時:
-  1. ファイルを削除
-  2. manifest.yaml から削除
-  3. CLAUDE.md のファイル一覧を更新
+手動更新:
+  bash .claude/hooks/generate-repository-map.sh
 
-自動通知:
-  - update-tracker.sh が docs/ への変更を検出
-  - manifest.yaml 更新を促すメッセージを出力
+マッピング対象:
+  - .claude/hooks/ - 全 Hook
+  - .claude/agents/ - 全 SubAgent
+  - .claude/skills/ - 全 Skill
+  - .claude/commands/ - 全 Command
+  - docs/ - 全ドキュメント
+  - plan/ - active/archive/template
+  - root - CLAUDE.md, state.md 等
 ```
 
 ### tmp/ 配下

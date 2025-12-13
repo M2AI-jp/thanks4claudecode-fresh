@@ -1,0 +1,259 @@
+# Repository Map
+#
+# リポジトリ内の全ファイルマッピング（自動生成）
+#
+# 生成スクリプト: .claude/hooks/generate-repository-map.sh
+# 更新タイミング: playbook 完了時
+#
+# このファイルは自動生成されます。手動編集は上書きされます。
+
+meta:
+  generated: "2025-12-13 17:30:16"
+  generator: ".claude/hooks/generate-repository-map.sh"
+  total_files: 132
+
+hooks:
+  directory: .claude/hooks/
+  count: 31
+  files:
+    - name: "archive-playbook.sh"
+      trigger: "unknown"
+      description: "archive-playbook.sh - playbook 完了時の自動アーカイブ提案"
+    - name: "check-coherence.sh"
+      trigger: "unknown"
+      description: "check-coherence.sh - 簡略版：state.md と playbook の整合性チェック"
+    - name: "check-file-dependencies.sh"
+      trigger: "unknown"
+      description: "check-file-dependencies.sh - ファイル依存関係チェック Hook"
+    - name: "check-main-branch.sh"
+      trigger: "unknown"
+      description: "check-main-branch.sh - main ブランチでの作業をブロック"
+    - name: "check-protected-edit.sh"
+      trigger: "unknown"
+      description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
+    - name: "cleanup-hook.sh"
+      trigger: "unknown"
+      description: "cleanup-hook.sh - playbook 完了時のテンポラリファイル自動クリ�"
+    - name: "consent-guard.sh"
+      trigger: "unknown"
+      description: "consent-guard.sh - 合意プロセス強制フック"
+    - name: "create-pr-hook.sh"
+      trigger: "unknown"
+      description: "create-pr-hook.sh - playbook 完了時の PR 自動作成フック"
+    - name: "create-pr.sh"
+      trigger: "unknown"
+      description: "create-pr.sh - Phase/Playbook 完了時の自動 PR 作成"
+    - name: "critic-guard.sh"
+      trigger: "unknown"
+      description: "critic-guard.sh - state: done への変更を構造的にブロック"
+    - name: "depends-check.sh"
+      trigger: "unknown"
+      description: "depends-check.sh - Phase の depends_on を検証"
+    - name: "doc-freshness-check.sh"
+      trigger: "unknown"
+      description: "doc-freshness-check.sh - PostToolUse:Read Hook: ドキュメント鮮度チェ�"
+    - name: "executor-guard.sh"
+      trigger: "unknown"
+      description: "executor-guard.sh - Phase の executor を構造的に強制"
+    - name: "failure-logger.sh"
+      trigger: "unknown"
+      description: "failure-logger.sh - 失敗パターン記録ユーティリティ"
+    - name: "generate-implementation-doc.sh"
+      trigger: "unknown"
+      description: "generate-implementation-doc.sh - current-implementation.md 自動生成"
+    - name: "generate-repository-map.sh"
+      trigger: "unknown"
+      description: "generate-repository-map.sh - 全ファイル自動マッピングシステム"
+    - name: "init-guard.sh"
+      trigger: "unknown"
+      description: "init-guard.sh - セッション開始時の強制的自己認識ガード"
+    - name: "lint-check.sh"
+      trigger: "unknown"
+      description: "lint-check.sh - 静的解析チェック Hook"
+    - name: "log-subagent.sh"
+      trigger: "unknown"
+      description: "log-subagent.sh - Subagent 発動ログ記録 + critic 結果処理"
+    - name: "merge-pr.sh"
+      trigger: "unknown"
+      description: "merge-pr.sh - PR の自動マージスクリプト"
+    - name: "playbook-guard.sh"
+      trigger: "unknown"
+      description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
+    - name: "pre-bash-check.sh"
+      trigger: "unknown"
+      description: "pre-bash-check.sh - Bash コマンド実行前のチェック"
+    - name: "pre-compact.sh"
+      trigger: "unknown"
+      description: "pre-compact.sh - PreCompact Hook: 完全な状態スナップショット保存"
+    - name: "prompt-guard.sh"
+      trigger: "unknown"
+      description: "prompt-guard.sh - UserPromptSubmit Hook"
+    - name: "scope-guard.sh"
+      trigger: "unknown"
+      description: "scope-guard.sh - done_criteria/done_when の無断変更を検出"
+    - name: "session-end.sh"
+      trigger: "unknown"
+      description: "session-end.sh - セッション終了時に四つ組整合性チェック + リ"
+    - name: "session-start.sh"
+      trigger: "unknown"
+      description: "session-start.sh - LLMの自己認識を形成し、LOOPを開始させる"
+    - name: "stop-summary.sh"
+      trigger: "unknown"
+      description: "stop-summary.sh - Stop Hook: Phase 状態サマリー + 整合性チェック"
+    - name: "system-health-check.sh"
+      trigger: "unknown"
+      description: "system-health-check.sh - SessionStart 統合: システム健全性チェック"
+    - name: "test-hooks.sh"
+      trigger: "unknown"
+      description: "test-hooks.sh - Hook 機能カタログスペック検証"
+    - name: "update-tracker.sh"
+      trigger: "unknown"
+      description: "update-tracker.sh - PostToolUse:Edit/Write Hook: 変更追跡と自動更新提�"
+
+agents:
+  directory: .claude/agents/
+  count: 7
+  files:
+    - name: "critic"
+      description: "各 subtask の test_command を実行し、PASS/FAIL を判定する"
+    - name: "health-checker"
+      description: "description: システム状態の定期監視。state.md/playbook の整合性�"
+    - name: "plan-guard"
+      description: "description: PROACTIVELY checks 3-layer plan coherence at session start. Rejects"
+    - name: "pm"
+      description: "重要"
+    - name: "reviewer"
+      description: "description: Use this agent for code and design reviews. Evaluates code quality,"
+    - name: "setup-guide"
+      description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conduc"
+
+skills:
+  directory: .claude/skills/
+  count: 13
+  files:
+    - name: "beginner-advisor"
+      description: "description: 初学者向けに専門用語を比喩で説明するスキル。s"
+    - name: "consent-process"
+      description: "合意プロセス（CONSENT）- ユーザープロンプトの誤解釈防止"
+    - name: "context-externalization"
+      description: "コンテキスト外部化 - チャット履歴に依存しない状態管理"
+    - name: "context-management"
+      description: "チャット履歴に依存しない状態管理。プロンプト→意図→�"
+    - name: "deploy-checker"
+      description: "デプロイ準備・検証専門スキル"
+    - name: "execution-management"
+      description: "description: 並列実行制御とリソース配分のガイドライン。タ�"
+    - name: "frontend-design"
+      description: "プロダクション品質のフロントエンドインターフェースを�"
+    - name: "learning"
+      description: "> 中断時に"
+    - name: "lint-checker"
+      description: "コード品質チェック専門スキル"
+    - name: "plan-management"
+      description: "description: Multi-layer planning and playbook management. Use when creating pla"
+    - name: "post-loop"
+      description: "POST_LOOP - playbook 完了後の自動処理"
+    - name: "state"
+      description: "description: このワークスペースの state.md 管理、playbook 運用、"
+    - name: "test-runner"
+      description: "テスト実行・検証専門スキル"
+
+frameworks:
+  directory: .claude/rules/frameworks/
+  count: 0
+  files: []
+
+commands:
+  directory: .claude/commands/
+  count: 8
+  files:
+    - name: "/crit"
+      description: "現在の `goal.done_criteria` の達成状況を CRITIQUE してください。"
+    - name: "/focus"
+      description: "state.md の `focus.current` を指定したレイヤーに変更してくださ"
+    - name: "/lint"
+      description: "state.md と playbook の整合性をチェックしてください。"
+    - name: "/playbook-init"
+      description: "このフローは構造的に強制される。手順をスキップしては�"
+    - name: "/rollback"
+      description: "Git ロールバックを実行します。"
+    - name: "/state-rollback"
+      description: "state.md のバックアップと復元を管理します。"
+    - name: "/task-start"
+      description: "標準タスク開始コマンド。全てのタスクは project.md からの�"
+    - name: "/test"
+      description: "`.claude/tests/` 配下のテストを実行してください。"
+
+docs:
+  directory: docs/
+  count: 10
+  files:
+    - name: "CLAUDE.md"
+      description: "ドキュメント - 仕様書・運用ルール"
+    - name: "archive-operation-rules.md"
+      description: "目的"
+    - name: "artifact-management-rules.md"
+      description: "目的"
+    - name: "criterion-validation-rules.md"
+      description: "criterion（done_criteria の単位）の検証ルール"
+    - name: "current-implementation.md"
+      description: "現在の実装状況 - Single Source of Truth"
+    - name: "extension-system.md"
+      description: "公式リファレンスに基づく発火タイミング・トリガー・連�"
+    - name: "feature-map.md"
+      description: "Hooks / SubAgents / Skills の一覧（簡略版）"
+    - name: "folder-management.md"
+      description: "全フォルダの役割、テンポラリ/永続区分、削除タイミング�"
+    - name: "git-operations.md"
+      description: "設計方針"
+    - name: "manifest.yaml"
+      description: "docs/ フォルダのファイル一覧とメタデータ"
+
+plan:
+  directory: plan/
+  subdirectories:
+    active:
+      description: "進行中の playbook"
+      count: 2
+    archive:
+      description: "完了した playbook のアーカイブ"
+      count: 1
+    template:
+      description: "playbook テンプレート"
+      count: 7
+
+root:
+  description: "ルートディレクトリの主要ファイル"
+  files:
+    - name: "CLAUDE.md"
+      description: "【即時実行】このファイルを読んだ直後、INIT セクションを"
+    - name: "AGENTS.md"
+      description: "このファイルは純粋なコーディングルール。"
+    - name: "README.md"
+      description: "**Claude Code と一緒に開発を始めるためのテンプレート。**"
+    - name: "state.md"
+      description: "現在地を示す Single Source of Truth"
+    - name: ".gitignore"
+      description: ""
+    - name: ".mcp.json"
+      description: ""
+
+summary:
+  hooks: 31
+  agents: 7
+  skills: 13
+  frameworks: 0
+  commands: 8
+  docs: 10
+  plan_active: 2
+  plan_archive: 1
+  plan_template: 7
+  total: 132
+
+# ==============================================================================
+# 変更履歴
+# ==============================================================================
+changelog:
+  - date: "2025-12-13 17:30:16"
+    action: "auto-generated"
+    description: "playbook 完了時に自動生成"

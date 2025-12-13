@@ -90,13 +90,13 @@ case "$FILE_PATH" in
         NEEDS_REGEN=true
         ;;
     docs/*)
-        # docs/ へのファイル変更時は manifest.yaml 更新を促す
-        # manifest.yaml 自体への変更は除外
-        if [ "$FILE_PATH" != "docs/manifest.yaml" ]; then
+        # docs/ へのファイル変更時は repository-map.yaml 自動更新を通知
+        # repository-map.yaml 自体への変更は除外
+        if [ "$FILE_PATH" != "docs/repository-map.yaml" ]; then
             cat << EOF
 {
   "decision": "allow",
-  "systemMessage": "[update-tracker] 📄 docs/manifest.yaml の更新が必要\n\n変更されたファイル: $FILE_PATH\n\n⚠️ docs/ 内のファイルを追加/変更した場合は、以下も更新してください:\n  1. docs/manifest.yaml（ファイル一覧）\n  2. docs/CLAUDE.md（ファイル一覧テーブル）\n\n管理ルール: docs/CLAUDE.md「ファイル管理」セクション参照"
+  "systemMessage": "[update-tracker] 📄 docs/ ファイル変更検出\n\n変更されたファイル: $FILE_PATH\n\nℹ️ repository-map.yaml は playbook 完了時に自動更新されます\n\n手動更新する場合:\n  bash .claude/hooks/generate-repository-map.sh"
 }
 EOF
         fi
