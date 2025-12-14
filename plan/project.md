@@ -197,13 +197,14 @@ success_criteria:
   description: |
     「拡散」を抑止し「収束」を強制する仕組みを実装。
     state.md スキーマの単一定義源を作成し、Hook がそこを参照する形に統一。
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-14
   depends_on: [M016]
-  playbooks: []
+  playbooks: [playbook-m017-state-schema.md]
   done_when:
-    - [ ] .claude/schema/state-schema.sh が存在し source 可能
-    - [ ] state-schema.sh に SECTION_* 定数と getter 関数が定義されている
-    - [ ] Hook がハードコードではなくスキーマを参照している
+    - [x] .claude/schema/state-schema.sh が存在し source 可能
+    - [x] state-schema.sh に SECTION_* 定数と getter 関数が定義されている
+    - [x] Hook がハードコードではなくスキーマを参照している
 
 - id: M018
   name: "3検証システム（technical/consistency/completeness）"
