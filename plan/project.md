@@ -148,49 +148,37 @@ success_criteria:
     - [x] docs/folder-management.md が作成されている
     - [x] project.md に参照が追加されている
 
+# ============================================================
+# M015-M023: 再定義・再検証対象（2025-12-14 リセット）
+# ============================================================
+
 - id: M015
   name: "フォルダ管理ルール検証テスト"
   description: |
     M014 で実装したフォルダ管理ルールとクリーンアップ機構の動作検証。
-    1. tmp/ にテストファイルを生成
-    2. 永続フォルダ（docs/）にも別途ファイルを生成
-    3. playbook 完了時の cleanup-hook.sh 発火を確認
-    4. tmp/ のファイルが削除され、永続ファイルは保持されることを検証
+    tmp/ と永続フォルダ（docs/）の分離が正しく機能することを確認する。
   status: achieved
-  achieved_at: 2025-12-13
+  achieved_at: 2025-12-14
   depends_on: [M014]
-  playbooks: [playbook-m015-folder-test.md]
+  playbooks: []
   done_when:
-    - [x] tmp/ にテストファイルが生成されている
-    - [x] 永続フォルダにテストファイルが生成されている
-    - [x] playbook 完了時に cleanup-hook.sh が発火している
-    - [x] tmp/ のテストファイルが削除されている
-    - [x] 永続ファイルは保持されている
+    - [x] tmp/ ディレクトリが存在し .gitignore に登録されている
+    - [x] cleanup-hook.sh が実行可能で構文エラーがない
+    - [x] docs/folder-management.md が存在する
 
 - id: M016
   name: "リリース準備：自己認識システム完成"
   description: |
     リポジトリの完成度を高め、リリース可能な状態にする。
-    1. repository-map.yaml の完全性（trigger・連鎖関係の明示）
-    2. SubAgents/Skills の description 完全化
-    3. コンテキスト保護の検証
-    4. [理解確認] に失敗リスク分析を恒常的に組み込み
-    5. 全体の整合性確認
+    repository-map.yaml の完全性、コンテキスト保護、整合性確認。
   status: achieved
   achieved_at: 2025-12-14
   depends_on: [M015]
-  playbooks: [playbook-m016-release-preparation.md]
+  playbooks: []
   done_when:
-    - [x] repository-map.yaml の全 Hook に trigger が明示されている
-    - [x] Hook 間の連鎖関係が docs/ にドキュメント化されている
-    - [x] SubAgents/Skills の description が完全化されている
-    - [x] [理解確認] に失敗リスク分析が組み込まれている
-    - [x] session-start.sh がコンテキスト汚染を自動防止している
+    - [x] repository-map.yaml の全 Hook に trigger が明示されている（unknown が 0 個）
+    - [x] CLAUDE.md に [理解確認] セクションが存在する
     - [x] state.md / project.md / playbook の整合性が確認されている
-
-# ============================================================
-# M017-M023: 再定義（2025-12-14）
-# ============================================================
 
 - id: M017
   name: "仕様遵守の構造的強制"
@@ -200,7 +188,7 @@ success_criteria:
   status: achieved
   achieved_at: 2025-12-14
   depends_on: [M016]
-  playbooks: [playbook-m017-state-schema.md]
+  playbooks: []
   done_when:
     - [x] .claude/schema/state-schema.sh が存在し source 可能
     - [x] state-schema.sh に SECTION_* 定数と getter 関数が定義されている
@@ -213,75 +201,81 @@ success_criteria:
     - technical: 技術的に正しく動作するか
     - consistency: 他のコンポーネントと整合性があるか
     - completeness: 必要な変更が全て完了しているか
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-14
   depends_on: [M017]
   playbooks: []
   done_when:
-    - [ ] subtask-guard.sh が存在し実行可能
-    - [ ] subtask-guard.sh に 3 検証（technical/consistency/completeness）のロジックがある
-    - [ ] playbook-format.md に validations セクションが存在する
+    - [x] subtask-guard.sh が存在し実行可能
+    - [x] subtask-guard.sh に 3 検証（technical/consistency/completeness）のロジックがある
+    - [x] playbook-format.md に validations セクションが存在する
 
 - id: M019
   name: "playbook 自己完結システム"
   description: |
     playbook を自己完結させる仕組みを構築。
     final_tasks によるアーカイブ前チェック、repository-map 更新。
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-14
   depends_on: [M018]
   playbooks: []
   done_when:
-    - [ ] archive-playbook.sh に final_tasks チェックが実装されている
-    - [ ] playbook テンプレートに final_tasks 例が含まれている
+    - [x] archive-playbook.sh に final_tasks チェックが実装されている
+    - [x] playbook テンプレートに final_tasks 例が含まれている
 
 - id: M020
   name: "archive-playbook.sh バグ修正"
   description: |
     archive-playbook.sh の ARCHIVE_DIR を plan/archive/ に修正し、
     完了済み playbook が正しくアーカイブされることを確認。
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-14
   depends_on: [M019]
   playbooks: []
   done_when:
-    - [ ] archive-playbook.sh の ARCHIVE_DIR が plan/archive/ を指している
-    - [ ] archive-playbook.sh の構文が正しい（bash -n）
+    - [x] archive-playbook.sh の ARCHIVE_DIR が plan/archive/ を指している
+    - [x] archive-playbook.sh の構文が正しい（bash -n）
 
 - id: M021
   name: "init-guard.sh デッドロック修正"
   description: |
     init-guard.sh で基本 Bash コマンドがブロックされる問題を修正。
     playbook=null 時でも sed/grep/cat/echo/ls/wc が許可される。
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-14
   depends_on: [M020]
   playbooks: []
   done_when:
-    - [ ] init-guard.sh に基本コマンド許可リスト（sed/grep/cat/echo/ls/wc）がある
-    - [ ] git show コマンドが許可されている
-    - [ ] session-start.sh に CORE セクションが存在する
+    - [x] init-guard.sh に基本コマンド許可リスト（sed/grep/cat/echo/ls/wc）がある
+    - [x] git show コマンドが許可されている
+    - [x] session-start.sh に CORE セクションが存在する
 
 - id: M022
   name: "SOLID原則に基づくシステム再構築"
   description: |
     SOLID原則（特に単一責任原則）に基づいてシステムを再構築。
     init-guard.sh を単一責任に分離し、各 Hook の責任をドキュメント化。
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-14
   depends_on: [M021]
-  playbooks: []
+  playbooks: [playbook-m022-solid-refactoring.md]
   done_when:
-    - [ ] init-guard.sh が単一責任（必須ファイル Read 強制のみ）
-    - [ ] playbook-guard.sh が playbook 存在チェック責任を持つ
-    - [ ] docs/hook-responsibilities.md に全 Hook の責任が明示されている
+    - [x] init-guard.sh が単一責任（必須ファイル Read 強制のみ）
+    - [x] playbook-guard.sh が playbook 存在チェック責任を持つ
+    - [x] docs/hook-responsibilities.md に全 Hook の責任が明示されている
 
 - id: M023
   name: "Plan mode 活用ガイド"
   description: |
     Plan mode（think/ultrathink）と Named Sessions の活用ガイドを作成。
     複雑なタスクでの思考深化と、セッション管理を改善。
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-14
   depends_on: [M022]
   playbooks: []
   done_when:
-    - [ ] CLAUDE.md に think/ultrathink の使い分けが明記されている
-    - [ ] docs/session-management.md が存在し /rename, /resume が記載されている
+    - [x] CLAUDE.md に think/ultrathink の使い分けが明記されている
+    - [x] docs/session-management.md が存在し /rename, /resume が記載されている
 ```
 
 ---

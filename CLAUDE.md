@@ -332,6 +332,43 @@ FAIL → 修正 → 再実行
 
 ---
 
+## THINK（思考深化モード）
+
+> **M023: ユーザーが「think」「ultrathink」を指示した場合の対応**
+
+```yaml
+think:
+  トリガー: ユーザーが「think」を含むメッセージを送信
+  効果: 通常より深く考え、複数の選択肢を検討
+  用途:
+    - 設計判断が必要な場合
+    - トレードオフの分析
+    - 複数のアプローチ比較
+
+ultrathink:
+  トリガー: ユーザーが「ultrathink」を含むメッセージを送信
+  効果: 最大限の思考深度で分析
+  用途:
+    - 複雑なアーキテクチャ決定
+    - 根本原因の徹底分析
+    - 長期的影響の考慮
+    - 報酬詐欺の可能性を自己検証
+
+対応ルール:
+  1. think/ultrathink 指示を受けたら、即座に実行開始
+  2. 思考過程を明示的に出力する
+  3. 複数の選択肢を列挙し、各メリット・デメリットを分析
+  4. 最終的な推奨案を根拠と共に提示
+  5. ultrathink の場合は「報酬詐欺をしていないか」を自問
+
+禁止:
+  - think/ultrathink 指示を無視して通常処理
+  - 形式的な思考で終わらせる
+  - 結論ありきの分析
+```
+
+---
+
 ## 禁止事項
 
 ```
@@ -356,6 +393,206 @@ FAIL → 修正 → 再実行
 
 テンポラリファイル:
   tmp/: 一時ファイル置き場（playbook 完了時に自動クリーンアップ）
+```
+
+---
+
+## あるべき姿（SOLID原則に基づく設計）
+
+> **各マイルストーンの本来の目的と、SOLID原則との対応を明示する。**
+
+### SOLID原則の適用
+
+```yaml
+S - 単一責任原則 (SRP):
+  適用対象: 各Hook、各SubAgent
+  ルール: 1つのモジュールは1つの責任のみを持つ
+  例:
+    - init-guard.sh: 「必須ファイルRead強制」のみ
+    - playbook-guard.sh: 「playbook存在チェック」のみ
+    - consent-guard.sh: 「合意プロセス強制」のみ
+
+O - 開放閉鎖原則 (OCP):
+  適用対象: Hook システム全体
+  ルール: 拡張に開いて、修正に閉じる
+  例:
+    - 新機能は新Hookとして追加、既存Hookを修正しない
+    - settings.jsonへの登録で機能拡張
+
+L - リスコフの置換原則 (LSP):
+  適用対象: SubAgent
+  ルール: 派生型は基底型と置換可能
+  例:
+    - 全SubAgentは同じ呼び出しインターフェースを持つ
+
+I - インターフェース分離原則 (ISP):
+  適用対象: Hook のトリガー
+  ルール: クライアントに不要なインターフェースを強制しない
+  例:
+    - PreToolUse:Edit と PreToolUse:Bash は分離
+    - matcher: "*" は避ける
+
+D - 依存性逆転原則 (DIP):
+  適用対象: Hook間の依存関係
+  ルール: 高レベルモジュールは低レベルモジュールに依存しない
+  例:
+    - 共通スキーマ（state-schema.sh）を定義
+    - 各Hookはスキーマを参照（ハードコード禁止）
+```
+
+### M015: フォルダ管理ルール検証テスト
+
+```yaml
+目的: tmp/と永続フォルダの分離を検証し、自動クリーンアップが確実に動作することを確認
+
+あるべき姿:
+  - tmp/ ディレクトリが存在し、.gitignore に登録されている
+  - cleanup-hook.sh が playbook 完了時に tmp/ をクリーンする
+  - 永続ファイル（docs/, .claude/）は削除されない
+  - テストファイルを作成→削除のサイクルが動作確認済み
+
+SOLID対応:
+  - SRP: cleanup-hook.sh は「tmp/ クリーンアップ」のみの責任
+  - OCP: 新しいテンポラリフォルダは .gitignore に追加するだけ
+
+検証コマンド:
+  - test -d tmp && grep -q 'tmp/' .gitignore
+  - test -x .claude/hooks/cleanup-hook.sh
+  - bash -n .claude/hooks/cleanup-hook.sh
+```
+
+### M016: リリース準備：自己認識システム完成
+
+```yaml
+目的: repository-map.yaml が全ファイルを正確にマッピングし、各コンポーネントの役割が明確になっている
+
+あるべき姿:
+  - repository-map.yaml の全 Hook に trigger が明示されている
+  - SubAgents/Skills の description が完全（80文字で切れていない）
+  - [理解確認] に失敗リスク分析が恒常的に組み込まれている
+  - Hook 間の連鎖関係が docs/extension-system.md にドキュメント化
+
+SOLID対応:
+  - SRP: generate-repository-map.sh は「マッピング生成」のみの責任
+  - ISP: 各Hook/SubAgent/Skill が独立した説明を持つ
+
+検証コマンド:
+  - grep -c 'trigger: unknown' docs/repository-map.yaml == 0
+  - grep -q '[理解確認]' CLAUDE.md
+  - grep -q 'risks' .claude/skills/consent-process/skill.md
+```
+
+### M017: 仕様遵守の構造的強制
+
+```yaml
+目的: 定義と実装の整合性を自動検証し、乖離を即座に検出・ブロックする
+
+あるべき姿:
+  - state.md のスキーマが .claude/schema/state-schema.sh で単一定義
+  - 全 Hook がスキーマを source してハードコードなし
+  - consistency-check.sh がセッション開始時に整合性を検証
+  - 乖離検出時に exit 2 でブロック
+
+SOLID対応:
+  - DIP: 全 Hook が state-schema.sh に依存（低レベル詳細への依存を逆転）
+  - SRP: consistency-check.sh は「整合性検証」のみの責任
+
+検証コマンド:
+  - test -f .claude/schema/state-schema.sh
+  - source .claude/schema/state-schema.sh 2>/dev/null
+  - grep -l 'source.*state-schema' .claude/hooks/*.sh | wc -l >= 10
+```
+
+### M018: id単位の3検証システム
+
+```yaml
+目的: 全 subtask に3つの検証（technical/consistency/completeness）を強制し、報酬詐欺を防止
+
+あるべき姿:
+  - subtask-guard.sh が存在し、subtask.status = done 変更をチェック
+  - 3検証（technical/consistency/completeness）が全て PASS でなければブロック
+  - playbook-format.md に validations セクションが追加されている
+  - 新形式 playbook が自動生成可能
+
+SOLID対応:
+  - SRP: subtask-guard.sh は「subtask 検証」のみの責任
+  - OCP: 新しい検証タイプは validations リストに追加するだけ
+
+検証コマンド:
+  - test -x .claude/hooks/subtask-guard.sh
+  - grep -q 'technical.*consistency.*completeness' .claude/hooks/subtask-guard.sh
+  - grep -q 'validations:' plan/template/playbook-format.md
+
+【注意】M018 は status: pending のまま完了扱いにされていた（報酬詐欺）
+```
+
+### M019: playbook自己完結システム
+
+```yaml
+目的: playbook に tools/final_tasks を定義し、自動実行されるようにする
+
+あるべき姿:
+  - playbook に tools セクション（使用する Hook/SubAgent/Skill を明示）
+  - playbook に final_tasks セクション（完了時の自動タスク）
+  - archive-playbook.sh が final_tasks 完了をチェック
+  - CLAUDE.md LOOP に tools/final_tasks 処理ロジックが追加
+
+SOLID対応:
+  - SRP: 各 tool は独自の責任を持つ
+  - OCP: 新しい final_task はリストに追加するだけ
+
+検証コマンド:
+  - grep -q '## tools' plan/template/playbook-format.md
+  - grep -q 'final_tasks' plan/template/playbook-format.md
+  - grep -q 'final_tasks' .claude/hooks/archive-playbook.sh
+
+【注意】M019 も検証が不十分だった
+```
+
+### M020: archive-playbook.sh バグ修正
+
+```yaml
+目的: アーカイブ先を正しく設定し、完了済み playbook を自動移動
+
+あるべき姿:
+  - archive-playbook.sh の ARCHIVE_DIR が plan/archive/ を指す
+  - plan/active/ に完了済み playbook が残存しない
+  - playbook 完了時に自動でアーカイブ提案
+
+SOLID対応:
+  - SRP: archive-playbook.sh は「アーカイブ提案」のみの責任
+
+検証コマンド:
+  - grep -q 'ARCHIVE_DIR.*plan/archive' .claude/hooks/archive-playbook.sh
+  - ls plan/active/playbook-m01[4-9]*.md 2>/dev/null | wc -l == 0
+```
+
+### M021: init-guard.sh デッドロック修正
+
+```yaml
+目的: playbook=null 時でも基本 Bash コマンドをブロックしない
+
+あるべき姿:
+  - 基本コマンド（sed/grep/cat/echo/ls/wc/head/tail）が許可リストに含まれる
+  - git コマンド（status/branch/log/diff/show）が許可される
+  - session-start.sh に CORE ルールが含まれる
+  - state.md 整合性チェックが system-health-check.sh で実行される
+
+SOLID対応:
+  - SRP: init-guard.sh は「必須ファイル Read 強制」のみの責任
+    → playbook 強制は playbook-guard.sh に移譲すべき
+  - ISP: 必要なコマンドのみ許可（不要なブロックをしない）
+
+検証コマンド:
+  - grep -q 'sed.*grep.*cat.*echo' .claude/hooks/init-guard.sh
+  - grep -q 'git.*show' .claude/hooks/init-guard.sh
+  - grep -q 'CORE' .claude/hooks/session-start.sh
+
+【問題】現在の init-guard.sh は責任過多（SRP 違反）
+  - 必須ファイル Read 強制
+  - playbook 存在チェック
+  - Bash コマンドフィルタリング
+→ 分離が必要
 ```
 
 ---

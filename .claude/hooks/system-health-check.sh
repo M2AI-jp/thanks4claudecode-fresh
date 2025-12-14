@@ -124,6 +124,23 @@ if [ -f "$STATE_FILE" ]; then
         ISSUES="$ISSUES\n  - [WARN] state.md に必須セクションがありません: ## config"
         ISSUE_COUNT=$((ISSUE_COUNT + 1))
     fi
+
+    # 整合性チェック: milestone/phase=null なのに playbook.active がある矛盾
+    PLAYBOOK=$(grep "^active:" "$STATE_FILE" 2>/dev/null | head -1 | sed 's/active: *//' | sed 's/ *#.*//' | tr -d ' ')
+    MILESTONE=$(grep "^milestone:" "$STATE_FILE" 2>/dev/null | head -1 | sed 's/milestone: *//' | sed 's/ *#.*//' | tr -d ' ')
+    PHASE=$(grep "^phase:" "$STATE_FILE" 2>/dev/null | head -1 | sed 's/phase: *//' | sed 's/ *#.*//' | tr -d ' ')
+
+    if [[ -n "$PLAYBOOK" && "$PLAYBOOK" != "null" ]]; then
+        # playbook がある場合、milestone と phase も設定されているべき
+        if [[ -z "$MILESTONE" || "$MILESTONE" == "null" ]]; then
+            ISSUES="$ISSUES\n  - [ERROR] state.md 不整合: playbook=$PLAYBOOK だが milestone=null"
+            ISSUE_COUNT=$((ISSUE_COUNT + 1))
+        fi
+        if [[ -z "$PHASE" || "$PHASE" == "null" ]]; then
+            ISSUES="$ISSUES\n  - [WARN] state.md 不整合: playbook=$PLAYBOOK だが phase=null"
+            ISSUE_COUNT=$((ISSUE_COUNT + 1))
+        fi
+    fi
 else
     ISSUES="$ISSUES\n  - [ERROR] state.md が存在しません"
     ISSUE_COUNT=$((ISSUE_COUNT + 1))

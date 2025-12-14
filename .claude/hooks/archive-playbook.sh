@@ -2,7 +2,7 @@
 # archive-playbook.sh - playbook 完了時の自動アーカイブ提案
 #
 # 発火条件: PostToolUse:Edit
-# 目的: playbook の全 Phase が done になったら .archive/plan/ に移動を提案
+# 目的: playbook の全 Phase が done になったら plan/archive/ に移動を提案
 #
 # 設計思想（2025-12-09 改善）:
 #   - playbook 完了を自動検出
@@ -64,6 +64,24 @@ if [ "$DONE_PHASES" -ne "$TOTAL_PHASES" ]; then
     exit 0
 fi
 
+# M019: final_tasks チェック（存在する場合のみ）
+# playbook に final_tasks セクションがある場合、全て完了しているか確認
+if grep -q "^final_tasks:" "$FILE_PATH" 2>/dev/null; then
+    TOTAL_FINAL_TASKS=$(awk '/^final_tasks:/,/^[a-z_]+:/' "$FILE_PATH" | grep -c "^ *- " 2>/dev/null || echo "0")
+    DONE_FINAL_TASKS=$(awk '/^final_tasks:/,/^[a-z_]+:/' "$FILE_PATH" | grep -c "status: done" 2>/dev/null || echo "0")
+
+    if [ "$TOTAL_FINAL_TASKS" -gt 0 ] && [ "$DONE_FINAL_TASKS" -lt "$TOTAL_FINAL_TASKS" ]; then
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  ⚠️ final_tasks が未完了です"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  完了: $DONE_FINAL_TASKS / $TOTAL_FINAL_TASKS"
+        echo "  → final_tasks を全て完了してからアーカイブしてください"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        exit 0
+    fi
+fi
+
 # 現在進行中の playbook（state.md active_playbooks）かチェック
 # 進行中ならアーカイブ提案しない（安全策）
 if grep -q "$(basename "$FILE_PATH")" state.md 2>/dev/null; then
@@ -83,7 +101,7 @@ RELATIVE_PATH="${FILE_PATH#$PROJECT_DIR/}"
 PLAYBOOK_NAME=$(basename "$FILE_PATH")
 
 # アーカイブ先を決定
-ARCHIVE_DIR=".archive/plan"
+ARCHIVE_DIR="plan/archive"
 ARCHIVE_PATH="$ARCHIVE_DIR/$PLAYBOOK_NAME"
 
 # 全 Phase が done の場合、アーカイブを提案

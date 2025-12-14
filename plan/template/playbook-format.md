@@ -687,10 +687,139 @@ enforcement:
 
 ---
 
+## validations
+
+> **M018: subtask 完了時の 3 検証（technical/consistency/completeness）**
+
+```yaml
+validations:
+  technical:
+    description: 技術的に正しく動作するか
+    method: test_command の実行結果が PASS を返す
+    examples:
+      - bash -n {script} でシンタックスエラーがない
+      - npm test が exit 0 で終了する
+      - curl が期待する HTTP ステータスを返す
+
+  consistency:
+    description: 他のコンポーネントと整合性があるか
+    method: 関連ファイルとの整合性チェック
+    examples:
+      - state.md と playbook の状態が一致
+      - settings.json に Hook が登録されている
+      - schema 定義と実装が一致
+
+  completeness:
+    description: 必要な変更が全て完了しているか
+    method: done_criteria の全項目が満たされている
+    examples:
+      - 関連ドキュメントが更新されている
+      - 必要なファイルが全て作成されている
+      - 依存コンポーネントも修正されている
+```
+
+### 検証タイミング
+
+```yaml
+when_to_validate:
+  - subtask.status を done に変更する前
+  - phase.status を done に変更する前
+  - playbook アーカイブ前
+
+enforcement:
+  hook: subtask-guard.sh
+  trigger: PreToolUse:Edit (playbook ファイル)
+  action: status: done への変更時に警告を表示
+```
+
+### 検証のバイパス条件
+
+```yaml
+bypass_conditions:
+  - admin モード（security: admin）
+  - 緊急修正（emergency_fix フラグ）
+
+bypass_audit:
+  - バイパス理由を commit message に記載
+  - 後から検証を実行することを明示
+```
+
+---
+
+## final_tasks
+
+> **M019: playbook 自己完結システム - アーカイブ前の必須チェック**
+
+```yaml
+final_tasks:
+  - id: ft1
+    task: "repository-map.yaml を更新する"
+    command: "bash .claude/hooks/generate-repository-map.sh"
+    status: pending  # pending | done
+
+  - id: ft2
+    task: "tmp/ 内の一時ファイルを削除する"
+    command: "find tmp/ -type f ! -name 'CLAUDE.md' ! -name 'README.md' -delete"
+    status: pending
+
+  - id: ft3
+    task: "変更を全てコミットする"
+    command: "git add -A && git status"
+    status: pending
+```
+
+### final_tasks の役割
+
+```yaml
+目的: |
+  playbook アーカイブ前に必須のクリーンアップを強制。
+  archive-playbook.sh が final_tasks の完了をチェック。
+
+チェックタイミング:
+  - archive-playbook.sh が PostToolUse:Edit で発火
+  - 全 phase が done の場合に final_tasks をチェック
+  - 未完了の final_tasks がある場合はアーカイブをブロック
+
+status 更新:
+  - 各タスク実行後に status: done に更新
+  - LLM が手動で更新（コマンド実行後）
+```
+
+### 標準 final_tasks
+
+```yaml
+# 全 playbook に推奨される final_tasks
+final_tasks:
+  - id: ft1
+    task: "repository-map.yaml を更新する"
+    command: "bash .claude/hooks/generate-repository-map.sh"
+    status: pending
+
+  - id: ft2
+    task: "tmp/ 内の一時ファイルを削除する"
+    command: "find tmp/ -type f ! -name 'CLAUDE.md' ! -name 'README.md' -delete"
+    status: pending
+
+  - id: ft3
+    task: "変更を全てコミットする"
+    command: "git add -A && git status"
+    status: pending
+
+# オプション（プロジェクトによって追加）
+  - id: ft4
+    task: "ドキュメントの目次を更新する"
+    command: "# プロジェクト固有のコマンド"
+    status: pending
+```
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-14 | V13: final_tasks セクション追加。M019 playbook自己完結システム対応。 |
+| 2025-12-14 | V12: validations セクション追加。M018 3検証システム対応。 |
 | 2025-12-13 | V11: subtasks 構造を導入。criterion + executor + test_command を1セット化。test_command パターン集追加。 |
 | 2025-12-09 | V10: 中間成果物の処理セクションを追加。stray files 防止。 |
 | 2025-12-08 | V9: derives_from と playbook 導出ガイドを追加。計画の連鎖対応。 |

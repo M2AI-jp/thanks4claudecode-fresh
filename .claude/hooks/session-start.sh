@@ -77,8 +77,8 @@ PHASE=$(grep -A5 "## goal" state.md | grep "phase:" | head -1 | sed 's/.*: *//' 
 CRITERIA=$(awk '/## goal/,/^## [^g]/' state.md | grep -A20 "done_criteria:" | grep "^  -" | head -6)
 BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 
-# playbook 取得
-[ -n "$FOCUS" ] && PLAYBOOK=$(awk "/## layer: $FOCUS/,/^## [^l]/" state.md | grep "playbook:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//')
+# playbook 取得（## playbook セクションから active を読み取り）
+PLAYBOOK=$(awk '/## playbook/,/^---/' state.md | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//')
 [ -z "$PLAYBOOK" ] && PLAYBOOK="null"
 
 # init-guard.sh 用に playbook パスを記録
@@ -103,24 +103,7 @@ PROJECT_PLAN=$(grep -A10 "## project_context" state.md 2>/dev/null | grep "proje
 # === 警告出力（条件付き）===
 echo ""
 
-# === MISSION（最上位概念）- 全ての判断はここに立ち返る ===
-MISSION_FILE="plan/mission.md"
-if [ -f "$MISSION_FILE" ]; then
-    # statement: | の後の2行を抽出
-    MISSION_STATEMENT=$(awk '/statement: \|/,/^$/' "$MISSION_FILE" 2>/dev/null | grep -v "statement:" | sed 's/^  //' | head -2 | tr '\n' ' ')
-    if [ -n "$MISSION_STATEMENT" ]; then
-        cat <<EOF
-$SEP
-  🎯 MISSION（最上位概念）
-$SEP
-$MISSION_STATEMENT
-
-⚠️ 全ての判断はこの mission に立ち返る。
-   ユーザープロンプトに引っ張られるな。
-
-EOF
-    fi
-fi
+# === MISSION セクション削除（CLAUDE.md/project.md で読める）===
 
 # システム健全性チェック（軽量、SessionStart 統合）
 if [ -f ".claude/hooks/system-health-check.sh" ]; then
@@ -223,37 +206,29 @@ EOF
     fi
 fi
 
-# === user-intent.md からユーザー意図を復元 ===
+# === user-intent.md からユーザー意図を復元（簡素化：通常1件、compact時3件）===
 INTENT_FILE=".claude/.session-init/user-intent.md"
 if [ -f "$INTENT_FILE" ]; then
-    # 最新3件のユーザー意図を抽出
-    LATEST_INTENTS=$(awk '/^## \[/{count++; if(count>3) exit} {print}' "$INTENT_FILE" 2>/dev/null | head -50)
-
-    if [ -n "$LATEST_INTENTS" ]; then
-        # compact トリガーの場合はより強調
-        if [ "$TRIGGER" = "compact" ]; then
+    if [ "$TRIGGER" = "compact" ]; then
+        # compact 時は3件
+        LATEST_INTENTS=$(awk '/^## \[/{count++; if(count>3) exit} {print}' "$INTENT_FILE" 2>/dev/null | head -50)
+        if [ -n "$LATEST_INTENTS" ]; then
             cat <<EOF
 $SEP
   🎯 【重要】元のユーザー指示（必ず継続）
 $SEP
-以下は auto-compact 前のユーザー指示です。
-この意図を忘れずに作業を継続してください。
-
 $LATEST_INTENTS
-$SEP
-
 EOF
-        else
+        fi
+    else
+        # 通常時は1件のみ
+        LATEST_INTENT=$(awk '/^## \[/{count++; if(count>1) exit} {print}' "$INTENT_FILE" 2>/dev/null | head -20)
+        if [ -n "$LATEST_INTENT" ]; then
             cat <<EOF
 $SEP
-  📝 ユーザー意図（compact 前に保存）
+  📝 前回の指示
 $SEP
-以下は前回セッションでのユーザー指示です。
-この意図に沿って作業を継続してください。
-
-$LATEST_INTENTS
-$SEP
-
+$LATEST_INTENT
 EOF
         fi
     fi
@@ -284,28 +259,30 @@ EOF
     fi
 fi
 
-# playbook 未作成警告（setup レイヤーでは抑制）
+# playbook 未作成時は pm 呼び出しを強制指示（setup レイヤーでは抑制）
 if [ "$PLAYBOOK" = "null" ] && [ "$FOCUS" != "setup" ]; then
     cat <<EOF
 $SEP
-  🚨 PLAYBOOK 未作成
+  🚨 playbook 未作成 - pm を呼び出してください
 $SEP
-  1. Read: plan/template/playbook-format.md
-  2. plan/active/playbook-{name}.md を作成
-  3. state.md の playbook: を更新
+  以下を実行してください（構造的に強制されます）:
+
+  Task(subagent_type='pm', prompt='playbook を作成')
+
+  ⚠️ pm 呼び出し以外のツールはブロックされます
 
 EOF
 fi
 
-# === CORE ===
+# === CORE（最小限の行動ルール）===
 cat <<EOF
 $SEP
   🧠 CORE
 $SEP
   pdca: playbook完了 → 自動次タスク
   tdd: done_criteria = テスト仕様（根拠必須）
-  validation: critic → .claude/frameworks/
-  plan: Edit/Write → playbook必須（アクションベース）
+  validation: critic → PASS で phase 完了
+  plan: Edit/Write → playbook必須
   git: 1 playbook = 1 branch
 
 EOF
@@ -359,75 +336,9 @@ cat <<EOF
 
 EOF
 
-# === state.md 抜粋（focus + goal のみ）===
-cat <<EOF
-$SEP
-  📍 state.md 抜粋
-$SEP
-EOF
-awk '/^## focus/,/^## [^f]/' state.md | head -8
-awk '/^## goal/,/^## [^g]/' state.md | head -15
+# === state.md 抜粋を削除（[自認] テンプレートに統合）===
 
-# === 上位計画書抜粋（focus 別）===
-case "$FOCUS" in
-    workspace)
-        # workspace: roadmap.md を表示
-        if [ -f "$ROADMAP" ]; then
-            cat <<EOF
-
-$SEP
-  🗺️ 上位計画書（$ROADMAP）
-$SEP
-EOF
-            awk '/^## current_focus/,/^## [^c]/' "$ROADMAP" | head -15
-            echo ""
-            echo "📋 next_actions:"
-            awk '/^## current_focus/,/^## [^c]/' "$ROADMAP" | grep -A10 "next_actions:" | grep "^  -" | head -5
-        fi
-        ;;
-    product)
-        # product: project.md を表示（存在する場合）
-        if [ "$PROJECT_GENERATED" = "true" ] && [ -n "$PROJECT_PLAN" ] && [ -f "$PROJECT_PLAN" ]; then
-            cat <<EOF
-
-$SEP
-  📋 プロジェクト計画（$PROJECT_PLAN）
-$SEP
-EOF
-            awk '/^## vision/,/^## [^v]/' "$PROJECT_PLAN" 2>/dev/null | head -10
-        fi
-        ;;
-    setup)
-        # setup: セットアップフロー概要を表示
-        cat <<EOF
-
-$SEP
-  🚀 セットアップフロー
-$SEP
-Phase 0: ルート選択（チュートリアル or 本番開発）
-Phase 1-6: 環境構築
-Phase 7: 完了確認
-Phase 8: plan/project.md 生成 → product レイヤーへ
-
-$SEP
-  💬 Phase 0 発話テンプレート
-$SEP
-こんにちは！Mac の開発環境セットアップをお手伝いします。
-
-最初に1つだけ教えてください：
-
-【今日の目的は？】
-
-A: まずプログラミングを体験してみたい（チュートリアル）
-   → 費用ゼロ、10分で AI チャットが動きます
-
-B: 実際に使うアプリやサービスを作りたい（本番開発）
-   → 作りたいものに合わせた本格的な環境を構築します
-
-どちらですか？（A または B）
-EOF
-        ;;
-esac
+# === 上位計画書抜粋を削除（Read で読むため事前表示不要）===
 
 # === Playbook in_progress Phase 抽出 ===
 if [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
@@ -473,33 +384,8 @@ esac
 
 cat <<EOF
 playbook: $PLAYBOOK
-done_criteria:
-$CRITERIA
-
-⚠️ 敬語必須。タメ口禁止。
 EOF
 
-# === 利用可能機能（簡潔版）===
-if [ -f "spec.yaml" ]; then
-    echo ""
-    echo "$SEP"
-    echo "  📦 利用可能機能"
-    echo "$SEP"
-
-    # Agents
-    printf "Agents: "
-    [ -d ".claude/agents" ] && ls .claude/agents/*.md 2>/dev/null | xargs -I{} basename {} .md | tr '\n' ' ' || echo -n "(none)"
-    echo ""
-
-    # Commands
-    printf "Commands: "
-    ls .claude/commands/*.md 2>/dev/null | xargs -I{} basename {} .md | sed 's/^/\//' | tr '\n' ' '
-    echo ""
-
-    # Skills
-    printf "Skills: "
-    ls -d .claude/skills/*/ 2>/dev/null | xargs -I{} basename {} | tr '\n' ' '
-    echo ""
-fi
+# === 利用可能機能を削除（必要時に参照可能）===
 
 exit 0

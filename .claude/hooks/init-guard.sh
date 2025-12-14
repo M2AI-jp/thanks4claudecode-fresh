@@ -24,16 +24,18 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // {}')
 
 # --------------------------------------------------
-# security.mode チェック（admin モードはバイパス）
+# security チェック（admin モードはバイパス）
 # --------------------------------------------------
 SECURITY_MODE=""
 if [[ -f "state.md" ]]; then
-    SECURITY_MODE=$(get_config_security)
+      SECURITY_MODE=$(grep "^security:" state.md | head -1 | sed 's/security: *//' | sed 's/ *#.*//' | tr -d ' ')
 fi
 
-# admin モードは全ての制限をバイパス
+# admin モードでも playbook チェックは維持（2025-12-14 修正）
+# admin がバイパスするのは「必須ファイル Read チェック」のみ
+ADMIN_MODE=false
 if [[ "$SECURITY_MODE" == "admin" ]]; then
-    exit 0
+    ADMIN_MODE=true
 fi
 
 # --------------------------------------------------
@@ -102,9 +104,17 @@ get_remaining_files() {
 # --------------------------------------------------
 # メイン処理
 # --------------------------------------------------
+# 【単一責任原則】init-guard.sh は「必須ファイル Read 強制」のみを担当
+# playbook 存在チェックは playbook-guard.sh が担当（Edit/Write 時に発火）
+# Bash コマンドは全て許可（情報収集に制限を設けない）
 
 # pending ファイルが存在しない = 初期化完了済み or 未開始
 if [[ ! -f "$PENDING_FILE" ]]; then
+    exit 0
+fi
+
+# admin モードは必須ファイル Read チェックをバイパス
+if [[ "$ADMIN_MODE" == "true" ]]; then
     exit 0
 fi
 
@@ -134,14 +144,21 @@ if [[ "$TOOL_NAME" == "Grep" || "$TOOL_NAME" == "Glob" ]]; then
     exit 0
 fi
 
-# git コマンドを許可（状態確認用 + ブランチ切り替え用）
+# Bash コマンドの許可ロジック
 if [[ "$TOOL_NAME" == "Bash" ]]; then
     COMMAND=$(echo "$TOOL_INPUT" | jq -r '.command // empty')
-    # 状態確認コマンド
-    if [[ "$COMMAND" =~ ^git\ (status|branch|rev-parse|log|diff) ]]; then
+
+    # M021: 基本コマンドを許可（情報収集に制限を設けない）
+    # sed, grep, cat, echo, ls, wc, head, tail は常に許可
+    if [[ "$COMMAND" =~ ^(sed|grep|cat|echo|ls|wc|head|tail|pwd|which|type|file)[[:space:]] ]] || \
+       [[ "$COMMAND" =~ ^(sed|grep|cat|echo|ls|wc|head|tail|pwd|which|type|file)$ ]]; then
         exit 0
     fi
-    # ブランチ切り替えコマンド
+
+    # git コマンド: 状態確認 + ブランチ操作 + show（M021 修正）
+    if [[ "$COMMAND" =~ ^git\ (status|branch|rev-parse|log|diff|show) ]]; then
+        exit 0
+    fi
     if [[ "$COMMAND" =~ ^git\ (checkout|switch|stash) ]]; then
         exit 0
     fi

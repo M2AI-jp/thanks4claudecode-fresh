@@ -20,7 +20,7 @@ project: plan/project.md
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-m017-state-schema.md
+last_archived: plan/archive/playbook-m022-solid-refactoring.md
 ```
 
 ---
@@ -31,7 +31,7 @@ last_archived: plan/archive/playbook-m017-state-schema.md
 milestone: null
 phase: null
 self_complete: false
-last_completed_milestone: M017 (verified: 2025-12-14)
+last_completed_milestone: M023 (achieved: 2025-12-14)
 ```
 
 ---
@@ -39,7 +39,7 @@ last_completed_milestone: M017 (verified: 2025-12-14)
 ## session
 
 ```yaml
-last_start: 2025-12-14 10:29:19
+last_start: 2025-12-14 15:52:27
 last_clear: 2025-12-13 00:30:00
 ```
 

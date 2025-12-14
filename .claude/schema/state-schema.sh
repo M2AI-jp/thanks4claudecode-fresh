@@ -1,146 +1,121 @@
 #!/bin/bash
 # ==============================================================================
-# state-schema.sh - state.md のスキーマ定義と getter 関数
+# state-schema.sh - state.md のスキーマ定義（単一定義源）
 # ==============================================================================
+# 目的: state.md のセクション名とパスを一元管理
+# 使用方法: 各 Hook で source してスキーマを参照
 #
-# 目的:
-#   state.md のセクション構造を単一定義源として管理し、
-#   Hook や他のスクリプトが参照する際の仕様遵守を強制する。
-#
-# 使い方:
-#   source /path/to/.claude/schema/state-schema.sh
-#   value=$(get_focus_current)
-#
+# 【依存性逆転原則 (DIP)】
+# 各 Hook はこのスキーマに依存し、state.md の詳細に直接依存しない
 # ==============================================================================
 
-set -euo pipefail
+# --------------------------------------------------
+# セクション名定義
+# --------------------------------------------------
+SECTION_FOCUS="## focus"
+SECTION_PLAYBOOK="## playbook"
+SECTION_GOAL="## goal"
+SECTION_SESSION="## session"
+SECTION_CONFIG="## config"
 
-# ==============================================================================
-# セクション定義
-# ==============================================================================
-#
-# state.md の各セクション名を定数として定義。
-# Hook はハードコードせず、これらの定数を参照する。
+# --------------------------------------------------
+# フィールド名定義
+# --------------------------------------------------
+FIELD_CURRENT="current:"
+FIELD_ACTIVE="active:"
+FIELD_BRANCH="branch:"
+FIELD_MILESTONE="milestone:"
+FIELD_PHASE="phase:"
+FIELD_SECURITY="security:"
+FIELD_LAST_START="last_start:"
+FIELD_LAST_END="last_end:"
+FIELD_LAST_ARCHIVED="last_archived:"
 
-SECTION_FOCUS="focus"
-SECTION_PLAYBOOK="playbook"
-SECTION_GOAL="goal"
-SECTION_SESSION="session"
-SECTION_CONFIG="config"
+# --------------------------------------------------
+# ファイルパス定義
+# --------------------------------------------------
+STATE_FILE="${STATE_FILE:-state.md}"
+PROJECT_FILE="plan/project.md"
+PLAYBOOK_DIR="plan/active"
+ARCHIVE_DIR="plan/archive"
 
-# ==============================================================================
-# Getter 関数群
-# ==============================================================================
-#
-# 各セクションから値を抽出する関数。
-# awk を使って Markdown セクションを抽出し、grep で特定のフィールドを取得。
+# --------------------------------------------------
+# Getter 関数
+# --------------------------------------------------
 
-# get_focus_current: focus.current の値を取得
+# focus.current を取得
 get_focus_current() {
-    awk "/^## $SECTION_FOCUS/,/^## [^f]/" state.md 2>/dev/null | \
-    grep "current:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//' || echo ""
+    grep -A5 "$SECTION_FOCUS" "$STATE_FILE" | grep "$FIELD_CURRENT" | head -1 | sed "s/$FIELD_CURRENT *//" | sed 's/ *#.*//' | tr -d ' '
 }
 
-# get_playbook_active: playbook.active の値を取得
+# playbook.active を取得
 get_playbook_active() {
-    awk "/^## $SECTION_PLAYBOOK/,/^## [^p]/" state.md 2>/dev/null | \
-    grep "active:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//' || echo ""
+    grep -A5 "$SECTION_PLAYBOOK" "$STATE_FILE" | grep "$FIELD_ACTIVE" | head -1 | sed "s/$FIELD_ACTIVE *//" | sed 's/ *#.*//' | tr -d ' '
 }
 
-# get_playbook_branch: playbook.branch の値を取得
+# playbook.branch を取得
 get_playbook_branch() {
-    awk "/^## $SECTION_PLAYBOOK/,/^## [^p]/" state.md 2>/dev/null | \
-    grep "branch:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//' || echo ""
+    grep -A5 "$SECTION_PLAYBOOK" "$STATE_FILE" | grep "$FIELD_BRANCH" | head -1 | sed "s/$FIELD_BRANCH *//" | sed 's/ *#.*//' | tr -d ' '
 }
 
-# get_goal_milestone: goal.milestone の値を取得
+# goal.milestone を取得
 get_goal_milestone() {
-    awk "/^## $SECTION_GOAL/,/^## [^g]/" state.md 2>/dev/null | \
-    grep "milestone:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//' || echo ""
+    grep -A5 "$SECTION_GOAL" "$STATE_FILE" | grep "$FIELD_MILESTONE" | head -1 | sed "s/$FIELD_MILESTONE *//" | sed 's/ *#.*//' | tr -d ' '
 }
 
-# get_goal_phase: goal.phase の値を取得
+# goal.phase を取得
 get_goal_phase() {
-    awk "/^## $SECTION_GOAL/,/^## [^g]/" state.md 2>/dev/null | \
-    grep "phase:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//' || echo ""
+    grep -A5 "$SECTION_GOAL" "$STATE_FILE" | grep "$FIELD_PHASE" | head -1 | sed "s/$FIELD_PHASE *//" | sed 's/ *#.*//' | tr -d ' '
 }
 
-# get_session_last_start: session.last_start の値を取得
+# config.security を取得
+get_security_mode() {
+    grep -A10 "$SECTION_CONFIG" "$STATE_FILE" | grep "$FIELD_SECURITY" | head -1 | sed "s/$FIELD_SECURITY *//" | sed 's/ *#.*//' | tr -d ' '
+}
+
+# session.last_start を取得
 get_session_last_start() {
-    awk "/^## $SECTION_SESSION/,/^## [^s]/" state.md 2>/dev/null | \
-    grep "last_start:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//' || echo ""
+    grep -A5 "$SECTION_SESSION" "$STATE_FILE" | grep "$FIELD_LAST_START" | head -1 | sed "s/$FIELD_LAST_START *//" | sed 's/ *#.*//'
 }
 
-# get_session_last_clear: session.last_clear の値を取得
-get_session_last_clear() {
-    awk "/^## $SECTION_SESSION/,/^## [^s]/" state.md 2>/dev/null | \
-    grep "last_clear:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//' || echo ""
+# --------------------------------------------------
+# Validation 関数
+# --------------------------------------------------
+
+# state.md の必須セクションが存在するか確認
+validate_state_structure() {
+    local missing=""
+
+    grep -q "$SECTION_FOCUS" "$STATE_FILE" || missing+="focus "
+    grep -q "$SECTION_PLAYBOOK" "$STATE_FILE" || missing+="playbook "
+    grep -q "$SECTION_GOAL" "$STATE_FILE" || missing+="goal "
+    grep -q "$SECTION_CONFIG" "$STATE_FILE" || missing+="config "
+
+    if [[ -n "$missing" ]]; then
+        echo "Missing sections: $missing" >&2
+        return 1
+    fi
+    return 0
 }
 
-# get_config_security: config.security の値を取得
-get_config_security() {
-    awk "/^## $SECTION_CONFIG/,/^## [^c]/" state.md 2>/dev/null | \
-    grep "security:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//' || echo ""
+# playbook と milestone の整合性を確認
+validate_playbook_milestone_consistency() {
+    local playbook=$(get_playbook_active)
+    local milestone=$(get_goal_milestone)
+
+    # playbook が存在するのに milestone が null は不整合
+    if [[ -n "$playbook" && "$playbook" != "null" ]]; then
+        if [[ -z "$milestone" || "$milestone" == "null" ]]; then
+            echo "Inconsistency: playbook exists but milestone is null" >&2
+            return 1
+        fi
+    fi
+    return 0
 }
 
 # ==============================================================================
-# ヘルパー関数
+# 使用例:
+#   source .claude/schema/state-schema.sh
+#   FOCUS=$(get_focus_current)
+#   PLAYBOOK=$(get_playbook_active)
 # ==============================================================================
-
-# check_section_exists: セクションが state.md に存在するか確認
-check_section_exists() {
-    local section="$1"
-    grep -q "^## $section" state.md 2>/dev/null && return 0 || return 1
-}
-
-# ==============================================================================
-# 拡張性ガイド
-# ==============================================================================
-#
-# 新しいセクションを state.md に追加する場合:
-#
-# 1. このファイルに SECTION_* 定数を追加:
-#    SECTION_NEWSECTION="newsection"
-#
-# 2. 対応する getter 関数を追加:
-#    get_newsection_field() {
-#        awk "/^## $SECTION_NEWSECTION/,/^## [^n]/" state.md | \
-#        grep "field:" | head -1 | sed 's/.*: *//' || echo ""
-#    }
-#
-# 3. state.md に新セクションを追加:
-#    ## newsection
-#    ```yaml
-#    field: value
-#    ```
-#
-# 4. Hook で参照:
-#    source .claude/schema/state-schema.sh
-#    value=$(get_newsection_field)
-#
-
-# ==============================================================================
-# 動作確認用テスト関数
-# ==============================================================================
-
-# test_schema: すべての getter 関数が値を返すか確認
-test_schema() {
-    echo "Testing state-schema.sh..."
-
-    echo "  focus.current: $(get_focus_current)"
-    echo "  playbook.active: $(get_playbook_active)"
-    echo "  playbook.branch: $(get_playbook_branch)"
-    echo "  goal.milestone: $(get_goal_milestone)"
-    echo "  goal.phase: $(get_goal_phase)"
-    echo "  session.last_start: $(get_session_last_start)"
-    echo "  session.last_clear: $(get_session_last_clear)"
-    echo "  config.security: $(get_config_security)"
-
-    echo ""
-    echo "All getters executed successfully."
-}
-
-# main: このスクリプトが直接実行された場合
-if [[ "${BASH_SOURCE[0]:-}" == "${0}" ]]; then
-    test_schema
-fi
