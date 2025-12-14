@@ -187,6 +187,100 @@ success_criteria:
     - [x] [理解確認] に失敗リスク分析が組み込まれている
     - [x] session-start.sh がコンテキスト汚染を自動防止している
     - [x] state.md / project.md / playbook の整合性が確認されている
+
+# ============================================================
+# M017-M023: 再定義（2025-12-14）
+# ============================================================
+
+- id: M017
+  name: "仕様遵守の構造的強制"
+  description: |
+    「拡散」を抑止し「収束」を強制する仕組みを実装。
+    state.md スキーマの単一定義源を作成し、Hook がそこを参照する形に統一。
+  status: not_started
+  depends_on: [M016]
+  playbooks: []
+  done_when:
+    - [ ] .claude/schema/state-schema.sh が存在し source 可能
+    - [ ] state-schema.sh に SECTION_* 定数と getter 関数が定義されている
+    - [ ] Hook がハードコードではなくスキーマを参照している
+
+- id: M018
+  name: "3検証システム（technical/consistency/completeness）"
+  description: |
+    subtask 単位で 3 視点の検証を構造的に強制するシステム。
+    - technical: 技術的に正しく動作するか
+    - consistency: 他のコンポーネントと整合性があるか
+    - completeness: 必要な変更が全て完了しているか
+  status: not_started
+  depends_on: [M017]
+  playbooks: []
+  done_when:
+    - [ ] subtask-guard.sh が存在し実行可能
+    - [ ] subtask-guard.sh に 3 検証（technical/consistency/completeness）のロジックがある
+    - [ ] playbook-format.md に validations セクションが存在する
+
+- id: M019
+  name: "playbook 自己完結システム"
+  description: |
+    playbook を自己完結させる仕組みを構築。
+    final_tasks によるアーカイブ前チェック、repository-map 更新。
+  status: not_started
+  depends_on: [M018]
+  playbooks: []
+  done_when:
+    - [ ] archive-playbook.sh に final_tasks チェックが実装されている
+    - [ ] playbook テンプレートに final_tasks 例が含まれている
+
+- id: M020
+  name: "archive-playbook.sh バグ修正"
+  description: |
+    archive-playbook.sh の ARCHIVE_DIR を plan/archive/ に修正し、
+    完了済み playbook が正しくアーカイブされることを確認。
+  status: not_started
+  depends_on: [M019]
+  playbooks: []
+  done_when:
+    - [ ] archive-playbook.sh の ARCHIVE_DIR が plan/archive/ を指している
+    - [ ] archive-playbook.sh の構文が正しい（bash -n）
+
+- id: M021
+  name: "init-guard.sh デッドロック修正"
+  description: |
+    init-guard.sh で基本 Bash コマンドがブロックされる問題を修正。
+    playbook=null 時でも sed/grep/cat/echo/ls/wc が許可される。
+  status: not_started
+  depends_on: [M020]
+  playbooks: []
+  done_when:
+    - [ ] init-guard.sh に基本コマンド許可リスト（sed/grep/cat/echo/ls/wc）がある
+    - [ ] git show コマンドが許可されている
+    - [ ] session-start.sh に CORE セクションが存在する
+
+- id: M022
+  name: "SOLID原則に基づくシステム再構築"
+  description: |
+    SOLID原則（特に単一責任原則）に基づいてシステムを再構築。
+    init-guard.sh を単一責任に分離し、各 Hook の責任をドキュメント化。
+  status: not_started
+  depends_on: [M021]
+  playbooks: []
+  done_when:
+    - [ ] init-guard.sh が単一責任（必須ファイル Read 強制のみ）
+    - [ ] playbook-guard.sh が playbook 存在チェック責任を持つ
+    - [ ] docs/hook-responsibilities.md に全 Hook の責任が明示されている
+
+- id: M023
+  name: "Plan mode 活用ガイド"
+  description: |
+    Plan mode（think/ultrathink）と Named Sessions の活用ガイドを作成。
+    複雑なタスクでの思考深化と、セッション管理を改善。
+  status: not_started
+  depends_on: [M022]
+  playbooks: []
+  done_when:
+    - [ ] CLAUDE.md に think/ultrathink の使い分けが明記されている
+    - [ ] docs/session-management.md が存在し /rename, /resume が記載されている
 ```
 
 ---

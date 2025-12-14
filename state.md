@@ -18,8 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-m015-folder-validation.md
-branch: feat/m015-folder-validation
+active: null
+branch: null
+last_archived: plan/archive/playbook-m015-folder-validation.md
 ```
 
 ---
@@ -27,10 +28,10 @@ branch: feat/m015-folder-validation
 ## goal
 
 ```yaml
-milestone: M015  # フォルダ管理ルール検証テスト
-phase: p0  # pending
+milestone: null
+phase: null
 self_complete: false
-last_completed_milestone: M022 (achieved: 2025-12-14)
+last_completed_milestone: M015 (verified: 2025-12-14)
 ```
 
 ---
