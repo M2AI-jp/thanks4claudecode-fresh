@@ -63,7 +63,7 @@ subtasks:
     executor: claudecode
     test_command: "test -f tmp/README.md && echo PASS || echo FAIL"
 
-status: pending
+status: done
 max_iterations: 5
 ```
 
@@ -105,7 +105,7 @@ subtasks:
     executor: claudecode
     test_command: "grep -q 'Phase status' .claude/hooks/cleanup-hook.sh && echo PASS || echo FAIL"
 
-status: pending
+status: done
 max_iterations: 5
 ```
 
@@ -157,7 +157,7 @@ subtasks:
     executor: claudecode
     test_command: "wc -l docs/folder-management.md | awk '{if($1>=50) print \"PASS\"; else print \"FAIL\"}'"
 
-status: pending
+status: done
 max_iterations: 5
 ```
 
@@ -199,7 +199,7 @@ subtasks:
     executor: claudecode
     test_command: "grep -q 'cleanup-hook.sh' docs/folder-management.md && echo PASS || echo FAIL"
 
-status: pending
+status: done
 max_iterations: 5
 ```
 

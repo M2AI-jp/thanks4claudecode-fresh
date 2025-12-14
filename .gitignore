@@ -38,6 +38,7 @@ Thumbs.db
 # Temporary files
 .tmp/
 out/
+tmp/
 tmp/*
 !tmp/CLAUDE.md
 !tmp/README.md
