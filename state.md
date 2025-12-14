@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-m016-release-preparation.md
-branch: feat/final-release-preparation
+active: plan/active/playbook-m015-folder-validation.md
+branch: feat/m015-folder-validation
 ```
 
 ---
@@ -27,10 +27,10 @@ branch: feat/final-release-preparation
 ## goal
 
 ```yaml
-milestone: M016  # リリース準備：自己認識システム完成（完了）
-phase: done  # 全 phase 完了
-self_complete: true
-last_completed_milestone: M016 (achieved: 2025-12-14)
+milestone: M015  # フォルダ管理ルール検証テスト
+phase: p0  # pending
+self_complete: false
+last_completed_milestone: M022 (achieved: 2025-12-14)
 ```
 
 ---
