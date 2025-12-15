@@ -8,7 +8,7 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-15 16:47:44"
+  generated: "2025-12-15 17:14:39"
   generator: ".claude/hooks/generate-repository-map.sh"
   total_files: 181
 
@@ -98,7 +98,7 @@ hooks:
       trigger: "Stop:*"
       description: "stop-summary.sh - Stop Hook: Phase 状態サマリー + 整合性チェック"
     - name: "subtask-guard.sh"
-      trigger: "utility"
+      trigger: "PreToolUse:Edit"
       description: "subtask-guard.sh - subtask の 3 検証を強制"
     - name: "system-health-check.sh"
       trigger: "utility"
@@ -129,10 +129,8 @@ agents:
 
 skills:
   directory: .claude/skills/
-  count: 13
+  count: 11
   files:
-    - name: "beginner-advisor"
-      description: "description: 初学者向けに専門用語を比喩で説明するスキル。state.md の learning_mode.expertise=beginner 時に自動発火。"
     - name: "consent-process"
       description: "合意プロセス（CONSENT）- ユーザープロンプトの誤解釈防止"
     - name: "context-externalization"
@@ -145,8 +143,6 @@ skills:
       description: "description: 並列実行制御とリソース配分のガイドライン。タスク実行の最適化を支援。"
     - name: "frontend-design"
       description: "プロダクション品質のフロントエンドインターフェースを作成する"
-    - name: "learning"
-      description: "> 中断時に"
     - name: "lint-checker"
       description: "コード品質チェック専門スキル"
     - name: "plan-management"
@@ -239,7 +235,7 @@ root:
 summary:
   hooks: 31
   agents: 7
-  skills: 13
+  skills: 11
   frameworks: 0
   commands: 8
   docs: 10
@@ -303,6 +299,7 @@ system_specification:
         - critic-guard.sh
         - scope-guard.sh
         - executor-guard.sh
+        - subtask-guard.sh
         - consent-guard.sh
         - check-protected-edit.sh
         - playbook-guard.sh
@@ -310,6 +307,7 @@ system_specification:
         - critic-guard.sh
         - scope-guard.sh
         - executor-guard.sh
+        - subtask-guard.sh
         - pre-bash-check.sh
         - check-coherence.sh
         - lint-check.sh
@@ -354,6 +352,6 @@ system_specification:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-15 16:47:44"
+  - date: "2025-12-15 17:14:39"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
