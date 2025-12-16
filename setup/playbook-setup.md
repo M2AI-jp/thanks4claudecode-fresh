@@ -81,6 +81,7 @@ summary: Mac 開発環境をセットアップし、product 開発を開始で�
 done_when:
   - 開発ツール（Homebrew, Node.js, pnpm, Git）がインストール済み
   - GitHub CLI で認証済み
+  - Toolstack（A/B/C）が選択され、state.md に設定されている
   - プロジェクトがローカルで動作する
   - Vercel にデプロイ済み
   - .claude/skills/ に Skills が存在する（事前配置済み）
@@ -98,90 +99,126 @@ done_when:
     用途: Claude Code の利用
     URL: https://claude.ai/
 
-  - ChatGPT Plus: $20/月
-    用途: Codex（大規模コード生成）
-    URL: https://chat.openai.com/
+Toolstack に応じた追加費用:
+  パターン A（Claude Code のみ）:
+    - 追加費用なし
+    - 合計: $20/月
 
-推奨オプション:
-  - CodeRabbit: Free / Lite ($12/月) / Pro ($24/月)
-    用途: PR レビュー自動化
-    URL: https://coderabbit.ai/
+  パターン B（+ Codex）:
+    - ChatGPT Plus: $20/月
+      用途: Codex（大規模コード生成）
+      URL: https://chat.openai.com/
+    - 合計: $40/月
 
-合計最低費用: $40/月（Claude Pro + ChatGPT Plus）
+  パターン C（+ Codex + CodeRabbit）:
+    - ChatGPT Plus: $20/月
+    - CodeRabbit: Free / Lite ($12/月) / Pro ($24/月)
+      用途: PR レビュー自動化
+      URL: https://coderabbit.ai/
+    - 合計: $40-64/月
+
+最低費用: $20/月（パターン A）
 ```
 
 ---
 
-## レビューツール選択
+## Toolstack 選択（M053 対応）
+
+> **Phase 4 完了後、開発ツールの組み合わせ（Toolstack）を選択**
 
 ```yaml
-# Phase 4 でツールインストール後、ユーザーに選択させる
+# 3 つのパターンから選択させる
 
-選択肢:
-  coderabbit:
-    説明: AI コードレビュー専用ツール
-    プラン:
-      - Free: 無料（1時間1レビュー制限）
-      - Lite: $12/月（制限緩和）
-      - Pro: $24/月（無制限）
-    利点:
-      - PR 作成時に自動レビュー（GitHub App）
-      - 詳細なコード品質分析
-      - セキュリティ脆弱性検出
-    欠点:
-      - 外部サービス依存
-      - Free tier はレートリミットあり
+パターン一覧:
+  A:
+    名前: Claude Code のみ
+    構成:
+      - Claude Code（コード作成・レビュー・実行）
+    推奨ユースケース:
+      - 初めて Claude Code を使う
+      - シンプルな設定を好む
+      - 外部サービスとの連携を避けたい
+      - コンテキスト消費を最小限にしたい
+    費用: Claude Pro のみ（$20/月）
 
-  codex:
-    説明: OpenAI のコード生成・分析ツール
-    利用条件: ChatGPT Plus 契約必須
-    利点:
-      - プロンプトベースで柔軟なレビュー
-      - 大規模コード生成も可能
-      - MCP 経由で Claude Code から呼び出せる
-    欠点:
-      - 専用レビュー機能ではない
-      - プロンプト作成が必要
+  B:
+    名前: Claude Code + Codex
+    構成:
+      - Claude Code（設計・小規模コード・レビュー）
+      - Codex（大規模コード生成）
+    推奨ユースケース:
+      - 大規模なコード生成が必要
+      - Claude Code のコンテキストを節約したい
+      - レビューは Claude Code で十分
+    費用: Claude Pro + ChatGPT Plus（$40/月）
 
-  both:
-    説明: 両方を使い分け
-    推奨ケース:
-      - CodeRabbit: PR 作成時の自動レビュー
-      - Codex: 大規模コード生成、詳細分析
+  C:
+    名前: Claude Code + Codex + CodeRabbit
+    構成:
+      - Claude Code（設計・小規模コード）
+      - Codex（大規模コード生成）
+      - CodeRabbit（自動コードレビュー）
+    推奨ユースケース:
+      - チーム開発で品質を重視
+      - PR ごとに自動レビューが欲しい
+      - 複数の AI を組み合わせて使いたい
+    費用: Claude Pro + ChatGPT Plus + CodeRabbit（$40-64/月）
 
 LLM の発言テンプレート（Phase 4 完了後）:
   ```
   開発ツールのインストールが完了しました。
 
-  【レビューツールの選択】
-  コードレビューをどのツールで行いますか？
+  【Toolstack の選択】
+  どの開発ツール構成を使いますか？
 
-  A: CodeRabbit（推奨）
-     → PR 作成時に自動レビュー
-     → Free: 無料（1時間1回制限）/ Lite: $12/月
+  A: Claude Code のみ（推奨・シンプル）
+     → これだけで開発可能
+     → 費用: Claude Pro のみ（$20/月）
 
-  B: Codex
-     → ChatGPT Plus 契約が必要
-     → プロンプトベースで柔軟にレビュー
+  B: Claude Code + Codex
+     → 大規模コード生成を Codex に委譲
+     → 費用: +ChatGPT Plus（合計 $40/月）
 
-  C: 両方
-     → CodeRabbit で自動レビュー + Codex で詳細分析
+  C: Claude Code + Codex + CodeRabbit
+     → PR ごとに自動レビュー
+     → 費用: +CodeRabbit（合計 $40-64/月）
 
-  D: なし（後で設定）
-
-  どれにしますか？（A/B/C/D）
+  初めての方は A がおすすめです！
+  どれにしますか？（A/B/C）
   ```
 
 設定方法（A を選んだ場合）:
-  1. https://coderabbit.ai/ でアカウント作成
-  2. GitHub 連携を設定
-  3. 対象リポジトリで GitHub App をインストール
-  4. PR 作成時に自動でレビューが走る
+  1. state.md の config.toolstack を A に設定
+  2. 追加設定不要
 
 設定方法（B を選んだ場合）:
   1. ChatGPT Plus に加入していることを確認
-  2. Claude Code から mcp__codex__codex で呼び出し可能
-  3. 「このコードをレビューして」とプロンプトで依頼
+  2. .mcp.json に codex を追加（テンプレート: plan/template/mcp-templates/mcp-pattern-b.json）
+  3. state.md の config.toolstack を B に設定
+  4. Codex は codex-delegate SubAgent 経由で呼び出し
+
+設定方法（C を選んだ場合）:
+  1. ChatGPT Plus に加入していることを確認
+  2. .mcp.json に codex を追加（テンプレート: plan/template/mcp-templates/mcp-pattern-c.json）
+  3. https://coderabbit.ai/ でアカウント作成
+  4. GitHub App をインストール（https://github.com/apps/coderabbit-ai）
+  5. state.md の config.toolstack を C に設定
+
+LLM の行動（選択後）:
+  1. ユーザーの選択（A/B/C）を受け取る
+  2. state.md の config.toolstack を更新:
+     ```yaml
+     # state.md
+     config:
+       security: admin
+       toolstack: A  # または B, C
+     ```
+  3. B/C の場合、.mcp.json の更新を案内
+  4. C の場合、CodeRabbit GitHub App のインストールを案内
+
+参照ドキュメント:
+  - docs/toolstack-patterns.md: 詳細な説明と設定ガイド
+  - plan/template/mcp-templates/: .mcp.json テンプレート
 ```
 
 ---
@@ -900,6 +937,79 @@ status: pending
 
 ---
 
+### Phase 4-B: Toolstack 選択
+
+```yaml
+id: p4b
+name: Toolstack 選択
+goal: ユーザーの環境に応じた開発ツール構成を選択
+executor: user
+depends_on: [p4]
+done_criteria:
+  - ユーザーが Toolstack（A/B/C）を選択した
+  - state.md の config.toolstack が設定された
+  - B/C の場合、.mcp.json が更新された（または更新を案内）
+  - C の場合、CodeRabbit GitHub App のインストールを案内した
+status: pending
+```
+
+**LLM の発言テンプレート:**
+
+```
+開発ツールのインストールが完了しました。
+
+【Toolstack の選択】
+どの開発ツール構成を使いますか？
+
+A: Claude Code のみ（推奨・シンプル）
+   → これだけで開発可能
+   → 費用: Claude Pro のみ（$20/月）
+
+B: Claude Code + Codex
+   → 大規模コード生成を Codex に委譲
+   → 費用: +ChatGPT Plus（合計 $40/月）
+
+C: Claude Code + Codex + CodeRabbit
+   → PR ごとに自動レビュー
+   → 費用: +CodeRabbit（合計 $40-64/月）
+
+初めての方は A がおすすめです！
+どれにしますか？（A/B/C）
+```
+
+**LLM の行動:**
+
+1. ユーザーの選択を受け取る
+2. state.md の config.toolstack を更新:
+   ```bash
+   # Edit で state.md を更新
+   # config:
+   #   toolstack: A  # または B, C
+   ```
+3. B/C の場合:
+   ```
+   Codex を使うには .mcp.json の更新が必要です。
+   plan/template/mcp-templates/mcp-pattern-{b|c}.json を参考に
+   .mcp.json を更新してください。
+   ```
+4. C の場合:
+   ```
+   CodeRabbit を使うには GitHub App のインストールが必要です。
+   https://github.com/apps/coderabbit-ai にアクセスして
+   リポジトリにインストールしてください。
+   ```
+5. 完了メッセージ:
+   ```
+   Toolstack を {A|B|C} に設定しました。
+   では、プロジェクト作成に進みましょう！
+   ```
+
+**参照ドキュメント:**
+- docs/toolstack-patterns.md: 3 パターンの詳細
+- plan/template/mcp-templates/: .mcp.json テンプレート
+
+---
+
 ### Phase 5: プロジェクト作成
 
 ```yaml
@@ -907,7 +1017,7 @@ id: p5
 name: プロジェクト作成
 goal: カテゴリに応じたプロジェクトを作成
 executor: llm
-depends_on: [p4]
+depends_on: [p4, p4b]
 done_criteria:
   - projects/{name} ディレクトリが存在する
   - package.json が存在する

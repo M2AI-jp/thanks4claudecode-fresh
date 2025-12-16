@@ -1,0 +1,13 @@
+{
+  "_comment": "Toolstack B: Claude Code + Codex",
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "codex": {
+      "command": "npx",
+      "args": ["-y", "codex-mcp-server"]
+    }
+  }
+}

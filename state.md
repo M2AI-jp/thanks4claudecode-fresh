@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: feat/m025-system-specification
-last_archived: plan/archive/playbook-m025-system-specification.md
+active: plan/active/playbook-m053-multi-toolstack.md
+branch: feat/m053-multi-toolstack
+last_archived: M052 (achieved: 2025-12-16)
 ```
 
 ---
@@ -28,10 +28,8 @@ last_archived: plan/archive/playbook-m025-system-specification.md
 ## goal
 
 ```yaml
-milestone: M025
-phase: done
-self_complete: true
-last_completed_milestone: M025 (achieved: 2025-12-15)
+milestone: M053
+phase: p0
 ```
 
 ---
@@ -39,7 +37,7 @@ last_completed_milestone: M025 (achieved: 2025-12-15)
 ## session
 
 ```yaml
-last_start: 2025-12-15 17:13:58
+last_start: 2025-12-16 23:57:53
 last_clear: 2025-12-13 00:30:00
 ```
 
@@ -49,6 +47,7 @@ last_clear: 2025-12-13 00:30:00
 
 ```yaml
 security: admin
+toolstack: A  # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
 ```
 
 ---

@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-15 17:14:39"
+  generated: "2025-12-17 00:02:57"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 181
+  total_files: 229
 
 hooks:
   directory: .claude/hooks/
@@ -112,8 +112,10 @@ hooks:
 
 agents:
   directory: .claude/agents/
-  count: 7
+  count: 8
   files:
+    - name: "codex-delegate"
+      description: "Codex MCP をラップし、コンテキスト膨張を防止する SubAgent"
     - name: "critic"
       description: "各 subtask の test_command を実行し、PASS/FAIL を判定する"
     - name: "health-checker"
@@ -182,7 +184,7 @@ commands:
 
 docs:
   directory: docs/
-  count: 10
+  count: 11
   files:
     - name: "CLAUDE.md"
       description: "ドキュメント - 仕様書・運用ルール"
@@ -202,16 +204,18 @@ docs:
       description: "各 Hook の単一責任を明示（SOLID 原則: Single Responsibility Principle）"
     - name: "session-management.md"
       description: "M023: セッション管理ガイド - Named Sessions と Plan Mode の活用"
+    - name: "toolstack-patterns.md"
+      description: "3 つのツールスタックパターンと設定ガイド"
 
 plan:
   directory: plan/
   subdirectories:
     active:
       description: "進行中の playbook"
-      count: 0
+      count: 1
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 25
+      count: 51
     template:
       description: "playbook テンプレート"
       count: 7
@@ -234,15 +238,15 @@ root:
 
 summary:
   hooks: 31
-  agents: 7
+  agents: 8
   skills: 11
   frameworks: 0
   commands: 8
-  docs: 10
-  plan_active: 0
-  plan_archive: 25
+  docs: 11
+  plan_active: 1
+  plan_archive: 51
   plan_template: 7
-  total: 181
+  total: 229
 
 # ==============================================================================
 # System Specification (M025)
@@ -352,6 +356,6 @@ system_specification:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-15 17:14:39"
+  - date: "2025-12-17 00:02:57"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

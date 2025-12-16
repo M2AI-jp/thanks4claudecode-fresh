@@ -16,6 +16,18 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# ============================================================
+# Admin モードチェック（最優先）
+# ============================================================
+STATE_FILE="state.md"
+if [ -f "$STATE_FILE" ]; then
+    SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | head -1 | sed 's/security: *//' | tr -d ' ')
+    if [[ "$SECURITY" == "admin" ]]; then
+        # admin モードは HARD_BLOCK を含む全ての制限をバイパス
+        exit 0
+    fi
+fi
+
 # stdin から JSON を読み込む
 INPUT=$(cat)
 

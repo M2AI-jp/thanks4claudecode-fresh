@@ -21,6 +21,15 @@ if [[ ! -f "$STATE_FILE" ]]; then
     exit 0
 fi
 
+# ============================================================
+# Admin モードチェック（最優先）
+# ============================================================
+SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | head -1 | sed 's/security: *//' | tr -d ' ')
+if [[ "$SECURITY" == "admin" ]]; then
+    # admin モードは playbook チェックをバイパス
+    exit 0
+fi
+
 # stdin から JSON を読み込む
 INPUT=$(cat)
 

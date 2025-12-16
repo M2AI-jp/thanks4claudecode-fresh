@@ -24,6 +24,18 @@
 set -euo pipefail
 
 # ============================================================
+# Admin モードチェック（最優先）
+# ============================================================
+STATE_FILE="state.md"
+if [ -f "$STATE_FILE" ]; then
+    SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | head -1 | sed 's/security: *//' | tr -d ' ')
+    if [[ "$SECURITY" == "admin" ]]; then
+        # admin モードは全ての制限をバイパス
+        exit 0
+    fi
+fi
+
+# ============================================================
 # 設定
 # ============================================================
 CONSENT_DIR="${HOME}/Desktop/thanks4claudecode/.claude/.session-init"

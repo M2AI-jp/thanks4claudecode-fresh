@@ -301,6 +301,22 @@ success_criteria:
     - [x] repository-map.yaml に Claude 行動ルール・Hook トリガー連鎖が含まれている
     - [x] 自動更新が 100% 安定（冪等性保証、原子的更新）
     - [x] INIT フロー全体で冗長がなく、効率的に自己認識できることが確認される
+
+- id: M053
+  name: "Multi-Toolstack Setup System + Admin Mode Fix"
+  description: |
+    1. security: admin で全ガードをバイパス（繰り返し発生していた問題を根本修正）
+    2. 3 パターン（A/B/C）の Toolstack を実装し、executor を構造的に制御
+    3. Codex を SubAgent 化し、コンテキスト膨張を防止
+  status: in_progress
+  depends_on: [M025]
+  playbooks:
+    - playbook-m053-multi-toolstack.md
+  done_when:
+    - [ ] admin モードで全ガードがバイパスされる
+    - [ ] setup フローに toolstack 選択 Phase がある
+    - [ ] executor-guard.sh が toolstack に応じて制御する
+    - [ ] Codex が SubAgent 化されコンテキスト分離されている
 ```
 
 ---

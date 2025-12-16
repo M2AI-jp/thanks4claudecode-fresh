@@ -18,6 +18,27 @@ set -euo pipefail
 
 STATE_FILE="${STATE_FILE:-state.md}"
 
+# ============================================================
+# Admin モードチェック（最優先）
+# ============================================================
+if [ -f "$STATE_FILE" ]; then
+    SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | head -1 | sed 's/security: *//' | tr -d ' ')
+    if [[ "$SECURITY" == "admin" ]]; then
+        exit 0
+    fi
+fi
+
+# ============================================================
+# Toolstack 取得
+# ============================================================
+TOOLSTACK="A"  # デフォルト
+if [ -f "$STATE_FILE" ]; then
+    TS=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "toolstack:" | head -1 | sed 's/toolstack: *//' | sed 's/ *#.*//' | tr -d ' ')
+    if [[ -n "$TS" ]]; then
+        TOOLSTACK="$TS"
+    fi
+fi
+
 # stdin から JSON を読み込む
 INPUT=$(cat)
 
@@ -85,6 +106,71 @@ done
 if [[ -z "$EXECUTOR" || "$EXECUTOR" == "claudecode" ]]; then
     exit 0
 fi
+
+# --------------------------------------------------
+# Toolstack による executor 事前チェック
+# --------------------------------------------------
+# A: claudecode, user のみ
+# B: claudecode, codex, user
+# C: claudecode, codex, coderabbit, user
+
+case "$TOOLSTACK" in
+    A)
+        if [[ "$EXECUTOR" == "codex" || "$EXECUTOR" == "coderabbit" ]]; then
+            cat >&2 << EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⛔ Toolstack A では $EXECUTOR は使用できません
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  現在の toolstack: A (Claude Code のみ)
+  playbook の executor: $EXECUTOR
+
+  Toolstack A で許可される executor:
+    - claudecode
+    - user
+
+  対処法:
+    1. state.md の config.toolstack を B または C に変更
+    2. または playbook の executor を claudecode に変更
+
+  Toolstack の説明:
+    A: Claude Code のみ（シンプル）
+    B: Claude Code + Codex（コード生成強化）
+    C: Claude Code + Codex + CodeRabbit（フルスタック）
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
+            exit 2
+        fi
+        ;;
+    B)
+        if [[ "$EXECUTOR" == "coderabbit" ]]; then
+            cat >&2 << EOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⛔ Toolstack B では coderabbit は使用できません
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  現在の toolstack: B (Claude Code + Codex)
+  playbook の executor: coderabbit
+
+  Toolstack B で許可される executor:
+    - claudecode
+    - codex
+    - user
+
+  対処法:
+    1. state.md の config.toolstack を C に変更
+    2. または playbook の executor を claudecode または codex に変更
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
+            exit 2
+        fi
+        ;;
+    C)
+        # C は全て許可
+        ;;
+esac
 
 # --------------------------------------------------
 # executor が claudecode 以外の場合の処理
