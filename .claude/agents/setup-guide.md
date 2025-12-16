@@ -2,7 +2,7 @@
 name: setup-guide
 description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environment setup, and Skills generation. Does not ask unnecessary questions.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: opus
 ---
 
 # Setup Guide Agent

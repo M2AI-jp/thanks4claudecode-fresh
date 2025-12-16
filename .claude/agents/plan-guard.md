@@ -2,7 +2,7 @@
 name: plan-guard
 description: PROACTIVELY checks 3-layer plan coherence at session start. Rejects or reconfirms when no plan exists or user prompt is unrelated to existing plan. LLM-led session flow.
 tools: Read, Grep, Glob
-model: haiku
+model: opus
 ---
 
 # Plan Guard Agent

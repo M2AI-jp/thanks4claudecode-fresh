@@ -29,7 +29,7 @@ last_archived: M057 (achieved: 2025-12-17)
 
 ```yaml
 milestone: M058
-phase: p5 (done)
+phase: p_final (done)
 done_criteria:
   - archive-playbook.sh が state.md の正しい構造（playbook.active）を参照している
   - archive-playbook.sh の構文エラーが修正されている
@@ -46,7 +46,7 @@ done_criteria:
 ## session
 
 ```yaml
-last_start: 2025-12-17 03:30:41
+last_start: 2025-12-17 04:32:26
 last_clear: 2025-12-13 00:30:00
 ```
 

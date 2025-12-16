@@ -2,7 +2,7 @@
 name: health-checker
 description: システム状態の定期監視。state.md/playbook の整合性、git 状態、ファイル存在確認などを行う。
 tools: Read, Grep, Glob, Bash
-model: haiku
+model: opus
 ---
 
 # Health Checker Agent

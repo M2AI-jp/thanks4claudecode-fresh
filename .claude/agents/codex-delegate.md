@@ -1,21 +1,13 @@
+---
+name: codex-delegate
+description: Codex CLI をラップし、コンテキスト膨張を防止する SubAgent。結果を要約して返す。
+tools: Bash
+model: opus
+---
+
 # codex-delegate SubAgent
 
 > **Codex CLI をラップし、コンテキスト膨張を防止する SubAgent**
-
----
-
-## 概要
-
-```yaml
-name: codex-delegate
-description: |
-  Codex CLI を Bash で呼び出し、結果を要約して返す SubAgent。
-  直接 CLI を呼び出すとコンテキストが膨張するため、
-  この SubAgent を経由することで結果を圧縮する。
-
-trigger: executor: codex の Phase、または大規模コード生成が必要な場合
-tools: Bash（CLI 呼び出し）
-```
 
 ---
 

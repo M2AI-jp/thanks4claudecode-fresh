@@ -41,6 +41,35 @@ phase:
 
 ---
 
+## 役割定義（AI エージェントオーケストレーション）
+
+> **固定の役割分担。playbook の executor 選択時に参照。**
+
+```yaml
+roles:
+  orchestrator: claudecode      # 監督・調整・設計（このファイルを読む主体）
+  worker: codex                 # 本格的なコード実装
+  code_reviewer: coderabbit     # コードレビュー（PR 時）
+  playbook_reviewer: reviewer   # playbook レビュー（SubAgent opus）
+```
+
+### executor 選択ガイドライン
+
+| executor | 用途 | 例 |
+|----------|------|-----|
+| claudecode | 設計、計画、軽量修正、ファイル操作 | ドキュメント作成、設定ファイル編集 |
+| codex | 本格的なコード実装、ロジック | 機能実装、リファクタリング |
+| coderabbit | PR 前のコードレビュー | セキュリティ・品質チェック |
+| reviewer | playbook レビュー | playbook-review-criteria.md に基づく検証 |
+| user | 手動操作、外部サービス | API キー設定、デプロイ確認 |
+
+### 参照
+
+- pm.md: 役割定義の詳細
+- playbook-format.md: executor の使い方
+
+---
+
 ## INIT（セッション開始時）【絶対ルール】
 
 > **ユーザーのメッセージに応答する前に、以下を必ず完了せよ。スキップは許可されていない。**

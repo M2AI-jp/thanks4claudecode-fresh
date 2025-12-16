@@ -53,8 +53,9 @@ if [ -f "$STATE_FILE" ]; then
     SI_PLAYBOOK=$(awk '/## playbook/,/^---/' "$STATE_FILE" 2>/dev/null | grep "active:" | head -1 | sed 's/.*active: *//' | sed 's/ *#.*//')
     SI_BRANCH=$(awk '/## playbook/,/^---/' "$STATE_FILE" 2>/dev/null | grep "branch:" | head -1 | sed 's/.*branch: *//' | sed 's/ *#.*//')
 
-    # done_criteria を抽出（改行を \\n に変換、ダブルクォートをエスケープ）
-    SI_CRITERIA=$(awk '/done_criteria:/,/^```/' "$STATE_FILE" 2>/dev/null | grep "^  - " | head -5 | sed 's/^  - /• /' | sed 's/"/\\"/g' | tr '\n' '|' | sed 's/|/\\n/g')
+    # done_criteria は State Injection から削除（ユーザー指示）
+    # 理由: LLM は playbook を直接読むべき。Hook での二重出力は不要。
+    SI_CRITERIA=""
 else
     SI_FOCUS="(state.md not found)"
     SI_MILESTONE="null"
@@ -219,10 +220,7 @@ if [ -n "$SI_PLAYBOOK" ] && [ "$SI_PLAYBOOK" != "null" ]; then
     SI_MESSAGE="${SI_MESSAGE}phase: $(escape_json "$SI_PHASE")\\n"
     SI_MESSAGE="${SI_MESSAGE}playbook: $(escape_json "$SI_PLAYBOOK")\\n"
     SI_MESSAGE="${SI_MESSAGE}remaining: ${SI_REMAINING_PH} phases\\n"
-    # done_criteria は playbook があり、かつ内容がある場合のみ
-    if [ -n "$SI_CRITERIA" ]; then
-        SI_MESSAGE="${SI_MESSAGE}done_criteria:\\n${SI_CRITERIA}\\n"
-    fi
+    # done_criteria は出力しない（LLM は playbook を直接読む）
 else
     SI_MESSAGE="${SI_MESSAGE}playbook: null\\n"
 fi

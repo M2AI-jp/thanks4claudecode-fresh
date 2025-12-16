@@ -943,23 +943,34 @@ enforcement:
 ## final_tasks
 
 > **M019: playbook 自己完結システム - アーカイブ前の必須チェック**
+>
+> **V12 形式**: チェックボックス `- [ ]` / `- [x]` で進捗管理
 
-```yaml
-final_tasks:
-  - id: ft1
-    task: "repository-map.yaml を更新する"
-    command: "bash .claude/hooks/generate-repository-map.sh"
-    status: pending  # pending | done
+### final_tasks 記法（V12）
 
-  - id: ft2
-    task: "tmp/ 内の一時ファイルを削除する"
-    command: "find tmp/ -type f ! -name 'CLAUDE.md' ! -name 'README.md' -delete"
-    status: pending
+```markdown
+## final_tasks
 
-  - id: ft3
-    task: "変更を全てコミットする"
-    command: "git add -A && git status"
-    status: pending
+- [ ] **ft1**: repository-map.yaml を更新する
+  - command: `bash .claude/hooks/generate-repository-map.sh`
+  - status: pending
+
+- [ ] **ft2**: tmp/ 内の一時ファイルを削除する
+  - command: `find tmp/ -type f ! -name 'CLAUDE.md' ! -name 'README.md' -delete`
+  - status: pending
+
+- [ ] **ft3**: 変更を全てコミットする
+  - command: `git add -A && git status`
+  - status: pending
+```
+
+### 完了時の記法
+
+```markdown
+- [x] **ft1**: repository-map.yaml を更新する ✓
+  - command: `bash .claude/hooks/generate-repository-map.sh`
+  - status: done
+  - executed: 2025-12-17T05:00:00
 ```
 
 ### final_tasks の役割
@@ -974,36 +985,33 @@ final_tasks:
   - 全 phase が done の場合に final_tasks をチェック
   - 未完了の final_tasks がある場合はアーカイブをブロック
 
+V12 検出パターン:
+  - セクション: `## final_tasks`
+  - 未完了: `- [ ] **ft`
+  - 完了: `- [x] **ft`
+
 status 更新:
-  - 各タスク実行後に status: done に更新
-  - LLM が手動で更新（コマンド実行後）
+  - 各タスク実行後に `- [ ]` → `- [x]` に変更
+  - status: pending → status: done に変更
+  - executed タイムスタンプを追加
 ```
 
 ### 標準 final_tasks
 
-```yaml
-# 全 playbook に推奨される final_tasks
-final_tasks:
-  - id: ft1
-    task: "repository-map.yaml を更新する"
-    command: "bash .claude/hooks/generate-repository-map.sh"
-    status: pending
+```markdown
+## final_tasks
 
-  - id: ft2
-    task: "tmp/ 内の一時ファイルを削除する"
-    command: "find tmp/ -type f ! -name 'CLAUDE.md' ! -name 'README.md' -delete"
-    status: pending
+- [ ] **ft1**: repository-map.yaml を更新する
+  - command: `bash .claude/hooks/generate-repository-map.sh`
+  - status: pending
 
-  - id: ft3
-    task: "変更を全てコミットする"
-    command: "git add -A && git status"
-    status: pending
+- [ ] **ft2**: tmp/ 内の一時ファイルを削除する
+  - command: `find tmp/ -type f ! -name 'CLAUDE.md' ! -name 'README.md' -delete 2>/dev/null || true`
+  - status: pending
 
-# オプション（プロジェクトによって追加）
-  - id: ft4
-    task: "ドキュメントの目次を更新する"
-    command: "# プロジェクト固有のコマンド"
-    status: pending
+- [ ] **ft3**: 変更を全てコミットする
+  - command: `git add -A && git status`
+  - status: pending
 ```
 
 ---
@@ -1012,6 +1020,7 @@ final_tasks:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-17 | V14: final_tasks を V12 チェックボックス形式に統一。archive-playbook.sh と整合。 |
 | 2025-12-14 | V13: final_tasks セクション追加。M019 playbook自己完結システム対応。 |
 | 2025-12-14 | V12: validations セクション追加。M018 3検証システム対応。 |
 | 2025-12-13 | V11: subtasks 構造を導入。criterion + executor + test_command を1セット化。test_command パターン集追加。 |
