@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: main
+active: playbook-m057-cli-migration.md
+branch: feat/m057-cli-migration
 last_archived: M056 (achieved: 2025-12-17)
 ```
 
@@ -28,9 +28,17 @@ last_archived: M056 (achieved: 2025-12-17)
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
+milestone: M057
+phase: p1
+done_criteria:
+  - .mcp.json から codex エントリが削除されている
+  - docs/toolstack-patterns.md が MCP → CLI に全面書き換えされている
+  - .claude/agents/codex-delegate.md が CLI ベースに修正されている
+  - .claude/hooks/executor-guard.sh の MCP 参照が CLI に修正されている
+  - plan/template/playbook-format.md の executor 説明が更新されている
+  - .claude/CLAUDE-ref.md の MCP 参照が削除されている
+  - setup/playbook-setup.md の MCP 設定が CLI に修正されている
+  - repository-map.yaml が更新されている
 ```
 
 ---
@@ -38,7 +46,7 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-17 02:59:27
+last_start: 2025-12-17 03:03:51
 last_clear: 2025-12-13 00:30:00
 ```
 

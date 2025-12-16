@@ -336,6 +336,55 @@ success_criteria:
     - [x] subtask-guard が final_tasks の status: done をブロックしない
     - [x] 既存の achieved milestone の done_when が実際に満たされているか再検証完了
     - [x] V12 チェックボックス形式が全コンポーネントに適用されている
+
+- id: M057
+  name: "Codex/CodeRabbit CLI 化 - MCP 誤設計の根本修正"
+  description: |
+    Codex と CodeRabbit が MCP サーバーとして誤設計されていた問題を根本修正。
+    実際には両方とも CLI ツールとして存在しており、その仕様に合わせて
+    全ドキュメント・SubAgent・Hook を一括更新する。
+  status: not_started
+  depends_on: [M056]
+  playbooks: []
+  done_when:
+    - "[ ] .mcp.json から codex エントリが削除されている"
+    - "[ ] docs/toolstack-patterns.md が MCP → CLI に全面書き換えされている"
+    - "[ ] .claude/agents/codex-delegate.md が CLI ベースに修正されている"
+    - "[ ] .claude/hooks/executor-guard.sh の MCP 参照が CLI に修正されている"
+    - "[ ] plan/template/playbook-format.md の executor 説明が更新されている"
+    - "[ ] .claude/CLAUDE-ref.md の MCP 参照が削除されている"
+    - "[ ] setup/playbook-setup.md の MCP 設定が CLI に修正されている"
+    - "[ ] repository-map.yaml が更新されている"
+  decomposition:
+    playbook_summary: |
+      Codex/CodeRabbit を MCP から CLI 実装に転換し、全システムを一貫性のあるCLI構成に統一する。
+    phase_hints:
+      - name: "MCP 設定削除 & CLI 実装確認"
+        what: |
+          .mcp.json を確認し codex エントリを削除。
+          CLI パスの確認（/Users/amano/.asdf/installs/nodejs/24.4.1/bin/codex 等）
+      - name: "toolstack-patterns.md 書き換え"
+        what: |
+          MCP ベースの説明を CLI ベースに全面書き換え。
+          Codex/CodeRabbit の CLI 使用法を明記。
+      - name: "codex-delegate.md 修正"
+        what: |
+          SubAgent を MCP ではなく Bash CLI ベースに修正。
+          Task call から Bash call への転換。
+      - name: "Hook & template 一括更新"
+        what: |
+          executor-guard.sh、playbook-format.md、.claude/CLAUDE-ref.md を修正。
+          全参照を MCP → CLI に統一。
+      - name: "setup ドキュメント & repository-map 更新"
+        what: |
+          setup/playbook-setup.md の設定を修正。
+          repository-map.yaml を自動更新。
+    success_indicators:
+      - .mcp.json に codex MCP エントリがない
+      - docs/toolstack-patterns.md で CLI 使用法が明確
+      - executor-guard.sh が CLI ベースで動作
+      - 全コンポーネントが CLI 仕様に統一
+
 ```
 
 ---
