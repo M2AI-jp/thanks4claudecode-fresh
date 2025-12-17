@@ -551,16 +551,18 @@ success_criteria:
     1. playbook の再利用性向上（toolstack 変更時に playbook 書き換え不要）
     2. 役割と実装の疎結合化（SOLID 原則）
     3. AI エージェントオーケストレーションの基盤構築
-  status: not_started
+  status: achieved
+  achieved_at: 2025-12-17
   depends_on: [M072]
-  playbooks: []
+  playbooks:
+    - playbook-m073-ai-orchestration.md
   done_when:
-    - "[ ] state.md の config セクションに roles マッピングが追加されている"
-    - "[ ] playbook-format.md に meta.roles セクションの説明が追加されている"
-    - "[ ] role-resolver.sh が .claude/hooks/ に存在し、役割 -> executor 解決ロジックが実装されている"
-    - "[ ] executor-guard.sh が role-resolver.sh を呼び出して解決後の executor をチェックする"
-    - "[ ] pm SubAgent が playbook 作成時に roles セクションを自動生成する"
-    - "[ ] docs/ai-orchestration.md が存在し、設計・使用方法が文書化されている"
+    - "[x] state.md の config セクションに roles マッピングが追加されている"
+    - "[x] playbook-format.md に meta.roles セクションの説明が追加されている"
+    - "[x] role-resolver.sh が .claude/hooks/ に存在し、役割 -> executor 解決ロジックが実装されている"
+    - "[x] executor-guard.sh が role-resolver.sh を呼び出して解決後の executor をチェックする"
+    - "[x] pm SubAgent が playbook 作成時に roles セクションを自動生成する"
+    - "[x] docs/ai-orchestration.md が存在し、設計・使用方法が文書化されている"
   test_commands:
     - "grep -q 'roles:' state.md && grep -q 'orchestrator:' state.md && echo PASS || echo FAIL"
     - "grep -q 'meta.roles' plan/template/playbook-format.md && echo PASS || echo FAIL"

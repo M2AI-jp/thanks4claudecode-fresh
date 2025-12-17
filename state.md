@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-m073-ai-orchestration.md
-branch: feat/m073-ai-orchestration
-last_archived: M072 playbook-m072-fix.md (2025-12-17)
+active: null
+branch: null
+last_archived: M073 playbook-m073-ai-orchestration.md (2025-12-17)
 ```
 
 ---
@@ -28,15 +28,9 @@ last_archived: M072 playbook-m072-fix.md (2025-12-17)
 ## goal
 
 ```yaml
-milestone: M073 AI エージェントオーケストレーション
-phase: p_final
-done_criteria:
-  - state.md の config セクションに roles マッピングが追加されている
-  - playbook-format.md に meta.roles セクションの説明が追加されている
-  - role-resolver.sh が存在し、役割 -> executor 解決ロジックが実装されている
-  - executor-guard.sh が role-resolver.sh を呼び出している
-  - pm SubAgent が roles セクションについて記述している
-  - docs/ai-orchestration.md が存在し、50行以上で文書化されている
+milestone: null
+phase: null
+done_criteria: []
 ```
 
 ---
