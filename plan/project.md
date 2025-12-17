@@ -579,7 +579,7 @@ success_criteria:
     1. state.md の toolstack を B/C に変更
     2. role-resolver.sh が正しく解決するか確認
     3. state.md を元の状態（toolstack: A）に復元
-  status: in_progress
+  status: achieved
   depends_on: [M075]
   playbooks:
     - playbook-m076-orchestration-e2e-test.md

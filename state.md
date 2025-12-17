@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-m076-orchestration-e2e-test.md
+active: null
 branch: feat/m076-orchestration-e2e-test
-last_archived: M075 playbook-m075-orchestration-fix.md (2025-12-17)
+last_archived: M076 playbook-m076-orchestration-e2e-test.md (2025-12-18)
 ```
 
 ---
