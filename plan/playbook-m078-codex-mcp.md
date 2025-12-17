@@ -128,7 +128,7 @@ done_when:
 
 #### subtasks
 
-- [ ] **p4.1**: ユーザーが Claude Code を再起動している（MCP サーバー読み込みのため）
+- [x] **p4.1**: ユーザーが Claude Code を再起動している（MCP サーバー読み込みのため）
   - executor: human
   - test_command: `手動確認: Claude Code を再起動し、MCP サーバーが読み込まれたことを確認`
   - validations:
@@ -136,7 +136,7 @@ done_when:
     - consistency: "mcp.json の設定が反映されている"
     - completeness: "codex MCP が接続済み"
 
-- [ ] **p4.2**: state.md の toolstack が C に変更されている
+- [x] **p4.2**: state.md の toolstack が C に変更されている
   - executor: orchestrator
   - test_command: `grep -q 'toolstack: C' state.md && echo PASS || echo FAIL`
   - validations:
@@ -144,7 +144,7 @@ done_when:
     - consistency: "config セクション内に存在"
     - completeness: "roles も適切に更新されている"
 
-- [ ] **p4.3**: 簡単なコーディングタスクを Codex MCP 経由で実行し、正常に動作することが確認されている
+- [x] **p4.3**: 簡単なコーディングタスクを Codex MCP 経由で実行し、正常に動作することが確認されている
   - executor: worker
   - test_command: `手動確認: Codex MCP 経由でコード生成が成功した`
   - validations:
@@ -152,7 +152,7 @@ done_when:
     - consistency: "生成されたコードが正しい"
     - completeness: "エラーなく完了した"
 
-- [ ] **p4.4**: テスト完了後、state.md が toolstack: A に復元されている
+- [x] **p4.4**: テスト完了後、state.md が toolstack: A に復元されている
   - executor: orchestrator
   - test_command: `grep -q 'toolstack: A' state.md && echo PASS || echo FAIL`
   - validations:
@@ -173,7 +173,7 @@ done_when:
 
 #### subtasks
 
-- [ ] **p_final.1**: .claude/mcp.json が存在し、codex mcp-server が登録されている
+- [x] **p_final.1**: .claude/mcp.json が存在し、codex mcp-server が登録されている
   - executor: orchestrator
   - test_command: `test -f .claude/mcp.json && grep -q 'codex' .claude/mcp.json && echo PASS || echo FAIL`
   - validations:
@@ -181,7 +181,7 @@ done_when:
     - consistency: "JSON 構文が正しい"
     - completeness: "必要なフィールドが全て存在"
 
-- [ ] **p_final.2**: codex-delegate.md が MCP ツール mcp__codex__codex を使用する形式に更新されている
+- [x] **p_final.2**: codex-delegate.md が MCP ツール mcp__codex__codex を使用する形式に更新されている
   - executor: orchestrator
   - test_command: `grep -q 'mcp__codex__codex' .claude/agents/codex-delegate.md && echo PASS || echo FAIL`
   - validations:
@@ -189,7 +189,7 @@ done_when:
     - consistency: "使用例が含まれている"
     - completeness: "変更理由が説明されている"
 
-- [ ] **p_final.3**: docs/ai-orchestration.md に Codex MCP の説明が追加されている
+- [x] **p_final.3**: docs/ai-orchestration.md に Codex MCP の説明が追加されている
   - executor: orchestrator
   - test_command: `grep -q 'Codex MCP' docs/ai-orchestration.md && echo PASS || echo FAIL`
   - validations:
@@ -197,7 +197,7 @@ done_when:
     - consistency: "既存構造と整合"
     - completeness: "設定方法と使用方法が含まれている"
 
-- [ ] **p_final.4**: テスト完了後、toolstack: A に復元されている
+- [x] **p_final.4**: テスト完了後、toolstack: A に復元されている
   - executor: orchestrator
   - test_command: `grep -q 'toolstack: A' state.md && echo PASS || echo FAIL`
   - validations:
