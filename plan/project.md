@@ -1,15 +1,16 @@
-# project.md
+# Project: thanks4claudecode-recovery
 
-> **プロジェクトの根幹計画。Claude が3層構造（project → playbook → phase）を自動運用する。**
+> 回復プロジェクト: 複雑化した AI エージェント基盤を「小さく・テスト可能で・使い回せる」状態に再構成する
 
 ---
 
 ## meta
 
 ```yaml
-project: thanks4claudecode
-created: 2025-12-10
+project: thanks4claudecode-recovery
+created: 2025-12-18
 status: active
+legacy_archived: plan/archive/project-v1-legacy.md
 ```
 
 ---
@@ -17,21 +18,17 @@ status: active
 ## vision
 
 ```yaml
-goal: "Claude Code の自律性と品質を継続的に向上させる"
-
+goal: "thanks4claudecode を『小さく・テスト可能で・使い回せる AI エージェント基盤』として再構成する"
 principles:
-  - 報酬詐欺防止（critic 必須）
-  - 計画駆動開発（playbook 必須）
-  - 構造的強制（Hooks）
-  - 3層自動運用（project → playbook → phase）
-
+  - システム自身の自己申告を信じない（E2E でのみ信用する）
+  - 1 機能 = 1 コンポーネント = 1 責任（MECE）
+  - context の入口を 1 箇所に絞る
+  - 「フレームワーク開発」と「実際のプロジェクト開発」を分離する
 success_criteria:
-  - ユーザープロンプトなしで 1 playbook を完遂できる
-  - compact 後も mission を見失わない
-  - 次タスクを自動導出して開始できる
-  - 全 Hook/SubAgent/Skill が動作確認済み
-  - playbook 完了時に /clear タイミングを案内する
-  - project.milestone が自動更新される
+  - Hooks/SubAgents/Skills が役割ベースに再分類されている
+  - 5 つの主要機能に対する E2E シナリオテストが存在し、PASS している
+  - CLAUDE.md の「毎セッション必読部分」が 200 行以下に削減されている
+  - このリポジトリの扱い（テンプレ化 / 博物館化 / 廃棄）が決定されている
 ```
 
 ---
@@ -39,678 +36,213 @@ success_criteria:
 ## milestones
 
 ```yaml
-- id: M001
-  name: "三位一体アーキテクチャ確立"
-  status: achieved
-  achieved_at: 2025-12-09
-  playbooks:
-    - playbook-reward-fraud-prevention.md
-  done_when:
-    - "[x] .claude/hooks/ ディレクトリに Hook スクリプトが存在する"
-    - "[x] .claude/agents/ ディレクトリに SubAgent 定義が存在する"
-    - "[x] CLAUDE.md に三位一体の説明が記載されている"
-    - "[x] .claude/settings.json に Hook が登録されている"
-
-- id: M002
-  name: "Self-Healing System 基盤実装"
-  status: achieved
-  achieved_at: 2025-12-10
-  playbooks:
-    - playbook-full-autonomy.md
-  done_when:
-    - "[x] state.md が存在し focus/playbook/goal セクションを含む"
-    - "[x] session-start.sh が SessionStart Hook として登録されている"
-    - "[x] check-coherence.sh が存在する"
-
-- id: M003
-  name: "PR 作成・マージの自動化"
-  status: achieved
-  achieved_at: 2025-12-10
-  playbooks:
-    - playbook-pr-automation.md
-  done_when:
-    - "[x] .claude/hooks/create-pr.sh が存在し実行可能である"
-    - "[x] .claude/hooks/merge-pr.sh が存在する"
-    - "[x] create-pr-hook.sh が PostToolUse で登録されている"
-
-- id: M004
-  name: "3層構造の自動運用システム"
+- id: M101
+  name: "レガシー project.md の凍結と回復プロジェクトの開始"
   description: |
-    project → playbook → phase の3層構造を確立し、
-    Claude が主導で自動運用できるようにする。
-    人間は意思決定とプロンプト提供のみ。
-  status: achieved
-  achieved_at: 2025-12-13 00:06:00
-  depends_on: [M001, M002, M003]
-  playbooks:
-    - playbook-three-layer-system.md
+    既存の project.md を「実験の履歴」として保存し、
+    回復専用の project.md を作り直す。以降の作業は全て新 project.md を基準に行う。
+  status: not_started
+  depends_on: []
+  playbooks: []
   done_when:
-    - [x] 用語が統一されている（Macro→project, layer廃止）
-    - [x] playbook 完了時に project.milestone が自動更新される
-    - [x] playbook 完了時に /clear 推奨がアナウンスされる
-    - [x] 次 milestone から playbook が自動作成される
+    - "既存の plan/project.md が plan/archive/project-v1-legacy.md 等の名前で保存されている"
+    - "新しい plan/project.md が project-format テンプレートに沿った構造で作成されている"
+    - "新しい project.md の vision が『回復プロジェクト』専用の内容になっている"
+    - "state.md の参照先 (project: ...) が新しい project.md を指している"
 
-- id: M005
-  name: "確実な初期化システム（StateInjection）"
+- id: M102
+  name: "安全な編集モード（developer / admin モード）の仕様定義"
   description: |
-    UserPromptSubmit Hook を拡張し、state/project/playbook の状態を
-    systemMessage として強制注入する。LLM が Read しなくても情報が届く。
-  status: achieved
-  achieved_at: 2025-12-13 01:20:00
-  depends_on: [M004]
-  playbooks:
-    - playbook-state-injection.md
+    admin/developer モードの本来の意味を明確化し、
+    「回復作業中はどの Hook がどこまでバイパスされるか」の仕様を決める。
+    まずは仕様だけを決め、実装は後続の milestone で行う。
+  status: not_started
+  depends_on: [M101]
+  playbooks: []
   done_when:
-    - [x] systemMessage に focus/milestone/phase/playbook が含まれる
-    - [x] systemMessage に project_summary/last_critic が含まれる
-    - [x] /clear 後も最初のプロンプトで情報が注入される
-    - [x] playbook=null の場合も正しく動作する
+    - "docs/security-modes.md が作成され、strict/trusted/developer/admin の意味と挙動が定義されている"
+    - "各 Hook がどの mode で有効/緩和/無効になるかの一覧表が docs/security-modes.md に記載されている"
+    - "state.md の config.security の値と docs/security-modes.md の定義が一致している"
 
-- id: M006
-  name: "厳密な done_criteria 定義システム"
+- id: M103
+  name: "フレームワーク vs ワークスペースの分離方針を決める"
   description: |
-    done_criteria の事前定義精度を向上させる。
-    自然言語の曖昧な定義ではなく、検証可能な形式で定義し、
-    「テストをクリアするためのテスト」という構造的問題を解消する。
-  status: achieved
-  achieved_at: 2025-12-13
-  depends_on: [M005]
-  playbooks: [playbook-strict-criteria.md]
+    このリポジトリで「何を開発するのか」を整理し、
+    1) AI フレームワーク（Hooks/SubAgents/Skills）の開発
+    2) 実際のプロダクト開発（SaaS 等）
+    を論理的に分離する方針を決める。必要であればレポジトリを分割する。
+  status: not_started
+  depends_on: [M101]
+  playbooks: []
   done_when:
-    - [x] done_criteria が Given/When/Then 形式で定義される
-    - [x] 各 criteria に test_command が紐付けられている
-    - [x] 曖昧な表現（「動作する」「正しく」等）が検出・拒否される
-  decomposition:
-    playbook_summary: |
-      done_criteria の定義精度を向上させるシステムを構築。
-      「テストをクリアするためのテスト」から「テストで検証できる仕様」へ転換。
-    phase_hints:
-      - name: "done_criteria 検証ルール定義"
-        what: |
-          曖昧な表現を自動検出するルールセット（禁止パターン）を定義。
-          Given/When/Then 形式での定義テンプレートを作成。
-      - name: "test_command マッピング実装"
-        what: |
-          各 done_criteria に対応する test_command を自動マッピング。
-          実行可能な検証コマンドを明示。
-      - name: "critic による criteria レビュー機構"
-        what: |
-          playbook 作成時に critic が criteria 定義の品質をチェック。
-          PASS/FAIL で曖昧さを検出・拒否。
-    success_indicators:
-      - done_criteria の曖昧表現が自動検出される
-      - criteria: test_command が1:1で紐付けられている
-      - critic が criteria 品質をチェックできる
+    - "docs/product-vs-framework.md が存在し、フレームワーク層とプロダクト層の責務が文章で定義されている"
+    - "state.md の focus.current の候補値が、framework 用と workspace 用で整理されている"
+    - "plan/template/state-initial.md が新しい focus 構造に合わせて更新されている"
 
-- id: M014
-  name: "フォルダ管理ルール確立 & クリーンアップ機構実装"
+- id: M104
+  name: "コンポーネント分類の再設計（Hooks/SubAgents/Skills の MECE 化）"
   description: |
-    1. 全フォルダの役割を明確化（テンポラリ/永続）
-    2. tmp/ フォルダを新設し、テンポラリファイルを統一配置
-    3. playbook 完了時の自動クリーンアップ機構を実装
-    4. フォルダ管理ルールをドキュメント化
-  status: achieved
-  achieved_at: 2025-12-13
-  depends_on: [M006]
-  playbooks: [playbook-m014-folder-management.md]
+    Hooks / SubAgents / Skills を、「何を守っているか」の観点で再分類する。
+    例: Guard (強制), Observer (ロギング), Planner (計画生成), Adapter (外部ツール連携) など。
+    1 コンポーネント = 1 カテゴリになるように MECE を目指す。
+  status: not_started
+  depends_on: [M101, M103]
+  playbooks: []
   done_when:
-    - [x] 不要ファイルが .archive/ に移動されている
-    - [x] tmp/ フォルダが新設され、.gitignore に登録されている
-    - [x] .claude/hooks/cleanup-hook.sh が実装されている
-    - [x] 全 playbook テンプレートに cleanup phase が追加されている
-    - [x] docs/folder-management.md が作成されている
-    - [x] project.md に参照が追加されている
+    - "docs/component-taxonomy.md が作成され、カテゴリ一覧と定義が書かれている"
+    - "docs/repository-map.yaml に各コンポーネントの category フィールドが追加されている"
+    - "1つのコンポーネントが複数カテゴリにまたがっていないことが目視で確認されている"
+    - "『何のカテゴリにも属さない』コンポーネントが 0 である"
 
-# ============================================================
-# M015-M023: 再定義・再検証対象（2025-12-14 リセット）
-# ============================================================
-
-- id: M015
-  name: "フォルダ管理ルール検証テスト"
+- id: M105
+  name: "Hook チェーンの最小化（編集ループの核心だけ残す）"
   description: |
-    M014 で実装したフォルダ管理ルールとクリーンアップ機構の動作検証。
-    tmp/ と永続フォルダ（docs/）の分離が正しく機能することを確認する。
-  status: achieved
-  achieved_at: 2025-12-14
-  depends_on: [M014]
-  playbooks:
-    - playbook-m015-folder-validation.md
+    PreToolUse/Edit の Hook 連鎖から、「どうしても必要なガード」だけを抽出し、
+    それ以外は Observer/Optional に降格させる。編集ループをミニマルにする。
+  status: not_started
+  depends_on: [M104]
+  playbooks: []
   done_when:
-    - [x] tmp/ ディレクトリが存在し .gitignore に登録されている
-    - [x] cleanup-hook.sh が実行可能で構文エラーがない
-    - [x] docs/folder-management.md が存在する
+    - "docs/hook-responsibilities.md が更新され、各 Hook の category と優先度が追記されている"
+    - ".claude/settings.json の PreToolUse:Edit に登録されている Hook が 3〜5 個程度に削減されている（init-guard / playbook-guard / check-protected-edit / check-main-branch 程度）"
+    - "削除された Hook は manual 実行か PostToolUse/SessionStart に移動されている"
+    - "repository-map.yaml の Hooks 数の整合が取れている"
 
-- id: M016
-  name: "リリース準備：自己認識システム完成"
+- id: M106
+  name: "context エントリポイントの一本化（軽量ブートストラップ）"
   description: |
-    リポジトリの完成度を高め、リリース可能な状態にする。
-    repository-map.yaml の完全性、コンテキスト保護、整合性確認。
-  status: achieved
-  achieved_at: 2025-12-14
-  depends_on: [M015]
-  playbooks:
-    - playbook-m016-release-preparation.md
+    「セッション開始時に必ず読むべき情報」を 1 ファイルに集約し、その他は必要に応じて参照する形にする。
+    CLAUDE.md の毎回読むべき部分を 200 行以内にまとめ、詳細ルールは別ファイルに分離する。
+  status: not_started
+  depends_on: [M104, M105]
+  playbooks: []
   done_when:
-    - [x] repository-map.yaml の全 Hook に trigger が明示されている（unknown が 0 個）
-    - [x] CLAUDE.md に [理解確認] セクションが存在する
-    - [x] state.md / project.md / playbook の整合性が確認されている
+    - "docs/boot-context.md が作成され、state.md / project.md / 現在の playbook へのリンクと最小限のルールが書かれている"
+    - "CLAUDE.md の冒頭に『まず docs/boot-context.md を読め』と明示されている"
+    - "CLAUDE.md の『毎セッション必読』部分が 200 行以内に収まっている"
+    - "init-guard.sh が state.md + docs/boot-context.md の Read を強制する仕様に簡略化されている"
 
-- id: M017
-  name: "仕様遵守の構造的強制"
+- id: M107
+  name: "state.md / project.md / repository-map の Single Source of Truth 明確化"
   description: |
-    「拡散」を抑止し「収束」を強制する仕組みを実装。
-    state.md スキーマの単一定義源を作成し、Hook がそこを参照する形に統一。
-  status: achieved
-  achieved_at: 2025-12-14
-  depends_on: [M016]
-  playbooks:
-    - playbook-m017-state-schema.md
+    どの情報の正本（Single Source of Truth）がどこかを定義し、
+    他のファイルからの重複定義を禁止する。
+    例: Hooks 一覧は repository-map.yaml が正本、他は派生。
+  status: not_started
+  depends_on: [M104, M106]
+  playbooks: []
   done_when:
-    - [x] .claude/schema/state-schema.sh が存在し source 可能
-    - [x] state-schema.sh に SECTION_* 定数と getter 関数が定義されている
-    - [x] Hook がハードコードではなくスキーマを参照している
+    - "docs/single-source-of-truth.md に、各情報（Hooks/Agents/Skills/plan/state）の正本が一覧化されている"
+    - "current-definitions.md と deprecated-references.md の役割が明文化され、重複する定義が削除されている"
+    - "repository-map.yaml が『正本である』と明記されている"
 
-- id: M018
-  name: "3検証システム（technical/consistency/completeness）"
+- id: M108
+  name: "古い用語・古い構造の一掃（health-checker / テンプレート含む）"
   description: |
-    subtask 単位で 3 視点の検証を構造的に強制するシステム。
-    - technical: 技術的に正しく動作するか
-    - consistency: 他のコンポーネントと整合性があるか
-    - completeness: 必要な変更が全て完了しているか
-  status: achieved
-  achieved_at: 2025-12-14
-  depends_on: [M017]
-  playbooks:
-    - playbook-m018-3validations.md
+    Macro/layer などの廃止用語や、古い state 構造を前提とした SubAgent/テンプレートを洗い出し、
+    現在の定義に合わせて書き直すか、レガシーとしてアーカイブする。
+  status: not_started
+  depends_on: [M107]
+  playbooks: []
   done_when:
-    - [x] subtask-guard.sh が存在し実行可能
-    - [x] subtask-guard.sh に 3 検証（technical/consistency/completeness）のロジックがある
-    - [x] playbook-format.md に validations セクションが存在する
+    - "docs/deprecated-references.md に列挙されている『修正対象』ファイルが全て更新済み or アーカイブ済みである"
+    - ".claude/agents/health-checker.md のチェック項目が現行 state.md 構造に一致している"
+    - "plan/template/state-initial.md が最新の state.md フォーマットに揃えられている"
+    - "grep で Macro / layer / architecture-*.md などの廃止用語が現在使用中ファイルから消えている"
 
-- id: M019
-  name: "playbook 自己完結システム"
+- id: M109
+  name: "報酬詐欺防止の E2E シナリオテスト設計"
   description: |
-    playbook を自己完結させる仕組みを構築。
-    final_tasks によるアーカイブ前チェック、repository-map 更新。
-  status: achieved
-  achieved_at: 2025-12-14
-  depends_on: [M018]
-  playbooks:
-    - playbook-m019-self-contained.md
+    「LLM が done と言っているが実際は done ではない」ケースを 3〜5 パターン定義し、
+    Hooks/SubAgents がそれをどこまで防げるかを確認する E2E シナリオを設計する（まだ実装はしない）。
+  status: not_started
+  depends_on: [M106]
+  playbooks: []
   done_when:
-    - [x] archive-playbook.sh に final_tasks チェックが実装されている
-    - [x] playbook テンプレートに final_tasks 例が含まれている
+    - "docs/e2e-scenarios-reward-fraud.md に、少なくとも 3 つのシナリオが Given/When/Then 形式で定義されている"
+    - "各シナリオに対して、『どの Hook/SubAgent に期待するか』が明記されている"
+    - "『現状では防げない』シナリオがあれば、それも正直に列挙されている"
 
-- id: M020
-  name: "archive-playbook.sh バグ修正"
+- id: M110
+  name: "計画駆動開発（playbook 必須）の E2E シナリオ設計"
   description: |
-    archive-playbook.sh の ARCHIVE_DIR を plan/archive/ に修正し、
-    完了済み playbook が正しくアーカイブされることを確認。
-  status: achieved
-  achieved_at: 2025-12-14
-  depends_on: [M019]
-  playbooks:
-    - playbook-m020-archive-bugfix.md
+    playbook=null での Edit/Write を試みるシナリオや、
+    playbook を無視して直接ファイル変更するシナリオを定義し、
+    どの Hook がそれを止めるべきかを明文化する。
+  status: not_started
+  depends_on: [M106]
+  playbooks: []
   done_when:
-    - [x] archive-playbook.sh の ARCHIVE_DIR が plan/archive/ を指している
-    - [x] archive-playbook.sh の構文が正しい（bash -n）
+    - "docs/e2e-scenarios-plan-driven.md に、Playbook を無視する典型的なパターンが定義されている"
+    - "playbook-guard / scope-guard / pm SubAgent の役割分担がシナリオ上で明確になっている"
+    - "『人間の手動編集でしか止められない』ケースがあれば、それも記録されている"
 
-- id: M021
-  name: "init-guard.sh デッドロック修正"
+- id: M111
+  name: "3層自動運用（project → playbook → phase）の実装範囲の再定義"
   description: |
-    init-guard.sh で基本 Bash コマンドがブロックされる問題を修正。
-    playbook=null 時でも sed/grep/cat/echo/ls/wc が許可される。
-  status: achieved
-  achieved_at: 2025-12-14
-  depends_on: [M020]
-  playbooks:
-    - playbook-m021-init-guard-fix.md
+    3層自動運用が「設計だけ」なのか「どこまで実装済みなのか」を冷静に棚卸しする。
+    自動でやる範囲と、人間が介在する範囲を線引きし直す。
+  status: not_started
+  depends_on: [M107, M109, M110]
+  playbooks: []
   done_when:
-    - [x] init-guard.sh に基本コマンド許可リスト（sed/grep/cat/echo/ls/wc）がある
-    - [x] git show コマンドが許可されている
-    - [x] session-start.sh に CORE セクションが存在する
+    - "docs/three-layer-system.md が作成され、現在の実装状況（implemented / planned / not-planned）が一覧化されている"
+    - "project.md の vision および success_criteria から『完全自動』のような過剰な期待表現が削られている"
+    - "pm SubAgent の仕様（AGENTS.md と pm.md）が、現実的な責務に合わせて更新されている"
 
-- id: M022
-  name: "SOLID原則に基づくシステム再構築"
+- id: M112
+  name: "E2E テストの実装（報酬詐欺 / 計画駆動 / 3層運用 / context 外部化）"
   description: |
-    SOLID原則（特に単一責任原則）に基づいてシステムを再構築。
-    init-guard.sh を単一責任に分離し、各 Hook の責任をドキュメント化。
-  status: achieved
-  achieved_at: 2025-12-14
-  depends_on: [M021]
-  playbooks: [playbook-m022-solid-refactoring.md]
+    M109〜M111 で定義したシナリオに対して、実際に Bash + Claude Code で再現する
+    テストスクリプト（または手順）を実装する。
+  status: not_started
+  depends_on: [M109, M110, M111]
+  playbooks: []
   done_when:
-    - [x] init-guard.sh が単一責任（必須ファイル Read 強制のみ）
-    - [x] playbook-guard.sh が playbook 存在チェック責任を持つ
-    - [x] docs/hook-responsibilities.md に全 Hook の責任が明示されている
+    - ".claude/skills/test-runner/ 以下、または docs/e2e-tests に E2E 手順が実装されている"
+    - "少なくとも 1 つのシナリオについて、『実際に防げている』ことが確認されている"
+    - "少なくとも 1 つのシナリオについて、『今の設計では防げない』ことが確認されている"
+    - "README または docs に、『何が出来ていて何が出来ていないか』が率直に書かれている"
 
-- id: M023
-  name: "Plan mode 活用ガイド"
+- id: M113
+  name: "admin モードの実装と検証（安全な「鎮静モード」）"
   description: |
-    Plan mode（think/ultrathink）と Named Sessions の活用ガイドを作成。
-    複雑なタスクでの思考深化と、セッション管理を改善。
-  status: achieved
-  achieved_at: 2025-12-14
-  depends_on: [M022]
-  playbooks:
-    - playbook-m023-plan-mode-guide.md
+    M102 で定義した admin/developer モードのうち、
+    回復作業のための「一時的にガードを緩めるモード」を実装し、
+    『Hook が暴れて編集できない』状態からの脱出手段を提供する。
+  status: not_started
+  depends_on: [M102, M105, M108]
+  playbooks: []
   done_when:
-    - [x] CLAUDE.md に think/ultrathink の使い分けが明記されている
-    - [x] docs/session-management.md が存在し /rename, /resume が記載されている
+    - "check-protected-edit.sh 以外の主要 Hook が、state.config.security = admin のときに exit 0 になるよう仕様が整理されている"
+    - "docs/security-modes.md に、admin モードに入る/出る手順が書かれている"
+    - "admin モードで plan/project.md や Hooks 自体の編集が可能であることが手動検証されている"
 
-- id: M025
-  name: "システム仕様の Single Source of Truth 構築"
+- id: M120
+  name: "このリポジトリの最終的な扱いを決める（テンプレ化 / 博物館化 / 廃棄）"
   description: |
-    Claude の仕様が分散している問題を解決。
-    repository-map.yaml を拡張し、Claude の行動ルール・Hook 連鎖を統合。
-    二重管理を排除し、1ファイル・1スクリプトで完結する Single Source of Truth を構築。
-  status: achieved
-  achieved_at: 2025-12-15
-  depends_on: [M023]
-  playbooks:
-    - playbook-m025-system-specification.md
+    ここまでの E2E 検証とシンプル化の結果を踏まえて、
+    thanks4claudecode を
+    1) 新規プロジェクト用テンプレートとして残すのか
+    2) 実験博物館として read-only にするのか
+    3) 概念だけ別レポジトリに移し、このレポジトリは凍結するのか
+    を決定する。
+  status: not_started
+  depends_on: [M112, M113]
+  playbooks: []
   done_when:
-    - [x] generate-repository-map.sh に system_specification セクション生成機能が追加されている
-    - [x] repository-map.yaml に Claude 行動ルール・Hook トリガー連鎖が含まれている
-    - [x] 自動更新が 100% 安定（冪等性保証、原子的更新）
-    - [x] INIT フロー全体で冗長がなく、効率的に自己認識できることが確認される
-
-- id: M053
-  name: "Multi-Toolstack Setup System + Admin Mode Fix"
-  description: |
-    1. security: admin で全ガードをバイパス（繰り返し発生していた問題を根本修正）
-    2. 3 パターン（A/B/C）の Toolstack を実装し、executor を構造的に制御
-    3. Codex を SubAgent 化し、コンテキスト膨張を防止
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M025]
-  playbooks:
-    - playbook-m053-multi-toolstack.md
-  done_when:
-    - [x] admin モードで全ガードがバイパスされる
-    - [x] setup フローに toolstack 選択 Phase がある
-    - [x] executor-guard.sh が toolstack に応じて制御する
-    - [x] Codex が SubAgent 化されコンテキスト分離されている
-
-- id: M056
-  name: "playbook 完了検証システム + V12 チェックボックス形式"
-  description: |
-    報酬詐欺（done_when 未達成で achieved）を構造的に防止する。
-    1. playbook 完了時に done_when を自動検証
-    2. subtask 単位で `- [ ]` / `- [x]` で進捗を明示
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M053]
-  playbooks:
-    - playbook-m056-completion-verification.md
-  done_when:
-    - [x] playbook-format.md に完了検証フェーズ（p_final）が必須として追加されている
-    - [x] archive-playbook.sh が done_when の test_command を再実行して検証する
-    - [x] subtask-guard が final_tasks の status: done をブロックしない
-    - [x] 既存の achieved milestone の done_when が実際に満たされているか再検証完了
-    - [x] V12 チェックボックス形式が全コンポーネントに適用されている
-
-- id: M057
-  name: "Codex/CodeRabbit CLI 化 - 誤設計の根本修正"
-  description: |
-    Codex と CodeRabbit がサーバーとして誤設計されていた問題を根本修正。
-    実際には両方とも CLI ツールとして存在しており、その仕様に合わせて
-    全ドキュメント・SubAgent・Hook を一括更新する。
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M056]
-  playbooks:
-    - playbook-m057-cli-migration.md
-  done_when:
-    - "[x] .mcp.json から codex エントリが削除されている"
-    - "[x] docs/toolstack-patterns.md が CLI ベースに全面書き換えされている"
-    - "[x] .claude/agents/codex-delegate.md が CLI ベースに修正されている"
-    - "[x] .claude/hooks/executor-guard.sh が CLI ベースに修正されている"
-    - "[x] plan/template/playbook-format.md の executor 説明が更新されている"
-    - "[x] .claude/CLAUDE-ref.md が CLI ベースに修正されている"
-    - "[x] setup/playbook-setup.md が CLI ベースに修正されている"
-    - "[x] repository-map.yaml が更新されている"
-
-- id: M058
-  name: "System Correction: archive-playbook.sh バグ修正 & 設計誤りの根本修正"
-  description: |
-    archive-playbook.sh が state.md の誤った構造を参照する問題を修正。
-    M057 playbook のデータ不整合（plan/ と archive/ に重複）をクリーンアップ。
-    根本的な設計誤り（Claude Code がワーカー）を修正し、Codex/CodeRabbit を
-    メインワーカーとする本来の設計に統一する。
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M057]
-  playbooks:
-    - playbook-m058-system-correction.md
-  done_when:
-    - "[x] archive-playbook.sh が state.md の正しい構造（playbook.active）を参照している"
-    - "[x] plan/playbook-m057-cli-migration.md が削除されている"
-    - "[x] plan/archive/playbook-m057-cli-migration.md のみが存在する"
-    - "[x] state.md の playbook.active が設定可能な状態である"
-    - "[x] project.md の M057 status が achieved に更新されている"
-    - "[x] project.md の M058 が新規マイルストーンとして追加されている"
-    - "[x] CLAUDE.md の「設計思想」セクションが存在する"
-
-- id: M059
-  name: "done_when 生成ルールの論理学的強化"
-  description: |
-    done_when の定義があやふやで報酬詐欺が可能な問題を根本解決。
-    1. [理解確認] に done_when フィールドを追加（ユーザー承認の強制）
-    2. tdd_first に形式ルールを追加（曖昧表現の構造的禁止）
-    3. consent-process/skill.md を同期
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M058]
-  playbooks:
-    - playbook-m059-done-when-rules.md
-  done_when:
-    完了条件:
-      - "[x] CLAUDE.md [理解確認] に done_when フィールドが追加されている"
-      - "[x] CLAUDE.md tdd_first に形式ルールが追加されている"
-      - "[x] consent-process/skill.md の [理解確認] テンプレートが CLAUDE.md と同期"
-      - "[x] done-when-validator.sh が曖昧表現を検出できる"
-    未完了条件:
-      - "上記のいずれかが満たされていない"
-
-- id: M060
-  name: "done_when バリデーションシステム + M059 回帰検証"
-  description: |
-    M059 で文書化した done_when ルールを「構造的に強制」するシステムを実装。
-    1. done-when-validator.sh を実装（曖昧表現の自動検出）
-    2. project.md の曖昧 done_when を改善
-    3. M059 を新システムで再検証
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M059]
-  playbooks:
-    - playbook-m060-done-when-validation.md
-  done_when:
-    完了条件:
-      - "[x] done-when-validator.sh が .claude/hooks/ に存在し実行可能"
-      - "[x] done-when-validator.sh が bash -n でエラー0"
-      - "[x] done-when-validator.sh が禁止パターン入力時に exit 1 を返す"
-      - "[x] project.md の done_when 行から曖昧表現が0件"
-      - "[x] M059 の done_when が新ルール準拠に修正されている"
-    未完了条件:
-      - "上記のいずれかが満たされていない"
-
-- id: M061
-  name: "done_when 大規模修正（報酬詐欺リスク解消）"
-  description: |
-    報酬詐欺リスク分析で発見された milestone done_when を修正。
-    tdd_first 形式ルール（量化子展開・述語操作化・否定形併記）に準拠させる。
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M060]
-  playbooks:
-    - playbook-m061-done-when-correction.md
-  done_when:
-    完了条件:
-      - "[x] M058 の done_when が [x] マークに修正されている"
-      - "[x] 曖昧表現が量化子展開・述語操作化されている"
-      - "[x] done-when-validator.sh が project.md の done_when 行で exit 0 を返す"
-    未完了条件:
-      - "上記のいずれかが満たされていない"
-
-- id: M062
-  name: "報酬詐欺徹底調査 + 全機能 E2E シミュレーション"
-  description: |
-    報酬詐欺があるという前提で全 milestone を1から再調査し、
-    M061 の playbook プロセス違反を修正する。
-    archive-playbook.sh に subtask 完了チェックを追加し、
-    架空ユーザーとの会話形式で全機能の E2E シミュレーションを実施する。
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M061]
-  playbooks:
-    - playbook-m062-fraud-investigation-e2e.md
-  done_when:
-    完了条件:
-      - "[x] M001-M061 の全 milestone に対して done_when の達成状況が検証されている"
-      - "[x] archive-playbook.sh に subtask 単位の完了チェックが追加されている"
-      - "[x] docs/e2e-simulation-log.md に全 Hook/SubAgent/Skill の動作確認ログが記録されている"
-      - "[x] 発見された報酬詐欺（done_when 未達成）が 0 件、または修正済みである"
-    未完了条件:
-      - "上記のいずれかが満たされていない"
-    test_commands:
-      - "test -f docs/fraud-investigation-report.md && grep -q 'M001' docs/fraud-investigation-report.md && grep -q 'M061' docs/fraud-investigation-report.md && echo PASS"
-      - "grep -q 'CHECKED_COUNT' .claude/hooks/archive-playbook.sh && grep -q 'UNCHECKED_COUNT' .claude/hooks/archive-playbook.sh && echo PASS"
-      - "test -f docs/e2e-simulation-log.md && wc -l docs/e2e-simulation-log.md | awk '{if($1>=200) print \"PASS\"}'"
-      - "grep -c '未修正' docs/fraud-investigation-report.md 2>/dev/null | awk '{if($1==0) print \"PASS\"}' || echo PASS"
-
-- id: M063
-  name: "リポジトリ洗浄 - 孤立ファイル・壊れた Hook の削除"
-  description: |
-    無効な参照、孤立ファイル、壊れた Hook を削除し、リポジトリの整合性を回復する。
-    1. 孤立ファイル（0参照）を削除
-    2. 存在しないファイルへの参照を修正
-    3. 依存ファイルが存在しない Hook を削除
-    4. settings.json から無効な登録を削除
-    5. ドキュメントを更新
-    6. CLAUDE.md スリム化（オプション）
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M062]
-  playbooks:
-    - playbook-m063-repository-cleanup.md
-  done_when:
-    完了条件:
-      - "[x] .claude/agents/plan-guard.md が存在しない"
-      - "[x] .claude/CLAUDE-ref.md が存在しない"
-      - "[x] .claude/skills/context-externalization/ が存在しない"
-      - "[x] .claude/skills/execution-management/ が存在しない"
-      - "[x] protected-files.txt から check-state-update.sh への参照が削除されている"
-      - "[x] .claude/hooks/check-file-dependencies.sh が存在しない"
-      - "[x] .claude/hooks/doc-freshness-check.sh が存在しない"
-      - "[x] .claude/hooks/update-tracker.sh が存在しない"
-      - "[x] settings.json から削除した Hook の登録が削除されている"
-      - "[x] repository-map.yaml が更新されている"
-    未完了条件:
-      - "上記のいずれかが満たされていない"
-    test_commands:
-      - "test ! -f .claude/agents/plan-guard.md && test ! -f .claude/CLAUDE-ref.md && echo PASS"
-      - "test ! -d .claude/skills/context-externalization && test ! -d .claude/skills/execution-management && echo PASS"
-      - "! grep -q 'check-state-update.sh' .claude/protected-files.txt && echo PASS"
-      - "test ! -f .claude/hooks/check-file-dependencies.sh && test ! -f .claude/hooks/doc-freshness-check.sh && test ! -f .claude/hooks/update-tracker.sh && echo PASS"
-      - "! grep -E 'check-file-dependencies|doc-freshness-check|update-tracker' .claude/settings.json && echo PASS"
-
-- id: M071
-  name: "完全自己認識システム"
-  description: |
-    Claudeがユーザープロンプトに依存することなく自分の機能を全て把握していて、
-    変更があればそれも認識して、常に最新に機能の全てが保護されている状態。
-    1. docs/feature-catalog.yaml を Single Source of Truth として活用
-    2. session-start.sh が feature-catalog.yaml を読み込み、機能一覧を認識
-    3. Hook/SubAgent/Skill の追加・削除を自動検出する仕組み
-    4. 機能変更時に feature-catalog.yaml を自動更新するワークフロー
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M063]
-  playbooks:
-    - playbook-m071-self-awareness.md
-  done_when:
-    - "[x] docs/feature-catalog.yaml が存在し、全 Hook/SubAgent/Skill の詳細情報を含む"
-    - "[x] session-start.sh が feature-catalog.yaml を読み込み、機能サマリーを出力する"
-    - "[x] 機能の追加・削除を自動検出する仕組みが実装されている"
-    - "[x] 機能カタログが自動更新され、常に最新が保証されている"
-  test_commands:
-    - "test -f docs/feature-catalog.yaml && grep -c 'purpose:' docs/feature-catalog.yaml | awk '{if($1>=40) print \"PASS\"; else print \"FAIL\"}'"
-    - "bash .claude/hooks/session-start.sh 2>&1 | grep -qE '[0-9]+ Hooks' && echo PASS || echo FAIL"
-    - "test -x .claude/hooks/feature-catalog-sync.sh && echo PASS || echo FAIL"
-    - "grep -q 'feature-catalog-sync.sh' .claude/settings.json && echo PASS || echo FAIL"
-
-- id: M073
-  name: "AI エージェントオーケストレーション - 役割ベース executor 抽象化"
-  description: |
-    現在の executor は具体的なツール名（claudecode, codex, coderabbit, user）を直接指定している。
-    これを抽象的な役割名（orchestrator, worker, reviewer, human）に変更し、
-    実行時に toolstack に応じて解決する仕組みを実装する。
-
-    目的:
-    1. playbook の再利用性向上（toolstack 変更時に playbook 書き換え不要）
-    2. 役割と実装の疎結合化（SOLID 原則）
-    3. AI エージェントオーケストレーションの基盤構築
-  status: achieved
-  achieved_at: 2025-12-17
-  depends_on: [M072]
-  playbooks:
-    - playbook-m073-ai-orchestration.md
-  done_when:
-    - "[x] state.md の config セクションに roles マッピングが追加されている"
-    - "[x] playbook-format.md に meta.roles セクションの説明が追加されている"
-    - "[x] role-resolver.sh が .claude/hooks/ に存在し、役割 -> executor 解決ロジックが実装されている"
-    - "[x] executor-guard.sh が role-resolver.sh を呼び出して解決後の executor をチェックする"
-    - "[x] pm SubAgent が playbook 作成時に roles セクションを自動生成する"
-    - "[x] docs/ai-orchestration.md が存在し、設計・使用方法が文書化されている"
-  test_commands:
-    - "grep -q 'roles:' state.md && grep -q 'orchestrator:' state.md && echo PASS || echo FAIL"
-    - "grep -q 'meta.roles' plan/template/playbook-format.md && echo PASS || echo FAIL"
-    - "test -x .claude/hooks/role-resolver.sh && bash -n .claude/hooks/role-resolver.sh && echo PASS || echo FAIL"
-    - "grep -q 'role-resolver.sh' .claude/hooks/executor-guard.sh && echo PASS || echo FAIL"
-    - "grep -q 'roles' .claude/agents/pm.md && echo PASS || echo FAIL"
-    - "test -f docs/ai-orchestration.md && wc -l docs/ai-orchestration.md | awk '{if($1>=50) print \"PASS\"; else print \"FAIL\"}'"
-
-- id: M076
-  name: "AI オーケストレーション E2E テスト - toolstack B/C 実動作検証"
-  description: |
-    M075 で役割名形式に統一したが、実際の動作テストが不十分だった。
-    toolstack B/C での実動作を検証する。
-    1. state.md の toolstack を B/C に変更
-    2. role-resolver.sh が正しく解決するか確認
-    3. state.md を元の状態（toolstack: A）に復元
-  status: achieved
-  depends_on: [M075]
-  playbooks:
-    - playbook-m076-orchestration-e2e-test.md
-  done_when:
-    - "[x] state.md の toolstack を B に変更した場合、role-resolver.sh が worker -> codex を返す"
-    - "[x] state.md の toolstack を C に変更した場合、role-resolver.sh が reviewer -> coderabbit を返す"
-    - "[x] pm SubAgent が生成する playbook に executor: worker 形式が含まれている"
-    - "[x] テスト完了後、state.md が toolstack: A に復元されている"
-  test_commands:
-    - "echo 'worker' | TOOLSTACK=B bash .claude/hooks/role-resolver.sh | grep -q 'codex' && echo PASS || echo FAIL"
-    - "echo 'reviewer' | TOOLSTACK=C bash .claude/hooks/role-resolver.sh | grep -q 'coderabbit' && echo PASS || echo FAIL"
-    - "grep -c 'executor: orchestrator' plan/playbook-m076-orchestration-e2e-test.md | awk '{if($1>=5) print \"PASS\"; else print \"FAIL\"}'"
-    - "grep -q 'toolstack: A' state.md && echo PASS || echo FAIL"
-
-- id: M078
-  name: "Codex MCP 切り替え - TTY 制約回避"
-  description: |
-    Codex CLI は TTY 制約のため Claude Code から直接呼び出せない問題がある。
-    Codex MCP サーバー経由で呼び出すことで、この制約を回避する。
-    1. .claude/mcp.json に codex mcp-server を登録
-    2. codex-delegate SubAgent を MCP ツール呼び出しに変更
-    3. ドキュメントを更新
-    4. 動作確認
-  status: achieved
-  depends_on: [M076]
-  playbooks:
-    - playbook-m078-codex-mcp.md
-  done_when:
-    - "[ ] .claude/mcp.json が存在し、codex mcp-server が登録されている"
-    - "[ ] codex-delegate.md が MCP ツール mcp__codex__codex を使用する形式に更新されている"
-    - "[ ] docs/ai-orchestration.md に Codex MCP の説明が追加されている"
-    - "[ ] toolstack C で簡単なコーディングタスクを Codex MCP 経由で実行し、正常に動作することが確認されている"
-    - "[ ] テスト完了後、toolstack: A に復元されている"
-  test_commands:
-    - "test -f .claude/mcp.json && grep -q 'codex' .claude/mcp.json && echo PASS || echo FAIL"
-    - "grep -q 'mcp__codex__codex' .claude/agents/codex-delegate.md && echo PASS || echo FAIL"
-    - "grep -q 'Codex MCP' docs/ai-orchestration.md && echo PASS || echo FAIL"
-    - "grep -q 'toolstack: A' state.md && echo PASS || echo FAIL"
-
+    - "docs/final-decision.md に、選択した方針と理由が記録されている"
+    - "README.md の冒頭に、このリポジトリの位置づけ（テンプレ/博物館/凍結）が明記されている"
+    - "state.md の focus/current が、最終方針に合わせて更新されている"
 ```
 
 ---
 
-## tech_stack
+## 参照
 
-```yaml
-framework: Claude Code Hooks System
-language: Bash/Shell
-deploy: local (git-based)
-database: none (file-based: state.md, playbook, project.md)
-```
-
----
-
-## constraints
-
-- Hook は exit code で制御（0=通過、2=ブロック）
-- state.md が Single Source of Truth
-- playbook なしで Edit/Write は禁止
-- critic なしで phase 完了は禁止
-- main ブランチでの直接作業は禁止
-- 1 playbook = 1 branch
-- テンポラリファイルは tmp/ に配置（playbook 完了時に自動削除）
-- 完了した playbook は plan/archive/ にアーカイブ
-
----
-
-## 3層構造
-
-```
-project (永続)
-├── vision: 最上位目標
-├── milestones[]: 中間目標
-│   ├── M001: achieved
-│   ├── M002: achieved
-│   ├── M003: achieved
-│   ├── M004: achieved
-│   └── M005: achieved ← 最新完了
-└── constraints: 制約条件
-
-playbook (一時的)
-├── meta.derives_from: M004  # milestone との紐付け
-├── goal.done_when: milestone 達成条件
-└── phases[]: 作業単位
-    ├── p0: pending
-    ├── p1: pending
-    └── p2: pending
-
-phase (作業単位)
-├── done_criteria[]: 完了条件
-├── test_method: 検証手順
-└── status: achieved | in_progress | done
-  achieved_at: 2025-12-17
-```
-
----
-
-## 自動運用フロー
-
-```yaml
-phase_complete:
-  trigger: critic PASS
-  action:
-    - phase.status = done
-    - 次の phase へ（または playbook 完了へ）
-
-playbook_complete:
-  trigger: 全 phase が done
-  action:
-    - playbook をアーカイブ
-    - project.milestone を自動更新
-      - status = achieved
-      - achieved_at = now()
-      - playbooks[] に追記
-    - /clear 推奨をアナウンス
-    - 次の milestone を特定（depends_on 分析）
-    - pm で新 playbook を自動作成
-
-project_complete:
-  trigger: 全 milestone が achieved
-  action:
-    - project.status = completed
-    - 「次の方向性を教えてください」と人間に確認
-```
-
----
-
-## 変更履歴
-
-| 日時 | 内容 |
-|------|------|
-| 2025-12-13 | M005（StateInjection）達成。systemMessage で状態を自動注入。 |
-| 2025-12-13 | 3層構造の自動運用システム設計。用語統一。milestone に ID 追加。 |
-| 2025-12-10 | 初版作成。 |
+| ファイル | 役割 |
+|----------|------|
+| README.md | プロジェクト概要（最終方針決定後に更新） |
+| state.md | 現在の状態（Single Source of Truth） |
+| docs/boot-context.md | セッション開始時の軽量エントリポイント（M106で作成） |
+| docs/repository-map.yaml | コンポーネント一覧（自動生成） |

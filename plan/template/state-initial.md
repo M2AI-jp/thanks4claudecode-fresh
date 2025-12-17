@@ -12,6 +12,25 @@
 
 ---
 
+## focus.current の候補値
+
+```yaml
+# 特殊（main ブランチで許可）
+setup:         新規ユーザーのセットアップ
+plan-template: テンプレート編集
+
+# フレームワーク開発（framework/* ブランチ）
+framework-*:   AI エージェント基盤の開発
+thanks4claudecode-recovery: 回復プロジェクト
+
+# プロダクト開発（feature/* ブランチ）
+product-*:     実際のアプリケーション開発
+```
+
+詳細は docs/product-vs-framework.md を参照。
+
+---
+
 ## テンプレート
 
 ```markdown
@@ -26,7 +45,7 @@
 ## focus
 
 ```yaml
-current: setup  # setup | product | plan-template
+current: setup  # setup | plan-template | framework-* | product-*
 project: null   # setup 完了後: plan/project.md
 ```
 
@@ -50,7 +69,7 @@ phase: p0
 done_criteria:
   - setup/playbook-setup.md Phase 0-8 を完了する
   - plan/project.md が生成される
-  - focus.current が product に切り替わる
+  - focus.current が product-* または framework-* に切り替わる
 ```
 
 ---
@@ -67,14 +86,16 @@ last_clear: null
 ## config
 
 ```yaml
-security: admin
-toolstack: A  # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
+security: trusted  # strict | trusted | developer | admin
+toolstack: A       # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
 roles:
   orchestrator: claudecode
   worker: claudecode
   reviewer: claudecode
   human: user
 ```
+
+セキュリティモードの詳細は docs/security-modes.md を参照。
 
 ---
 
@@ -85,7 +106,8 @@ roles:
 | CLAUDE.md | LLM の振る舞いルール |
 | plan/project.md | プロジェクト計画（setup 完了後に生成） |
 | docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
-| docs/folder-management.md | フォルダ管理ルール |
+| docs/security-modes.md | セキュリティモード定義 |
+| docs/product-vs-framework.md | フレームワーク/プロダクト分離方針 |
 ```
 
 ---

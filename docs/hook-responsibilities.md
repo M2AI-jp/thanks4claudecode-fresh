@@ -1,282 +1,90 @@
-# Hook 責任定義書
+# Hook Responsibilities（Hook 責任分担）
 
-> **各 Hook の単一責任を明示（SOLID 原則: Single Responsibility Principle）**
-
----
-
-## 概要
-
-このドキュメントは .claude/hooks/ 内の全スクリプトの責任を定義します。
-各 Hook は 1 つの責任のみを持ち、他の Hook と連携して全体の機能を実現します。
+> 各 Hook の責任とアクティブ/手動の区分
 
 ---
 
-## セッション管理
+## Hook 優先度分類
 
-### session-start.sh
-- **トリガー**: SessionStart
-- 責任: セッション開始時の初期化処理
-- **詳細**: pending/consent ファイル作成、状態表示、CORE 情報出力
-- **出力**: セッション開始メッセージ、警告
-- **連携**: init-guard.sh（pending ファイル作成）
+### Tier 1: 常時アクティブ（settings.json 登録）
 
-### session-end.sh
-- **トリガー**: Stop
-- 責任: セッション終了時の後処理
-- **詳細**: セッション情報の更新、クリーンアップ
-- **連携**: stop-summary.sh
+| Hook | Trigger | 責任 | 理由 |
+|------|---------|------|------|
+| init-guard.sh | PreToolUse:* | 必須ファイル Read 強制 | セッション基盤 |
+| check-main-branch.sh | PreToolUse:* | main ブランチ作業禁止 | コード保護 |
+| check-protected-edit.sh | PreToolUse:Edit/Write | 保護ファイル編集禁止 | セキュリティ |
+| playbook-guard.sh | PreToolUse:Edit/Write | playbook 必須 | 計画駆動 |
+| pre-bash-check.sh | PreToolUse:Bash | Bash 実行前チェック | 安全性 |
+| prompt-guard.sh | UserPromptSubmit | プロンプト検証 | 入力検証 |
+| session-start.sh | SessionStart | セッション開始処理 | ブートストラップ |
+| session-end.sh | SessionEnd | セッション終了処理 | クリーンアップ |
+| log-subagent.sh | PostToolUse:Task | SubAgent ログ | 監査 |
+| archive-playbook.sh | PostToolUse:Edit | アーカイブ提案 | ライフサイクル |
+| cleanup-hook.sh | PostToolUse:Edit | 一時ファイル削除 | クリーンアップ |
+| stop-summary.sh | Stop | 停止時サマリー | 状態保存 |
+| pre-compact.sh | PreCompact | compact 前スナップショット | コンテキスト管理 |
 
-### stop-summary.sh
-- **トリガー**: Stop
-- 責任: セッション終了サマリーの出力
-- **詳細**: 作業結果の要約を表示
-- **連携**: session-end.sh
+### Tier 2: 手動実行（settings.json 未登録）
 
----
+| Hook | 旧 Trigger | 責任 | 手動実行方法 |
+|------|------------|------|--------------|
+| consent-guard.sh | PreToolUse:Edit | 合意プロセス強制 | `bash .claude/hooks/consent-guard.sh` |
+| depends-check.sh | PreToolUse:Edit | Phase 依存チェック | `bash .claude/hooks/depends-check.sh` |
+| critic-guard.sh | PreToolUse:Edit | critic なしの done 禁止 | `bash .claude/hooks/critic-guard.sh` |
+| scope-guard.sh | PreToolUse:Edit | done_criteria 無断変更検出 | `bash .claude/hooks/scope-guard.sh` |
+| executor-guard.sh | PreToolUse:Edit | executor 不一致禁止 | `bash .claude/hooks/executor-guard.sh` |
+| subtask-guard.sh | PreToolUse:Edit | subtask 検証強制 | `bash .claude/hooks/subtask-guard.sh` |
+| check-coherence.sh | PreToolUse:Bash | state/playbook 整合性 | `bash .claude/hooks/check-coherence.sh` |
+| lint-check.sh | PreToolUse:Bash | 静的解析チェック | `bash .claude/hooks/lint-check.sh` |
+| create-pr-hook.sh | PostToolUse:Edit | PR 自動作成 | `bash .claude/hooks/create-pr-hook.sh` |
 
-## 初期化ガード
+### Tier 3: ユーティリティ（直接呼び出し用）
 
-### init-guard.sh
-- **トリガー**: PreToolUse (*)
-- 責任: 必須ファイル Read 強制【単一責任】
-- **詳細**: state.md, mission.md, playbook の Read を強制
-- **許可**: Read, Grep, Glob, 基本 Bash コマンド（sed/grep/cat/echo/ls/wc）, git コマンド
-- **ブロック**: 上記以外のツール（pending ファイル存在時）
-- **連携**: session-start.sh（pending ファイル）
-
-### playbook-guard.sh
-- **トリガー**: PreToolUse:Edit/Write
-- 責任: playbook 存在チェック【単一責任】
-- **詳細**: Edit/Write 時に playbook が null でないことを確認
-- **ブロック**: playbook=null で Edit/Write
-- **連携**: init-guard.sh（責任分離）
-
-### consent-guard.sh
-- **トリガー**: PreToolUse:Edit/Write
-- 責任: ユーザー合意チェック
-- **詳細**: consent ファイルの存在を確認
-- **ブロック**: 合意なしの Edit/Write
-- **連携**: session-start.sh（consent ファイル作成）
-
----
-
-## コード品質
-
-### lint-check.sh
-- **トリガー**: PreToolUse:Bash
-- 責任: 静的解析の実行
-- **詳細**: ESLint/ShellCheck/Ruff の自動実行
-- **連携**: なし（独立）
-
-### check-coherence.sh
-- **トリガー**: PostToolUse:Edit
-- 責任: state.md と playbook の整合性チェック
-- **詳細**: 状態の矛盾を検出
-- **連携**: system-health-check.sh
+| Hook | 責任 | 使用方法 |
+|------|------|----------|
+| create-pr.sh | PR 作成 | `bash .claude/hooks/create-pr.sh` |
+| merge-pr.sh | PR マージ | `bash .claude/hooks/merge-pr.sh` |
+| generate-repository-map.sh | マップ生成 | `bash .claude/hooks/generate-repository-map.sh` |
+| role-resolver.sh | 役割解決 | `bash .claude/hooks/role-resolver.sh` |
+| system-health-check.sh | 健全性チェック | `bash .claude/hooks/system-health-check.sh` |
+| test-hooks.sh | Hook テスト | `bash .claude/hooks/test-hooks.sh` |
+| failure-logger.sh | 失敗ログ記録 | 他スクリプトから呼び出し |
 
 ---
 
-## 保護・セキュリティ
+## 削減の根拠
 
-### check-protected-edit.sh
-- **トリガー**: PreToolUse:Edit/Write
-- 責任: 保護ファイルの編集制御
-- **詳細**: CLAUDE.md 等の重要ファイルへの編集をチェック
-- **ブロック**: 許可なしの保護ファイル編集
-- **連携**: なし
+### 削除した Hook
 
-### check-main-branch.sh
-- **トリガー**: PreToolUse:Bash (git)
-- 責任: main ブランチでの作業防止
-- **詳細**: main ブランチへの直接コミット/プッシュをブロック
-- **連携**: なし
+PreToolUse:Edit から削除:
+- consent-guard.sh: 毎回の合意は過剰、必要時に手動実行
+- depends-check.sh: Phase 依存は厳密すぎた
+- critic-guard.sh: done 変更時のみ必要、毎編集には不要
+- scope-guard.sh: done_criteria 監視は過剰
+- executor-guard.sh: 役割チェックは手動で十分
+- subtask-guard.sh: 3検証は手動で実行
 
-### scope-guard.sh
-- **トリガー**: PreToolUse:Edit/Write
-- 責任: 変更スコープのチェック
-- **詳細**: playbook 外のファイル変更を検出
-- **連携**: playbook-guard.sh
+PreToolUse:Bash から削除:
+- check-coherence.sh: 整合性チェックは必要時に手動
+- lint-check.sh: 静的解析は必要時に手動
 
-### prompt-guard.sh
-- **トリガー**: PreToolUse (*)
-- 責任: プロンプト注入防止
-- **詳細**: 悪意あるプロンプトパターンを検出
-- **連携**: なし
+PostToolUse:Edit から削除:
+- create-pr-hook.sh: PR 作成は手動で制御
 
----
+### 残した Hook の理由
 
-## タスク管理
-
-### subtask-guard.sh
-- **トリガー**: PreToolUse:Edit (playbook)
-- 責任: subtask 完了時の 3 検証強制【M018】
-- **詳細**: status: done への変更時に検証を警告
-- **3 検証**: technical / consistency / completeness
-- **連携**: archive-playbook.sh
-
-### critic-guard.sh
-- **トリガー**: PreToolUse:Edit (playbook)
-- 責任: critic 未実行での完了防止
-- **詳細**: phase 完了前に critic 実行を強制
-- **連携**: subtask-guard.sh
-
-### executor-guard.sh
-- **トリガー**: PreToolUse (Task)
-- 責任: executor 指定のチェック
-- **詳細**: subtask の executor と実際の実行者の整合性確認
-- **連携**: なし
-
-### depends-check.sh
-- **トリガー**: PreToolUse:Edit (playbook)
-- 責任: 依存関係チェック
-- **詳細**: depends_on の phase が完了しているか確認
-- **連携**: なし
-
----
-
-## アーカイブ・クリーンアップ
-
-### archive-playbook.sh
-- **トリガー**: PostToolUse:Edit
-- 責任: playbook 完了検出とアーカイブ提案
-- **詳細**: 全 phase done → アーカイブ推奨メッセージ
-- **final_tasks**: アーカイブ前に final_tasks 完了をチェック【M019】
-- **連携**: subtask-guard.sh, cleanup-hook.sh
-
-### cleanup-hook.sh
-- **トリガー**: PostToolUse:Edit
-- 責任: tmp/ フォルダのクリーンアップ
-- **詳細**: playbook 完了時に一時ファイルを削除
-- **連携**: archive-playbook.sh
-
----
-
-## PR・Git 操作
-
-### create-pr.sh
-- **トリガー**: Bash (gh pr create)
-- 責任: PR 作成の補助
-- **詳細**: PR テンプレート適用、チェック実行
-- **連携**: create-pr-hook.sh
-
-### create-pr-hook.sh
-- **トリガー**: PostToolUse:Bash (gh)
-- 責任: PR 作成後のフック処理
-- **詳細**: PR 作成完了時の通知
-- **連携**: create-pr.sh
-
-### merge-pr.sh
-- **トリガー**: Bash (gh pr merge)
-- 責任: PR マージの補助
-- **詳細**: マージ前チェック、post-merge 処理
-- **連携**: なし
-
----
-
-## ファイル依存・分析
-
-### generate-repository-map.sh
-- **トリガー**: PostToolUse:Write
-- 責任: repository-map.yaml の自動生成
-- **詳細**: ファイル構造のマッピング更新
-- **連携**: なし
-
----
-
-## Bash 制御
-
-### pre-bash-check.sh
-- **トリガー**: PreToolUse:Bash
-- 責任: Bash コマンドの事前チェック
-- **詳細**: 危険なコマンドパターンの検出
-- **連携**: init-guard.sh
-
----
-
-## ロギング・モニタリング
-
-### log-subagent.sh
-- **トリガー**: PostToolUse:Task
-- 責任: SubAgent 呼び出しのログ記録
-- **詳細**: SubAgent 使用履歴の保存
-- **連携**: なし
-
-### failure-logger.sh
-- **トリガー**: Stop
-- 責任: 失敗パターンの記録
-- **詳細**: failures.log への追記
-- **連携**: session-start.sh（失敗パターン表示）
-
-### system-health-check.sh
-- **トリガー**: SessionStart
-- 責任: システム健全性チェック
-- **詳細**: state.md / playbook / git の整合性確認
-- **連携**: session-start.sh
-
----
-
-## コンテキスト管理
-
-### pre-compact.sh
-- **トリガー**: PreToolUse:Compact
-- 責任: /compact 前の状態保存
-- **詳細**: コンテキスト要約前の重要情報保存
-- **連携**: なし
-
----
-
-## テスト・検証
-
-### test-hooks.sh
-- **トリガー**: 手動実行
-- 責任: Hook 動作テスト
-- **詳細**: 全 Hook の構文チェックと基本動作確認
-- **連携**: なし
-
----
-
-## 依存関係図
-
-```
-SessionStart
-  │
-  ├─→ session-start.sh ──→ pending/consent ファイル作成
-  │                              │
-  ├─→ system-health-check.sh     │
-  │                              ▼
-  └─→ init-guard.sh ←────── pending ファイル参照
-          │
-          │ Read 完了後
-          ▼
-      playbook-guard.sh ──→ Edit/Write 許可
-          │
-          ├─→ consent-guard.sh
-          ├─→ check-protected-edit.sh
-          ├─→ scope-guard.sh
-          │
-          ▼
-      subtask-guard.sh ──→ 3 検証警告
-          │
-          ▼
-      critic-guard.sh ──→ critic 実行強制
-          │
-          ▼
-      archive-playbook.sh ──→ アーカイブ提案
-          │
-          ├─→ cleanup-hook.sh
-          └─→ final_tasks チェック
-
-Stop
-  │
-  ├─→ session-end.sh
-  ├─→ stop-summary.sh
-  └─→ failure-logger.sh
-```
+| Hook | 残した理由 |
+|------|-----------|
+| init-guard.sh | セッション開始に必須、これがないと状態が不明 |
+| check-main-branch.sh | main 直接作業は危険、常にブロック |
+| check-protected-edit.sh | セキュリティ上必須、CLAUDE.md 等の保護 |
+| playbook-guard.sh | 計画駆動の根幹、これがないと無計画作業が可能に |
+| pre-bash-check.sh | 危険なコマンドの防止 |
 
 ---
 
 ## 変更履歴
 
-| 日時 | 内容 |
-|------|------|
-| 2025-12-14 | 初版作成。M022 SOLID 原則リファクタリングの一環。 |
+| 日時 | 変更内容 |
+|------|----------|
+| 2025-12-18 | M105: PreToolUse:Edit を 8→2 に削減、PreToolUse:Bash を 3→1 に削減 |

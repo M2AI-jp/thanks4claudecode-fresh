@@ -2,15 +2,16 @@
 
 > **現在地を示す Single Source of Truth**
 >
-> LLM はセッション開始時に必ずこのファイルを読み、focus と playbook を確認すること。
+> このリポジトリは Experimental Archive（実験博物館）として凍結されました。
 
 ---
 
 ## focus
 
 ```yaml
-current: plan-template  # 現在作業中のプロジェクト名
+current: archived  # 実験完了・博物館化
 project: plan/project.md
+disposition: Experimental Archive
 ```
 
 ---
@@ -18,9 +19,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
-last_archived: M078 playbook-m078-codex-mcp.md (2025-12-18)
+active: null  # 回復プロジェクト完了
+branch: recovery-project-m101-m120
+last_archived: M120 playbook-m120 (2025-12-18)
 ```
 
 ---
@@ -28,9 +29,12 @@ last_archived: M078 playbook-m078-codex-mcp.md (2025-12-18)
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
+milestone: M120  # 完了
+phase: done
+done_criteria:
+  - "docs/final-decision.md に、選択した方針と理由が記録されている ✓"
+  - "README.md の冒頭に、このリポジトリの位置づけが明記されている ✓"
+  - "state.md の focus/current が、最終方針に合わせて更新されている ✓"
 ```
 
 ---
@@ -38,8 +42,9 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-18 03:27:25
-last_clear: 2025-12-13 00:30:00
+last_start: 2025-12-18 04:01:31
+last_end: 2025-12-18
+final_session: true
 ```
 
 ---
@@ -48,12 +53,12 @@ last_clear: 2025-12-13 00:30:00
 
 ```yaml
 security: admin
-toolstack: A  # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
+toolstack: A
 roles:
-  orchestrator: claudecode  # 監督・調整・設計（常に claudecode）
-  worker: claudecode        # 実装担当（A: claudecode, B/C: codex）
-  reviewer: claudecode      # レビュー担当（A/B: claudecode, C: coderabbit）
-  human: user               # 人間の介入（常に user）
+  orchestrator: claudecode
+  worker: claudecode
+  reviewer: claudecode
+  human: user
 ```
 
 ---
@@ -62,7 +67,6 @@ roles:
 
 | ファイル | 役割 |
 |----------|------|
-| CLAUDE.md | LLM の振る舞いルール |
-| plan/project.md | プロジェクト計画 |
-| docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
-| docs/folder-management.md | フォルダ管理ルール |
+| docs/final-decision.md | 博物館化の決定 |
+| README.md | リポジトリ概要（実験記録） |
+| plan/project.md | 回復プロジェクト計画（完了） |

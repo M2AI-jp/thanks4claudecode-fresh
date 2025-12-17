@@ -2,7 +2,7 @@
 name: health-checker
 description: システム状態の定期監視。state.md/playbook の整合性、git 状態、ファイル存在確認などを行う。
 tools: Read, Grep, Glob, Bash
-model: opus
+model: haiku
 ---
 
 # Health Checker Agent
@@ -12,9 +12,9 @@ model: opus
 ## 責務
 
 1. **state.md 整合性チェック**
-   - focus.current と layer.*.state の整合性
-   - active_playbooks が実在するか
-   - forbidden 遷移が発生していないか
+   - focus.current が有効な値か
+   - playbook.active が実在するか
+   - goal.milestone が project.md の milestone と一致するか
 
 2. **playbook 整合性チェック**
    - branch フィールドと現在のブランチの一致
@@ -34,10 +34,10 @@ model: opus
 
 ```yaml
 state_md:
-  - focus.current が有効な値か（setup | product | plan-template）
-  - playbook.active が存在するファイルか
-  - active_playbooks のファイルが存在するか
-  - goal.done_criteria が定義されているか
+  - focus.current が有効な値か（setup | plan-template | framework-* | product-*）
+  - playbook.active が存在するファイルか（null も許可）
+  - goal.milestone が project.md に存在するか
+  - config.security が有効な値か（strict | trusted | developer | admin）
 
 playbook:
   - branch フィールドが現在のブランチと一致するか
@@ -53,7 +53,8 @@ git:
 files:
   - CLAUDE.md が存在するか
   - state.md が存在するか
-  - plan/project.md が存在するか（setup 完了後）
+  - plan/project.md が存在するか
+  - docs/boot-context.md が存在するか
 ```
 
 ## 出力フォーマット
@@ -85,16 +86,17 @@ recommended:
   - 問題が疑われるとき
 
 manual:
-  - /health または Task(subagent_type="health-checker")
+  - bash .claude/hooks/system-health-check.sh
+  - Task(subagent_type="health-checker")
 ```
 
 ## 重要度分類
 
 ```yaml
 CRITICAL:
-  - forbidden 遷移の検出
   - 必須ファイルの欠損
   - state.md の破損
+  - playbook/state 矛盾
 
 WARNING:
   - 未コミット変更
@@ -112,8 +114,15 @@ INFO:
 - 問題発見時は報告のみ（修正はメイン LLM が判断）
 - 高速実行（haiku モデル使用）
 
+## 参照
+
+- docs/security-modes.md: セキュリティモード定義
+- docs/product-vs-framework.md: focus.current の候補値
+- docs/single-source-of-truth.md: 正本定義
+
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-18 | M108: 現行 state.md 構造に更新。layer 廃止。model を haiku に変更。 |
 | 2025-12-08 | 初版作成。task-12 対応。 |

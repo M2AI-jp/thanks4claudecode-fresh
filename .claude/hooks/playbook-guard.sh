@@ -4,13 +4,9 @@
 # 目的: playbook なしでのコード変更を構造的に防止
 # トリガー: PreToolUse(Edit), PreToolUse(Write)
 #
-# 設計思想（アクションベース Guards）:
-#   - プロンプトの「意図」ではなく「アクション」を制御
-#   - Read/Grep/WebSearch 等は常に許可
-#   - Edit/Write のみ playbook チェック
-#
-# 注意: このスクリプトは matcher: "Edit" と "Write" でのみ登録すること
-#       matcher: "*" で登録すると stdin を消費し、後続の Hook に影響する
+# セキュリティモード対応 (M113):
+#   - strict/trusted: ブロック
+#   - developer/admin: バイパス（exit 0）
 
 set -euo pipefail
 
@@ -22,11 +18,14 @@ if [[ ! -f "$STATE_FILE" ]]; then
 fi
 
 # ============================================================
-# 注意: admin モードでも playbook チェックはバイパスしない
+# セキュリティモードチェック (M113)
 # ============================================================
-# プロセスガード（playbook 必須）は安全ガードとは異なり、
-# 全モードで適用される。admin モードは他の安全ガードのみバイパス。
-# M058 で修正: playbook=null での Edit を構造的に防止
+SECURITY=$(grep -A6 "^## config" "$STATE_FILE" 2>/dev/null | grep "^security:" | head -1 | sed 's/security: *//' | sed 's/ *#.*//' | tr -d ' ' || echo "trusted")
+
+# developer/admin モードならバイパス
+if [[ "$SECURITY" == "developer" || "$SECURITY" == "admin" ]]; then
+    exit 0
+fi
 
 # stdin から JSON を読み込む
 INPUT=$(cat)
@@ -79,10 +78,7 @@ EOF
     exit 2
 fi
 
-# --------------------------------------------------
-# playbook の reviewed チェック
-# --------------------------------------------------
-# playbook 自体の編集は許可（reviewed を更新するため）
+# playbook 自体の編集は許可
 if [[ "$FILE_PATH" == *"playbook-"* ]]; then
     exit 0
 fi
@@ -92,19 +88,5 @@ if [[ ! -f "$PLAYBOOK" ]]; then
     exit 0
 fi
 
-# reviewed フラグを取得
-REVIEWED=$(grep -E "^reviewed:" "$PLAYBOOK" 2>/dev/null | head -1 | sed 's/reviewed: *//' | sed 's/ *#.*//' | tr -d ' ')
-
-# reviewed: false の場合は警告（ブロックではない）
-if [[ "$REVIEWED" == "false" ]]; then
-    cat << 'EOF'
-{
-  "decision": "allow",
-  "systemMessage": "[playbook-guard] ⚠️ playbook 未レビュー\n\n実装開始前に reviewer による検証を推奨します:\n  Task(subagent_type='reviewer', prompt='playbook をレビュー')\n\nレビュー完了後、playbook の reviewed: true に更新してください。"
-}
-EOF
-    exit 0
-fi
-
-# playbook があり、reviewed: true（または未設定）ならパス
+# playbook があればパス
 exit 0
