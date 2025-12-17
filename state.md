@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: feat/m063-repository-cleanup
-last_archived: M063 playbook-m063-repository-cleanup.md (2025-12-17)
+active: plan/playbook-m071-self-awareness.md
+branch: feat/m071-self-awareness
+last_archived: M069 playbook-m069-documentation.md (2025-12-17)
 ```
 
 ---
@@ -28,14 +28,13 @@ last_archived: M063 playbook-m063-repository-cleanup.md (2025-12-17)
 ## goal
 
 ```yaml
-milestone: M063
-phase: p_final (done)
+milestone: M071
+phase: p1
 done_criteria:
-  - 孤立ファイル（plan-guard.md, CLAUDE-ref.md, context-externalization/, execution-management/）が削除されている ✓
-  - protected-files.txt から存在しないファイルへの参照が削除されている ✓
-  - 壊れた Hook（check-file-dependencies.sh, doc-freshness-check.sh, update-tracker.sh）が削除されている ✓
-  - settings.json から削除した Hook の登録が削除されている ✓
-  - ドキュメント（repository-map.yaml, CLAUDE.md 等）が更新されている ✓
+  - docs/feature-catalog.yaml が存在し、全 Hook/SubAgent/Skill の詳細情報を含む
+  - session-start.sh が feature-catalog.yaml を読み込み、機能サマリーを出力する
+  - 機能の追加・削除を自動検出する仕組みが実装されている
+  - 機能カタログが自動更新され、常に最新が保証されている
 ```
 
 ---

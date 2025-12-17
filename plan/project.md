@@ -513,6 +513,30 @@ success_criteria:
       - "test ! -f .claude/hooks/check-file-dependencies.sh && test ! -f .claude/hooks/doc-freshness-check.sh && test ! -f .claude/hooks/update-tracker.sh && echo PASS"
       - "! grep -E 'check-file-dependencies|doc-freshness-check|update-tracker' .claude/settings.json && echo PASS"
 
+- id: M071
+  name: "完全自己認識システム"
+  description: |
+    Claudeがユーザープロンプトに依存することなく自分の機能を全て把握していて、
+    変更があればそれも認識して、常に最新に機能の全てが保護されている状態。
+    1. docs/feature-catalog.yaml を Single Source of Truth として活用
+    2. session-start.sh が feature-catalog.yaml を読み込み、機能一覧を認識
+    3. Hook/SubAgent/Skill の追加・削除を自動検出する仕組み
+    4. 機能変更時に feature-catalog.yaml を自動更新するワークフロー
+  status: in_progress
+  depends_on: [M063]
+  playbooks:
+    - playbook-m071-self-awareness.md
+  done_when:
+    - "[ ] docs/feature-catalog.yaml が存在し、全 Hook/SubAgent/Skill の詳細情報を含む"
+    - "[ ] session-start.sh が feature-catalog.yaml を読み込み、機能サマリーを出力する"
+    - "[ ] 機能の追加・削除を自動検出する仕組みが実装されている"
+    - "[ ] 機能カタログが自動更新され、常に最新が保証されている"
+  test_commands:
+    - "test -f docs/feature-catalog.yaml && grep -c 'purpose:' docs/feature-catalog.yaml | awk '{if($1>=40) print \"PASS\"; else print \"FAIL\"}'"
+    - "bash .claude/hooks/session-start.sh 2>&1 | grep -qE '[0-9]+ Hooks' && echo PASS || echo FAIL"
+    - "test -x .claude/hooks/feature-catalog-sync.sh && echo PASS || echo FAIL"
+    - "grep -q 'feature-catalog-sync.sh' .claude/settings.json && echo PASS || echo FAIL"
+
 ```
 
 ---
