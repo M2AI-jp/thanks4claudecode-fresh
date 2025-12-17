@@ -478,6 +478,41 @@ success_criteria:
       - "test -f docs/e2e-simulation-log.md && wc -l docs/e2e-simulation-log.md | awk '{if($1>=200) print \"PASS\"}'"
       - "grep -c '未修正' docs/fraud-investigation-report.md 2>/dev/null | awk '{if($1==0) print \"PASS\"}' || echo PASS"
 
+- id: M063
+  name: "リポジトリ洗浄 - 孤立ファイル・壊れた Hook の削除"
+  description: |
+    無効な参照、孤立ファイル、壊れた Hook を削除し、リポジトリの整合性を回復する。
+    1. 孤立ファイル（0参照）を削除
+    2. 存在しないファイルへの参照を修正
+    3. 依存ファイルが存在しない Hook を削除
+    4. settings.json から無効な登録を削除
+    5. ドキュメントを更新
+    6. CLAUDE.md スリム化（オプション）
+  status: in_progress
+  depends_on: [M062]
+  playbooks:
+    - playbook-m063-repository-cleanup.md
+  done_when:
+    完了条件:
+      - "[ ] .claude/agents/plan-guard.md が存在しない"
+      - "[ ] .claude/CLAUDE-ref.md が存在しない"
+      - "[ ] .claude/skills/context-externalization/ が存在しない"
+      - "[ ] .claude/skills/execution-management/ が存在しない"
+      - "[ ] protected-files.txt から check-state-update.sh への参照が削除されている"
+      - "[ ] .claude/hooks/check-file-dependencies.sh が存在しない"
+      - "[ ] .claude/hooks/doc-freshness-check.sh が存在しない"
+      - "[ ] .claude/hooks/update-tracker.sh が存在しない"
+      - "[ ] settings.json から削除した Hook の登録が削除されている"
+      - "[ ] repository-map.yaml が更新されている"
+    未完了条件:
+      - "上記のいずれかが満たされていない"
+    test_commands:
+      - "test ! -f .claude/agents/plan-guard.md && test ! -f .claude/CLAUDE-ref.md && echo PASS"
+      - "test ! -d .claude/skills/context-externalization && test ! -d .claude/skills/execution-management && echo PASS"
+      - "! grep -q 'check-state-update.sh' .claude/protected-files.txt && echo PASS"
+      - "test ! -f .claude/hooks/check-file-dependencies.sh && test ! -f .claude/hooks/doc-freshness-check.sh && test ! -f .claude/hooks/update-tracker.sh && echo PASS"
+      - "! grep -E 'check-file-dependencies|doc-freshness-check|update-tracker' .claude/settings.json && echo PASS"
+
 ```
 
 ---

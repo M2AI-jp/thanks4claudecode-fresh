@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-m062-fraud-investigation-e2e.md
-branch: feat/m062-fraud-investigation-e2e
-last_archived: M061 playbook-m061-done-when-correction.md (2025-12-17)
+active: plan/playbook-m063-repository-cleanup.md
+branch: feat/m063-repository-cleanup
+last_archived: M062 playbook-m062-fraud-investigation-e2e.md (2025-12-17)
 ```
 
 ---
@@ -28,13 +28,14 @@ last_archived: M061 playbook-m061-done-when-correction.md (2025-12-17)
 ## goal
 
 ```yaml
-milestone: M062
+milestone: M063
 phase: p1
 done_criteria:
-  - M001-M061 の全 milestone に対して done_when の達成状況が検証されている
-  - archive-playbook.sh に subtask 単位の完了チェックが追加されている
-  - docs/e2e-simulation-log.md に全 Hook/SubAgent/Skill の動作確認ログが記録されている
-  - 発見された報酬詐欺（done_when 未達成）が 0 件、または修正済みである
+  - 孤立ファイル（plan-guard.md, CLAUDE-ref.md, context-externalization/, execution-management/）が削除されている
+  - protected-files.txt から存在しないファイルへの参照が削除されている
+  - 壊れた Hook（check-file-dependencies.sh, doc-freshness-check.sh, update-tracker.sh）が削除されている
+  - settings.json から削除した Hook の登録が削除されている
+  - ドキュメント（repository-map.yaml, CLAUDE.md 等）が更新されている
 ```
 
 ---
@@ -42,7 +43,7 @@ done_criteria:
 ## session
 
 ```yaml
-last_start: 2025-12-17 04:32:26
+last_start: 2025-12-17 19:30:00
 last_clear: 2025-12-13 00:30:00
 ```
 
