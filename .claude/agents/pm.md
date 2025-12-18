@@ -78,9 +78,9 @@ meta:
   2. Claude が pm を呼び出す（必須）
   3. pm が project.md を参照
   4. pm が derives_from を設定して playbook を作成（ドラフト）
-  5. pm が plan-reviewer を呼び出す（必須）★
-  6. plan-reviewer が PASS → pm が state.md 更新 & ブランチ作成
-     plan-reviewer が FAIL → pm が playbook 修正 → 再レビュー
+  5. pm が reviewer を呼び出す（必須）★
+  6. reviewer が PASS → pm が state.md 更新 & ブランチ作成
+     reviewer が FAIL → pm が playbook 修正 → 再レビュー
   7. Claude が LOOP を開始
 
 禁止事項:
@@ -88,7 +88,7 @@ meta:
   - project.md を参照せずにタスクを開始
   - derives_from なしの playbook 作成
   - main ブランチでの直接作業
-  - plan-reviewer の PASS なしで playbook を確定 ★
+  - reviewer の PASS なしで playbook を確定 ★
 
 発火コマンド:
   - /task-start → pm を呼び出してタスク開始
@@ -226,8 +226,8 @@ playbook なしで作業開始しない:
 
 8. plan/playbook-{name}.md を作成（ドラフト状態）
 
-9. 【必須】plan-reviewer を呼び出し（スキップ禁止）★
-   → Task(subagent_type="plan-reviewer")
+9. 【必須】reviewer を呼び出し（スキップ禁止）★
+   → Task(subagent_type="reviewer", prompt="playbook をレビュー")
    → PASS: 次のステップへ
    → FAIL: 問題点を修正して再レビュー（最大3回）
 
@@ -368,9 +368,9 @@ user:
 
 ---
 
-## plan-reviewer 連携（ダブルチェック）
+## reviewer 連携（ダブルチェック）
 
-> **「作成者 ≠ 検証者」の原則。pm が作成、plan-reviewer が検証。**
+> **「作成者 ≠ 検証者」の原則。pm が作成、reviewer が検証。**
 
 ```yaml
 目的:
@@ -380,12 +380,12 @@ user:
 
 フロー:
   1. pm: playbook 作成（ドラフト）
-  2. pm: plan-reviewer 呼び出し
-  3. plan-reviewer: シミュレーション実行
+  2. pm: reviewer 呼び出し（Task(subagent_type="reviewer", prompt="playbook をレビュー")）
+  3. reviewer: シミュレーション実行
      - Phase フロー検証
      - 依存関係チェック
      - done_criteria の検証可能性
-  4. plan-reviewer: 批判的検討
+  4. reviewer: 批判的検討
      - project.md との整合性
      - 抜け漏れ検出
      - リスク特定
@@ -397,9 +397,9 @@ user:
   - 3回 FAIL したら人間に確認を求める
 
 禁止事項:
-  - plan-reviewer をスキップ
+  - reviewer をスキップ
   - FAIL を無視して playbook を確定
-  - 自分で作った計画を自分でレビュー（常に plan-reviewer 経由）
+  - 自分で作った計画を自分でレビュー（常に reviewer 経由）
 ```
 
 ---
@@ -410,6 +410,6 @@ user:
 - docs/criterion-validation-rules.md - criterion 検証ルール（禁止パターン）★新規
 - state.md - 現在の playbook、focus
 - CLAUDE.md - playbook ルール（POST_LOOP: アーカイブ実行を含む）
-- .claude/agents/plan-reviewer.md - 計画レビュー SubAgent
-- .claude/agents/git-ops.md - git 操作 参照ドキュメント（Claude が直接実行）
+- .claude/agents/reviewer.md - 計画レビュー SubAgent（playbook レビューも担当）
+- docs/git-operations.md - git 操作 参照ドキュメント
 - docs/file-creation-process-design.md - 中間成果物の処理設計
