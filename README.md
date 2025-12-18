@@ -40,6 +40,7 @@ bash scripts/e2e-contract-test.sh
 | 構造的強制 | Hook で LLM の意思に依存しない制御 | 動作 |
 | 3層自動運用 | project → playbook → phase の自動進行 | 動作（pm SubAgent） |
 | コンテキスト外部化 | state.md で状態を永続化 | 動作 |
+| 整合性チェック | check-integrity.sh で参照・アーカイブ漏れを検出 | 動作 |
 
 ---
 
@@ -66,6 +67,12 @@ is_hard_block()         # 絶対保護ファイル判定
 is_compound_command()   # 複合コマンド検出
 ```
 
+### Core Contract（admin でも回避不可）
+
+- **Golden Path**: タスク依頼 → pm 必須
+- **Playbook Gate**: playbook=null で Edit/Write/Bash 変更系をブロック
+- **HARD_BLOCK**: CLAUDE.md 等の保護ファイルは編集不可
+
 ---
 
 ## ファイル構造
@@ -76,7 +83,7 @@ is_compound_command()   # 複合コマンド検出
 ├── RUNBOOK.md              # 運用手順
 ├── state.md                # 現在の状態
 ├── plan/
-│   ├── project.md          # プロジェクト計画（27+ milestone）
+│   ├── project.md          # プロジェクト計画（82 milestone）
 │   ├── archive/            # 完了した playbook
 │   └── template/           # playbook テンプレート
 ├── scripts/
@@ -108,6 +115,17 @@ bash scripts/e2e-contract-test.sh scenario_b  # playbook=null & admin
 bash scripts/e2e-contract-test.sh scenario_c  # playbook=active
 ```
 
+### 整合性チェック
+
+```bash
+bash .claude/hooks/check-integrity.sh
+# [1/5] commands → hooks 参照チェック
+# [2/5] state.md 参照チェック
+# [3/5] agents → framework 参照チェック
+# [4/5] settings.json → hooks 参照チェック
+# [5/5] achieved milestone のアーカイブ漏れチェック
+```
+
 ---
 
 ## SubAgent 一覧
@@ -125,7 +143,7 @@ bash scripts/e2e-contract-test.sh scenario_c  # playbook=active
 
 ## 開発履歴
 
-- **27+ milestone** を達成（M001〜M079）
+- **82 milestone** を達成（M001〜M082）
 - **52 E2E テスト** で契約システムを保証
 - **CLAUDE.md** を 648行 → 262行に最適化
 
