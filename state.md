@@ -20,7 +20,7 @@ project: plan/project.md
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-m081-full-verification.md
+last_archived: plan/archive/playbook-m082-archive-check.md
 ```
 
 ---
