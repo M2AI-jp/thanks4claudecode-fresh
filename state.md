@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/archive/playbook-fix-workflow-inconsistencies.md
+branch: fix/bootstrap-exception-git-commands
 last_archived: plan/archive/playbook-fix-workflow-inconsistencies.md
 ```
 
