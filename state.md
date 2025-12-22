@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-test-strengthening.md
-branch: feat/test-strengthening
-last_archived: plan/archive/playbook-workflow-e2e-tests.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-test-strengthening.md
 ```
 
 ---
@@ -28,13 +28,9 @@ last_archived: plan/archive/playbook-workflow-e2e-tests.md
 ## goal
 
 ```yaml
-milestone: M082
-phase: p1
-done_criteria:
-  - 既存テストのフォールバック else パターンが全て明示的な fail に置き換えられている
-  - exit code を条件としない「処理された」パターンが削除されている
-  - 各テストが明確な期待値を持ち、それ以外は FAIL する
-  - bash scripts/test-workflows.sh が全テスト PASS で終了する
+milestone: null
+phase: null
+done_criteria: []
 ```
 
 ---
