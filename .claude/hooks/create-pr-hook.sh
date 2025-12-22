@@ -1,15 +1,15 @@
 #!/bin/bash
 # ============================================================
-# create-pr-hook.sh - playbook 完了時の PR 自動作成フック
+# create-pr-hook.sh - playbook 完了時の PR 自動作成 + マージフック
 # ============================================================
 # 発火条件: playbook の全 Phase が done になった後
-# 目的: POST_LOOP で自動的に PR を作成
+# 目的: POST_LOOP で PR 作成からマージまでを自動実行
 #
-# このスクリプトは create-pr.sh のラッパーとして機能し、
-# 以下の追加チェックを行います：
-#   - playbook が完了しているか確認
-#   - 未コミット変更がないか確認
-#   - create-pr.sh を呼び出し
+# このスクリプトは以下を順次実行:
+#   1. playbook が完了しているか確認
+#   2. 未コミット変更がないか確認
+#   3. create-pr.sh で PR 作成
+#   4. merge-pr.sh で PR マージ + main checkout + pull
 # ============================================================
 
 set -euo pipefail
@@ -104,5 +104,46 @@ echo "  Playbook: $PLAYBOOK_PATH"
 echo "  全 Phase: done"
 echo ""
 
-# create-pr.sh を実行
-exec "$CREATE_PR_SCRIPT"
+# create-pr.sh を実行（exec ではなく通常呼び出しで exit code を取得）
+"$CREATE_PR_SCRIPT"
+PR_EXIT_CODE=$?
+
+if [ $PR_EXIT_CODE -eq 0 ]; then
+    # PR 作成成功 → マージを実行
+    echo ""
+    echo "$SEP"
+    echo "  🔄 PR マージを開始します"
+    echo "$SEP"
+    echo ""
+
+    MERGE_SCRIPT="$REPO_ROOT/.claude/hooks/merge-pr.sh"
+    if [ -x "$MERGE_SCRIPT" ]; then
+        "$MERGE_SCRIPT"
+        MERGE_EXIT_CODE=$?
+        if [ $MERGE_EXIT_CODE -ne 0 ]; then
+            echo -e "${RED}[ERROR]${NC} PR マージに失敗しました (exit code: $MERGE_EXIT_CODE)"
+            echo ""
+            echo "  手動で確認してください:"
+            echo "    gh pr view"
+            echo "    gh pr checks"
+            exit 1
+        fi
+    else
+        echo -e "${RED}[ERROR]${NC} merge-pr.sh が見つかりません: $MERGE_SCRIPT"
+        exit 1
+    fi
+elif [ $PR_EXIT_CODE -eq 2 ]; then
+    # スキップ（PR 既存等）
+    echo -e "${YELLOW}[SKIP]${NC} PR 作成がスキップされたため、マージも実行しません"
+    exit 0
+else
+    # エラー
+    echo -e "${RED}[ERROR]${NC} PR 作成に失敗しました (exit code: $PR_EXIT_CODE)"
+    exit 1
+fi
+
+echo ""
+echo "$SEP"
+echo "  ✅ PR 作成からマージまで完了しました"
+echo "$SEP"
+echo ""
