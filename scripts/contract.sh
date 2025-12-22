@@ -40,7 +40,7 @@ MAINTENANCE_WHITELIST=(
 )
 
 # 変更系 Git コマンド（read-only の status/diff/log/show/branch/remote -v 等は除外）
-GIT_MUTATION_CMDS='add|commit|push|pull|fetch|reset|checkout|clean|rebase|merge|cherry-pick|revert|stash|apply|am|tag|branch[[:space:]]+-[dDmM]'
+GIT_MUTATION_CMDS='add|commit|push|pull|fetch|reset|checkout|clean|rebase|cherry-pick|revert|stash|apply|am|tag|branch[[:space:]]+-[dDmM]'
 
 # 変更系 Bash パターン（リダイレクトは has_file_redirect で別途検出）
 # 注意: このパターンは normalize_command() で前処理された後に適用される
