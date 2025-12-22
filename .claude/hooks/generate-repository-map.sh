@@ -489,7 +489,6 @@ system_specification:
       - "git_branch_sync: 1 playbook = 1 branch"
     mandatory_outputs:
       - "[自認]: セッション開始時"
-      - "[理解確認]: Edit/Write 前"
     prohibited_actions:
 SPEC_HEADER
     extract_behavior_rules >> "$TEMP_FILE"

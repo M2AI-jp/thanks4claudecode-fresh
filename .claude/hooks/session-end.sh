@@ -95,8 +95,8 @@ fi
 CURRENT=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*current: *//' | sed 's/ *#.*//')
 echo -e "  Focus: ${GREEN}$CURRENT${NC}"
 
-# playbook を取得
-PLAYBOOK=$(awk "/## layer: $CURRENT/,/^## [^l]/" state.md | grep "playbook:" | head -1 | sed 's/.*playbook: *//' | sed 's/ *#.*//')
+# playbook を取得（M082 修正: 新フォーマット対応）
+PLAYBOOK=$(awk '/## playbook/,/^---/' state.md | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//')
 echo -e "  Playbook: ${GREEN}${PLAYBOOK:-null}${NC}"
 
 # branch を取得
@@ -120,24 +120,17 @@ if [ -n "$PLAYBOOK" ] && [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
     fi
 fi
 
-# layer.state と playbook の整合性
+# playbook の進捗状況チェック（M082 修正: layer.state は廃止）
 if [ -n "$PLAYBOOK" ] && [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
-    LAYER_STATE=$(awk "/## layer: $CURRENT/,/^## [^l]/" state.md | grep "state:" | head -1 | sed 's/.*state: *//' | sed 's/ *#.*//')
     DONE_COUNT=$(grep -E "status: done" "$PLAYBOOK" 2>/dev/null | wc -l | tr -d ' ')
     PENDING_COUNT=$(grep -E "status: pending" "$PLAYBOOK" 2>/dev/null | wc -l | tr -d ' ')
     IN_PROGRESS_COUNT=$(grep -E "status: in_progress" "$PLAYBOOK" 2>/dev/null | wc -l | tr -d ' ')
 
     echo ""
-    echo -e "  Layer state: ${GREEN}$LAYER_STATE${NC}"
     echo -e "  Playbook phases: done=$DONE_COUNT, in_progress=$IN_PROGRESS_COUNT, pending=$PENDING_COUNT"
 
     # 整合性チェック
-    if [ "$LAYER_STATE" = "done" ] && [ "$PENDING_COUNT" -gt 0 ]; then
-        echo -e "  ${RED}[WARNING]${NC} state=done but playbook has pending phases"
-        WARNINGS=$((WARNINGS + 1))
-    fi
-
-    if [ "$LAYER_STATE" = "implementing" ] && [ "$IN_PROGRESS_COUNT" -eq 0 ] && [ "$PENDING_COUNT" -gt 0 ]; then
+    if [ "$IN_PROGRESS_COUNT" -eq 0 ] && [ "$PENDING_COUNT" -gt 0 ]; then
         echo -e "  ${YELLOW}[INFO]${NC} No in_progress phase, but pending phases exist"
     fi
 fi

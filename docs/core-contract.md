@@ -52,7 +52,6 @@ IF playbook.active == null:
 ```
 CLAUDE.md
 .claude/protected-files.txt
-.claude/.session-init/consent
 .claude/.session-init/pending
 .claude/hooks/init-guard.sh
 .claude/hooks/critic-guard.sh

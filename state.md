@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: null
+current: thanks4claudecode
 project: plan/project.md
 ```
 
@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/archive/playbook-m082-repository-optimization.md
-branch: chore/m082-completion
+active: plan/playbook-fix-workflow-inconsistencies.md
+branch: chore/fix-workflow-inconsistencies
 last_archived: plan/archive/playbook-m082-repository-optimization.md
 ```
 
@@ -28,9 +28,12 @@ last_archived: plan/archive/playbook-m082-repository-optimization.md
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
+milestone: null  # 既存マイルストーンに紐づかない点検作業
+phase: p1
+done_criteria:
+  - session-end.sh が state.md の現在の構造（playbook.active）を正しく参照している
+  - consent-guard.sh への参照がドキュメントから削除されている
+  - repository-map.yaml の mandatory_outputs から [理解確認] が削除されている
 ```
 
 ---
@@ -38,7 +41,7 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-22 19:45:40
+last_start: 2025-12-22 20:46:08
 last_clear: 2025-12-13 00:30:00
 ```
 
