@@ -308,15 +308,16 @@ success_criteria:
     repository-map.yaml を拡張し、Hook トリガーシーケンスと Workflows セクションを追加。
     単一コンポーネント単位ではなく、組み合わせモジュール単位でシステム構造を整理。
     Hook の発火順序を公式ドキュメントに準拠してソート。
-  status: in_progress
+  status: achieved
+  achieved_at: 2025-12-22
   depends_on: [M025]
   playbooks:
     - playbook-m027-repository-map-workflows.md
   done_when:
-    - [ ] hook_trigger_sequence セクションが公式ドキュメント準拠で実装されている
-    - [ ] workflows セクションが組み合わせモジュール単位で整理されている
-    - [ ] generate-repository-map.sh に workflows 自動生成ロジックが統合されている
-    - [ ] commands と skills の違いが明示されている
+    - [x] hook_trigger_sequence セクションが公式ドキュメント準拠で実装されている
+    - [x] workflows セクションが組み合わせモジュール単位で整理されている
+    - [x] generate-repository-map.sh に workflows 自動生成ロジックが統合されている
+    - [x] commands と skills の違いが明示されている
 ```
 
 ---
