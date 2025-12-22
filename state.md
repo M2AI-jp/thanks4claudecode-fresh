@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: null
+current: thanks4claudecode
 project: plan/project.md
 ```
 
@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
-last_archived: plan/archive/playbook-workflow-e2e-simulation.md
+active: plan/playbook-test-strengthening.md
+branch: feat/test-strengthening
+last_archived: plan/archive/playbook-workflow-e2e-tests.md
 ```
 
 ---
@@ -28,9 +28,13 @@ last_archived: plan/archive/playbook-workflow-e2e-simulation.md
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: null
+milestone: M082
+phase: p1
+done_criteria:
+  - 既存テストのフォールバック else パターンが全て明示的な fail に置き換えられている
+  - exit code を条件としない「処理された」パターンが削除されている
+  - 各テストが明確な期待値を持ち、それ以外は FAIL する
+  - bash scripts/test-workflows.sh が全テスト PASS で終了する
 ```
 
 ---
@@ -38,7 +42,7 @@ done_criteria: null
 ## session
 
 ```yaml
-last_start: 2025-12-22 22:35:48
+last_start: 2025-12-23 01:00:41
 last_end: 2025-12-22 22:35:47
 last_clear: 2025-12-13 00:30:00
 ```
