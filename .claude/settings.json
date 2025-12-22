@@ -41,10 +41,6 @@
         "hooks": [
           {
             "type": "command",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
             "command": "bash .claude/hooks/check-protected-edit.sh",
             "timeout": 5000
           },
@@ -83,10 +79,6 @@
       {
         "matcher": "Write",
         "hooks": [
-          {
-            "type": "command",
-            "timeout": 3000
-          },
           {
             "type": "command",
             "command": "bash .claude/hooks/check-protected-edit.sh",
@@ -159,10 +151,6 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/session-start.sh",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
             "timeout": 5000
           }
         ]

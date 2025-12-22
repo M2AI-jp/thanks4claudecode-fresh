@@ -379,8 +379,56 @@ workflow:
     - consistency: "CLAUDE.md 行動ルール + archive-playbook.sh で実現"
     - completeness: "公式 Hook の制約が明記されている"
 
-**status**: pending
-**max_iterations**: 3
+**status**: done
+
+---
+
+## 検証結果サマリー
+
+```yaml
+検証日: 2025-12-22
+検証者: claudecode+codex
+
+p1_guard_登録:
+  結果: PASS（部分的問題あり）
+  問題:
+    - 空の hook エントリが存在
+    - Guard 順序が文書と異なる
+
+p2_playbook_guard:
+  結果: PASS
+  備考: 公式 Hook 仕様に準拠
+
+p3_scope_guard:
+  結果: PASS
+  備考: デフォルトは警告のみ（STRICT_MODE=true で ブロック）
+
+p4_executor_guard:
+  結果: PASS
+  備考: role-resolver.sh 連携あり
+
+p5_critic_guard:
+  結果: PASS
+  備考: state:done 検出に若干の曖昧さ
+
+p6_critic_連携:
+  結果: PASS
+  備考: critic-guard はブロックのみ、critic 呼び出しは Claude の責任
+
+p7_phase完了検知:
+  結果: FAIL
+  問題:
+    - CLAUDE.md に LOOP/POST_LOOP セクションがない
+    - phase 完了後の行動ルールが未定義
+  代替方法:
+    - archive-playbook.sh が playbook 全体完了を検知
+    - 個別 phase 完了は Claude の自発的判断に依存
+
+要修正項目:
+  1. subtask-guard.sh: 許可時の不要 JSON 出力を削除
+  2. settings.json: 空の hook エントリを削除
+  3. CLAUDE.md: LOOP/POST_LOOP セクションを追加（別タスク M089 として提案）
+```
 
 ---
 
