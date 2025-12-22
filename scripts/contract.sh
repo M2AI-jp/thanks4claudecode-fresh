@@ -253,7 +253,7 @@ EOF
 }
 
 # Admin Maintenance 許可パターン（全体一致 ^...$ で判定）
-# 注意: 複合コマンドは事前にブロックされるため、ここは単一コマンドのみ
+# 注意: 複合コマンドは Bootstrap 例外チェックで別途処理
 ADMIN_MAINTENANCE_PATTERNS=(
     # mkdir -p plan/archive（オプション付きも許可）
     '^mkdir[[:space:]]+(-p[[:space:]]+)?plan/archive/?$'
@@ -261,12 +261,25 @@ ADMIN_MAINTENANCE_PATTERNS=(
     '^mv[[:space:]]+plan/playbook-[^[:space:]]+\.md[[:space:]]+plan/archive/?$'
     # git add state.md（単独）
     '^git[[:space:]]+add[[:space:]]+state\.md$'
+    # git add -A（全ファイル追加）
+    '^git[[:space:]]+add[[:space:]]+-A$'
     # git add plan/archive/（単独またはファイル指定）
     '^git[[:space:]]+add[[:space:]]+plan/archive(/[^[:space:]]*)?$'
     # git add state.md plan/archive/（2つ同時）
     '^git[[:space:]]+add[[:space:]]+state\.md[[:space:]]+plan/archive/?$'
     # git commit -m "..." (maintenance メッセージ)
     '^git[[:space:]]+commit[[:space:]]+-m[[:space:]]+'
+)
+
+# Bootstrap 例外: 複合コマンドでも許可するパターン
+# playbook アーカイブ後の最終コミット用
+BOOTSTRAP_COMPOUND_PATTERNS=(
+    # git add state.md && git commit -m "..."
+    '^git[[:space:]]+add[[:space:]]+state\.md[[:space:]]+&&[[:space:]]+git[[:space:]]+commit'
+    # git add -A && git commit -m "..."
+    '^git[[:space:]]+add[[:space:]]+-A[[:space:]]+&&[[:space:]]+git[[:space:]]+commit'
+    # git add ... && git status (確認用)
+    '^git[[:space:]]+add[[:space:]]+.*&&[[:space:]]+git[[:space:]]+status'
 )
 
 # Admin Maintenance allowlist に一致するか判定
@@ -338,26 +351,14 @@ EOF
         # 5a. 複合コマンドは admin でも禁止（注入対策）
         # ただし Bootstrap 例外: state.md と plan/ のみの git 操作は許可
         if is_compound_command "$command"; then
-            # Bootstrap 例外チェック: 複合コマンドの各部分が許可されているか
-            local all_allowed=true
-            local IFS_BACKUP="$IFS"
-
-            # && と ; で分割してチェック
-            local parts
-            parts=$(echo "$command" | sed 's/&&/\n/g; s/;/\n/g')
-            while IFS= read -r part; do
-                part=$(echo "$part" | xargs 2>/dev/null || echo "$part")  # trim
-                [[ -z "$part" ]] && continue
-                if ! is_admin_maintenance_allowed "$part"; then
-                    all_allowed=false
-                    break
-                fi
-            done <<< "$parts"
-            IFS="$IFS_BACKUP"
-
-            if [[ "$all_allowed" == "true" && "$security" == "admin" ]]; then
-                echo "[ADMIN-MAINTENANCE] 複合コマンド許可（Bootstrap 例外）: $command" >&2
-                return 0
+            # Bootstrap 例外チェック: 複合コマンドパターンに一致するか
+            if [[ "$security" == "admin" ]]; then
+                for pattern in "${BOOTSTRAP_COMPOUND_PATTERNS[@]}"; do
+                    if [[ "$command" =~ $pattern ]]; then
+                        echo "[ADMIN-MAINTENANCE] 複合コマンド許可（Bootstrap 例外）" >&2
+                        return 0
+                    fi
+                done
             fi
 
             cat >&2 <<EOF
