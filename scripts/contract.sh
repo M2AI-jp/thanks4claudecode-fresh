@@ -336,7 +336,30 @@ EOF
     # 5. playbook=null の場合
     if [[ -z "$playbook" || "$playbook" == "null" ]]; then
         # 5a. 複合コマンドは admin でも禁止（注入対策）
+        # ただし Bootstrap 例外: state.md と plan/ のみの git 操作は許可
         if is_compound_command "$command"; then
+            # Bootstrap 例外チェック: 複合コマンドの各部分が許可されているか
+            local all_allowed=true
+            local IFS_BACKUP="$IFS"
+
+            # && と ; で分割してチェック
+            local parts
+            parts=$(echo "$command" | sed 's/&&/\n/g; s/;/\n/g')
+            while IFS= read -r part; do
+                part=$(echo "$part" | xargs 2>/dev/null || echo "$part")  # trim
+                [[ -z "$part" ]] && continue
+                if ! is_admin_maintenance_allowed "$part"; then
+                    all_allowed=false
+                    break
+                fi
+            done <<< "$parts"
+            IFS="$IFS_BACKUP"
+
+            if [[ "$all_allowed" == "true" && "$security" == "admin" ]]; then
+                echo "[ADMIN-MAINTENANCE] 複合コマンド許可（Bootstrap 例外）: $command" >&2
+                return 0
+            fi
+
             cat >&2 <<EOF
 ========================================
   [BLOCK] 複合コマンド禁止
