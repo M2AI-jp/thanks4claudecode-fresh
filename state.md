@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: plan-template  # 現在作業中のプロジェクト名
+current: m082-repository-optimization  # 現在作業中のプロジェクト名
 project: plan/project.md
 ```
 
@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-m082-repository-optimization.md
+branch: feat/m082-repository-optimization
 last_archived: plan/archive/playbook-merge-fix.md
 ```
 
@@ -38,7 +38,7 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-22 13:42:40
+last_start: 2025-12-22 14:14:29
 last_clear: 2025-12-13 00:30:00
 ```
 
