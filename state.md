@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: null
+current: thanks4claudecode
 project: plan/project.md
 ```
 
@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-repository-map-sync.md
+branch: feat/repository-map-sync-workflow
 last_archived: plan/archive/playbook-fix-workflow-inconsistencies.md
 ```
 
@@ -28,9 +28,13 @@ last_archived: plan/archive/playbook-fix-workflow-inconsistencies.md
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: null
+milestone: M082
+phase: p1
+done_criteria:
+  - session-start.sh に check_repository_map_drift 関数が存在する
+  - 乖離検出時に [DRIFT] メッセージが出力される
+  - RUNBOOK.md に [DRIFT] 対応ルールが記載されている
+  - docs/repository-structure.md に同期ワークフロー説明がある
 ```
 
 ---
@@ -38,8 +42,8 @@ done_criteria: null
 ## session
 
 ```yaml
-last_start: 2025-12-22 21:30:00
-last_end: null
+last_start: 2025-12-22 21:18:40
+last_end: 2025-12-22 21:10:35
 last_clear: 2025-12-13 00:30:00
 ```
 

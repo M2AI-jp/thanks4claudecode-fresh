@@ -128,6 +128,28 @@ bash .claude/hooks/generate-repository-map.sh
 # - playbook 完了時（archive-playbook.sh から呼び出し）
 ```
 
+### 差分検出（[DRIFT]）
+
+セッション開始時に `session-start.sh` が repository-map.yaml と実際のファイル数を比較し、
+乖離があれば `[DRIFT]` メッセージを出力します。
+
+```yaml
+検出対象:
+  - hooks: .claude/hooks/*.sh
+  - agents: .claude/agents/*.md
+  - skills: .claude/skills/*/
+  - commands: .claude/commands/*.md
+
+[DRIFT] 検出時の対応:
+  1. bash .claude/hooks/generate-repository-map.sh を実行
+  2. 更新された repository-map.yaml を確認
+  3. 必要に応じて git add && git commit
+
+Claude の自動対応:
+  - [DRIFT] を検出した場合、Claude は自動で generate-repository-map.sh を実行
+  - コミットはユーザー確認後に行う
+```
+
 ### 含まれる情報
 
 | セクション | 内容 |
@@ -254,6 +276,26 @@ solutions:
 problem: Can't edit on main
 solution:
   git checkout -b {type}/{description}
+```
+
+### [DRIFT] Repository Map Drift
+
+```yaml
+problem: "[DRIFT] repository-map.yaml に乖離あり" message at session start
+cause: Files added/removed since last repository-map.yaml update
+
+solutions:
+  1. Run update script:
+     bash .claude/hooks/generate-repository-map.sh
+
+  2. Verify the update:
+     git diff docs/repository-map.yaml
+
+  3. Commit if appropriate:
+     git add docs/repository-map.yaml
+     git commit -m "chore: update repository-map.yaml"
+
+note: Claude will automatically execute the update when detecting [DRIFT]
 ```
 
 ### Fail-Closed Recovery
