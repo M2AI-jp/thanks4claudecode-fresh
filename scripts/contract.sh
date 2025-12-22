@@ -282,10 +282,31 @@ BOOTSTRAP_COMPOUND_PATTERNS=(
     '^git[[:space:]]+add[[:space:]]+.*&&[[:space:]]+git[[:space:]]+status'
 )
 
+# Bootstrap 例外: 単独コマンドでも許可（playbook=null + admin）
+BOOTSTRAP_SINGLE_PATTERNS=(
+    # git push（PR 作成用）
+    '^git[[:space:]]+push'
+    # gh pr create（PR 作成用）
+    '^gh[[:space:]]+pr[[:space:]]+create'
+    # gh pr merge（PR マージ用）
+    '^gh[[:space:]]+pr[[:space:]]+merge'
+)
+
 # Admin Maintenance allowlist に一致するか判定
 is_admin_maintenance_allowed() {
     local cmd="$1"
     for pattern in "${ADMIN_MAINTENANCE_PATTERNS[@]}"; do
+        if [[ "$cmd" =~ $pattern ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Bootstrap 単独コマンド allowlist に一致するか判定
+is_bootstrap_single_allowed() {
+    local cmd="$1"
+    for pattern in "${BOOTSTRAP_SINGLE_PATTERNS[@]}"; do
         if [[ "$cmd" =~ $pattern ]]; then
             return 0
         fi
@@ -408,6 +429,11 @@ EOF
                 echo "[ADMIN-MAINTENANCE] 許可: $command" >&2
                 return 0
             fi
+            # 5c-2. Bootstrap 単独パターン（git push, gh pr 等）も許可
+            if is_bootstrap_single_allowed "$command"; then
+                echo "[BOOTSTRAP] 許可: $command" >&2
+                return 0
+            fi
         fi
 
         # 5d. それ以外はブロック
@@ -447,5 +473,6 @@ export -f is_maintenance_allowed
 export -f is_playbook_file
 export -f is_state_file
 export -f is_admin_maintenance_allowed
+export -f is_bootstrap_single_allowed
 export -f contract_check_edit
 export -f contract_check_bash
