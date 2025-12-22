@@ -176,8 +176,8 @@ if [ "$DONE_WHEN_COUNT" -gt 0 ]; then
     # validations の PASS チェック（V15: validations ベース）
     # p_final セクション内の subtask が全て [x]（完了）になっているか確認
     P_FINAL_SECTION=$(grep -A 100 "p_final" "$FILE_PATH" 2>/dev/null | head -100)
-    INCOMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[ \]' 2>/dev/null || echo "0")
-    COMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[x\]' 2>/dev/null || echo "0")
+    INCOMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[ \]' 2>/dev/null) || INCOMPLETE_SUBTASKS=0
+    COMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[x\]' 2>/dev/null) || COMPLETE_SUBTASKS=0
 
     if [ "$INCOMPLETE_SUBTASKS" -gt 0 ]; then
         echo ""
