@@ -443,25 +443,8 @@ WORKFLOWS_HEADER
 
 # ==============================================================================
 # M025: system_specification 生成関数
+# M027 MECE: init_flow/loop_flow/post_loop_flow は workflows セクションに統一
 # ==============================================================================
-
-# CLAUDE.md から INIT フローを抽出
-extract_init_flow() {
-    local claude_md="$PROJECT_ROOT/CLAUDE.md"
-    if [[ ! -f "$claude_md" ]]; then
-        echo "      - state.md"
-        echo "      - plan/project.md"
-        echo "      - playbook (from state.md)"
-        echo "      - docs/repository-map.yaml"
-        return
-    fi
-
-    # INIT セクションから必須 Read を抽出
-    grep -A50 "^## INIT" "$claude_md" 2>/dev/null | \
-        grep -E "^\s+[0-9]+\. Read:" | \
-        sed 's/.*Read: */      - /' | \
-        head -5 || echo "      - state.md"
-}
 
 # CLAUDE.md から禁止事項を抽出
 extract_behavior_rules() {
@@ -478,57 +461,19 @@ extract_behavior_rules() {
         head -10 || echo "      - (抽出失敗)"
 }
 
-# system_specification セクションを生成
+# system_specification セクションを生成（M027 MECE: behavior_rules のみ）
 generate_system_specification() {
     cat >> "$TEMP_FILE" << 'SPEC_HEADER'
 
 # ==============================================================================
 # System Specification (M025)
-# Claude の行動ルールと自己認識に必要な情報
+# Claude の行動ルールの Single Source of Truth
+# 注: フロー詳細は workflows セクション参照（M027 MECE 統一）
 # ==============================================================================
 
 system_specification:
-  description: "Claude の行動ルールと Hook 連鎖の Single Source of Truth"
-
-  init_flow:
-    description: "セッション開始時の必須フロー"
-    required_reads:
-SPEC_HEADER
-
-    # INIT フローの必須 Read を出力
-    extract_init_flow >> "$TEMP_FILE"
-
-    cat >> "$TEMP_FILE" << 'SPEC_STEPS'
-    steps:
-      - "必須ファイル Read"
-      - "git branch/status 取得"
-      - "playbook=null → pm SubAgent"
-      - "[自認] 出力"
-      - "LOOP 開始"
-
-  loop_flow:
-    description: "作業ループのフロー"
-    steps:
-      - "subtasks を読む"
-      - "executor に応じて実行"
-      - "test_command で PASS/FAIL 判定"
-      - "全 PASS → CRITIQUE()"
-      - "PASS → 次 phase、FAIL → 修正"
-
-  post_loop_flow:
-    description: "playbook 完了後のフロー"
-    steps:
-      - "自動コミット"
-      - "playbook アーカイブ"
-      - "project.milestone 更新"
-      - "/clear 推奨アナウンス"
-      - "次 milestone → pm"
-
-  # 注: Hook 発火順序は hook_trigger_sequence セクションに統一（M027）
-
-SPEC_STEPS
-
-    cat >> "$TEMP_FILE" << 'BEHAVIOR'
+  description: "Claude の行動ルールの Single Source of Truth"
+  note: "init_flow/loop_flow/post_loop_flow は workflows セクションに統一（MECE）"
 
   behavior_rules:
     description: "CLAUDE.md から抽出した行動ルール"
@@ -542,7 +487,7 @@ SPEC_STEPS
       - "[自認]: セッション開始時"
       - "[理解確認]: Edit/Write 前"
     prohibited_actions:
-BEHAVIOR
+SPEC_HEADER
     extract_behavior_rules >> "$TEMP_FILE"
 }
 
@@ -598,17 +543,11 @@ hooks:
 EOF
 
 if [[ -d "$HOOKS_DIR" ]]; then
+    # M027 MECE: name のみ出力（trigger/description は hook_trigger_sequence 参照）
     for hook in "$HOOKS_DIR"/*.sh; do
         [[ -f "$hook" ]] || continue
         name=$(basename "$hook")
-        desc=$(extract_description "$hook")
-        trigger=$(get_hook_trigger "$name")
-
-        cat >> "$TEMP_FILE" << EOF
-    - name: "$name"
-      trigger: "${trigger:-unknown}"
-      description: "$desc"
-EOF
+        echo "    - name: \"$name\"" >> "$TEMP_FILE"
     done
 fi
 
@@ -686,38 +625,10 @@ if [[ -d "$SKILLS_DIR" ]]; then
 fi
 
 # ==============================================================================
-# Frameworks
+# Frameworks - REMOVED (M027 MECE: ディレクトリ不存在のため削除)
 # ==============================================================================
-echo "  Scanning frameworks..."
-FRAMEWORKS_DIR="$PROJECT_ROOT/.claude/rules/frameworks"
+# 注: .claude/rules/frameworks/ は存在しない
 FRAMEWORKS_COUNT=0
-
-cat >> "$TEMP_FILE" << EOF
-
-frameworks:
-  directory: .claude/rules/frameworks/
-EOF
-
-if [[ -d "$FRAMEWORKS_DIR" ]]; then
-    FRAMEWORKS_COUNT=$(count_files "$FRAMEWORKS_DIR" "*.md")
-    echo "  count: $FRAMEWORKS_COUNT" >> "$TEMP_FILE"
-    echo "  files:" >> "$TEMP_FILE"
-
-    for fw in "$FRAMEWORKS_DIR"/*.md; do
-        [[ -f "$fw" ]] || continue
-        name=$(basename "$fw" .md)
-        [[ "$name" == "CLAUDE" ]] && continue
-        desc=$(extract_description "$fw")
-
-        cat >> "$TEMP_FILE" << EOF
-    - name: "$name"
-      description: "$desc"
-EOF
-    done
-else
-    echo "  count: 0" >> "$TEMP_FILE"
-    echo "  files: []" >> "$TEMP_FILE"
-fi
 
 # ==============================================================================
 # Commands
@@ -837,22 +748,9 @@ EOF
 done
 
 # ==============================================================================
-# 統計サマリー
+# 統計サマリー - REMOVED (M027 MECE: 各セクションの count と重複)
 # ==============================================================================
-cat >> "$TEMP_FILE" << EOF
-
-summary:
-  hooks: $HOOKS_COUNT
-  agents: $AGENTS_COUNT
-  skills: $SKILLS_COUNT
-  frameworks: $FRAMEWORKS_COUNT
-  commands: $COMMANDS_COUNT
-  docs: $DOCS_TOTAL
-  plan_active: $ACTIVE_COUNT
-  plan_archive: $ARCHIVE_COUNT
-  plan_template: $TEMPLATE_COUNT
-  total: $TOTAL_FILES
-EOF
+# 注: summary セクションは各セクションの count の再掲のため削除
 
 # ==============================================================================
 # System Specification (M025)

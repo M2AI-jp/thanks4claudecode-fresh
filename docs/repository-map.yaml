@@ -8,7 +8,7 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-22 13:11:53"
+  generated: "2025-12-22 13:27:21"
   generator: ".claude/hooks/generate-repository-map.sh"
   total_files: 218
 
@@ -17,98 +17,36 @@ hooks:
   count: 31
   files:
     - name: "archive-playbook.sh"
-      trigger: "PostToolUse:Edit"
-      description: "archive-playbook.sh - playbook 完了時の自動アーカイブ提案"
     - name: "check-coherence.sh"
-      trigger: "PreToolUse:Bash"
-      description: "check-coherence.sh - 簡略版：state.md と playbook の整合性チェック"
     - name: "check-file-dependencies.sh"
-      trigger: "PreToolUse:Edit"
-      description: "check-file-dependencies.sh - ファイル依存関係チェック Hook"
     - name: "check-main-branch.sh"
-      trigger: "PreToolUse:*"
-      description: "check-main-branch.sh - main ブランチでの作業をブロック"
     - name: "check-protected-edit.sh"
-      trigger: "PreToolUse:Edit"
-      description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
     - name: "cleanup-hook.sh"
-      trigger: "PostToolUse:Edit"
-      description: "cleanup-hook.sh - playbook 完了時のテンポラリファイル自動クリーンアップ"
     - name: "consent-guard.sh"
-      trigger: "PreToolUse:Edit"
-      description: "consent-guard.sh - 合意プロセス強制フック"
     - name: "create-pr-hook.sh"
-      trigger: "PostToolUse:Edit"
-      description: "create-pr-hook.sh - playbook 完了時の PR 自動作成フック"
     - name: "create-pr.sh"
-      trigger: "utility"
-      description: "create-pr.sh - Phase/Playbook 完了時の自動 PR 作成"
     - name: "critic-guard.sh"
-      trigger: "PreToolUse:Edit"
-      description: "critic-guard.sh - state: done への変更を構造的にブロック"
     - name: "depends-check.sh"
-      trigger: "PreToolUse:Edit"
-      description: "depends-check.sh - Phase の depends_on を検証"
     - name: "doc-freshness-check.sh"
-      trigger: "PostToolUse:Read"
-      description: "doc-freshness-check.sh - PostToolUse:Read Hook: ドキュメント鮮度チェック"
     - name: "executor-guard.sh"
-      trigger: "PreToolUse:Edit"
-      description: "executor-guard.sh - Phase の executor を構造的に強制"
     - name: "failure-logger.sh"
-      trigger: "utility"
-      description: "failure-logger.sh - 失敗パターン記録ユーティリティ"
     - name: "generate-repository-map.sh"
-      trigger: "utility"
-      description: "generate-repository-map.sh - 全ファイル自動マッピングシステム"
     - name: "init-guard.sh"
-      trigger: "PreToolUse:*"
-      description: "init-guard.sh - セッション開始時の強制的自己認識ガード"
     - name: "lint-check.sh"
-      trigger: "PreToolUse:Bash"
-      description: "lint-check.sh - 静的解析チェック Hook"
     - name: "log-subagent.sh"
-      trigger: "PostToolUse:Task"
-      description: "log-subagent.sh - Subagent 発動ログ記録 + critic 結果処理"
     - name: "merge-pr.sh"
-      trigger: "utility"
-      description: "merge-pr.sh - PR の自動マージスクリプト"
     - name: "playbook-guard.sh"
-      trigger: "PreToolUse:Edit"
-      description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
     - name: "pre-bash-check.sh"
-      trigger: "PreToolUse:Bash"
-      description: "pre-bash-check.sh - Bash コマンド実行前のチェック"
     - name: "pre-compact.sh"
-      trigger: "PreCompact:*"
-      description: "pre-compact.sh - PreCompact Hook: 完全な状態スナップショット保存"
     - name: "prompt-guard.sh"
-      trigger: "UserPromptSubmit:*"
-      description: "prompt-guard.sh - UserPromptSubmit Hook"
     - name: "scope-guard.sh"
-      trigger: "PreToolUse:Edit"
-      description: "scope-guard.sh - done_criteria/done_when の無断変更を検出"
     - name: "session-end.sh"
-      trigger: "SessionEnd:*"
-      description: "session-end.sh - セッション終了時に四つ組整合性チェック + リマインド"
     - name: "session-start.sh"
-      trigger: "SessionStart:*"
-      description: "session-start.sh - LLMの自己認識を形成し、LOOPを開始させる"
     - name: "stop-summary.sh"
-      trigger: "Stop:*"
-      description: "stop-summary.sh - Stop Hook: Phase 状態サマリー + 整合性チェック"
     - name: "subtask-guard.sh"
-      trigger: "utility"
-      description: "subtask-guard.sh - subtask の 3 検証を強制"
     - name: "system-health-check.sh"
-      trigger: "utility"
-      description: "system-health-check.sh - SessionStart 統合: システム健全性チェック"
     - name: "test-hooks.sh"
-      trigger: "utility"
-      description: "test-hooks.sh - Hook 機能カタログスペック検証"
     - name: "update-tracker.sh"
-      trigger: "PostToolUse:Edit"
-      description: "update-tracker.sh - PostToolUse:Edit/Write Hook: 変更追跡と自動更新提案"
 
 agents:
   directory: .claude/agents/
@@ -161,11 +99,6 @@ skills:
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
 
-frameworks:
-  directory: .claude/rules/frameworks/
-  count: 0
-  files: []
-
 commands:
   directory: .claude/commands/
   count: 8
@@ -213,10 +146,10 @@ plan:
   subdirectories:
     active:
       description: "進行中の playbook"
-      count: 2
+      count: 1
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 77
+      count: 78
     template:
       description: "playbook テンプレート"
       count: 7
@@ -237,60 +170,15 @@ root:
     - name: ".mcp.json"
       description: ""
 
-summary:
-  hooks: 31
-  agents: 7
-  skills: 13
-  frameworks: 0
-  commands: 8
-  docs: 8
-  plan_active: 2
-  plan_archive: 77
-  plan_template: 7
-  total: 218
-
 # ==============================================================================
 # System Specification (M025)
-# Claude の行動ルールと自己認識に必要な情報
+# Claude の行動ルールの Single Source of Truth
+# 注: フロー詳細は workflows セクション参照（M027 MECE 統一）
 # ==============================================================================
 
 system_specification:
-  description: "Claude の行動ルールと Hook 連鎖の Single Source of Truth"
-
-  init_flow:
-    description: "セッション開始時の必須フロー"
-    required_reads:
-      - state.md（現在地・goal・milestone）
-      - plan/project.md（プロジェクト計画）
-      - playbook（playbook.active から特定、なければ null）
-      - docs/repository-map.yaml（全ファイルマッピング）
-    steps:
-      - "必須ファイル Read"
-      - "git branch/status 取得"
-      - "playbook=null → pm SubAgent"
-      - "[自認] 出力"
-      - "LOOP 開始"
-
-  loop_flow:
-    description: "作業ループのフロー"
-    steps:
-      - "subtasks を読む"
-      - "executor に応じて実行"
-      - "test_command で PASS/FAIL 判定"
-      - "全 PASS → CRITIQUE()"
-      - "PASS → 次 phase、FAIL → 修正"
-
-  post_loop_flow:
-    description: "playbook 完了後のフロー"
-    steps:
-      - "自動コミット"
-      - "playbook アーカイブ"
-      - "project.milestone 更新"
-      - "/clear 推奨アナウンス"
-      - "次 milestone → pm"
-
-  # 注: Hook 発火順序は hook_trigger_sequence セクションに統一（M027）
-
+  description: "Claude の行動ルールの Single Source of Truth"
+  note: "init_flow/loop_flow/post_loop_flow は workflows セクションに統一（MECE）"
 
   behavior_rules:
     description: "CLAUDE.md から抽出した行動ルール"
@@ -601,6 +489,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-22 13:11:53"
+  - date: "2025-12-22 13:27:21"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
