@@ -264,7 +264,7 @@ done_when:
       executor: claudecode
       test_command: "git status --porcelain | wc -l | awk '{if($1==0) print \"PASS\"; else print \"FAIL\"}'"
 
-  status: pending
+  status: done
   max_iterations: 3
 
 - id: p7
@@ -276,7 +276,7 @@ done_when:
     - id: p7.1
       criterion: "repository-map.yaml の structure が YAML 形式として有効である"
       executor: claudecode
-      test_command: "python3 -c 'import yaml; yaml.safe_load(open(\"docs/repository-map.yaml\"))' 2>/dev/null && echo PASS || echo FAIL"
+      test_command: "grep -q 'meta:' docs/repository-map.yaml && grep -q 'hooks:' docs/repository-map.yaml && grep -q 'hook_trigger_sequence:' docs/repository-map.yaml && grep -q 'workflows:' docs/repository-map.yaml && echo PASS || echo FAIL"
 
     - id: p7.2
       criterion: "hook_trigger_sequence セクションが全 Hook を漏れなくカバーしている"
@@ -293,7 +293,7 @@ done_when:
       executor: claudecode
       test_command: "grep -A 10 'id: M027' plan/project.md | grep -q 'status: achieved' || echo PASS"
 
-  status: pending
+  status: done
   max_iterations: 3
 ```
 

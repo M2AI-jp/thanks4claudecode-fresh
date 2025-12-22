@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-22 13:02:46"
+  generated: "2025-12-22 13:11:53"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 219
+  total_files: 218
 
 hooks:
   directory: .claude/hooks/
@@ -247,7 +247,7 @@ summary:
   plan_active: 2
   plan_archive: 77
   plan_template: 7
-  total: 219
+  total: 218
 
 # ==============================================================================
 # System Specification (M025)
@@ -601,6 +601,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-22 13:02:46"
+  - date: "2025-12-22 13:11:53"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
