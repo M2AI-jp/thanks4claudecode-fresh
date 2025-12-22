@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-m025-system-specification.md
-branch: feat/m025-system-specification
-last_archived: plan/archive/playbook-m024-full-revalidation.md
+active: plan/active/playbook-m027-repository-map-workflows.md
+branch: feat/m027-repository-map-workflows
+last_archived: plan/archive/playbook-m025-system-specification.md
 ```
 
 ---
@@ -28,10 +28,10 @@ last_archived: plan/archive/playbook-m024-full-revalidation.md
 ## goal
 
 ```yaml
-milestone: M025
-phase: done
-self_complete: true
-last_completed_milestone: M024 (achieved: 2025-12-15)
+milestone: M027
+phase: p0
+self_complete: false
+last_completed_milestone: M025 (achieved: 2025-12-15)
 ```
 
 ---
