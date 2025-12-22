@@ -31,7 +31,7 @@ roles:
 ```yaml
 summary: work_loop workflow が E2E で動作することを検証し、問題があれば修正する
 done_when:
-  - PreToolUse:Edit が playbook-guard, scope-guard, executor-guard, critic-guard を順次呼び出す
+  - PreToolUse:Edit が playbook-guard, critic-guard, scope-guard, executor-guard を順次呼び出す
   - 各 Guard が期待通りにブロック/許可する（playbook=null でブロック、playbook 存在で許可）
   - critic SubAgent との連携が動作する（critic-guard が state: done 変更をブロック）
   - 「phase 完了」の代替検知方法が明確になっている（公式 Hook では不可のため）
@@ -356,12 +356,12 @@ workflow:
     - consistency: "settings.json に該当イベントがない"
     - completeness: "公式ドキュメント準拠"
 
-- [x] **p7.2**: 代替方法: Claude の行動ルール（CLAUDE.md LOOP セクション）で実現
+- [x] **p7.2**: 代替方法: Claude の行動ルール（RUNBOOK.md Task Lifecycle）で実現
   - executor: claudecode
   - validations:
-    - technical: "CLAUDE.md に LOOP セクションが存在"
-    - consistency: "critic PASS 後の state.md 更新が明記されている"
-    - completeness: "自動コミットのタイミングが明記されている"
+    - technical: "RUNBOOK.md に Task Lifecycle セクションが存在（line 37）"
+    - consistency: "archive-playbook.sh と連携して phase 完了を処理"
+    - completeness: "公式 Hook に phase 完了イベントがないため代替方法として機能"
 
 - [x] **p7.3**: 代替方法: PostToolUse:Edit でアーカイブ提案（archive-playbook.sh）
   - executor: claudecode
