@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: m082-repository-optimization  # 現在作業中のプロジェクト名
+current: m085-work-loop-verification  # 現在作業中のプロジェクト名
 project: plan/project.md
 ```
 
@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-m082-repository-optimization.md
-branch: feat/m082-repository-optimization
-last_archived: plan/archive/playbook-merge-fix.md
+active: plan/playbook-m085-work-loop-verification.md
+branch: feat/m085-work-loop-verification
+last_archived: plan/archive/playbook-m082-repository-optimization.md
 ```
 
 ---
