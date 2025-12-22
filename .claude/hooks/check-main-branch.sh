@@ -70,14 +70,21 @@ if [ "$TOOL_NAME" = "Edit" ] || [ "$TOOL_NAME" = "Write" ]; then
     fi
 fi
 
-# Bash の場合、ブランチ切り替えコマンドは許可
+# Bash の場合、read-only git コマンドは許可
 if [ "$TOOL_NAME" = "Bash" ]; then
     COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 
-    # git checkout / git switch / git branch は許可
+    # git checkout / git switch / git branch は許可（ブランチ切り替え）
+    # git pull / git fetch は許可（最新取得、read-only）
+    # git status / git log / git diff は許可（確認用）
     if [[ "$COMMAND" == *"git checkout"* ]] || \
        [[ "$COMMAND" == *"git switch"* ]] || \
-       [[ "$COMMAND" == *"git branch"* ]]; then
+       [[ "$COMMAND" == *"git branch"* ]] || \
+       [[ "$COMMAND" == *"git pull"* ]] || \
+       [[ "$COMMAND" == *"git fetch"* ]] || \
+       [[ "$COMMAND" == *"git status"* ]] || \
+       [[ "$COMMAND" == *"git log"* ]] || \
+       [[ "$COMMAND" == *"git diff"* ]]; then
         exit 0
     fi
 fi
