@@ -51,8 +51,9 @@ fi
 
 # playbook 内の Phase status を確認
 # 全ての status: が done であるかチェック
-TOTAL_PHASES=$(grep -c "^  status:" "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
-DONE_PHASES=$(grep "^  status: done" "$FILE_PATH" 2>/dev/null | wc -l | tr -d ' \n')
+# M085 修正: Markdown bold 形式（**status**: done）に対応
+TOTAL_PHASES=$(grep -c '^\*\*status\*\*:' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
+DONE_PHASES=$(grep -c '^\*\*status\*\*: done' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
 # 空の場合は 0 に設定
 TOTAL_PHASES=${TOTAL_PHASES:-0}
 DONE_PHASES=${DONE_PHASES:-0}

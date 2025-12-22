@@ -71,21 +71,21 @@ workflow:
 
 #### subtasks
 
-- [ ] **p0.1**: 報酬詐欺の原因を特定する
+- [x] **p0.1**: 報酬詐欺の原因を特定する
   - executor: claudecode
   - validations:
     - technical: "前回の検証方法を列挙し、何が不足していたか特定"
     - consistency: "playbook の validations と実際の検証行為を比較"
     - completeness: "報酬詐欺が発生した構造的原因を文書化"
 
-- [ ] **p0.2**: 正しい E2E 検証方法を定義する
+- [x] **p0.2**: 正しい E2E 検証方法を定義する
   - executor: claudecode
   - validations:
     - technical: "各 Guard に対する実際の発火テストコマンドを定義"
     - consistency: "期待される exit code と出力を明記"
     - completeness: "テストシナリオ（正常系・異常系）を網羅"
 
-- [ ] **p0.3**: 検証環境を準備する
+- [x] **p0.3**: 検証環境を準備する
   - executor: claudecode
   - validations:
     - technical: "テスト用の state.md/playbook を一時作成できる"
@@ -103,35 +103,35 @@ workflow:
 
 #### subtasks
 
-- [ ] **p1.1**: settings.json の PreToolUse:Edit セクションに全 Guard が登録されている
+- [x] **p1.1**: settings.json の PreToolUse:Edit セクションに全 Guard が登録されている
   - executor: claudecode
   - validations:
     - technical: "grep で playbook-guard, scope-guard, executor-guard, critic-guard の登録を確認"
     - consistency: "登録順序が playbook-guard -> scope-guard -> executor-guard -> critic-guard"
     - completeness: "各 Guard に timeout 設定（3000ms）が存在"
 
-- [ ] **p1.2**: playbook-guard.sh が bash -n で構文エラーなく通過する
+- [x] **p1.2**: playbook-guard.sh が bash -n で構文エラーなく通過する
   - executor: claudecode
   - validations:
     - technical: "bash -n .claude/hooks/playbook-guard.sh が exit 0"
     - consistency: "set -euo pipefail が設定されている"
     - completeness: "jq 依存部分にフォールバック（jq がない場合スキップ）"
 
-- [ ] **p1.3**: scope-guard.sh が bash -n で構文エラーなく通過する
+- [x] **p1.3**: scope-guard.sh が bash -n で構文エラーなく通過する
   - executor: claudecode
   - validations:
     - technical: "bash -n .claude/hooks/scope-guard.sh が exit 0"
     - consistency: "set -euo pipefail が設定されている"
     - completeness: "STRICT_MODE 環境変数の説明がコメントにある"
 
-- [ ] **p1.4**: executor-guard.sh が bash -n で構文エラーなく通過する
+- [x] **p1.4**: executor-guard.sh が bash -n で構文エラーなく通過する
   - executor: claudecode
   - validations:
     - technical: "bash -n .claude/hooks/executor-guard.sh が exit 0"
     - consistency: "set -euo pipefail が設定されている"
     - completeness: "role-resolver.sh 連携コードが存在する"
 
-- [ ] **p1.5**: critic-guard.sh が bash -n で構文エラーなく通過する
+- [x] **p1.5**: critic-guard.sh が bash -n で構文エラーなく通過する
   - executor: claudecode
   - validations:
     - technical: "bash -n .claude/hooks/critic-guard.sh が exit 0"
@@ -151,28 +151,28 @@ workflow:
 
 #### subtasks
 
-- [ ] **p2.1**: playbook=null 時に Edit がブロックされる
+- [x] **p2.1**: playbook=null 時に Edit がブロックされる
   - executor: claudecode
   - validations:
     - technical: "playbook: null 状態で echo '{\"tool_input\":{\"file_path\":\"test.ts\"}}' | bash playbook-guard.sh が exit 2"
     - consistency: "エラーメッセージに「playbook 必須」が含まれる"
     - completeness: "pm エージェント呼び出しの案内がある"
 
-- [ ] **p2.2**: playbook 存在時に Edit が許可される
+- [x] **p2.2**: playbook 存在時に Edit が許可される
   - executor: claudecode
   - validations:
     - technical: "playbook: {path} 状態で echo '{\"tool_input\":{\"file_path\":\"test.ts\"}}' | bash playbook-guard.sh が exit 0"
     - consistency: "ブロックメッセージが出力されない"
     - completeness: "reviewed: false の場合は警告のみ（ブロックなし）"
 
-- [ ] **p2.3**: state.md への編集は常に許可される（デッドロック回避）
+- [x] **p2.3**: state.md への編集は常に許可される（デッドロック回避）
   - executor: claudecode
   - validations:
     - technical: "echo '{\"tool_input\":{\"file_path\":\"state.md\"}}' | bash playbook-guard.sh が exit 0"
     - consistency: "playbook=null でも exit 0"
     - completeness: "state.md パターンマッチが正しい"
 
-- [ ] **p2.4**: playbook ファイル自体の作成は常に許可される（ブートストラップ例外）
+- [x] **p2.4**: playbook ファイル自体の作成は常に許可される（ブートストラップ例外）
   - executor: claudecode
   - validations:
     - technical: "echo '{\"tool_input\":{\"file_path\":\"plan/playbook-test.md\"}}' | bash playbook-guard.sh が exit 0"
@@ -192,28 +192,28 @@ workflow:
 
 #### subtasks
 
-- [ ] **p3.1**: done_when を含む編集で警告が表示される
+- [x] **p3.1**: done_when を含む編集で警告が表示される
   - executor: claudecode
   - validations:
     - technical: "echo '{\"tool_input\":{\"file_path\":\"plan/playbook-test.md\",\"old_string\":\"done_when:\",\"new_string\":\"done_when: modified\"}}' | bash scope-guard.sh の出力に「スコープ変更を検出」が含まれる"
     - consistency: "STRICT_MODE=false では exit 0（警告のみ）"
     - completeness: "pm エージェント経由の案内がある"
 
-- [ ] **p3.2**: done_criteria を含む編集で警告が表示される
+- [x] **p3.2**: done_criteria を含む編集で警告が表示される
   - executor: claudecode
   - validations:
     - technical: "done_criteria を含む old_string/new_string で警告が出力される"
     - consistency: "playbook ファイルの場合のみ検出"
     - completeness: "project.md への変更も検出される"
 
-- [ ] **p3.3**: STRICT_MODE=true の場合は exit 2 でブロックされる
+- [x] **p3.3**: STRICT_MODE=true の場合は exit 2 でブロックされる
   - executor: claudecode
   - validations:
     - technical: "STRICT_MODE=true 環境変数設定時に exit 2"
     - consistency: "エラーメッセージに「ブロックされます」が含まれる"
     - completeness: "通常は STRICT_MODE=false（警告のみ）"
 
-- [ ] **p3.4**: 通常のファイル編集では警告が表示されない
+- [x] **p3.4**: 通常のファイル編集では警告が表示されない
   - executor: claudecode
   - validations:
     - technical: "done_when/done_criteria を含まない編集で警告なし"
@@ -233,35 +233,35 @@ workflow:
 
 #### subtasks
 
-- [ ] **p4.1**: executor: codex の Phase でコードファイル編集がブロックされる
+- [x] **p4.1**: executor: codex の Phase でコードファイル編集がブロックされる
   - executor: claudecode
   - validations:
     - technical: "executor: codex の Phase で *.ts ファイル編集時に exit 2"
     - consistency: "エラーメッセージに「Codex CLI を使用してください」が含まれる"
     - completeness: "ドキュメントファイル（*.md）は許可される"
 
-- [ ] **p4.2**: executor: user の Phase でコードファイル編集がブロックされる
+- [x] **p4.2**: executor: user の Phase でコードファイル編集がブロックされる
   - executor: claudecode
   - validations:
     - technical: "executor: user の Phase で *.ts ファイル編集時に exit 2"
     - consistency: "エラーメッセージに「ユーザー作業の Phase です」が含まれる"
     - completeness: "手動作業の例が表示される"
 
-- [ ] **p4.3**: executor: claudecode の Phase ではコードファイル編集が許可される
+- [x] **p4.3**: executor: claudecode の Phase ではコードファイル編集が許可される
   - executor: claudecode
   - validations:
     - technical: "executor: claudecode の Phase で *.ts ファイル編集時に exit 0"
     - consistency: "ブロックメッセージが出力されない"
     - completeness: "全ファイルタイプで許可"
 
-- [ ] **p4.4**: role-resolver.sh との連携が動作する
+- [x] **p4.4**: role-resolver.sh との連携が動作する
   - executor: claudecode
   - validations:
     - technical: "executor: worker の場合、toolstack A では claudecode に解決される"
     - consistency: "toolstack B では codex に解決される"
     - completeness: "role-resolver.sh が呼び出される"
 
-- [ ] **p4.5**: Toolstack A では codex/coderabbit が使用不可
+- [x] **p4.5**: Toolstack A では codex/coderabbit が使用不可
   - executor: claudecode
   - validations:
     - technical: "toolstack: A で executor: codex の Phase は exit 2"
@@ -281,21 +281,21 @@ workflow:
 
 #### subtasks
 
-- [ ] **p5.1**: state: done への変更が critic 未実行時にブロックされる
+- [x] **p5.1**: state: done への変更が critic 未実行時にブロックされる
   - executor: claudecode
   - validations:
     - technical: "state.md に state: done を書き込もうとして exit 2"
     - consistency: "エラーメッセージに「critic 未実行」が含まれる"
     - completeness: "critic エージェント呼び出しの案内がある"
 
-- [ ] **p5.2**: self_complete: true が存在する場合は state: done への変更が許可される
+- [x] **p5.2**: self_complete: true が存在する場合は state: done への変更が許可される
   - executor: claudecode
   - validations:
     - technical: "state.md に self_complete: true がある場合、state: done 書き込みで exit 0"
     - consistency: "ブロックメッセージが出力されない"
     - completeness: "critic PASS 後のフローが機能する"
 
-- [ ] **p5.3**: state.md 以外のファイルでは state: done の検出が行われない
+- [x] **p5.3**: state.md 以外のファイルでは state: done の検出が行われない
   - executor: claudecode
   - validations:
     - technical: "playbook ファイルへの state: done 書き込みで exit 0"
@@ -315,21 +315,21 @@ workflow:
 
 #### subtasks
 
-- [ ] **p6.1**: critic.md に validations 評価ロジックが存在する
+- [x] **p6.1**: critic.md に validations 評価ロジックが存在する
   - executor: claudecode
   - validations:
     - technical: "grep 'validations' .claude/agents/critic.md で検出される"
     - consistency: "technical/consistency/completeness の 3 点が記載されている"
     - completeness: "出力フォーマット（PASS/FAIL）が定義されている"
 
-- [ ] **p6.2**: log-subagent.sh が critic 結果を処理する
+- [x] **p6.2**: log-subagent.sh が critic 結果を処理する
   - executor: claudecode
   - validations:
     - technical: "log-subagent.sh に critic 結果処理コードが存在"
     - consistency: "PostToolUse:Task で発火する"
     - completeness: "state.md への結果反映ロジックがある"
 
-- [ ] **p6.3**: critic-guard -> critic SubAgent の連携フローが明確である
+- [x] **p6.3**: critic-guard -> critic SubAgent の連携フローが明確である
   - executor: claudecode
   - validations:
     - technical: "critic-guard はブロックのみ、critic 呼び出しは Claude の責任"
@@ -349,21 +349,21 @@ workflow:
 
 #### subtasks
 
-- [ ] **p7.1**: 公式 Hook には「phase 完了」イベントがない
+- [x] **p7.1**: 公式 Hook には「phase 完了」イベントがない
   - executor: claudecode
   - validations:
     - technical: "docs/extension-system.md に「phase 完了」Hook がないことを確認"
     - consistency: "settings.json に該当イベントがない"
     - completeness: "公式ドキュメント準拠"
 
-- [ ] **p7.2**: 代替方法: Claude の行動ルール（CLAUDE.md LOOP セクション）で実現
+- [x] **p7.2**: 代替方法: Claude の行動ルール（CLAUDE.md LOOP セクション）で実現
   - executor: claudecode
   - validations:
     - technical: "CLAUDE.md に LOOP セクションが存在"
     - consistency: "critic PASS 後の state.md 更新が明記されている"
     - completeness: "自動コミットのタイミングが明記されている"
 
-- [ ] **p7.3**: 代替方法: PostToolUse:Edit でアーカイブ提案（archive-playbook.sh）
+- [x] **p7.3**: 代替方法: PostToolUse:Edit でアーカイブ提案（archive-playbook.sh）
   - executor: claudecode
   - validations:
     - technical: "archive-playbook.sh が全 Phase done を検出"
@@ -383,28 +383,28 @@ workflow:
 
 #### subtasks
 
-- [ ] **p_final.1**: PreToolUse:Edit が全 Guard を順次呼び出す
+- [x] **p_final.1**: PreToolUse:Edit が全 Guard を順次呼び出す
   - executor: claudecode
   - validations:
     - technical: "p1.1 の検証結果を確認（settings.json 登録）"
     - consistency: "Guard の登録順序が正しい"
     - completeness: "全 Guard が timeout 設定を持つ"
 
-- [ ] **p_final.2**: 各 Guard が期待通りにブロック/許可する
+- [x] **p_final.2**: 各 Guard が期待通りにブロック/許可する
   - executor: claudecode
   - validations:
     - technical: "p2, p3, p4, p5 の検証結果を確認"
     - consistency: "ブロック条件と許可条件が明確"
     - completeness: "エラーメッセージが適切"
 
-- [ ] **p_final.3**: critic SubAgent との連携が動作する
+- [x] **p_final.3**: critic SubAgent との連携が動作する
   - executor: claudecode
   - validations:
     - technical: "p5, p6 の検証結果を確認"
     - consistency: "critic-guard -> critic SubAgent のフローが明確"
     - completeness: "state.md への結果反映が機能する"
 
-- [ ] **p_final.4**: 「phase 完了」の代替検知方法が明確になっている
+- [x] **p_final.4**: 「phase 完了」の代替検知方法が明確になっている
   - executor: claudecode
   - validations:
     - technical: "p7 の検証結果を確認"
