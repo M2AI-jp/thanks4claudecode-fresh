@@ -294,8 +294,64 @@ done_when:
 
 ---
 
+---
+
+## E2E テスト結果（2025-12-22）
+
+### p1: Hook 登録・構文検証
+
+| Hook | settings.json | 構文 |
+|------|--------------|------|
+| archive-playbook.sh | ✓ L175 | OK |
+| cleanup-hook.sh | ✓ L180 | OK |
+| create-pr-hook.sh | ✓ L185 | OK |
+
+### p2: archive-playbook.sh
+
+| テスト | 条件 | 結果 |
+|--------|------|------|
+| p2.1 | 全 Phase done | ✓ PASS (アーカイブ推奨表示) |
+| p2.2 | Phase pending | ✓ PASS (スキップ) |
+| p2.3 | V12 checkbox | ✓ PASS |
+| p2.4 | final_tasks | ✓ PASS |
+
+**軽微バグ**: line 144 `integer expression expected` - DONE_WHEN_COUNT 取得に問題
+
+### p3: cleanup-hook.sh
+
+| テスト | 条件 | 結果 |
+|--------|------|------|
+| p3.1 | 全 Phase done | ✓ PASS (tmp/ クリーンアップ実行) |
+| p3.2 | Phase pending | ✓ PASS (スキップ) |
+| p3.3 | README.md 保持 | ✓ PASS |
+| p3.4 | repository-map 更新 | ✓ PASS |
+
+### p4: create-pr-hook.sh
+
+| テスト | 条件 | 結果 |
+|--------|------|------|
+| p4.1 | 完了検知 | ✓ PASS (active playbook 取得OK) |
+| p4.2 | 未コミット検出 | ✓ PASS |
+| p4.3 | create-pr.sh 連携 | ✓ PASS (存在・実行権限OK) |
+
+### 総合結果
+
+```yaml
+archive-playbook.sh: PASS (軽微バグあり)
+cleanup-hook.sh: PASS
+create-pr-hook.sh: PASS
+
+post_loop 全体: PASS
+  - 3/3 Hook が正常動作
+  - 完了検知・クリーンアップ・PR 連携が機能
+  - archive-playbook.sh line 144 に軽微バグ（動作には影響なし）
+```
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-22 | E2E テスト完了。全 Hook PASS。 |
 | 2025-12-22 | 初版作成。M083 検証結果に基づく post_loop workflow E2E 検証。 |

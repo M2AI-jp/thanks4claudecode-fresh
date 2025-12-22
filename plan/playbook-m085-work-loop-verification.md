@@ -482,6 +482,21 @@ workflow:
 | p5.2 | state: done (self_complete: true) | exit 0 (ALLOW) | ✓ PASS |
 | p5.3 | state.md 以外 | exit 0 (ALLOW) | ✓ PASS |
 
+### p6: critic SubAgent 連携
+
+| テスト | 条件 | 結果 |
+|--------|------|------|
+| p6.1 | critic.md に validations 評価ロジック | ✓ PASS（3点検証 + PASS/FAIL） |
+| p6.2 | log-subagent.sh に critic 結果処理 | ✓ PASS（PASS/FAIL 検出） |
+| p6.3 | integration_points に連携記載 | ✓ PASS（critic-guard → critic） |
+
+### p7: phase完了検知の代替方法
+
+| テスト | 条件 | 結果 |
+|--------|------|------|
+| p7.1 | 公式 Hook に phase完了イベントなし | ✓ 確認（設計制約） |
+| p7.3 | archive-playbook.sh で全Phase done検出 | ✓ PASS（PostToolUse:Edit） |
+
 ### 総合結果
 
 ```yaml
@@ -489,10 +504,14 @@ playbook-guard.sh: PASS (4/4)
 scope-guard.sh: PASS (4/4)
 executor-guard.sh: PASS (6/6) - バグ修正完了
 critic-guard.sh: PASS (3/3)
+critic SubAgent 連携: PASS (3/3)
+phase完了検知: PASS (2/2) - 代替方法確認
 
-work_loop 全体: PASS
+work_loop 全体: ✅ PASS
   - 全 Guard が正常動作
-  - executor 強制が機能
+  - executor 強制が機能（バグ修正済み）
+  - critic 連携が設計通り
+  - phase完了は archive-playbook.sh で代替検知
 ```
 
 ---

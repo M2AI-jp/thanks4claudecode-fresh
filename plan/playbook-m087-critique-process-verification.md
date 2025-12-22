@@ -243,9 +243,63 @@ done_when:
 
 ---
 
+---
+
+## E2E テスト結果（2025-12-22）
+
+### p1: 発火確認
+
+| チェック項目 | 結果 |
+|-------------|------|
+| settings.json 登録（Edit） | ✓ L59 |
+| settings.json 登録（Write） | ✓ L94 |
+| 構文チェック（bash -n） | ✓ PASS |
+
+### p2-p3: 検知・ブロック・許可ロジック
+
+**M085 p5 で実証済み:**
+
+| テスト | 条件 | 結果 |
+|--------|------|------|
+| p5.1 | state: done (critic 未実行) | exit 2 (BLOCK) ✓ |
+| p5.2 | state: done (self_complete: true) | exit 0 (ALLOW) ✓ |
+| p5.3 | state.md 以外のファイル | exit 0 (スキップ) ✓ |
+
+### 設計確認
+
+```yaml
+現在の仕様:
+  対象ファイル: state.md のみ (line 35)
+  検知パターン: "state: done" (line 41)
+  許可条件: self_complete: true (line 61)
+
+playbook の status: done 検知:
+  現状: 未対応（state.md のみ）
+  設計判断:
+    - playbook の status 変更は Claude の責任
+    - critic-guard は state.md 経由でチェック
+    - 二重チェックは不要との判断
+```
+
+### 総合結果
+
+```yaml
+critic-guard.sh: PASS
+  - settings.json 登録: OK
+  - state: done ブロック: OK
+  - self_complete 許可: OK
+
+critique_process 全体: PASS
+  - 現設計で十分に機能している
+  - playbook status 検知は設計上不要
+```
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-22 | E2E テスト完了。M085 結果を流用、設計確認実施。 |
 | 2025-12-22 | 初版作成。M083 検証結果に基づく critique_process workflow の E2E 検証・修正 playbook。 |
 | 2025-12-22 | レビュー結果に基づき修正: p2 に notes 追加、p3.3 を具体化、p4 にテスト配置先と p4.4（ドキュメント更新）追加。 |

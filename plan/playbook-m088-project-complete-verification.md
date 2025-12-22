@@ -221,8 +221,76 @@ done_when:
 
 ---
 
+---
+
+## E2E テスト結果（2025-12-22）
+
+### p1: 現状分析
+
+| チェック項目 | 結果 |
+|-------------|------|
+| merge-pr.sh 存在 | ✓ EXISTS (284行、機能完成) |
+| merge-pr.sh settings.json 登録 | ⛔ **未登録** |
+| 全 milestone 検知ロジック | ⛔ **未実装** |
+
+### 根本原因
+
+```yaml
+問題1: merge-pr.sh が settings.json に未登録
+  - repository-map.yaml では Hook として定義されている
+  - 実際は settings.json に登録されていない
+  - 結果: playbook 完了時に自動発火しない
+
+問題2: 「全 milestone achieved」検知ロジックが存在しない
+  - archive-playbook.sh: playbook 完了のみ検知
+  - project.md の milestone.status を参照していない
+  - 結果: 全 milestone 達成を誰も検知しない
+
+問題3: merge-pr.sh の設計
+  - 現状: 手動実行スクリプト（bash merge-pr.sh [PR番号]）
+  - 期待: Hook として自動発火
+  - 設計変更が必要
+```
+
+### 修正方針
+
+```yaml
+選択肢A: merge-pr.sh を Hook として登録
+  - settings.json の PostToolUse:Edit に追加
+  - 全 milestone 検知ロジックを merge-pr.sh に追加
+  - 全 milestone achieved の場合のみ発火
+
+選択肢B: archive-playbook.sh に統合
+  - archive-playbook.sh に全 milestone 検知を追加
+  - 全 milestone achieved で merge-pr.sh を呼び出す
+  - 既存のスクリプト構造を活用
+
+選択肢C: 新規 Hook を作成
+  - project-complete-hook.sh を新規作成
+  - 全 milestone 検知 + merge-pr.sh 呼び出し
+  - 責務を明確に分離
+
+推奨: 選択肢B（最小変更）
+```
+
+### 総合結果
+
+```yaml
+project_complete workflow: ⛔ FAIL
+  - merge-pr.sh: 未登録
+  - 全 milestone 検知: 未実装
+  - main マージ: 発火しない
+
+影響:
+  - 全 milestone 達成しても main マージが行われない
+  - ユーザーが報告した「main マージ/GitHub プッシュが行われない」の原因
+```
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-22 | E2E 検証完了。根本原因特定: merge-pr.sh 未登録 + 検知ロジック未実装。 |
 | 2025-12-22 | 初版作成。M083 検証結果に基づく緊急対応 playbook。 |
