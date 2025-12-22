@@ -20,7 +20,7 @@ project: plan/project.md
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-repository-map-sync.md
+last_archived: plan/archive/playbook-repository-map-e2e-test.md
 ```
 
 ---
@@ -38,8 +38,8 @@ done_criteria: null
 ## session
 
 ```yaml
-last_start: 2025-12-22 21:18:40
-last_end: 2025-12-22 21:10:35
+last_start: 2025-12-22 21:39:42
+last_end: 2025-12-22 21:29:43
 last_clear: 2025-12-13 00:30:00
 ```
 
@@ -49,10 +49,10 @@ last_clear: 2025-12-13 00:30:00
 
 ```yaml
 security: admin
-toolstack: A  # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
+toolstack: B  # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
 roles:
   orchestrator: claudecode  # 監督・調整・設計（常に claudecode）
-  worker: claudecode        # 実装担当（A: claudecode, B/C: codex）
+  worker: codex             # 実装担当（A: claudecode, B/C: codex）
   reviewer: claudecode      # レビュー担当（A/B: claudecode, C: coderabbit）
   human: user               # 人間の介入（常に user）
 ```
