@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-p1-1-session-start-py.md
+branch: feat/p1.1-session-start
 last_archived: plan/archive/playbook-test-strengthening.md
 ```
 
@@ -28,9 +28,13 @@ last_archived: plan/archive/playbook-test-strengthening.md
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
+milestone: P1.1
+phase: p1
+done_criteria:
+  - .claude/hooks/session_start.py が存在する
+  - state.md の YAML frontmatter を解析できる
+  - playbook.active の有無を判定できる
+  - python3 -m py_compile でエラー 0
 ```
 
 ---
