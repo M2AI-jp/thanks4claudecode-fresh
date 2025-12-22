@@ -70,7 +70,7 @@ done_when:
       executor: claudecode
       test_command: "test -f tmp/m027-hook-sequence-spec.md && grep -qE '(Commands|Skills)' tmp/m027-hook-sequence-spec.md && echo PASS || echo FAIL"
 
-  status: pending
+  status: done
   max_iterations: 3
 
 - id: p1

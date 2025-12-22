@@ -29,7 +29,7 @@ last_archived: plan/archive/playbook-m025-system-specification.md
 
 ```yaml
 milestone: M027
-phase: p0
+phase: p1
 self_complete: false
 last_completed_milestone: M025 (achieved: 2025-12-15)
 ```
@@ -39,7 +39,7 @@ last_completed_milestone: M025 (achieved: 2025-12-15)
 ## session
 
 ```yaml
-last_start: 2025-12-14 16:58:37
+last_start: 2025-12-22 12:40:51
 last_clear: 2025-12-13 00:30:00
 ```
 

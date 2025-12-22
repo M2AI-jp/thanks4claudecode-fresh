@@ -301,6 +301,22 @@ success_criteria:
     - [x] repository-map.yaml に Claude 行動ルール・Hook トリガー連鎖が含まれている
     - [x] 自動更新が 100% 安定（冪等性保証、原子的更新）
     - [x] INIT フロー全体で冗長がなく、効率的に自己認識できることが確認される
+
+- id: M027
+  name: "repository-map.yaml 拡張：Hook トリガーシーケンスと Workflows"
+  description: |
+    repository-map.yaml を拡張し、Hook トリガーシーケンスと Workflows セクションを追加。
+    単一コンポーネント単位ではなく、組み合わせモジュール単位でシステム構造を整理。
+    Hook の発火順序を公式ドキュメントに準拠してソート。
+  status: in_progress
+  depends_on: [M025]
+  playbooks:
+    - playbook-m027-repository-map-workflows.md
+  done_when:
+    - [ ] hook_trigger_sequence セクションが公式ドキュメント準拠で実装されている
+    - [ ] workflows セクションが組み合わせモジュール単位で整理されている
+    - [ ] generate-repository-map.sh に workflows 自動生成ロジックが統合されている
+    - [ ] commands と skills の違いが明示されている
 ```
 
 ---
