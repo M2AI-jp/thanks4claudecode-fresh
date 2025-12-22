@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: thanks4claudecode
+current: null
 project: plan/project.md
 ```
 
@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-repository-map-e2e-test.md
-branch: feat/repository-map-e2e-test
-last_archived: plan/archive/playbook-repository-map-sync.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-repository-map-e2e-test.md
 ```
 
 ---
@@ -28,14 +28,9 @@ last_archived: plan/archive/playbook-repository-map-sync.md
 ## goal
 
 ```yaml
-milestone: M082
-phase: p1
-done_criteria:
-  - init_flow の入力→処理→出力が repository-map.yaml の定義通りに動作する
-  - work_loop の hooks/subagents/skills 連携が正しく機能する
-  - post_loop の playbook 完了後処理が定義通りに実行される
-  - critique_process の critic 検証フローが正しく動作する
-  - project_complete の milestone 完了後処理が定義通りに動作する
+milestone: null
+phase: null
+done_criteria: null
 ```
 
 ---
