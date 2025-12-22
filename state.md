@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: thanks4claudecode
+current: null
 project: plan/project.md
 ```
 
@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-workflow-e2e-simulation.md
-branch: feat/workflow-e2e-simulation
-last_archived: plan/archive/playbook-repository-map-e2e-test.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-workflow-e2e-simulation.md
 ```
 
 ---
@@ -28,17 +28,9 @@ last_archived: plan/archive/playbook-repository-map-e2e-test.md
 ## goal
 
 ```yaml
-milestone: M082
-phase: p1
-done_criteria:
-  - tmp/workflow-simulation.md が存在し、1000行以上である
-  - シミュレーションに INIT フローの対話が含まれている
-  - シミュレーションに pm 呼び出し -> playbook 作成の対話が含まれている
-  - シミュレーションに reviewer 検証（PASS/FAIL フロー両方）の対話が含まれている
-  - シミュレーションに LOOP（Phase 実行、subtask、executor）の対話が含まれている
-  - シミュレーションに critic 検証（3点検証、PASS/FAIL）の対話が含まれている
-  - シミュレーションに POST_LOOP（アーカイブ、PR作成、milestone更新）の対話が含まれている
-  - シナリオが「認証付きアプリ作成」という複数Phase・依存関係ありのタスクである
+milestone: null
+phase: null
+done_criteria: null
 ```
 
 ---
