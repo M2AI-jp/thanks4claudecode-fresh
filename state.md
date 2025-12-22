@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: thanks4claudecode
+current: null
 project: plan/project.md
 ```
 
@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-auto-merge-workflow.md
-branch: feat/auto-merge-workflow
-last_archived: plan/archive/playbook-repository-map-e2e-test.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-workflow-e2e-simulation.md
 ```
 
 ---
@@ -38,8 +38,8 @@ done_criteria: null
 ## session
 
 ```yaml
-last_start: 2025-12-22 22:30:51
-last_end: 2025-12-22 21:29:43
+last_start: 2025-12-22 22:35:48
+last_end: 2025-12-22 22:35:47
 last_clear: 2025-12-13 00:30:00
 ```
 
