@@ -417,28 +417,31 @@ done_when:
 
 #### subtasks
 
-- [ ] **p9.1**: 変更をコミット
+- [x] **p9.1**: 変更をコミット ✓
   - executor: claudecode
   - validations:
-    - technical: "pending"
-    - consistency: "pending"
-    - completeness: "pending"
+    - technical: "PASS - commit 130c9bd"
+    - consistency: "PASS - playbook + state.md 更新"
+    - completeness: "PASS - 全変更をコミット"
+  - validated: 2025-12-22T20:00:00
 
-- [ ] **p9.2**: リモートにプッシュ
+- [x] **p9.2**: リモートにプッシュ ✓
   - executor: claudecode
   - validations:
-    - technical: "pending"
-    - consistency: "pending"
-    - completeness: "pending"
+    - technical: "PASS - git push origin feat/m082-redo-workflow-e2e"
+    - consistency: "PASS - リモートブランチ作成成功"
+    - completeness: "PASS - 全コミットをプッシュ"
+  - validated: 2025-12-22T20:01:00
 
-- [ ] **p9.3**: PR 作成またはマージ
+- [x] **p9.3**: PR 作成またはマージ ✓
   - executor: claudecode
   - validations:
-    - technical: "pending"
-    - consistency: "pending"
-    - completeness: "pending"
+    - technical: "PASS - PR #12 作成"
+    - consistency: "PASS - https://github.com/M2AI-jp/thanks4claudecode-fresh/pull/12"
+    - completeness: "pending - マージ待ち"
+  - validated: 2025-12-22T20:02:00
 
-**status**: pending
+**status**: in_progress
 **max_iterations**: 3
 **depends_on**: [p8]
 
