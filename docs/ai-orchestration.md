@@ -63,7 +63,10 @@ playbook.subtask.executor: "worker"
 # subtask で役割名を使用
 - [ ] **p1.1**: 機能を実装する
   - executor: worker  # 抽象的な役割名
-  - test_command: `npm test && echo PASS`
+  - validations:
+    - technical: "npm test で動作確認"
+    - consistency: "既存コードと整合性確認"
+    - completeness: "全機能が実装されているか確認"
 ```
 
 ### playbook での役割 override

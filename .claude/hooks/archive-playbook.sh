@@ -135,7 +135,7 @@ fi
 # ==============================================================================
 # M056: done_when 再検証（報酬詐欺防止）
 # ==============================================================================
-# playbook の goal.done_when を抽出し、関連する test_command を実行して検証
+# playbook の goal.done_when を抽出し、p_final の validations が全て PASS か検証
 # 全 PASS でなければアーカイブをブロック
 
 DONE_WHEN_SECTION=$(sed -n '/^done_when:/,/^[a-z_]*:/p' "$FILE_PATH" 2>/dev/null | grep "^  - " | head -10)
@@ -171,38 +171,24 @@ if [ "$DONE_WHEN_COUNT" -gt 0 ]; then
         exit 2  # done_when 未検証でブロック
     fi
 
-    # done_when の test_command を実行（p_final.* の test_command を収集）
-    P_FINAL_TEST_COMMANDS=$(grep -A 50 "p_final" "$FILE_PATH" 2>/dev/null | grep "test_command:" | head -10)
-    if [ -n "$P_FINAL_TEST_COMMANDS" ]; then
-        FAIL_COUNT=0
-        PASS_COUNT=0
+    # validations の PASS チェック（V15: validations ベース）
+    # p_final セクション内の subtask が全て [x]（完了）になっているか確認
+    P_FINAL_SECTION=$(grep -A 100 "p_final" "$FILE_PATH" 2>/dev/null | head -100)
+    INCOMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[ \]' 2>/dev/null || echo "0")
+    COMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[x\]' 2>/dev/null || echo "0")
 
-        # 各 test_command を実行（簡易版: grep で PASS/FAIL を確認）
-        while IFS= read -r line; do
-            CMD=$(echo "$line" | sed 's/.*test_command: *"//' | sed 's/"$//')
-            if [ -n "$CMD" ] && [ "$CMD" != "test_command:" ]; then
-                # test_command を実行して結果を確認
-                RESULT=$(eval "$CMD" 2>/dev/null || echo "FAIL")
-                if echo "$RESULT" | grep -q "PASS"; then
-                    PASS_COUNT=$((PASS_COUNT + 1))
-                else
-                    FAIL_COUNT=$((FAIL_COUNT + 1))
-                fi
-            fi
-        done <<< "$P_FINAL_TEST_COMMANDS"
-
-        if [ "$FAIL_COUNT" -gt 0 ]; then
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "  ❌ done_when の検証に失敗しました"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "  PASS: $PASS_COUNT / FAIL: $FAIL_COUNT"
-            echo ""
-            echo "  アーカイブをブロックします。"
-            echo "  → 失敗した done_when 項目を修正してください。"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            exit 2  # done_when FAIL でブロック
-        fi
+    if [ "$INCOMPLETE_SUBTASKS" -gt 0 ]; then
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  ❌ p_final の subtasks が未完了です"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  完了: $COMPLETE_SUBTASKS / 未完了: $INCOMPLETE_SUBTASKS"
+        echo ""
+        echo "  アーカイブをブロックします。"
+        echo "  → 全ての p_final subtasks を完了させてください。"
+        echo "  → validations（3点検証）が全て PASS である必要があります。"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        exit 2  # subtasks 未完了でブロック
     fi
 fi
 

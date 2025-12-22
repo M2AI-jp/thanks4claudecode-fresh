@@ -70,52 +70,57 @@ playbook リセットのトリガー:
   - 新しいセッションで動作確認
 ```
 
-## subtasks 検証ロジック（V11 新規）
+## subtasks 検証ロジック（V12: validations ベース）
 
-> **各 subtask の test_command を実行し、PASS/FAIL を判定する**
+> **各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する**
 
 ### 検証フロー
 
 ```yaml
 1. playbook から subtasks を抽出
-   → grep -A10 'subtasks:' plan/playbook-*.md
+   → grep -A15 'subtasks' plan/playbook-*.md
 
 2. 各 subtask について:
    a. criterion を確認
-   b. test_command を実行（Bash ツール）
-   c. 出力に "PASS" が含まれれば PASS
-   d. それ以外は FAIL
+   b. validations の 3 点を評価:
+      - technical: 技術的に正しく動作するか
+      - consistency: 他コンポーネントと整合性があるか
+      - completeness: 必要な変更が全て完了しているか
+   c. 3 点全て PASS なら subtask PASS
 
 3. 判定ルール:
    → 1つでも FAIL の subtask があれば phase を FAIL にする
    → 全て PASS で phase を PASS
 
 4. executor: user の場合:
-   → test_command が "手動確認:" で始まる
    → ユーザー確認が必要と報告（DEFERRED）
 ```
 
-### test_command 実行例
+### validations 評価例
 
 ```yaml
 ファイル存在:
-  test_command: "test -f docs/readme.md && echo PASS"
-  実行: Bash(command="test -f docs/readme.md && echo PASS")
-  判定: 出力に "PASS" → PASS
+  criterion: "docs/readme.md が存在する"
+  validations:
+    technical: test -f docs/readme.md で確認
+    consistency: 関連ドキュメントとの整合性を確認
+    completeness: 必要な内容が含まれているか確認
 
-内容確認:
-  test_command: "grep -q 'subtasks' pm.md && echo PASS"
-  実行: Bash(command="grep -q 'subtasks' pm.md && echo PASS")
-  判定: 出力に "PASS" → PASS
+機能動作:
+  criterion: "npm test が exit 0 で終了する"
+  validations:
+    technical: npm test を実行して exit code 確認
+    consistency: テスト対象コードと整合性確認
+    completeness: 全テストケースが含まれているか確認
 
 手動確認:
-  test_command: "手動確認: ユーザーが〇〇を完了したか"
+  criterion: "ユーザーが〇〇を完了している"
   判定: DEFERRED（ユーザー確認待ち）
 ```
 
 ---
 
-## 出力フォーマット（V11: subtask 単位）
+## 出力フォーマット（V12: validations ベース）
 
 評価結果は以下の形式で出力してください：
 
@@ -125,13 +130,17 @@ playbook リセットのトリガー:
 subtasks 達成状況:
   - p{N}.1: {PASS|FAIL|DEFERRED}
     criterion: "{criterion の内容}"
-    test_command: "{実行したコマンド}"
-    証拠: {具体的な証拠を記載}
+    validations:
+      technical: {PASS|FAIL} - {証拠}
+      consistency: {PASS|FAIL} - {証拠}
+      completeness: {PASS|FAIL} - {証拠}
 
   - p{N}.2: {PASS|FAIL|DEFERRED}
     criterion: "{criterion の内容}"
-    test_command: "{実行したコマンド}"
-    証拠: {具体的な証拠を記載}
+    validations:
+      technical: {PASS|FAIL} - {証拠}
+      consistency: {PASS|FAIL} - {証拠}
+      completeness: {PASS|FAIL} - {証拠}
 
 subtask サマリー:
   PASS: {N}個
@@ -140,7 +149,7 @@ subtask サマリー:
 
 playbook 自体の妥当性:
   - criterion の検証可能性: {OK|要改善}
-  - test_command の正確性: {OK|要改善}
+  - validations の具体性: {OK|要改善}
   - 漏れている要件: {なし|{要件リスト}}
 
 総合判定: {PASS|FAIL}
@@ -155,13 +164,12 @@ playbook 自体の妥当性:
 
 ```yaml
 総合判定 PASS の条件:
-  - 全ての自動検証 subtask（executor != user）が PASS
+  - 全ての自動検証 subtask（executor != user）の validations 3点が PASS
   - DEFERRED は許容（後続で確認）
 
 総合判定 FAIL の条件:
-  - 1つでも FAIL の subtask がある
-  - test_command が実行できない
-  - criterion と test_command が不一致
+  - 1つでも validations に FAIL がある
+  - criterion に対応する証拠が提示できない
 ```
 
 ## 評価時の質問リスト
@@ -242,11 +250,11 @@ Skills FAIL:
 ## 参照ファイル
 
 - **.claude/frameworks/done-criteria-validation.md** - **必須**: 妥当性評価の固定フレームワーク
-- **docs/criterion-validation-rules.md** - criterion 検証ルール（禁止パターン）★V11
+- **docs/criterion-validation-rules.md** - criterion 検証ルール（禁止パターン）
 - **.claude/skills/lint-checker/skill.md** - lint チェック手順
 - **.claude/skills/test-runner/skill.md** - テスト実行手順
 - state.md - 現在の goal.done_criteria
-- playbook - phase の subtasks（V11: criterion + executor + test_command）
+- playbook - phase の subtasks（V12: criterion + executor + validations）
 
 ## 重要: 固定フレームワークの使用
 

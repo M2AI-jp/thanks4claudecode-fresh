@@ -91,11 +91,10 @@ if [[ "$NEW_STRING" != *"validations:"* ]]; then
     # validations がない場合はブロック
     echo "[subtask-guard] ❌ BLOCKED: subtask 完了には validations が必須です。"
     echo ""
-    echo "V12 形式（チェックボックス）で以下の 3 検証を追加してください:"
+    echo "V15 形式（チェックボックス）で以下の 3 検証を追加してください:"
     echo ""
     echo "- [x] **p1.1**: criterion が満たされている ✓"
     echo "  - executor: claudecode"
-    echo "  - test_command: \`...\`"
     echo "  - validations:"
     echo "    - technical: \"PASS - 技術的に正しい\""
     echo "    - consistency: \"PASS - 整合性がある\""
@@ -107,5 +106,5 @@ if [[ "$NEW_STRING" != *"validations:"* ]]; then
 fi
 
 # validations がある場合は警告のみで許可
-echo "{\"decision\": \"allow\", \"systemMessage\": \"[subtask-guard] ⚠️ subtask を完了にする前に、以下の 3 検証を確認してください:\\n\\n1. technical: test_command が PASS を返すか\\n2. consistency: 関連ファイルとの整合性があるか\\n3. completeness: 必要な変更が全て完了しているか\\n\\n validated タイムスタンプの追加を推奨します。\"}"
+echo "{\"decision\": \"allow\", \"systemMessage\": \"[subtask-guard] ⚠️ subtask を完了にする前に、以下の 3 検証を確認してください:\\n\\n1. technical: 技術的に正しく動作するか\\n2. consistency: 関連ファイルとの整合性があるか\\n3. completeness: 必要な変更が全て完了しているか\\n\\n validated タイムスタンプの追加を推奨します。\"}"
 exit 0

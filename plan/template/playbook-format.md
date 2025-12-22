@@ -101,7 +101,6 @@ done_when:
 
 - [ ] **p1.1**: {対象} が {状態} である
   - executor: claudecode | codex | coderabbit | user
-  - test_command: `{検証コマンド}`
   - validations:
     - technical: "{技術的に正しく動作するか}"
     - consistency: "{他コンポーネントと整合性があるか}"
@@ -109,19 +108,17 @@ done_when:
 
 - [ ] **p1.2**: {コマンド} が {期待結果} を返す
   - executor: claudecode
-  - test_command: `{コマンド} && echo PASS || echo FAIL`
   - validations:
-    - technical: "{...}"
-    - consistency: "{...}"
-    - completeness: "{...}"
+    - technical: "{コマンド実行結果が期待通りか}"
+    - consistency: "{関連コマンドと整合性があるか}"
+    - completeness: "{全ての条件が満たされているか}"
 
 - [ ] **p1.3**: ユーザーが {操作} を完了している
   - executor: user
-  - test_command: `手動確認: {具体的な確認手順}`
   - validations:
-    - technical: "{...}"
-    - consistency: "{...}"
-    - completeness: "{...}"
+    - technical: "{操作が正しく完了したか}"
+    - consistency: "{手順書と整合性があるか}"
+    - completeness: "{全ステップが完了しているか}"
 
 **status**: pending | in_progress | done
 **max_iterations**: 5
@@ -137,11 +134,10 @@ done_when:
 
 - [ ] **p2.1**: {前提条件} が満たされている
   - executor: claudecode
-  - test_command: `test -f {path} && echo PASS`
   - validations:
-    - technical: "{...}"
-    - consistency: "{...}"
-    - completeness: "{...}"
+    - technical: "{前提条件が技術的に満たされているか}"
+    - consistency: "{他の Phase と整合性があるか}"
+    - completeness: "{必要な準備が全て完了しているか}"
 
 **status**: pending
 
@@ -153,7 +149,6 @@ done_when:
 # 完了した subtask（- [x] に変更 + validated タイムスタンプ追加）
 - [x] **p1.1**: README.md が存在する ✓
   - executor: claudecode
-  - test_command: `test -f README.md && echo PASS`
   - validations:
     - technical: "PASS - ファイルが存在する"
     - consistency: "PASS - 他ドキュメントと整合"
@@ -169,7 +164,6 @@ done_when:
 ```markdown
 - [ ] **p{N}.{M}**: {criterion}
   - executor: claudecode | codex | coderabbit | user
-  - test_command: `{PASS/FAIL を返すコマンド}`
   - validations:
     - technical: "{技術的検証}"
     - consistency: "{整合性検証}"
@@ -185,7 +179,6 @@ done_when:
 | `**p{N}.{M}**` | subtask ID（太字） |
 | criterion | 検証可能な完了条件（`:` の後に記述） |
 | executor | 実行者（claudecode / codex / coderabbit / user） |
-| test_command | PASS/FAIL を返す検証コマンド |
 | validations | 3 点検証（technical / consistency / completeness） |
 
 ### 完了時の追加フィールド
@@ -202,12 +195,11 @@ done_when:
   criterion: "README.md が存在する"
   executor: claudecode
   test_command: "test -f README.md && echo PASS"
-  status: PASS  # ← 報酬詐欺が容易
+  status: PASS  # ← 報酬詐欺が容易、test_command は機能しない
 
 # V12 形式（現行）
 - [x] **p1.1**: README.md が存在する ✓
   - executor: claudecode
-  - test_command: `test -f README.md && echo PASS`
   - validations:
     - technical: "PASS - ファイルが存在する"
     - consistency: "PASS - .gitignore と整合"
@@ -217,6 +209,7 @@ done_when:
 
 > **報酬詐欺防止**: `- [ ]` → `- [x]` の変更は subtask-guard.sh がチェック。
 > チェックボックスの変更は Edit ツールで追跡可能。
+> V12 では test_command を廃止し、validations（3点検証）による評価に統一。
 
 ---
 
@@ -240,7 +233,6 @@ done_when:
 | `**p{N}.{M}**` | subtask ID（太字、行頭に配置） |
 | criterion | `:` の後に検証可能な完了条件（1文） |
 | executor | claudecode / codex / coderabbit / user |
-| test_command | PASS/FAIL を返す検証コマンド（バッククォートで囲む） |
 | validations | 3 点検証（technical / consistency / completeness） |
 
 ### オプション項目
@@ -274,78 +266,95 @@ depends_on: [p1, p2]  # 依存 Phase が未完了なら実行不可
 
 ---
 
-## test_command パターン集
+## validations パターン集
 
-> **V11: criterion ごとに test_command を紐付け。以下のパターンを参照。**
+> **V12: criterion ごとに validations（3点検証）を紐付け。以下のパターンを参照。**
 
 ```yaml
-# ファイル存在チェック
-test_command: "test -f {path} && echo PASS || echo FAIL"
-test_command: "test -d {dir} && echo PASS || echo FAIL"
+# ファイル存在
+criterion: "{file} が存在する"
+validations:
+  technical: "test -f {file} でファイル存在を確認"
+  consistency: "関連ドキュメント/設定との整合性を確認"
+  completeness: "必要な内容が全て含まれているか確認"
 
-# ファイル内容チェック
-test_command: "grep -q '{pattern}' {file} && echo PASS || echo FAIL"
-test_command: "grep -c '{pattern}' {file} | awk '{if($1>={N}) print \"PASS\"; else print \"FAIL\"}'"
+# 機能動作
+criterion: "{command} が正常に動作する"
+validations:
+  technical: "{command} を実行し exit code を確認"
+  consistency: "関連コンポーネントとの整合性を確認"
+  completeness: "全てのケースが処理されるか確認"
 
-# コマンド実行結果
-test_command: "{command} && echo PASS || echo FAIL"
-test_command: "{command}; [ $? -eq 0 ] && echo PASS || echo FAIL"
+# 設定変更
+criterion: "{file} に {setting} が設定されている"
+validations:
+  technical: "grep で設定値の存在を確認"
+  consistency: "他の設定ファイルとの整合性を確認"
+  completeness: "関連する全設定が更新されているか確認"
 
-# 数値比較
-test_command: "wc -l {file} | awk '{if($1>={N}) print \"PASS\"; else print \"FAIL\"}'"
-test_command: "[ $(expr) -ge {N} ] && echo PASS || echo FAIL"
-
-# HTTP ステータス
-test_command: "curl -s -o /dev/null -w '%{http_code}' {url} | grep -q '200' && echo PASS || echo FAIL"
-
-# 複数条件
-test_command: |
-  test -f {file1} && \
-  grep -q '{pattern}' {file2} && \
-  echo PASS || echo FAIL
+# HTTP エンドポイント
+criterion: "{url} が {status} を返す"
+validations:
+  technical: "curl でステータスコードを確認"
+  consistency: "API 仕様との整合性を確認"
+  completeness: "エラーケースも含めて動作確認"
 
 # 手動確認（executor: user の場合）
-test_command: "手動確認: {具体的な確認手順を記述}"
+criterion: "ユーザーが {action} を完了している"
+validations:
+  technical: "ユーザーに完了確認を依頼"
+  consistency: "手順書との整合性を確認"
+  completeness: "全ステップが完了しているか確認"
 ```
 
-### executor 別 test_command 例
+### executor 別 validations 例
 
 ```yaml
 claudecode:
-  - "test -f docs/readme.md && echo PASS"
-  - "grep -q 'subtasks:' plan/playbook-*.md && echo PASS"
-  - "wc -l {file} | awk '{if($1>=50) print \"PASS\"}'"
+  criterion: "docs/readme.md が存在する"
+  validations:
+    technical: "test -f docs/readme.md で確認"
+    consistency: "他ドキュメントとの整合性確認"
+    completeness: "必須セクションが含まれているか確認"
 
 codex:
-  - "npm test && echo PASS"
-  - "pytest {path} && echo PASS"
-  - "go test ./... && echo PASS"
+  criterion: "npm test が通る"
+  validations:
+    technical: "npm test を実行し全テスト PASS"
+    consistency: "テスト対象コードとの整合性確認"
+    completeness: "新機能のテストが含まれているか確認"
 
 coderabbit:
-  - "cr review --check && echo PASS"
-  - "手動確認: CodeRabbit の PR コメントに重大な指摘がないこと"
+  criterion: "コードレビューが完了している"
+  validations:
+    technical: "CodeRabbit の結果を確認"
+    consistency: "コーディング規約との整合性確認"
+    completeness: "指摘事項が全て対応済みか確認"
 
 user:
-  - "手動確認: Vercel ダッシュボードでデプロイ成功を確認"
-  - "手動確認: API キーが環境変数に設定されていること"
+  criterion: "Vercel にデプロイされている"
+  validations:
+    technical: "ユーザーにデプロイ完了を確認"
+    consistency: "環境変数設定との整合性確認"
+    completeness: "全機能がデプロイされているか確認"
 ```
 
 ---
 
 ## criterion 記述ガイド
 
-> **V11: criterion は subtask の一部。test_command と 1:1 で対応。**
+> **V12: criterion は subtask の一部。validations（3点検証）と対応。**
 
 ```yaml
 良い criterion（検証可能）:
   - "README.md が存在する"
-    → test_command: "test -f README.md && echo PASS"
+    → validations で存在確認 + 内容確認
   - "npm test が exit code 0 で終了する"
-    → test_command: "npm test && echo PASS"
+    → validations でテスト実行 + 結果確認
   - "http://localhost:3000 が 200 を返す"
-    → test_command: "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000 | grep '200'"
+    → validations で HTTP ステータス確認
   - "禁止パターンが15個以上列挙されている"
-    → test_command: "grep -c '^- ' {file} | awk '{if($1>=15) print \"PASS\"}'"
+    → validations で件数確認 + 内容確認
 
 悪い criterion（曖昧・検証不可）:
   - "ドキュメントを書く" ← 何を、どこに？
@@ -358,7 +367,7 @@ user:
 ⚠️ 禁止パターン（docs/criterion-validation-rules.md 参照）:
   - 動詞で終わる（「〜する」「〜した」）
   - 曖昧な形容詞（「適切」「正しく」「良い」）
-  - 検証方法が不明（test_command が書けない）
+  - 検証方法が不明（validations が書けない）
 ```
 
 ---
@@ -755,7 +764,7 @@ enforcement:
 validations:
   technical:
     description: 技術的に正しく動作するか
-    method: test_command の実行結果が PASS を返す
+    method: 実際にコマンドを実行し、期待する結果を確認
     examples:
       - bash -n {script} でシンタックスエラーがない
       - npm test が exit 0 で終了する
@@ -822,12 +831,12 @@ bypass_audit:
 
 問題背景:
   - M014 等が achieved だが done_when が実際には満たされていなかった
-  - test_command で「存在チェック」だけでは不十分
+  - 「存在チェック」だけでは不十分
   - 「実際の動作確認」（end-to-end テスト）が必須
 
 解決策:
   - playbook 最終フェーズとして p_final を必須化
-  - done_when の各項目に test_command を定義
+  - done_when の各項目に validations（3点検証）を定義
   - 全 PASS でなければアーカイブ不可
 ```
 
@@ -840,23 +849,19 @@ bypass_audit:
 
 #### subtasks
 
-- id: p_final.1
-  criterion: "done_when 項目1 が実際に満たされている"
-  executor: claudecode
-  test_command: "{done_when 項目1 の検証コマンド}"
-  validations:
-    technical: "検証コマンドが正常に実行できる"
-    consistency: "test_command の結果が実際の状態と一致"
-    completeness: "関連する全てのファイル/機能が含まれている"
+- [ ] **p_final.1**: done_when 項目1 が実際に満たされている
+  - executor: claudecode
+  - validations:
+    - technical: "検証を実行し、期待結果を確認"
+    - consistency: "検証結果が実際の状態と一致"
+    - completeness: "関連する全てのファイル/機能が含まれている"
 
-- id: p_final.2
-  criterion: "done_when 項目2 が実際に満たされている"
-  executor: claudecode
-  test_command: "{done_when 項目2 の検証コマンド}"
-  validations:
-    technical: "検証コマンドが正常に実行できる"
-    consistency: "test_command の結果が実際の状態と一致"
-    completeness: "関連する全てのファイル/機能が含まれている"
+- [ ] **p_final.2**: done_when 項目2 が実際に満たされている
+  - executor: claudecode
+  - validations:
+    - technical: "検証を実行し、期待結果を確認"
+    - consistency: "検証結果が実際の状態と一致"
+    - completeness: "関連する全てのファイル/機能が含まれている"
 
 # done_when の項目数だけ繰り返す
 
@@ -872,27 +877,19 @@ max_iterations: 3
 
 #### subtasks
 
-- id: p_final.1
-  criterion: "docs/feature-priority-map.md が存在し、critical 機能が 5 個以上定義されている"
-  executor: claudecode
-  test_command: |
-    test -f docs/feature-priority-map.md && \
-    grep -c 'priority: critical' docs/feature-priority-map.md | awk '{if($1>=5) print "PASS"; else print "FAIL"}'
-  validations:
-    technical: "ファイルが存在し、grep コマンドが正常に動作する"
-    consistency: "critical 機能の数が feature-priority-map.md の定義と一致"
-    completeness: "全ての重要機能が critical に分類されている"
+- [ ] **p_final.1**: docs/feature-priority-map.md が存在し、critical 機能が 5 個以上定義されている
+  - executor: claudecode
+  - validations:
+    - technical: "test -f と grep -c で確認"
+    - consistency: "critical 機能の数が feature-priority-map.md の定義と一致"
+    - completeness: "全ての重要機能が critical に分類されている"
 
-- id: p_final.2
-  criterion: "セッション開始時に critical 機能一覧が実際に表示される"
-  executor: claudecode
-  test_command: |
-    echo '{"trigger":"startup"}' | bash .claude/hooks/session-start.sh 2>&1 | \
-    grep -q '保護すべき' && echo PASS || echo FAIL
-  validations:
-    technical: "session-start.sh が正常に実行できる"
-    consistency: "表示される機能一覧が feature-priority-map.md と一致"
-    completeness: "全 critical 機能が表示される"
+- [ ] **p_final.2**: セッション開始時に critical 機能一覧が実際に表示される
+  - executor: claudecode
+  - validations:
+    - technical: "session-start.sh を実行して出力を確認"
+    - consistency: "表示される機能一覧が feature-priority-map.md と一致"
+    - completeness: "全 critical 機能が表示される"
 
 status: pending
 ```
@@ -903,7 +900,7 @@ status: pending
 手順:
   1. playbook の goal.done_when を確認
   2. 各 done_when 項目に対応する p_final.{N} subtask を作成
-  3. test_command は「存在チェック」ではなく「実際の動作確認」を使用
+  3. validations は「存在チェック」ではなく「実際の動作確認」を記述
   4. validations に technical/consistency/completeness を必ず含める
   5. p_final が全 PASS → final_tasks 実行 → アーカイブ可能
 
@@ -913,14 +910,14 @@ done_when の再検証ポイント:
   - 「〇〇が設定されている」→「〇〇を参照して値を確認する」
 
 禁止パターン:
-  - test -f {file} だけで PASS（存在するが壊れている可能性）
-  - grep -q {pattern} だけで PASS（パターンはあるが動作しない可能性）
+  - ファイル存在確認だけで PASS（存在するが壊れている可能性）
+  - パターン存在確認だけで PASS（パターンはあるが動作しない可能性）
   - 手動確認だけに依存（自動検証可能なら自動化必須）
 
 推奨パターン:
   - 実際にコマンドを実行して出力を確認
-  - 複数条件を && で連結して全て満たすことを確認
-  - エラー出力も含めて検証（2>&1 | grep ...）
+  - 複数条件を全て満たすことを確認
+  - エラーケースも含めて検証
 ```
 
 ### p_final の強制メカニズム
@@ -1023,10 +1020,11 @@ status 更新:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-22 | V15: test_command を廃止。validations（3点検証）ベースに完全移行。 |
 | 2025-12-17 | V14: final_tasks を V12 チェックボックス形式に統一。archive-playbook.sh と整合。 |
 | 2025-12-14 | V13: final_tasks セクション追加。M019 playbook自己完結システム対応。 |
 | 2025-12-14 | V12: validations セクション追加。M018 3検証システム対応。 |
-| 2025-12-13 | V11: subtasks 構造を導入。criterion + executor + test_command を1セット化。test_command パターン集追加。 |
+| 2025-12-13 | V11: subtasks 構造を導入。criterion + executor + test_command を1セット化。 |
 | 2025-12-09 | V10: 中間成果物の処理セクションを追加。stray files 防止。 |
 | 2025-12-08 | V9: derives_from と playbook 導出ガイドを追加。計画の連鎖対応。 |
 | 2025-12-08 | V8: executor を拡張（claudecode/codex/coderabbit/user）。executor_config 追加。 |

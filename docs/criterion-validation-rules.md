@@ -67,7 +67,7 @@ TDD の本質は「どんな動きが正しいか」を先に定義すること�
 ```yaml
 checklist:
   - [ ] 状態形式か？（「〜である」「〜が存在する」）
-  - [ ] test_command が書けるか？
+  - [ ] validations（3点検証）が書けるか？
   - [ ] 第三者が同じ結果を再現できるか？
   - [ ] 数値・具体例が含まれているか？
   - [ ] 禁止パターンに該当しないか？
@@ -94,9 +94,10 @@ Given: ユーザーが認証済み
 When: GET /api/users を実行
 Then: 200 + ユーザー一覧 JSON を返す
 
-test_command: |
-  TOKEN=$(cat .env | grep API_TOKEN | cut -d= -f2)
-  curl -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/users | jq '.users | length > 0'
+validations:
+  technical: "curl で API を呼び出し、200 と JSON を確認"
+  consistency: "認証トークンが有効であることを確認"
+  completeness: "レスポンスにユーザー一覧が含まれていることを確認"
 ```
 
 ### 例2: ファイル操作
@@ -106,10 +107,10 @@ Given: src/components/ ディレクトリが存在
 When: Button.tsx を作成
 Then: src/components/Button.tsx が存在し、export default Button を含む
 
-test_command: |
-  test -f src/components/Button.tsx && \
-  grep -q 'export default Button' src/components/Button.tsx && \
-  echo PASS
+validations:
+  technical: "test -f と grep で存在と内容を確認"
+  consistency: "他のコンポーネントと同じ構造であることを確認"
+  completeness: "export default Button が含まれていることを確認"
 ```
 
 ### 例3: テスト実行
@@ -119,9 +120,10 @@ Given: 依存パッケージがインストール済み
 When: npm test を実行
 Then: 全テストが PASS し、カバレッジ 80% 以上
 
-test_command: |
-  npm test -- --coverage 2>&1 | grep -q 'All tests passed' && \
-  npm test -- --coverage 2>&1 | grep -oP 'Coverage: \K[0-9]+' | awk '{if($1>=80) print "PASS"; else print "FAIL"}'
+validations:
+  technical: "npm test を実行し全テスト PASS を確認"
+  consistency: "カバレッジレポートが生成されることを確認"
+  completeness: "カバレッジ 80% 以上を確認"
 ```
 
 ---
@@ -131,24 +133,39 @@ test_command: |
 ```yaml
 examples:
   - criterion: "README.md が存在する"
-    test_command: "test -f README.md && echo PASS"
-    why: 状態形式、test_command が明確
+    validations:
+      technical: "test -f README.md で確認"
+      consistency: "他ドキュメントと整合性確認"
+      completeness: "必須セクションが含まれているか確認"
+    why: 状態形式、validations が明確
 
   - criterion: "npm test が exit code 0 で終了する"
-    test_command: "npm test && echo PASS || echo FAIL"
+    validations:
+      technical: "npm test を実行し exit code 確認"
+      consistency: "テスト対象コードと整合性確認"
+      completeness: "全テストケースが含まれているか確認"
     why: 具体的な成功条件、再現可能
 
   - criterion: "禁止パターンが15個以上列挙されている"
-    test_command: "grep -c '^| 「' docs/criterion-validation-rules.md | awk '{if($1>=15) print \"PASS\"}'"
-    why: 数値目標が明確、grep で検証可能
+    validations:
+      technical: "grep -c で件数をカウント"
+      consistency: "パターン形式が統一されているか確認"
+      completeness: "必要なパターンが全て含まれているか確認"
+    why: 数値目標が明確、検証可能
 
   - criterion: "API レスポンスが 200ms 以内"
-    test_command: "curl -w '%{time_total}' -o /dev/null -s http://localhost:3000/api/health | awk '{if($1<0.2) print \"PASS\"; else print \"FAIL\"}'"
+    validations:
+      technical: "curl でレスポンス時間を測定"
+      consistency: "他のエンドポイントと整合性確認"
+      completeness: "複数回測定で安定しているか確認"
     why: 定量的な基準、測定可能
 
   - criterion: "全 subtask に executor フィールドが存在する"
-    test_command: "grep -c 'executor:' plan/playbook-*.md | awk -F: '{sum+=$2} END {if(sum>=10) print \"PASS\"}'"
-    why: 構造的な要件、grep で検証可能
+    validations:
+      technical: "grep で executor: の存在を確認"
+      consistency: "executor の値が有効か確認"
+      completeness: "全 subtask が確認されているか確認"
+    why: 構造的な要件、検証可能
 ```
 
 ---
@@ -202,7 +219,7 @@ regex_patterns:
   - pattern: "完成|仕上げ|対応する|改善|最適化"
     message: "完了の定義が不明確です。具体的なチェックリストに分解してください"
   - pattern: "動作する|機能する|問題ない|成功する"
-    message: "検証方法が不明です。test_command が書ける形式に修正してください"
+    message: "検証方法が不明です。validations が書ける形式に修正してください"
 ```
 
 ---
@@ -219,4 +236,5 @@ regex_patterns:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-22 | test_command を廃止、validations（3点検証）ベースに移行。 |
 | 2025-12-13 | 初版作成。禁止パターン15個、Given/When/Then テンプレート、検出ロジックを定義。 |

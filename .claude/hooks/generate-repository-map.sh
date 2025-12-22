@@ -226,11 +226,11 @@ HTS_HEADER
       description: "$(get_trigger_description "$trigger")"
       matchers:
 EOF
-            # matcher ごとに Hook を出力
-            jq -r --arg t "$trigger" '
-                .hooks[$t][]? |
-                "\(.matcher)"
-            ' "$settings_file" 2>/dev/null | sort -u | while read -r matcher; do
+            # matcher ごとに Hook を出力（glob 展開を防ぐ）
+            set -f  # glob 展開を無効化
+            local matchers
+            matchers=$(jq -r --arg t "$trigger" '.hooks[$t][]? | "\(.matcher)"' "$settings_file" 2>/dev/null | sort -u)
+            while IFS= read -r matcher; do
                 [[ -z "$matcher" ]] && continue
                 cat >> "$TEMP_FILE" << EOF
         - matcher: "$matcher"
@@ -241,17 +241,19 @@ EOF
                     .hooks[$t][]? |
                     select(.matcher == $m) |
                     .hooks[]? |
+                    select(.command != null) |
                     .command | split("/") | .[-1]
-                ' "$settings_file" 2>/dev/null | while read -r hook_script; do
+                ' "$settings_file" 2>/dev/null | while IFS= read -r hook_script; do
                     [[ -z "$hook_script" ]] && continue
                     local hook_desc
-                    hook_desc=$(extract_description "$HOOKS_DIR/$hook_script" 2>/dev/null | head -c 100)
+                    hook_desc=$(extract_description "$HOOKS_DIR/$hook_script" 2>/dev/null | head -c 100 || echo "")
                     cat >> "$TEMP_FILE" << EOF
             - script: "$hook_script"
               description: "$hook_desc"
 EOF
                 done
-            done
+            done <<< "$matchers"
+            set +f  # glob 展開を再有効化
         fi
     done
 }
@@ -300,7 +302,7 @@ workflows:
         - "playbook（active な場合）"
       process:
         hooks:
-          - "session-start.sh: pending/consent 作成、失敗パターン表示"
+          - "session-start.sh: pending 作成、失敗パターン表示"
           - "init-guard.sh: 必須ファイル Read 強制"
           - "check-main-branch.sh: main ブランチ禁止"
         subagents: []
@@ -309,12 +311,11 @@ workflows:
       output:
         - "[自認] ブロック（what, milestone, phase, branch...）"
         - "pending ファイル削除"
-        - "consent ファイル存在"
       references:
         - ".claude/hooks/session-start.sh"
         - ".claude/hooks/init-guard.sh"
         - ".claude/hooks/check-main-branch.sh"
-        - "CLAUDE.md#INIT"
+        - "CLAUDE.md"
         - "state.md"
         - "plan/project.md"
 
@@ -330,7 +331,6 @@ workflows:
       process:
         hooks:
           - "playbook-guard.sh: playbook 存在確認"
-          - "consent-guard.sh: 合意確認"
           - "scope-guard.sh: スコープ制限"
           - "executor-guard.sh: executor 整合性"
           - "critic-guard.sh: critic 未実行チェック"
@@ -346,12 +346,11 @@ workflows:
         - "phase.status = done（PASS の場合）"
       references:
         - ".claude/hooks/playbook-guard.sh"
-        - ".claude/hooks/consent-guard.sh"
         - ".claude/hooks/scope-guard.sh"
         - ".claude/hooks/executor-guard.sh"
         - ".claude/hooks/critic-guard.sh"
-        - ".claude/subagents/critic/"
-        - "CLAUDE.md#LOOP"
+        - ".claude/agents/critic.md"
+        - "CLAUDE.md"
 
     - id: post_loop
       name: "POST_LOOP"
@@ -382,35 +381,10 @@ workflows:
         - ".claude/hooks/archive-playbook.sh"
         - ".claude/hooks/cleanup-hook.sh"
         - ".claude/hooks/create-pr-hook.sh"
-        - ".claude/subagents/pm/"
+        - ".claude/agents/pm.md"
         - ".claude/skills/post-loop/"
-        - "CLAUDE.md#POST_LOOP"
+        - "CLAUDE.md"
         - "plan/project.md"
-
-    - id: consent_process
-      name: "CONSENT"
-      why: |
-        ユーザープロンプトの誤解釈を防止し、Edit/Write 前に意図を確認する。
-        [理解確認] ブロックによる構造化出力で合意を取得。
-      when: "Edit/Write 実行前"
-      input:
-        - "ユーザープロンプト"
-        - "変更対象ファイル"
-      process:
-        hooks:
-          - "consent-guard.sh: consent ファイル確認"
-        subagents: []
-        skills:
-          - "consent-process: [理解確認] 出力"
-        claude_md: "[理解確認] what, why, how, scope, exclusions, risks"
-      output:
-        - "[理解確認] ブロック"
-        - "consent ファイル削除（OK の場合）"
-        - "Edit/Write 実行許可"
-      references:
-        - ".claude/hooks/consent-guard.sh"
-        - ".claude/skills/consent-process/"
-        - "CLAUDE.md#理解確認"
 
     - id: critique_process
       name: "CRITIQUE"
@@ -435,9 +409,9 @@ workflows:
         - "修正指示（FAIL の場合）"
       references:
         - ".claude/hooks/critic-guard.sh"
-        - ".claude/subagents/critic/"
-        - ".claude/rules/frameworks/done-criteria-validation.md"
-        - "CLAUDE.md#CRITIQUE"
+        - ".claude/agents/critic.md"
+        - ".claude/frameworks/done-criteria-validation.md"
+        - "CLAUDE.md"
 
     - id: project_complete
       name: "PROJECT_COMPLETE"
@@ -450,7 +424,8 @@ workflows:
         - "現在の feature ブランチ"
         - "state.md"
       process:
-        hooks: []
+        hooks:
+          - "merge-pr.sh: main マージ"
         subagents:
           - "pm: 全 milestone 達成を検出"
         skills:
@@ -463,8 +438,8 @@ workflows:
         - "PROJECT 完了アナウンス"
         - "/clear 推奨"
       references:
-        - "plan/project.md#project_complete"
-        - "CLAUDE.md#POST_LOOP"
+        - "plan/project.md"
+        - "CLAUDE.md"
         - ".claude/hooks/merge-pr.sh"
 WORKFLOWS_HEADER
 }
