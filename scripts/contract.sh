@@ -253,7 +253,7 @@ EOF
 }
 
 # Admin Maintenance 許可パターン（全体一致 ^...$ で判定）
-# 注意: 複合コマンドは事前にブロックされるため、ここは単一コマンドのみ
+# 注意: 複合コマンドは Bootstrap 例外チェックで別途処理
 ADMIN_MAINTENANCE_PATTERNS=(
     # mkdir -p plan/archive（オプション付きも許可）
     '^mkdir[[:space:]]+(-p[[:space:]]+)?plan/archive/?$'
@@ -261,6 +261,8 @@ ADMIN_MAINTENANCE_PATTERNS=(
     '^mv[[:space:]]+plan/playbook-[^[:space:]]+\.md[[:space:]]+plan/archive/?$'
     # git add state.md（単独）
     '^git[[:space:]]+add[[:space:]]+state\.md$'
+    # git add -A（全ファイル追加）
+    '^git[[:space:]]+add[[:space:]]+-A$'
     # git add plan/archive/（単独またはファイル指定）
     '^git[[:space:]]+add[[:space:]]+plan/archive(/[^[:space:]]*)?$'
     # git add state.md plan/archive/（2つ同時）
@@ -269,10 +271,42 @@ ADMIN_MAINTENANCE_PATTERNS=(
     '^git[[:space:]]+commit[[:space:]]+-m[[:space:]]+'
 )
 
+# Bootstrap 例外: 複合コマンドでも許可するパターン
+# playbook アーカイブ後の最終コミット用
+BOOTSTRAP_COMPOUND_PATTERNS=(
+    # git add state.md && git commit -m "..."
+    '^git[[:space:]]+add[[:space:]]+state\.md[[:space:]]+&&[[:space:]]+git[[:space:]]+commit'
+    # git add -A && git commit -m "..."
+    '^git[[:space:]]+add[[:space:]]+-A[[:space:]]+&&[[:space:]]+git[[:space:]]+commit'
+    # git add ... && git status (確認用)
+    '^git[[:space:]]+add[[:space:]]+.*&&[[:space:]]+git[[:space:]]+status'
+)
+
+# Bootstrap 例外: 単独コマンドでも許可（playbook=null + admin）
+BOOTSTRAP_SINGLE_PATTERNS=(
+    # git push（PR 作成用）
+    '^git[[:space:]]+push'
+    # gh pr create（PR 作成用）
+    '^gh[[:space:]]+pr[[:space:]]+create'
+    # gh pr merge（PR マージ用）
+    '^gh[[:space:]]+pr[[:space:]]+merge'
+)
+
 # Admin Maintenance allowlist に一致するか判定
 is_admin_maintenance_allowed() {
     local cmd="$1"
     for pattern in "${ADMIN_MAINTENANCE_PATTERNS[@]}"; do
+        if [[ "$cmd" =~ $pattern ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Bootstrap 単独コマンド allowlist に一致するか判定
+is_bootstrap_single_allowed() {
+    local cmd="$1"
+    for pattern in "${BOOTSTRAP_SINGLE_PATTERNS[@]}"; do
         if [[ "$cmd" =~ $pattern ]]; then
             return 0
         fi
@@ -336,7 +370,18 @@ EOF
     # 5. playbook=null の場合
     if [[ -z "$playbook" || "$playbook" == "null" ]]; then
         # 5a. 複合コマンドは admin でも禁止（注入対策）
+        # ただし Bootstrap 例外: state.md と plan/ のみの git 操作は許可
         if is_compound_command "$command"; then
+            # Bootstrap 例外チェック: 複合コマンドパターンに一致するか
+            if [[ "$security" == "admin" ]]; then
+                for pattern in "${BOOTSTRAP_COMPOUND_PATTERNS[@]}"; do
+                    if [[ "$command" =~ $pattern ]]; then
+                        echo "[ADMIN-MAINTENANCE] 複合コマンド許可（Bootstrap 例外）" >&2
+                        return 0
+                    fi
+                done
+            fi
+
             cat >&2 <<EOF
 ========================================
   [BLOCK] 複合コマンド禁止
@@ -384,6 +429,11 @@ EOF
                 echo "[ADMIN-MAINTENANCE] 許可: $command" >&2
                 return 0
             fi
+            # 5c-2. Bootstrap 単独パターン（git push, gh pr 等）も許可
+            if is_bootstrap_single_allowed "$command"; then
+                echo "[BOOTSTRAP] 許可: $command" >&2
+                return 0
+            fi
         fi
 
         # 5d. それ以外はブロック
@@ -423,5 +473,6 @@ export -f is_maintenance_allowed
 export -f is_playbook_file
 export -f is_state_file
 export -f is_admin_maintenance_allowed
+export -f is_bootstrap_single_allowed
 export -f contract_check_edit
 export -f contract_check_bash

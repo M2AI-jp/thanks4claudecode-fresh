@@ -64,7 +64,6 @@ check-main-branch.sh より：
 | check-main-branch.sh | PreToolUse:* | main ブランチでの作業ブロック |
 | check-protected-edit.sh | PreToolUse:Edit | 保護ファイル編集ブロック |
 | cleanup-hook.sh | PostToolUse:Edit | tmp/ クリーンアップ |
-| consent-guard.sh | PreToolUse:Edit | 合意プロセス強制 |
 | create-pr-hook.sh | PostToolUse:Edit | PR 自動作成 |
 | create-pr.sh | utility | PR 作成ユーティリティ |
 | critic-guard.sh | PreToolUse:Edit | state: done 変更ブロック |
@@ -102,13 +101,12 @@ check-main-branch.sh より：
 | reviewer | コード/設計/playbook レビュー |
 | setup-guide | セットアッププロセスガイド |
 
-### Skills（9個）
+### Skills（8個）
 
 専門知識を提供するスキル定義。
 
 | Skill | 責任 |
 |-------|------|
-| consent-process | 合意プロセス（[理解確認]） |
 | context-management | コンテキスト管理（/compact 最適化） |
 | deploy-checker | デプロイ準備・検証 |
 | frontend-design | フロントエンド設計 |

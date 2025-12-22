@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/archive/playbook-m082-repository-optimization.md
-branch: chore/m082-completion
-last_archived: plan/archive/playbook-m082-repository-optimization.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-workflow-inconsistencies.md
 ```
 
 ---
@@ -30,7 +30,7 @@ last_archived: plan/archive/playbook-m082-repository-optimization.md
 ```yaml
 milestone: null
 phase: null
-done_criteria: []
+done_criteria: null
 ```
 
 ---
@@ -38,7 +38,8 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-22 19:45:40
+last_start: 2025-12-22 21:30:00
+last_end: null
 last_clear: 2025-12-13 00:30:00
 ```
 

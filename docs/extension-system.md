@@ -159,7 +159,6 @@ SessionEnd → [クリーンアップ]
 │ SessionStart                                                     │
 │ └── session-start.sh                                            │
 │     ├── pending ファイル作成 (.claude/.session-init/pending)    │
-│     ├── consent ファイル作成 (.claude/.session-init/consent)    │
 │     ├── 過去の失敗パターン表示                                  │
 │     └── [自認] 出力要求                                         │
 └─────────────────────────────────────────────────────────────────┘
@@ -182,8 +181,6 @@ SessionEnd → [クリーンアップ]
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │ PreToolUse:Edit/Write (Edit/Write 固有)                         │
-│ ├── consent-guard.sh → consent ファイル存在時ブロック          │
-│ │   └── [理解確認] 出力 → ユーザー OK → rm consent → 通過     │
 │ ├── check-protected-edit.sh → 保護ファイル編集ブロック         │
 │ ├── playbook-guard.sh → playbook=null 時ブロック               │
 │ ├── depends-check.sh → Phase 依存関係チェック                  │

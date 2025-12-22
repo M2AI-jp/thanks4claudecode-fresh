@@ -16,7 +16,7 @@
 ### session-start.sh
 - **トリガー**: SessionStart
 - 責任: セッション開始時の初期化処理
-- **詳細**: pending/consent ファイル作成、状態表示、CORE 情報出力
+- **詳細**: pending ファイル作成、状態表示、CORE 情報出力
 - **出力**: セッション開始メッセージ、警告
 - **連携**: init-guard.sh（pending ファイル作成）
 
@@ -50,13 +50,6 @@
 - **詳細**: Edit/Write 時に playbook が null でないことを確認
 - **ブロック**: playbook=null で Edit/Write
 - **連携**: init-guard.sh（責任分離）
-
-### consent-guard.sh
-- **トリガー**: PreToolUse:Edit/Write
-- 責任: ユーザー合意チェック
-- **詳細**: consent ファイルの存在を確認
-- **ブロック**: 合意なしの Edit/Write
-- **連携**: session-start.sh（consent ファイル作成）
 
 ---
 
@@ -240,7 +233,7 @@
 ```
 SessionStart
   │
-  ├─→ session-start.sh ──→ pending/consent ファイル作成
+  ├─→ session-start.sh ──→ pending ファイル作成
   │                              │
   ├─→ system-health-check.sh     │
   │                              ▼
@@ -250,7 +243,6 @@ SessionStart
           ▼
       playbook-guard.sh ──→ Edit/Write 許可
           │
-          ├─→ consent-guard.sh
           ├─→ check-protected-edit.sh
           ├─→ scope-guard.sh
           │

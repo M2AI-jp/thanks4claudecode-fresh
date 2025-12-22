@@ -91,7 +91,6 @@ PreToolUse:
     - check-main-branch.sh # main ブランチ作業ブロック
 
   "Edit":
-    - consent-guard.sh     # 合意プロセス強制
     - check-protected-edit.sh # 保護ファイルブロック
     - playbook-guard.sh    # playbook 存在チェック
     - depends-check.sh     # phase 依存関係チェック
@@ -101,7 +100,6 @@ PreToolUse:
     - subtask-guard.sh     # subtask 3検証
 
   "Write":
-    - consent-guard.sh
     - check-protected-edit.sh
     - playbook-guard.sh
     - critic-guard.sh
@@ -181,7 +179,6 @@ Task(subagent_type='reviewer', prompt='コードをレビュー')
 
 | Skill | ディレクトリ | 目的 |
 |-------|-------------|------|
-| consent-process | consent-process/ | [理解確認] 出力強制 |
 | deploy-checker | deploy-checker/ | デプロイ準備検証 |
 | lint-checker | lint-checker/ | ESLint/型チェック |
 | test-runner | test-runner/ | テスト実行 |
@@ -227,7 +224,6 @@ Edit/Write 試行
     │
     ├─→ init-guard.sh (必須 Read 確認)
     ├─→ check-main-branch.sh (main ブロック)
-    ├─→ consent-guard.sh (合意確認)
     ├─→ check-protected-edit.sh (保護ファイル)
     ├─→ playbook-guard.sh (playbook 存在)
     ├─→ depends-check.sh (依存関係)
@@ -311,7 +307,6 @@ security: admin  # 全ガードバイパス
 ```
 
 対応 Hook:
-- consent-guard.sh
 - init-guard.sh
 - playbook-guard.sh (修正済み)
 
