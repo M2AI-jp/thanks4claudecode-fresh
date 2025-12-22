@@ -276,14 +276,14 @@ done_when:
 ### 総合結果
 
 ```yaml
-project_complete workflow: ⛔ FAIL
-  - merge-pr.sh: 未登録
-  - 全 milestone 検知: 未実装
-  - main マージ: 発火しない
+project_complete workflow: ✅ PASS（2025-12-22 修正完了）
+  - archive-playbook.sh に全 milestone 検知ロジック追加
+  - pending/in_progress が 0 で PROJECT COMPLETE 発火
+  - main マージ手順を出力
 
-影響:
-  - 全 milestone 達成しても main マージが行われない
-  - ユーザーが報告した「main マージ/GitHub プッシュが行われない」の原因
+修正内容:
+  - archive-playbook.sh 末尾に検知ロジック追加
+  - カウント方法: pending/in_progress == 0 で判定
 ```
 
 ---
