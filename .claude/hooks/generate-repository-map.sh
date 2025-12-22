@@ -21,7 +21,8 @@
 
 set -euo pipefail
 
-# 日本語文字列処理のためのエンコーディング設定
+# エンコーディング設定（sed/grep の互換性のため LC_ALL=C を使用）
+# 注: 日本語文字が含まれるファイルの description は正しく抽出されない可能性あり
 export LC_ALL=C
 export LANG=C
 
@@ -651,6 +652,9 @@ cat >> "$TEMP_FILE" << EOF
 
 skills:
   directory: .claude/skills/
+  invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
+  usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
+  auto_invoke: true
 EOF
 
 if [[ -d "$SKILLS_DIR" ]]; then
@@ -727,6 +731,8 @@ cat >> "$TEMP_FILE" << EOF
 commands:
   directory: .claude/commands/
   count: $COMMANDS_COUNT
+  invocation: "ユーザーが /command で明示的に呼び出す（例: /test, /lint）"
+  usage: "即座に実行される CLI 機能。ユーザーの意図を明確に反映。"
   files:
 EOF
 

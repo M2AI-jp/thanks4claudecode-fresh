@@ -8,7 +8,7 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-22 12:54:22"
+  generated: "2025-12-22 13:02:46"
   generator: ".claude/hooks/generate-repository-map.sh"
   total_files: 219
 
@@ -129,6 +129,9 @@ agents:
 
 skills:
   directory: .claude/skills/
+  invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
+  usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
+  auto_invoke: true
   count: 13
   files:
     - name: "beginner-advisor"
@@ -166,6 +169,8 @@ frameworks:
 commands:
   directory: .claude/commands/
   count: 8
+  invocation: "ユーザーが /command で明示的に呼び出す（例: /test, /lint）"
+  usage: "即座に実行される CLI 機能。ユーザーの意図を明確に反映。"
   files:
     - name: "/crit"
       description: "現在の `goal.done_criteria` の達成状況を CRITIQUE してください。"
@@ -596,6 +601,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-22 12:54:22"
+  - date: "2025-12-22 13:02:46"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
