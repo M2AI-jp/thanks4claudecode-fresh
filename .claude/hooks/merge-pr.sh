@@ -258,6 +258,33 @@ if gh pr merge "$PR_NUMBER" \
 
     log_info "ローカルブランチの同期が完了しました"
 
+    # ============================================================
+    # state.md を neutral 状態にリセット (M082: repository-map.yaml との整合性確保)
+    # ============================================================
+    if [ -f "$STATE_FILE" ]; then
+        echo ""
+        echo "$SEP"
+        echo "  🔄 state.md を neutral 状態にリセット中..."
+        echo "$SEP"
+        echo ""
+
+        # sed で in-place 編集
+        # focus.current を null に
+        sed -i '' 's/^current: .*/current: null/' "$STATE_FILE" 2>/dev/null || true
+
+        # playbook.active を null に
+        sed -i '' 's/^active: .*/active: null/' "$STATE_FILE" 2>/dev/null || true
+
+        # playbook.branch を null に
+        sed -i '' 's/^branch: .*/branch: null/' "$STATE_FILE" 2>/dev/null || true
+
+        # goal セクションを null に
+        sed -i '' 's/^milestone: .*/milestone: null/' "$STATE_FILE" 2>/dev/null || true
+        sed -i '' 's/^phase: .*/phase: null/' "$STATE_FILE" 2>/dev/null || true
+
+        log_info "state.md を neutral 状態にリセットしました"
+    fi
+
 else
     log_error "PR #$PR_NUMBER のマージに失敗しました"
     echo ""
