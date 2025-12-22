@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: m085-work-loop-verification
+current: null
 project: plan/project.md
 ```
 
@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/archive/playbook-m085-work-loop-verification.md
-branch: feat/m085-work-loop-verification
+active: null
+branch: null
 last_archived: plan/archive/playbook-m088-project-complete-verification.md
 ```
 
