@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/active/playbook-merge-fix.md
-branch: main
-last_archived: plan/archive/playbook-m082-archive-check.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-merge-fix.md
 ```
 
 ---
@@ -28,11 +28,9 @@ last_archived: plan/archive/playbook-m082-archive-check.md
 ## goal
 
 ```yaml
-milestone: M028
-phase: p0
-done_criteria:
-  - All merge conflicts resolved
-  - Changes pushed to GitHub
+milestone: null
+phase: null
+done_criteria: []
 ```
 
 ---
