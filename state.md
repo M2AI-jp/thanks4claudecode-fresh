@@ -18,9 +18,10 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-p1.2-stop-py.md
+branch: feat/p1.2-stop-py
 last_archived: plan/archive/playbook-p1-1-session-start-py.md
+review_pending: false  # レビュー未完了なら true（stop.py がブロック）
 ```
 
 ---
@@ -28,12 +29,13 @@ last_archived: plan/archive/playbook-p1-1-session-start-py.md
 ## goal
 
 ```yaml
-milestone: P1.1
+milestone: P1.2
 phase: p1
 done_criteria:
-  - .claude/hooks/session_start.py が存在する
-  - state.md の YAML frontmatter を解析できる
-  - playbook.active の有無を判定できる
+  - .claude/hooks/stop.py が存在する
+  - stdin から JSON を受け取れる
+  - state.md の review_pending フラグを読み取れる
+  - review_pending: true の場合、decision: block を返す
   - python3 -m py_compile でエラー 0
 ```
 
@@ -42,7 +44,7 @@ done_criteria:
 ## session
 
 ```yaml
-last_start: 2025-12-23 01:00:41
+last_start: 2025-12-23 03:18:46
 last_end: 2025-12-22 22:35:47
 last_clear: 2025-12-13 00:30:00
 ```

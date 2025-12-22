@@ -18,6 +18,7 @@ focus:
 playbook:
   active: <playbook-path>   # 現在の playbook パス
   branch: <branch-name>     # playbook に紐づくブランチ
+  review_pending: false     # true: レビュー未完了（stop.py がセッション終了をブロック）
 
 goal:
   milestone: <milestone-id> # 現在のマイルストーン
