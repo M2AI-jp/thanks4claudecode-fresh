@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: m085-work-loop-verification  # 現在作業中のプロジェクト名
+current: m085-work-loop-verification
 project: plan/project.md
 ```
 
@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-m085-work-loop-verification.md
+active: plan/archive/playbook-m085-work-loop-verification.md
 branch: feat/m085-work-loop-verification
-last_archived: plan/archive/playbook-m082-repository-optimization.md
+last_archived: plan/archive/playbook-m088-project-complete-verification.md
 ```
 
 ---
@@ -38,7 +38,7 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-22 17:28:46
+last_start: 2025-12-22 19:45:40
 last_clear: 2025-12-13 00:30:00
 ```
 
