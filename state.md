@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-pr-p1-hooks.md
+branch: feat/p1.2-stop-py
 last_archived: plan/archive/playbook-p1.2-stop-py.md
 review_pending: false  # レビュー未完了なら true（stop.py がブロック）
 ```
@@ -44,8 +44,8 @@ done_criteria:
 ## session
 
 ```yaml
-last_start: 2025-12-23 03:18:46
-last_end: 2025-12-22 22:35:47
+last_start: 2025-12-23 03:39:52
+last_end: 2025-12-23 03:39:51
 last_clear: 2025-12-13 00:30:00
 ```
 
