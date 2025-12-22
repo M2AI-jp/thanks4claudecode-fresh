@@ -143,7 +143,7 @@ done_when:
       executor: claudecode
       test_command: "grep -q '<<EOF' .claude/hooks/generate-repository-map.sh && grep -q 'workflows:' .claude/hooks/generate-repository-map.sh && echo PASS || echo FAIL"
 
-  status: pending
+  status: done
   max_iterations: 5
 
 - id: p3

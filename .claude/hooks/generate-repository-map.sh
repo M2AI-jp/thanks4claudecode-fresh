@@ -271,6 +271,176 @@ get_trigger_description() {
 }
 
 # ==============================================================================
+# M027: workflows セクション生成関数
+# ==============================================================================
+
+generate_workflows() {
+    cat >> "$TEMP_FILE" << 'WORKFLOWS_HEADER'
+
+# ==============================================================================
+# Workflows (M027)
+# 組み合わせモジュール単位でシステム構造を整理
+# ==============================================================================
+
+workflows:
+  description: "複数コンポーネントが連携して1つの機能を実現する組み合わせモジュール"
+  modules:
+
+    - id: init_flow
+      name: "INIT"
+      why: |
+        LLM は状態を保持しないため、毎セッション開始時に現在地を再認識する必要がある。
+        state.md/project.md/playbook の強制読み込みにより、コンテキストを確実に復元する。
+      when: "SessionStart 発火時"
+      input:
+        - "ユーザーの最初のプロンプト"
+        - "state.md（focus, playbook, goal）"
+        - "plan/project.md（milestones）"
+        - "playbook（active な場合）"
+      process:
+        hooks:
+          - "session-start.sh: pending/consent 作成、失敗パターン表示"
+          - "init-guard.sh: 必須ファイル Read 強制"
+          - "check-main-branch.sh: main ブランチ禁止"
+        subagents: []
+        skills: []
+        claude_md: "INIT セクション → [自認] 出力"
+      output:
+        - "[自認] ブロック（what, milestone, phase, branch...）"
+        - "pending ファイル削除"
+        - "consent ファイル存在"
+      references:
+        - ".claude/hooks/session-start.sh"
+        - ".claude/hooks/init-guard.sh"
+        - ".claude/hooks/check-main-branch.sh"
+        - "CLAUDE.md#INIT"
+        - "state.md"
+        - "plan/project.md"
+
+    - id: work_loop
+      name: "LOOP"
+      why: |
+        playbook の phase を順次実行し、done_criteria を満たすまで反復する。
+        critic による検証で報酬詐欺を防止し、確実な品質を保証する。
+      when: "INIT 完了後、playbook が存在する場合"
+      input:
+        - "playbook（current phase, done_criteria）"
+        - "subtasks（criterion, executor, test_command）"
+      process:
+        hooks:
+          - "playbook-guard.sh: playbook 存在確認"
+          - "consent-guard.sh: 合意確認"
+          - "scope-guard.sh: スコープ制限"
+          - "executor-guard.sh: executor 整合性"
+          - "critic-guard.sh: critic 未実行チェック"
+        subagents:
+          - "critic: PASS/FAIL 判定"
+        skills:
+          - "test-runner: テスト実行"
+        claude_md: "LOOP セクション → subtask 実行"
+      output:
+        - "ファイル変更（Edit/Write）"
+        - "test_command 結果"
+        - "critic 判定（PASS/FAIL）"
+        - "phase.status = done（PASS の場合）"
+      references:
+        - ".claude/hooks/playbook-guard.sh"
+        - ".claude/hooks/consent-guard.sh"
+        - ".claude/hooks/scope-guard.sh"
+        - ".claude/hooks/executor-guard.sh"
+        - ".claude/hooks/critic-guard.sh"
+        - ".claude/subagents/critic/"
+        - "CLAUDE.md#LOOP"
+
+    - id: post_loop
+      name: "POST_LOOP"
+      why: |
+        playbook 完了時に自動でアーカイブ、project.milestone 更新、次 playbook 作成を行う。
+        手動操作なしで継続的な進捗を実現する。
+      when: "playbook の全 phase が done"
+      input:
+        - "playbook（全 phase done）"
+        - "project.md（milestone）"
+      process:
+        hooks:
+          - "archive-playbook.sh: アーカイブ提案"
+          - "cleanup-hook.sh: tmp/ クリーンアップ"
+          - "create-pr-hook.sh: PR 作成トリガー"
+        subagents:
+          - "pm: 次 playbook 作成"
+        skills:
+          - "post-loop: 完了処理"
+        claude_md: "POST_LOOP セクション → milestone 更新"
+      output:
+        - "playbook アーカイブ（plan/archive/）"
+        - "state.md 更新（playbook.active = null）"
+        - "project.md 更新（milestone.status = achieved）"
+        - "次 playbook（存在する場合）"
+        - "/clear 推奨アナウンス"
+      references:
+        - ".claude/hooks/archive-playbook.sh"
+        - ".claude/hooks/cleanup-hook.sh"
+        - ".claude/hooks/create-pr-hook.sh"
+        - ".claude/subagents/pm/"
+        - ".claude/skills/post-loop/"
+        - "CLAUDE.md#POST_LOOP"
+        - "plan/project.md"
+
+    - id: consent_process
+      name: "CONSENT"
+      why: |
+        ユーザープロンプトの誤解釈を防止し、Edit/Write 前に意図を確認する。
+        [理解確認] ブロックによる構造化出力で合意を取得。
+      when: "Edit/Write 実行前"
+      input:
+        - "ユーザープロンプト"
+        - "変更対象ファイル"
+      process:
+        hooks:
+          - "consent-guard.sh: consent ファイル確認"
+        subagents: []
+        skills:
+          - "consent-process: [理解確認] 出力"
+        claude_md: "[理解確認] what, why, how, scope, exclusions, risks"
+      output:
+        - "[理解確認] ブロック"
+        - "consent ファイル削除（OK の場合）"
+        - "Edit/Write 実行許可"
+      references:
+        - ".claude/hooks/consent-guard.sh"
+        - ".claude/skills/consent-process/"
+        - "CLAUDE.md#理解確認"
+
+    - id: critique_process
+      name: "CRITIQUE"
+      why: |
+        「完了」の自己判断を禁止し、critic SubAgent による客観的検証で報酬詐欺を防止。
+        done_criteria の達成を証拠付きで確認。
+      when: "phase 完了申告時"
+      input:
+        - "phase.done_criteria"
+        - "test_command 実行結果"
+        - "変更内容"
+      process:
+        hooks:
+          - "critic-guard.sh: critic 実行チェック"
+        subagents:
+          - "critic: done_criteria 検証"
+        skills: []
+        claude_md: "CRITIQUE セクション参照"
+      output:
+        - "critic 判定（PASS/FAIL）"
+        - "根拠（evidence）"
+        - "修正指示（FAIL の場合）"
+      references:
+        - ".claude/hooks/critic-guard.sh"
+        - ".claude/subagents/critic/"
+        - ".claude/rules/frameworks/done-criteria-validation.md"
+        - "CLAUDE.md#CRITIQUE"
+WORKFLOWS_HEADER
+}
+
+# ==============================================================================
 # M025: system_specification 生成関数
 # ==============================================================================
 
@@ -689,6 +859,12 @@ generate_system_specification
 # ==============================================================================
 echo "  Generating hook trigger sequence..."
 generate_hook_trigger_sequence
+
+# ==============================================================================
+# Workflows (M027)
+# ==============================================================================
+echo "  Generating workflows..."
+generate_workflows
 
 cat >> "$TEMP_FILE" << EOF
 
