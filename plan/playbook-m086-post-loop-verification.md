@@ -337,14 +337,15 @@ done_when:
 ### 総合結果
 
 ```yaml
-archive-playbook.sh: PASS (軽微バグあり)
+archive-playbook.sh: PASS (バグ修正済み)
 cleanup-hook.sh: PASS
 create-pr-hook.sh: PASS
 
-post_loop 全体: PASS
+post_loop 全体: ✅ PASS
   - 3/3 Hook が正常動作
   - 完了検知・クリーンアップ・PR 連携が機能
-  - archive-playbook.sh line 144 に軽微バグ（動作には影響なし）
+  - archive-playbook.sh line 142 バグ修正完了（2025-12-22）
+    修正: grep -c 失敗時の二重出力を防止
 ```
 
 ---

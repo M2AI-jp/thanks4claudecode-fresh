@@ -139,7 +139,8 @@ fi
 # 全 PASS でなければアーカイブをブロック
 
 DONE_WHEN_SECTION=$(sed -n '/^done_when:/,/^[a-z_]*:/p' "$FILE_PATH" 2>/dev/null | grep "^  - " | head -10)
-DONE_WHEN_COUNT=$(echo "$DONE_WHEN_SECTION" | grep -c "^  - " 2>/dev/null || echo "0")
+# M086 修正: grep -c 失敗時のフォールバックを修正（二重出力防止）
+DONE_WHEN_COUNT=$(echo "$DONE_WHEN_SECTION" | grep -c "^  - " 2>/dev/null) || DONE_WHEN_COUNT=0
 
 if [ "$DONE_WHEN_COUNT" -gt 0 ]; then
     # p_final Phase の存在チェック
