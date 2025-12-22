@@ -123,16 +123,6 @@ if grep -q "^## final_tasks" "$FILE_PATH" 2>/dev/null; then
     fi
 fi
 
-# 現在進行中の playbook（state.md playbook.active）かチェック
-# 進行中ならアーカイブ提案しない（安全策）
-ACTIVE_PLAYBOOK=$(grep -A 5 "^## playbook" state.md 2>/dev/null | grep "^active:" | head -1 | sed 's/active: *//' | tr -d ' ')
-if [ -n "$ACTIVE_PLAYBOOK" ] && [ "$ACTIVE_PLAYBOOK" != "null" ]; then
-    if echo "$ACTIVE_PLAYBOOK" | grep -q "$(basename "$FILE_PATH")"; then
-        # 現在進行中なのでスキップ（完了後に再度発火する）
-        exit 0
-    fi
-fi
-
 # ==============================================================================
 # M056: done_when 再検証（報酬詐欺防止）
 # ==============================================================================
