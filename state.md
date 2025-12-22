@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-p1.2-stop-py.md
-branch: feat/p1.2-stop-py
-last_archived: plan/archive/playbook-p1-1-session-start-py.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-p1.2-stop-py.md
 review_pending: false  # レビュー未完了なら true（stop.py がブロック）
 ```
 
