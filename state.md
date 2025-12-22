@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/archive/playbook-fix-workflow-inconsistencies.md
-branch: chore/fix-workflow-inconsistencies
+active: null
+branch: null
 last_archived: plan/archive/playbook-fix-workflow-inconsistencies.md
 ```
 
