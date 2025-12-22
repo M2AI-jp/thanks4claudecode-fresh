@@ -23,6 +23,61 @@ set -e
 # ==============================================================================
 source .claude/schema/state-schema.sh
 
+# ==============================================================================
+# repository-map.yaml 差分チェック関数
+# 実ファイル数と repository-map.yaml の count を比較し、乖離を検出
+# ==============================================================================
+check_repository_map_drift() {
+    local REPO_MAP="docs/repository-map.yaml"
+
+    # repository-map.yaml が存在しない場合はスキップ
+    [ ! -f "$REPO_MAP" ] && return 0
+
+    # 実際のファイル数をカウント
+    local ACTUAL_HOOKS=$(find .claude/hooks -maxdepth 1 -name "*.sh" -type f 2>/dev/null | wc -l | tr -d ' ')
+    local ACTUAL_AGENTS=$(find .claude/agents -maxdepth 1 -name "*.md" -type f ! -name "CLAUDE.md" 2>/dev/null | wc -l | tr -d ' ')
+    local ACTUAL_SKILLS=$(find .claude/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+    local ACTUAL_COMMANDS=$(find .claude/commands -maxdepth 1 -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+
+    # repository-map.yaml の count を取得（各セクションの構造に応じて適切な行数を検索）
+    local EXPECTED_HOOKS=$(grep -A3 "^hooks:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    local EXPECTED_AGENTS=$(grep -A3 "^agents:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    local EXPECTED_SKILLS=$(grep -A6 "^skills:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    local EXPECTED_COMMANDS=$(grep -A5 "^commands:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+
+    # 乖離チェック
+    local DRIFT=false
+    local DRIFT_DETAILS=""
+
+    if [ "$ACTUAL_HOOKS" != "$EXPECTED_HOOKS" ]; then
+        DRIFT=true
+        DRIFT_DETAILS="hooks: $EXPECTED_HOOKS → $ACTUAL_HOOKS"
+    fi
+    if [ "$ACTUAL_AGENTS" != "$EXPECTED_AGENTS" ]; then
+        DRIFT=true
+        [ -n "$DRIFT_DETAILS" ] && DRIFT_DETAILS="$DRIFT_DETAILS, "
+        DRIFT_DETAILS="${DRIFT_DETAILS}agents: $EXPECTED_AGENTS → $ACTUAL_AGENTS"
+    fi
+    if [ "$ACTUAL_SKILLS" != "$EXPECTED_SKILLS" ]; then
+        DRIFT=true
+        [ -n "$DRIFT_DETAILS" ] && DRIFT_DETAILS="$DRIFT_DETAILS, "
+        DRIFT_DETAILS="${DRIFT_DETAILS}skills: $EXPECTED_SKILLS → $ACTUAL_SKILLS"
+    fi
+    if [ "$ACTUAL_COMMANDS" != "$EXPECTED_COMMANDS" ]; then
+        DRIFT=true
+        [ -n "$DRIFT_DETAILS" ] && DRIFT_DETAILS="$DRIFT_DETAILS, "
+        DRIFT_DETAILS="${DRIFT_DETAILS}commands: $EXPECTED_COMMANDS → $ACTUAL_COMMANDS"
+    fi
+
+    if [ "$DRIFT" = true ]; then
+        echo ""
+        echo "[DRIFT] repository-map.yaml に乖離あり"
+        echo "  詳細: $DRIFT_DETAILS"
+        echo "  対応: bash .claude/hooks/generate-repository-map.sh を実行してください"
+        echo ""
+    fi
+}
+
 # === stdin から JSON を読み込み、trigger を検出 ===
 INPUT=$(cat)
 TRIGGER=$(echo "$INPUT" | jq -r '.trigger // "startup"' 2>/dev/null || echo "startup")
@@ -83,3 +138,5 @@ PLAYBOOK=$(awk '/## playbook/,/^---/' state.md | grep "^active:" | head -1 | sed
 # init-guard.sh 用に playbook パスを記録
 echo "$PLAYBOOK" > "$INIT_DIR/required_playbook"
 
+# === repository-map.yaml 差分チェック ===
+check_repository_map_drift

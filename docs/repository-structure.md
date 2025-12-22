@@ -113,6 +113,70 @@ bash .claude/hooks/generate-repository-map.sh
 
 ---
 
+## 同期ワークフロー（[DRIFT] 検出）
+
+### 仕組み
+
+セッション開始時（`session-start.sh`）に repository-map.yaml と実際のファイル数を比較し、
+乖離を自動検出します。
+
+```
+SessionStart
+    │
+    ▼
+check_repository_map_drift()
+    │
+    ├─ 乖離なし → 正常継続
+    │
+    └─ 乖離あり → [DRIFT] メッセージ出力
+                      │
+                      ▼
+                  Claude が自動で
+                  generate-repository-map.sh を実行
+```
+
+### 検出対象
+
+| カテゴリ | パターン | 比較対象 |
+|---------|----------|----------|
+| hooks | `.claude/hooks/*.sh` | `hooks.count` |
+| agents | `.claude/agents/*.md` | `agents.count` |
+| skills | `.claude/skills/*/` | `skills.count` |
+| commands | `.claude/commands/*.md` | `commands.count` |
+
+### [DRIFT] メッセージ例
+
+```
+[DRIFT] repository-map.yaml に乖離あり
+  詳細: hooks: 31 → 32
+  対応: bash .claude/hooks/generate-repository-map.sh を実行してください
+```
+
+### 対応手順
+
+1. **自動対応**: Claude が [DRIFT] を検出すると、自動で `generate-repository-map.sh` を実行
+2. **手動対応**: 必要に応じて以下を実行
+
+```bash
+# 更新実行
+bash .claude/hooks/generate-repository-map.sh
+
+# 差分確認
+git diff docs/repository-map.yaml
+
+# コミット
+git add docs/repository-map.yaml
+git commit -m "chore: update repository-map.yaml"
+```
+
+### 設計思想
+
+- **軽量**: find コマンドによるファイル数カウントのみ（1 秒以内）
+- **非侵入**: 乖離検出のみ、自動修正はしない（Claude の判断に委ねる）
+- **fail-open**: チェック失敗時もセッション継続可能
+
+---
+
 ## 参照
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - システム全体のアーキテクチャ

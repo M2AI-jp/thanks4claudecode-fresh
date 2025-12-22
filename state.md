@@ -20,7 +20,7 @@ project: plan/project.md
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-fix-workflow-inconsistencies.md
+last_archived: plan/archive/playbook-repository-map-sync.md
 ```
 
 ---
@@ -38,8 +38,8 @@ done_criteria: null
 ## session
 
 ```yaml
-last_start: 2025-12-22 21:30:00
-last_end: null
+last_start: 2025-12-22 21:18:40
+last_end: 2025-12-22 21:10:35
 last_clear: 2025-12-13 00:30:00
 ```
 
