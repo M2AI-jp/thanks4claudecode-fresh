@@ -1,0 +1,158 @@
+# Repository Map
+#
+# リポジトリ内の全ファイルマッピング（自動生成）
+#
+# 生成スクリプト: .claude/hooks/generate-repository-map.sh
+# 更新タイミング: playbook 完了時
+#
+# このファイルは自動生成されます。手動編集は上書きされます。
+
+meta:
+  generated: "2025-12-22 23:06:43"
+  generator: ".claude/hooks/generate-repository-map.sh"
+  total_files: 250
+
+hooks:
+  directory: .claude/hooks/
+  count: 31
+  files:
+    - name: "archive-playbook.sh"
+    - name: "audit-unused.sh"
+    - name: "check-coherence.sh"
+    - name: "check-integrity.sh"
+    - name: "check-main-branch.sh"
+    - name: "check-protected-edit.sh"
+    - name: "cleanup-hook.sh"
+    - name: "create-pr-hook.sh"
+    - name: "create-pr.sh"
+    - name: "critic-guard.sh"
+    - name: "depends-check.sh"
+    - name: "executor-guard.sh"
+    - name: "failure-logger.sh"
+    - name: "generate-repository-map.sh"
+    - name: "init-guard.sh"
+    - name: "lint-check.sh"
+    - name: "log-subagent.sh"
+    - name: "merge-pr.sh"
+    - name: "playbook-guard.sh"
+    - name: "pre-bash-check.sh"
+    - name: "pre-compact.sh"
+    - name: "prompt-guard.sh"
+    - name: "role-resolver.sh"
+    - name: "scope-guard.sh"
+    - name: "session-end.sh"
+    - name: "session-start.sh"
+    - name: "stop-summary.sh"
+    - name: "subtask-guard.sh"
+    - name: "system-health-check.sh"
+    - name: "test-done-criteria.sh"
+    - name: "test-hooks.sh"
+
+agents:
+  directory: .claude/agents/
+  count: 6
+  files:
+    - name: "codex-delegate"
+      description: "Codex MCP をラップし、コンテキスト膨張を防止する SubAgent"
+    - name: "critic"
+      description: "各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する"
+    - name: "health-checker"
+      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
+    - name: "pm"
+      description: "重要"
+    - name: "reviewer"
+      description: "役割"
+    - name: "setup-guide"
+      description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environm"
+
+skills:
+  directory: .claude/skills/
+  invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
+  usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
+  auto_invoke: true
+  count: 8
+  files:
+    - name: "context-management"
+      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
+    - name: "deploy-checker"
+      description: "デプロイ準備・検証専門スキル"
+    - name: "frontend-design"
+      description: "プロダクション品質のフロントエンドインターフェースを作成する"
+    - name: "lint-checker"
+      description: "コード品質チェック専門スキル"
+    - name: "plan-management"
+      description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitionin"
+    - name: "post-loop"
+      description: "POST_LOOP - playbook 完了後の自動処理"
+    - name: "state"
+      description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
+    - name: "test-runner"
+      description: "テスト実行・検証専門スキル"
+
+commands:
+  directory: .claude/commands/
+  count: 8
+  invocation: "ユーザーが /command で明示的に呼び出す（例: /test, /lint）"
+  usage: "即座に実行される CLI 機能。ユーザーの意図を明確に反映。"
+  files:
+    - name: "/crit"
+      description: "allowed-tools: Read, Grep, Bash"
+    - name: "/focus"
+      description: "allowed-tools: Read, Edit, Bash"
+    - name: "/lint"
+      description: "allowed-tools: Read, Bash"
+    - name: "/playbook-init"
+      description: "このフローは構造的に強制される。手順をスキップしてはならない。"
+    - name: "/rollback"
+      description: "allowed-tools: Read, Bash"
+    - name: "/state-rollback"
+      description: "allowed-tools: Read, Write, Bash"
+    - name: "/task-start"
+      description: "標準タスク開始コマンド。全てのタスクは project.md からの導出を経由する�"
+    - name: "/test"
+      description: "allowed-tools: Read, Bash"
+
+docs:
+  directory: docs/
+  count: 18
+  files:
+    - name: "ARCHITECTURE.md"
+      description: "リポジトリの構造と各コンポーネントの関係を文書化"
+    - name: "admin-contract.md"
+      description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する�"
+    - name: "ai-orchestration.md"
+      description: "役割ベース executor 抽象化 - playbook の再利用性向上"
+    - name: "archive-operation-rules.md"
+      description: "目的"
+    - name: "artifact-management-rules.md"
+      description: "目的"
+    - name: "core-contract.md"
+      description: "この契約は admin モードでも回避不可。Hooks により構造的に強制される。"
+    - name: "criterion-validation-rules.md"
+      description: "criterion（done_criteria の単位）の検証ルール"
+    - name: "current-definitions.md"
+      description: "> このファイルは「古い表記」を特定するための基準を定義する。"
+    - name: "deprecated-references.md"
+      description: "> このファイルは「古い表記」を含むファイルを記録する。"
+    - name: "extension-system.md"
+      description: "公式リファレンスに基づく発火タイミング・トリガー・連携の完全ガイド"
+    - name: "folder-management.md"
+      description: "全フォルダの役割、テンポラリ/永続区分、削除タイミングを定義"
+    - name: "git-operations.md"
+      description: "設計方針"
+    - name: "hook-responsibilities.md"
+      description: "各 Hook の単一責任を明示（SOLID 原則: Single Responsibility Principle）"
+    - name: "orchestration-contract.md"
+      description: "ツールスタック構成と役割分担のルールを定義する契約"
+    - name: "repository-structure.md"
+      description: "> repository-map.yaml を活用したリポジトリ構造の理解ガイド"
+    - name: "session-management.md"
+      description: "M023: セッション管理ガイド - Named Sessions と Plan Mode の活用"
+    - name: "toolstack-patterns.md"
+      description: "3 つのツールスタックパターンと設定ガイド"
+
+plan:
+  directory: plan/
+  subdirectories:
+    active:
+      description: "進行中の playbook"

@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-auto-merge-workflow.md
-branch: feat/auto-merge-workflow
+active: plan/playbook-workflow-e2e-simulation.md
+branch: feat/workflow-e2e-simulation
 last_archived: plan/archive/playbook-repository-map-e2e-test.md
 ```
 
@@ -28,9 +28,17 @@ last_archived: plan/archive/playbook-repository-map-e2e-test.md
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: null
+milestone: M082
+phase: p1
+done_criteria:
+  - tmp/workflow-simulation.md が存在し、1000行以上である
+  - シミュレーションに INIT フローの対話が含まれている
+  - シミュレーションに pm 呼び出し -> playbook 作成の対話が含まれている
+  - シミュレーションに reviewer 検証（PASS/FAIL フロー両方）の対話が含まれている
+  - シミュレーションに LOOP（Phase 実行、subtask、executor）の対話が含まれている
+  - シミュレーションに critic 検証（3点検証、PASS/FAIL）の対話が含まれている
+  - シミュレーションに POST_LOOP（アーカイブ、PR作成、milestone更新）の対話が含まれている
+  - シナリオが「認証付きアプリ作成」という複数Phase・依存関係ありのタスクである
 ```
 
 ---
@@ -38,8 +46,8 @@ done_criteria: null
 ## session
 
 ```yaml
-last_start: 2025-12-22 22:30:51
-last_end: 2025-12-22 21:29:43
+last_start: 2025-12-22 22:35:48
+last_end: 2025-12-22 22:35:47
 last_clear: 2025-12-13 00:30:00
 ```
 
