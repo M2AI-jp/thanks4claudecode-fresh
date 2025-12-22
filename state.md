@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: plan-template  # 現在作業中のプロジェクト名
+current: m082-repository-optimization
 project: plan/project.md
 ```
 
@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
-last_archived: plan/archive/playbook-merge-fix.md
+active: plan/playbook-m082-repository-optimization.md
+branch: feat/m085-work-loop-verification
+last_archived: plan/archive/playbook-m088-project-complete-verification.md
 ```
 
 ---
@@ -28,9 +28,13 @@ last_archived: plan/archive/playbook-merge-fix.md
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
+milestone: M082
+phase: p8
+done_criteria:
+  - repository-map.yaml が MECE 原則に基づいて整理されている
+  - workflows セクションが最新の Hook/SubAgent/Skill 構成を反映している
+  - 全 5 workflows の E2E 動作検証が完了している
+  - 変更が GitHub にプッシュされ main にマージされている
 ```
 
 ---
@@ -38,7 +42,7 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-22 13:42:40
+last_start: 2025-12-22 19:45:40
 last_clear: 2025-12-13 00:30:00
 ```
 

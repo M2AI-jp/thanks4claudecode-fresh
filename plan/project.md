@@ -724,6 +724,18 @@ database: none (file-based: state.md, playbook, project.md)
 
 ---
 
+## references
+
+| ファイル | 説明 |
+|---------|------|
+| `docs/repository-map.yaml` | リポジトリ構造の Single Source of Truth（自動生成） |
+| `docs/repository-structure.md` | repository-map.yaml の活用ガイド |
+| `docs/ARCHITECTURE.md` | システム全体のアーキテクチャ |
+| `docs/extension-system.md` | Hook/Skill/Command の発火タイミング |
+| `state.md` | 現在の状態（focus, playbook, goal） |
+
+---
+
 ## 3層構造
 
 ```

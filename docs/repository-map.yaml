@@ -8,26 +8,25 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-22 13:38:39"
+  generated: "2025-12-22 16:09:07"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 218
+  total_files: 235
 
 hooks:
   directory: .claude/hooks/
   count: 31
   files:
     - name: "archive-playbook.sh"
+    - name: "audit-unused.sh"
     - name: "check-coherence.sh"
-    - name: "check-file-dependencies.sh"
+    - name: "check-integrity.sh"
     - name: "check-main-branch.sh"
     - name: "check-protected-edit.sh"
     - name: "cleanup-hook.sh"
-    - name: "consent-guard.sh"
     - name: "create-pr-hook.sh"
     - name: "create-pr.sh"
     - name: "critic-guard.sh"
     - name: "depends-check.sh"
-    - name: "doc-freshness-check.sh"
     - name: "executor-guard.sh"
     - name: "failure-logger.sh"
     - name: "generate-repository-map.sh"
@@ -39,63 +38,54 @@ hooks:
     - name: "pre-bash-check.sh"
     - name: "pre-compact.sh"
     - name: "prompt-guard.sh"
+    - name: "role-resolver.sh"
     - name: "scope-guard.sh"
     - name: "session-end.sh"
     - name: "session-start.sh"
     - name: "stop-summary.sh"
     - name: "subtask-guard.sh"
     - name: "system-health-check.sh"
+    - name: "test-done-criteria.sh"
     - name: "test-hooks.sh"
-    - name: "update-tracker.sh"
 
 agents:
   directory: .claude/agents/
-  count: 7
+  count: 6
   files:
+    - name: "codex-delegate"
+      description: "Codex MCP をラップし、コンテキスト膨張を防止する SubAgent"
     - name: "critic"
-      description: "各 subtask の test_command を実行し、PASS/FAIL を判定する"
+      description: "各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する"
     - name: "health-checker"
-      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、ファイル存在確認などを行う。"
-    - name: "plan-guard"
-      description: "description: PROACTIVELY checks 3-layer plan coherence at session start. Rejects or reconfirms when no plan exists or user prompt is unrelated to existing plan. LLM-led session flow."
+      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
     - name: "pm"
       description: "重要"
     - name: "reviewer"
-      description: "description: Use this agent for code and design reviews. Evaluates code quality, design patterns, and best practices. Provides constructive feedback for improvements."
+      description: "役割"
     - name: "setup-guide"
-      description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environment setup, and Skills generation. Does not ask unnecessary questions."
+      description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environm"
 
 skills:
   directory: .claude/skills/
   invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
   usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
   auto_invoke: true
-  count: 13
+  count: 8
   files:
-    - name: "beginner-advisor"
-      description: "description: 初学者向けに専門用語を比喩で説明するスキル。state.md の learning_mode.expertise=beginner 時に自動発火。"
-    - name: "consent-process"
-      description: "合意プロセス（CONSENT）- ユーザープロンプトの誤解釈防止"
-    - name: "context-externalization"
-      description: "コンテキスト外部化 - チャット履歴に依存しない状態管理"
     - name: "context-management"
-      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外部ファイルに記録。"
+      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
     - name: "deploy-checker"
       description: "デプロイ準備・検証専門スキル"
-    - name: "execution-management"
-      description: "description: 並列実行制御とリソース配分のガイドライン。タスク実行の最適化を支援。"
     - name: "frontend-design"
       description: "プロダクション品質のフロントエンドインターフェースを作成する"
-    - name: "learning"
-      description: "> 中断時に"
     - name: "lint-checker"
       description: "コード品質チェック専門スキル"
     - name: "plan-management"
-      description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitioning phases, or managing plan hierarchy. Triggers on \"plan\", \"playbook\", \"phase\", \"roadmap\", \"milestone"
+      description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitionin"
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の自動処理"
     - name: "state"
-      description: "description: このワークスペースの state.md 管理、playbook 運用、レイヤー構造の専門知識。state.md の更新、focus の切り替え、done_criteria の判定、CRITIQUE の�"
+      description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
 
@@ -106,63 +96,83 @@ commands:
   usage: "即座に実行される CLI 機能。ユーザーの意図を明確に反映。"
   files:
     - name: "/crit"
-      description: "現在の `goal.done_criteria` の達成状況を CRITIQUE してください。"
+      description: "allowed-tools: Read, Grep, Bash"
     - name: "/focus"
-      description: "state.md の `focus.current` を指定したレイヤーに変更してください。"
+      description: "allowed-tools: Read, Edit, Bash"
     - name: "/lint"
-      description: "state.md と playbook の整合性をチェックしてください。"
+      description: "allowed-tools: Read, Bash"
     - name: "/playbook-init"
       description: "このフローは構造的に強制される。手順をスキップしてはならない。"
     - name: "/rollback"
-      description: "Git ロールバックを実行します。"
+      description: "allowed-tools: Read, Bash"
     - name: "/state-rollback"
-      description: "state.md のバックアップと復元を管理します。"
+      description: "allowed-tools: Read, Write, Bash"
     - name: "/task-start"
-      description: "標準タスク開始コマンド。全てのタスクは project.md からの導出を経由する。"
+      description: "標準タスク開始コマンド。全てのタスクは project.md からの導出を経由する�"
     - name: "/test"
-      description: "`.claude/tests/` 配下のテストを実行してください。"
+      description: "allowed-tools: Read, Bash"
 
 docs:
   directory: docs/
-  count: 8
+  count: 18
   files:
-    - name: "CLAUDE.md"
-      description: "ドキュメント - 仕様書・運用ルール"
+    - name: "ARCHITECTURE.md"
+      description: "リポジトリの構造と各コンポーネントの関係を文書化"
+    - name: "admin-contract.md"
+      description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する�"
+    - name: "ai-orchestration.md"
+      description: "役割ベース executor 抽象化 - playbook の再利用性向上"
     - name: "archive-operation-rules.md"
       description: "目的"
+    - name: "artifact-management-rules.md"
+      description: "目的"
+    - name: "core-contract.md"
+      description: "この契約は admin モードでも回避不可。Hooks により構造的に強制される。"
     - name: "criterion-validation-rules.md"
       description: "criterion（done_criteria の単位）の検証ルール"
+    - name: "current-definitions.md"
+      description: "> このファイルは「古い表記」を特定するための基準を定義する。"
+    - name: "deprecated-references.md"
+      description: "> このファイルは「古い表記」を含むファイルを記録する。"
     - name: "extension-system.md"
       description: "公式リファレンスに基づく発火タイミング・トリガー・連携の完全ガイド"
+    - name: "folder-management.md"
+      description: "全フォルダの役割、テンポラリ/永続区分、削除タイミングを定義"
     - name: "git-operations.md"
       description: "設計方針"
     - name: "hook-responsibilities.md"
       description: "各 Hook の単一責任を明示（SOLID 原則: Single Responsibility Principle）"
+    - name: "orchestration-contract.md"
+      description: "ツールスタック構成と役割分担のルールを定義する契約"
+    - name: "repository-structure.md"
+      description: "> repository-map.yaml を活用したリポジトリ構造の理解ガイド"
     - name: "session-management.md"
       description: "M023: セッション管理ガイド - Named Sessions と Plan Mode の活用"
+    - name: "toolstack-patterns.md"
+      description: "3 つのツールスタックパターンと設定ガイド"
 
 plan:
   directory: plan/
   subdirectories:
     active:
       description: "進行中の playbook"
-      count: 1
+      count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 78
+      count: 79
     template:
       description: "playbook テンプレート"
-      count: 7
+      count: 6
 
 root:
   description: "ルートディレクトリの主要ファイル"
   files:
     - name: "CLAUDE.md"
-      description: "【即時実行】このファイルを読んだ直後、INIT セクションを実行せよ。[自認]出力までユーザーに応答するな。違反 → init-guard.sh がブロック（exit 2）"
+      description: "This file is the immutable operating constitution for Claude in this repository."
     - name: "AGENTS.md"
       description: "このファイルは純粋なコーディングルール。"
     - name: "README.md"
-      description: "**Claude Code と一緒に開発を始めるためのテンプレート。**"
+      description: "Claude Code の自律性と品質を向上させるフレームワーク"
     - name: "state.md"
       description: "現在地を示す Single Source of Truth"
     - name: ".gitignore"
@@ -192,15 +202,7 @@ system_specification:
       - "[自認]: セッション開始時"
       - "[理解確認]: Edit/Write 前"
     prohibited_actions:
-      - 確認を求める、許可を求める、選ばせる（安全上の例外を除く）
-      - done_criteria 確認なしで「完了しました」
-      - 保護対象ファイルを無断で編集
-      - playbook=null で Edit/Write を実行
-      - main ブランチで直接作業
-      - critic なしで phase を done にする（絶対禁止）
-      - ユーザーに聞かずに done_criteria を推測で定義する【報酬詐欺】
-      - pm SubAgent を経由せずに直接 playbook を作成する
-      - playbook 完了時に /clear を案内せずに次に進む
+      - (抽出失敗)
 
 # ==============================================================================
 # Hook Trigger Sequence (M027)
@@ -238,45 +240,41 @@ hook_trigger_sequence:
         - matcher: "Bash"
           hooks:
             - script: "pre-bash-check.sh"
-              description: "pre-bash-check.sh - Bash コマンド実行前のチェック"
+              description: "pre-bash-check.sh - Bash コマンド実行前の契約チェック"
             - script: "check-coherence.sh"
               description: "check-coherence.sh - 簡略版：state.md と playbook の整合性チェック"
             - script: "lint-check.sh"
               description: "lint-check.sh - 静的解析チェック Hook"
         - matcher: "Edit"
           hooks:
-            - script: "consent-guard.sh"
-              description: "consent-guard.sh - 合意プロセス強制フック"
             - script: "check-protected-edit.sh"
               description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
             - script: "playbook-guard.sh"
               description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
             - script: "depends-check.sh"
               description: "depends-check.sh - Phase の depends_on を検証"
-            - script: "check-file-dependencies.sh"
-              description: "check-file-dependencies.sh - ファイル依存関係チェック Hook"
             - script: "critic-guard.sh"
               description: "critic-guard.sh - state: done への変更を構造的にブロック"
             - script: "scope-guard.sh"
               description: "scope-guard.sh - done_criteria/done_when の無断変更を検出"
             - script: "executor-guard.sh"
               description: "executor-guard.sh - Phase の executor を構造的に強制"
+            - script: "subtask-guard.sh"
+              description: "subtask-guard.sh - subtask の 3 検証を強制（V12: チェックボックス形式対応）"
         - matcher: "Write"
           hooks:
-            - script: "consent-guard.sh"
-              description: "consent-guard.sh - 合意プロセス強制フック"
             - script: "check-protected-edit.sh"
               description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
             - script: "playbook-guard.sh"
               description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
-            - script: "check-file-dependencies.sh"
-              description: "check-file-dependencies.sh - ファイル依存関係チェック Hook"
             - script: "critic-guard.sh"
               description: "critic-guard.sh - state: done への変更を構造的にブロック"
             - script: "scope-guard.sh"
               description: "scope-guard.sh - done_criteria/done_when の無断変更を検出"
             - script: "executor-guard.sh"
               description: "executor-guard.sh - Phase の executor を構造的に強制"
+            - script: "subtask-guard.sh"
+              description: "subtask-guard.sh - subtask の 3 検証を強制（V12: チェックボックス形式対応）"
     - trigger: "PostToolUse"
       description: "ツール実行後に発火（matcher でフィルタ可能）"
       matchers:
@@ -288,20 +286,10 @@ hook_trigger_sequence:
               description: "cleanup-hook.sh - playbook 完了時のテンポラリファイル自動クリーンアップ"
             - script: "create-pr-hook.sh"
               description: "create-pr-hook.sh - playbook 完了時の PR 自動作成フック"
-            - script: "update-tracker.sh"
-              description: "update-tracker.sh - PostToolUse:Edit/Write Hook: 変更追跡と自動更新提案"
-        - matcher: "Read"
-          hooks:
-            - script: "doc-freshness-check.sh"
-              description: "doc-freshness-check.sh - PostToolUse:Read Hook: ドキュメント鮮度チェック"
         - matcher: "Task"
           hooks:
             - script: "log-subagent.sh"
               description: "log-subagent.sh - Subagent 発動ログ記録 + critic 結果処理"
-        - matcher: "Write"
-          hooks:
-            - script: "update-tracker.sh"
-              description: "update-tracker.sh - PostToolUse:Edit/Write Hook: 変更追跡と自動更新提案"
     - trigger: "Stop"
       description: "セッション中断時（Ctrl+C, /stop）に発火"
       matchers:
@@ -346,7 +334,7 @@ workflows:
         - "playbook（active な場合）"
       process:
         hooks:
-          - "session-start.sh: pending/consent 作成、失敗パターン表示"
+          - "session-start.sh: pending 作成、失敗パターン表示"
           - "init-guard.sh: 必須ファイル Read 強制"
           - "check-main-branch.sh: main ブランチ禁止"
         subagents: []
@@ -355,12 +343,11 @@ workflows:
       output:
         - "[自認] ブロック（what, milestone, phase, branch...）"
         - "pending ファイル削除"
-        - "consent ファイル存在"
       references:
         - ".claude/hooks/session-start.sh"
         - ".claude/hooks/init-guard.sh"
         - ".claude/hooks/check-main-branch.sh"
-        - "CLAUDE.md#INIT"
+        - "CLAUDE.md"
         - "state.md"
         - "plan/project.md"
 
@@ -372,11 +359,10 @@ workflows:
       when: "INIT 完了後、playbook が存在する場合"
       input:
         - "playbook（current phase, done_criteria）"
-        - "subtasks（criterion, executor, test_command）"
+        - "subtasks（criterion, executor, validations）"
       process:
         hooks:
           - "playbook-guard.sh: playbook 存在確認"
-          - "consent-guard.sh: 合意確認"
           - "scope-guard.sh: スコープ制限"
           - "executor-guard.sh: executor 整合性"
           - "critic-guard.sh: critic 未実行チェック"
@@ -387,17 +373,16 @@ workflows:
         claude_md: "LOOP セクション → subtask 実行"
       output:
         - "ファイル変更（Edit/Write）"
-        - "test_command 結果"
+        - "validations 結果（3点検証）"
         - "critic 判定（PASS/FAIL）"
         - "phase.status = done（PASS の場合）"
       references:
         - ".claude/hooks/playbook-guard.sh"
-        - ".claude/hooks/consent-guard.sh"
         - ".claude/hooks/scope-guard.sh"
         - ".claude/hooks/executor-guard.sh"
         - ".claude/hooks/critic-guard.sh"
-        - ".claude/subagents/critic/"
-        - "CLAUDE.md#LOOP"
+        - ".claude/agents/critic.md"
+        - "CLAUDE.md"
 
     - id: post_loop
       name: "POST_LOOP"
@@ -428,35 +413,10 @@ workflows:
         - ".claude/hooks/archive-playbook.sh"
         - ".claude/hooks/cleanup-hook.sh"
         - ".claude/hooks/create-pr-hook.sh"
-        - ".claude/subagents/pm/"
+        - ".claude/agents/pm.md"
         - ".claude/skills/post-loop/"
-        - "CLAUDE.md#POST_LOOP"
+        - "CLAUDE.md"
         - "plan/project.md"
-
-    - id: consent_process
-      name: "CONSENT"
-      why: |
-        ユーザープロンプトの誤解釈を防止し、Edit/Write 前に意図を確認する。
-        [理解確認] ブロックによる構造化出力で合意を取得。
-      when: "Edit/Write 実行前"
-      input:
-        - "ユーザープロンプト"
-        - "変更対象ファイル"
-      process:
-        hooks:
-          - "consent-guard.sh: consent ファイル確認"
-        subagents: []
-        skills:
-          - "consent-process: [理解確認] 出力"
-        claude_md: "[理解確認] what, why, how, scope, exclusions, risks"
-      output:
-        - "[理解確認] ブロック"
-        - "consent ファイル削除（OK の場合）"
-        - "Edit/Write 実行許可"
-      references:
-        - ".claude/hooks/consent-guard.sh"
-        - ".claude/skills/consent-process/"
-        - "CLAUDE.md#理解確認"
 
     - id: critique_process
       name: "CRITIQUE"
@@ -466,7 +426,7 @@ workflows:
       when: "phase 完了申告時"
       input:
         - "phase.done_criteria"
-        - "test_command 実行結果"
+        - "validations 実行結果（3点検証）"
         - "変更内容"
       process:
         hooks:
@@ -481,9 +441,9 @@ workflows:
         - "修正指示（FAIL の場合）"
       references:
         - ".claude/hooks/critic-guard.sh"
-        - ".claude/subagents/critic/"
-        - ".claude/rules/frameworks/done-criteria-validation.md"
-        - "CLAUDE.md#CRITIQUE"
+        - ".claude/agents/critic.md"
+        - ".claude/frameworks/done-criteria-validation.md"
+        - "CLAUDE.md"
 
     - id: project_complete
       name: "PROJECT_COMPLETE"
@@ -496,7 +456,8 @@ workflows:
         - "現在の feature ブランチ"
         - "state.md"
       process:
-        hooks: []
+        hooks:
+          - "merge-pr.sh: main マージ"
         subagents:
           - "pm: 全 milestone 達成を検出"
         skills:
@@ -509,14 +470,76 @@ workflows:
         - "PROJECT 完了アナウンス"
         - "/clear 推奨"
       references:
-        - "plan/project.md#project_complete"
-        - "CLAUDE.md#POST_LOOP"
+        - "plan/project.md"
+        - "CLAUDE.md"
         - ".claude/hooks/merge-pr.sh"
+
+# ==============================================================================
+# Integration Points (M082)
+# Hook・SubAgent・Skill 間の依存関係
+# ==============================================================================
+
+integration_points:
+  description: "コンポーネント間の依存関係と連携ポイント"
+
+  hook_to_subagent:
+    - from: "critic-guard.sh"
+      to: "critic"
+      trigger: "Edit(playbook) で state: done への変更検出時"
+      purpose: "自己完了申告を防止、critic による検証を強制"
+    - from: "archive-playbook.sh"
+      to: "pm"
+      trigger: "playbook 完了（p_final 全 subtasks 完了）検出時"
+      purpose: "次 playbook の自動作成を提案"
+    - from: "log-subagent.sh"
+      to: "critic"
+      trigger: "Task(critic) 完了後"
+      purpose: "critic 結果を state.md に反映"
+
+  hook_to_skill:
+    - from: "test-done-criteria.sh"
+      to: "test-runner"
+      trigger: "done_criteria 検証時"
+      purpose: "自動テスト実行"
+
+  subagent_to_skill:
+    - from: "pm"
+      to: "post-loop"
+      trigger: "playbook 完了判定後"
+      purpose: "アーカイブ・クリーンアップ処理"
+
+  claude_md_integration:
+    description: "CLAUDE.md は全ワークフローの行動ルールを定義"
+    references:
+      - workflow: "init_flow"
+        section: "INIT"
+      - workflow: "work_loop"
+        section: "LOOP"
+      - workflow: "post_loop"
+        section: "POST_LOOP"
+      - workflow: "critique_process"
+        section: "CRITIQUE"
+
+  validation_chain:
+    description: "検証の連鎖（V15: validations ベース）"
+    flow:
+      - step: 1
+        component: "playbook subtask"
+        field: "validations (technical, consistency, completeness)"
+      - step: 2
+        component: "critic SubAgent"
+        action: "validations の 3 点を評価"
+      - step: 3
+        component: "critic-guard.sh"
+        action: "critic 未実行で done 変更をブロック"
+      - step: 4
+        component: "playbook"
+        action: "criterion に [x] マーク + validated timestamp"
 
 # ==============================================================================
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-22 13:38:39"
+  - date: "2025-12-22 16:09:07"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

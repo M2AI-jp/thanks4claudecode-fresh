@@ -194,31 +194,30 @@ playbook なしで作業開始しない:
    → context7 でライブラリの推奨パターンを確認
    → 公式ドキュメントの最新安定版を確認
 
-4. Phase を分割し subtasks を定義 ★新規
+4. Phase を分割し subtasks を定義
    → 2-5 Phase が理想
-   → 各 Phase に subtasks を定義（criterion + executor + test_command）
+   → 各 Phase に subtasks を定義（criterion + executor + validations）
    → docs/criterion-validation-rules.md の禁止パターンをチェック
 
-4.5. 【必須】criterion 検証可能性チェック ★新規
+4.5. 【必須】criterion 検証可能性チェック
    → 各 criterion に対して:
      - [ ] 状態形式か？（「〜である」「〜が存在する」）
-     - [ ] test_command が書けるか？
+     - [ ] validations（3点検証）が書けるか？
      - [ ] 禁止パターンに該当しないか？
    → 1つでも該当 → criterion を修正
 
-5. executor を選択（subtask 単位）★新規
+5. executor を選択（subtask 単位）
    → 参照: plan/template/playbook-format.md の「executor 選択ガイドライン」
    → claudecode: ファイル作成、設計、軽量スクリプト
    → codex: 本格的なコード実装
    → coderabbit: コードレビュー
    → user: 手動確認、外部操作
 
-6. test_command を定義（subtask 単位）★新規
-   → 参照: plan/template/playbook-format.md の「test_command パターン集」
-   → ファイル存在: test -f {path} && echo PASS
-   → 内容確認: grep -q '{pattern}' {file} && echo PASS
-   → コマンド実行: {cmd} && echo PASS || echo FAIL
-   → 手動確認: "手動確認: {具体的な手順}"
+6. validations を定義（subtask 単位）
+   → 3点検証を定義:
+     - technical: 技術的に正しく動作するか
+     - consistency: 他コンポーネントと整合性があるか
+     - completeness: 必要な変更が全て完了しているか
 
 7. 【必須】中間成果物の確認
    → 中間成果物がある場合:
@@ -237,9 +236,9 @@ playbook なしで作業開始しない:
 
 ---
 
-## subtasks 生成ガイドライン（V11 新規）
+## subtasks 生成ガイドライン（V12: validations ベース）
 
-> **criterion + executor + test_command を1セットで定義する**
+> **criterion + executor + validations を1セットで定義する**
 
 ### 構造
 
@@ -248,7 +247,10 @@ subtasks:
   - id: p{N}.{M}
     criterion: "検証可能な完了条件"
     executor: claudecode | codex | coderabbit | user
-    test_command: "PASS/FAIL を返すコマンド"
+    validations:
+      technical: "技術的に正しく動作するか"
+      consistency: "他コンポーネントと整合性があるか"
+      completeness: "必要な変更が全て完了しているか"
 ```
 
 ### executor 選択ロジック
@@ -271,24 +273,29 @@ user:
   例: "Vercel にデプロイされている"、"API キーが設定されている"
 ```
 
-### test_command 生成パターン
+### validations 定義パターン
 
 ```yaml
 ファイル存在:
   criterion: "〇〇.md が存在する"
-  test_command: "test -f {path} && echo PASS"
+  validations:
+    technical: "test -f {path} でファイル存在を確認"
+    consistency: "関連ドキュメントと整合性確認"
+    completeness: "必要な内容が全て含まれている"
 
-内容確認:
-  criterion: "〇〇が15個以上列挙されている"
-  test_command: "grep -c '{pattern}' {file} | awk '{if($1>=15) print \"PASS\"}'"
-
-コマンド実行:
+機能動作:
   criterion: "npm test が exit 0 で終了する"
-  test_command: "npm test && echo PASS || echo FAIL"
+  validations:
+    technical: "npm test を実行し exit code 確認"
+    consistency: "テスト対象コードと整合性確認"
+    completeness: "全テストケースが含まれている"
 
 手動確認:
   criterion: "ユーザーが〇〇を完了している"
-  test_command: "手動確認: {具体的な手順}"
+  validations:
+    technical: "ユーザーに完了確認を依頼"
+    consistency: "手順書と整合性確認"
+    completeness: "全ステップが完了している"
 ```
 
 ### 禁止パターンチェック
@@ -299,12 +306,12 @@ user:
 禁止:
   - 動詞で終わる（「〜する」「〜した」）
   - 曖昧な形容詞（「適切」「正しく」「良い」）
-  - 検証方法が不明（test_command が書けない）
+  - 検証方法が不明（validations が書けない）
 
 検出時の対応:
   1. criterion を修正（状態形式に変換）
   2. 具体的な条件を追加
-  3. test_command を定義
+  3. validations を定義
 ```
 
 ### テンプレート必須参照の理由
@@ -407,8 +414,8 @@ user:
 
 ## 参照ファイル
 
-- plan/template/playbook-format.md - playbook テンプレート（V11: subtasks 構造）
-- docs/criterion-validation-rules.md - criterion 検証ルール（禁止パターン）★新規
+- plan/template/playbook-format.md - playbook テンプレート（V12: validations ベース）
+- docs/criterion-validation-rules.md - criterion 検証ルール（禁止パターン）
 - state.md - 現在の playbook、focus
 - CLAUDE.md - playbook ルール（POST_LOOP: アーカイブ実行を含む）
 - .claude/agents/reviewer.md - 計画レビュー SubAgent（playbook レビューも担当）

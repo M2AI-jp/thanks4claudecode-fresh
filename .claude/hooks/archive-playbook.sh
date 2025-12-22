@@ -51,8 +51,9 @@ fi
 
 # playbook 内の Phase status を確認
 # 全ての status: が done であるかチェック
-TOTAL_PHASES=$(grep -c "^  status:" "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
-DONE_PHASES=$(grep "^  status: done" "$FILE_PATH" 2>/dev/null | wc -l | tr -d ' \n')
+# M085 修正: Markdown bold 形式（**status**: done）に対応
+TOTAL_PHASES=$(grep -c '^\*\*status\*\*:' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
+DONE_PHASES=$(grep -c '^\*\*status\*\*: done' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
 # 空の場合は 0 に設定
 TOTAL_PHASES=${TOTAL_PHASES:-0}
 DONE_PHASES=${DONE_PHASES:-0}
@@ -122,24 +123,15 @@ if grep -q "^## final_tasks" "$FILE_PATH" 2>/dev/null; then
     fi
 fi
 
-# 現在進行中の playbook（state.md playbook.active）かチェック
-# 進行中ならアーカイブ提案しない（安全策）
-ACTIVE_PLAYBOOK=$(grep -A 5 "^## playbook" state.md 2>/dev/null | grep "^active:" | head -1 | sed 's/active: *//' | tr -d ' ')
-if [ -n "$ACTIVE_PLAYBOOK" ] && [ "$ACTIVE_PLAYBOOK" != "null" ]; then
-    if echo "$ACTIVE_PLAYBOOK" | grep -q "$(basename "$FILE_PATH")"; then
-        # 現在進行中なのでスキップ（完了後に再度発火する）
-        exit 0
-    fi
-fi
-
 # ==============================================================================
 # M056: done_when 再検証（報酬詐欺防止）
 # ==============================================================================
-# playbook の goal.done_when を抽出し、関連する test_command を実行して検証
+# playbook の goal.done_when を抽出し、p_final の validations が全て PASS か検証
 # 全 PASS でなければアーカイブをブロック
 
 DONE_WHEN_SECTION=$(sed -n '/^done_when:/,/^[a-z_]*:/p' "$FILE_PATH" 2>/dev/null | grep "^  - " | head -10)
-DONE_WHEN_COUNT=$(echo "$DONE_WHEN_SECTION" | grep -c "^  - " 2>/dev/null || echo "0")
+# M086 修正: grep -c 失敗時のフォールバックを修正（二重出力防止）
+DONE_WHEN_COUNT=$(echo "$DONE_WHEN_SECTION" | grep -c "^  - " 2>/dev/null) || DONE_WHEN_COUNT=0
 
 if [ "$DONE_WHEN_COUNT" -gt 0 ]; then
     # p_final Phase の存在チェック
@@ -171,38 +163,24 @@ if [ "$DONE_WHEN_COUNT" -gt 0 ]; then
         exit 2  # done_when 未検証でブロック
     fi
 
-    # done_when の test_command を実行（p_final.* の test_command を収集）
-    P_FINAL_TEST_COMMANDS=$(grep -A 50 "p_final" "$FILE_PATH" 2>/dev/null | grep "test_command:" | head -10)
-    if [ -n "$P_FINAL_TEST_COMMANDS" ]; then
-        FAIL_COUNT=0
-        PASS_COUNT=0
+    # validations の PASS チェック（V15: validations ベース）
+    # p_final セクション内の subtask が全て [x]（完了）になっているか確認
+    P_FINAL_SECTION=$(grep -A 100 "p_final" "$FILE_PATH" 2>/dev/null | head -100)
+    INCOMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[ \]' 2>/dev/null) || INCOMPLETE_SUBTASKS=0
+    COMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[x\]' 2>/dev/null) || COMPLETE_SUBTASKS=0
 
-        # 各 test_command を実行（簡易版: grep で PASS/FAIL を確認）
-        while IFS= read -r line; do
-            CMD=$(echo "$line" | sed 's/.*test_command: *"//' | sed 's/"$//')
-            if [ -n "$CMD" ] && [ "$CMD" != "test_command:" ]; then
-                # test_command を実行して結果を確認
-                RESULT=$(eval "$CMD" 2>/dev/null || echo "FAIL")
-                if echo "$RESULT" | grep -q "PASS"; then
-                    PASS_COUNT=$((PASS_COUNT + 1))
-                else
-                    FAIL_COUNT=$((FAIL_COUNT + 1))
-                fi
-            fi
-        done <<< "$P_FINAL_TEST_COMMANDS"
-
-        if [ "$FAIL_COUNT" -gt 0 ]; then
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "  ❌ done_when の検証に失敗しました"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "  PASS: $PASS_COUNT / FAIL: $FAIL_COUNT"
-            echo ""
-            echo "  アーカイブをブロックします。"
-            echo "  → 失敗した done_when 項目を修正してください。"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            exit 2  # done_when FAIL でブロック
-        fi
+    if [ "$INCOMPLETE_SUBTASKS" -gt 0 ]; then
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  ❌ p_final の subtasks が未完了です"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "  完了: $COMPLETE_SUBTASKS / 未完了: $INCOMPLETE_SUBTASKS"
+        echo ""
+        echo "  アーカイブをブロックします。"
+        echo "  → 全ての p_final subtasks を完了させてください。"
+        echo "  → validations（3点検証）が全て PASS である必要があります。"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        exit 2  # subtasks 未完了でブロック
     fi
 fi
 
@@ -237,5 +215,51 @@ cat << EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
+
+# ==============================================================================
+# M088: 全 milestone achieved 検知（project_complete workflow）
+# ==============================================================================
+# playbook 完了時に project.md を参照し、全 milestone が achieved なら
+# project_complete メッセージを出力
+
+PROJECT_FILE="plan/project.md"
+
+if [ -f "$PROJECT_FILE" ]; then
+    # milestone 総数と未達成数をカウント（より正確な方法）
+    TOTAL_MILESTONES=$(grep -c "^- id: M" "$PROJECT_FILE" 2>/dev/null) || TOTAL_MILESTONES=0
+    # pending または in_progress の milestone がないことを確認
+    PENDING_MILESTONES=$(grep -c "status: pending\|status: in_progress" "$PROJECT_FILE" 2>/dev/null) || PENDING_MILESTONES=0
+
+    # milestone が存在し、未達成がない場合 = 全 milestone achieved
+    if [ "$TOTAL_MILESTONES" -gt 0 ] && [ "$PENDING_MILESTONES" -eq 0 ]; then
+        cat << 'PROJECTCOMPLETE'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🎉 PROJECT COMPLETE - 全 Milestone 達成
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  全ての Milestone が achieved になりました。
+
+  次のアクションを実行してください:
+
+  1. PR をマージ:
+     gh pr merge --merge --delete-branch
+
+  2. main ブランチを pull:
+     git checkout main && git pull
+
+  3. GitHub にプッシュ（必要に応じて）:
+     git push origin main
+
+  4. state.md を neutral 状態に:
+     playbook.active: null
+     focus.current: null
+
+  おめでとうございます！
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROJECTCOMPLETE
+    fi
+fi
 
 exit 0

@@ -114,6 +114,39 @@ mv plan/playbook-{name}.md plan/archive/
 
 ---
 
+## Repository Map Management
+
+`docs/repository-map.yaml` はリポジトリ構造の **Single Source of Truth** です。
+
+### 自動更新
+
+```bash
+# 手動で更新
+bash .claude/hooks/generate-repository-map.sh
+
+# 自動更新タイミング
+# - playbook 完了時（archive-playbook.sh から呼び出し）
+```
+
+### 含まれる情報
+
+| セクション | 内容 |
+|-----------|------|
+| `hooks` | 31 Hook スクリプト一覧 |
+| `agents` | 6 SubAgent 定義一覧 |
+| `skills` | 8 Skill 一覧 |
+| `commands` | 8 コマンド一覧 |
+| `docs` | 17 ドキュメント一覧 |
+| `workflows` | 5 ワークフロー定義 |
+| `integration_points` | コンポーネント間依存関係 |
+
+### 参照ドキュメント
+
+- `docs/repository-structure.md` - 活用ガイド
+- `docs/extension-system.md` - Hook/Skill/Command 発火タイミング
+
+---
+
 ## Tool Reference
 
 ### Hooks (automatic checks)

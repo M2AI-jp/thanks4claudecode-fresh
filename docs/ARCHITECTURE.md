@@ -266,7 +266,7 @@ phase (作業単位)
 ├── subtasks[]: チェックボックス形式
 │   ├── - [ ] subtask 1
 │   └── - [x] subtask 2 ✓
-├── test_command: 検証コマンド
+├── validations: 3点検証（technical/consistency/completeness）
 └── executor: orchestrator|worker|reviewer
 ```
 

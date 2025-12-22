@@ -43,3 +43,4 @@ BLOCK:.claude/hooks/check-protected-edit.sh
 WARN:state.md
 WARN:AGENTS.md
 WARN:README.md
+HARD_BLOCK:.claude/hooks/archive-playbook.sh

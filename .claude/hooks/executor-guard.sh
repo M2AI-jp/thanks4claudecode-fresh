@@ -59,11 +59,13 @@ if [[ ! -f "$STATE_FILE" ]]; then
     exit 0
 fi
 
-# focus.current を取得
-FOCUS=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^current:" | head -1 | sed 's/current: *//' | sed 's/ *#.*//' | tr -d ' ')
+# focus.current を取得（pipefail 対策: || true）
+FOCUS=$(grep -A6 "^## focus" "$STATE_FILE" 2>/dev/null | grep "^current:" | head -1 | sed 's/current: *//' | sed 's/ *#.*//' | tr -d ' ' || true)
 
-# active_playbooks から現在の focus の playbook を取得
-PLAYBOOK_PATH=$(grep -A8 "^## active_playbooks" "$STATE_FILE" | grep "^${FOCUS}:" | head -1 | sed "s/${FOCUS}: *//" | sed 's/ *#.*//' | tr -d ' ')
+# playbook から active を取得（M085 修正: 正しい state.md フォーマットに対応）
+# 旧フォーマット: ## active_playbooks + ${FOCUS}: path
+# 新フォーマット: ## playbook + active: path
+PLAYBOOK_PATH=$(grep -A8 "^## playbook" "$STATE_FILE" 2>/dev/null | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//' | tr -d ' ' || true)
 
 # playbook が null または空ならスキップ
 if [[ -z "$PLAYBOOK_PATH" || "$PLAYBOOK_PATH" == "null" ]]; then
@@ -89,7 +91,8 @@ LINE_NUM=$(echo "$IN_PROGRESS_LINE" | cut -d: -f1)
 EXECUTOR=""
 for i in $(seq "$LINE_NUM" -1 1); do
     LINE=$(sed -n "${i}p" "$PLAYBOOK_PATH")
-    if [[ "$LINE" =~ ^[[:space:]]*executor:[[:space:]]*(.+)$ ]]; then
+    # M085 修正: "- executor:" 形式にも対応（YAML リストアイテム）
+    if [[ "$LINE" =~ ^[[:space:]]*-?[[:space:]]*executor:[[:space:]]*(.+)$ ]]; then
         EXECUTOR=$(echo "${BASH_REMATCH[1]}" | tr -d ' ')
         break
     fi
