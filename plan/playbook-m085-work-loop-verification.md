@@ -92,7 +92,7 @@ workflow:
     - consistency: "本番ファイルを汚染しない"
     - completeness: "クリーンアップ手順が明確"
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
@@ -138,7 +138,7 @@ workflow:
     - consistency: "state: done 検出ロジックが存在"
     - completeness: "self_complete: true チェックが存在"
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
@@ -179,7 +179,7 @@ workflow:
     - consistency: "playbook=null でも exit 0"
     - completeness: "plan/playbook-*.md パターンマッチが正しい"
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -220,7 +220,7 @@ workflow:
     - consistency: "exit 0 で正常終了"
     - completeness: "stdout/stderr が空"
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
@@ -268,7 +268,7 @@ workflow:
     - consistency: "エラーメッセージに「Toolstack A では使用できません」が含まれる"
     - completeness: "toolstack 変更の案内がある"
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -302,7 +302,7 @@ workflow:
     - consistency: "state.md のみが対象"
     - completeness: "他ファイルは常に許可"
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
@@ -336,7 +336,7 @@ workflow:
     - consistency: "repository-map.yaml の integration_points に記載がある"
     - completeness: "Hook は SubAgent を直接呼び出せない制約が明記されている"
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
@@ -370,7 +370,7 @@ workflow:
     - consistency: "p_final の subtask 全完了を条件とする"
     - completeness: "アーカイブ提案メッセージが出力される"
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
@@ -411,7 +411,7 @@ workflow:
     - consistency: "CLAUDE.md 行動ルール + archive-playbook.sh で実現"
     - completeness: "公式 Hook の制約が明記されている"
 
-**status**: pending
+**status**: done
 
 ---
 
@@ -518,17 +518,17 @@ work_loop 全体: ✅ PASS
 
 ## final_tasks
 
-- [ ] **ft1**: repository-map.yaml を更新する
+- [x] **ft1**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
-  - status: pending
+  - status: done
 
-- [ ] **ft2**: tmp/ 内の一時ファイルを削除する
+- [x] **ft2**: tmp/ 内の一時ファイルを削除する
   - command: `find tmp/ -type f ! -name 'README.md' -delete 2>/dev/null || true`
-  - status: pending
+  - status: done
 
-- [ ] **ft3**: 変更を全てコミットする
+- [x] **ft3**: 変更を全てコミットする
   - command: `git add -A && git status`
-  - status: pending
+  - status: done
 
 ---
 
