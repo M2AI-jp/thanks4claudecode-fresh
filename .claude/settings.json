@@ -41,7 +41,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/consent-guard.sh",
             "timeout": 3000
           },
           {
@@ -86,7 +85,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/consent-guard.sh",
             "timeout": 3000
           },
           {

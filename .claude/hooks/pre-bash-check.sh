@@ -54,8 +54,6 @@ if [[ "$USE_CONTRACT" == "false" ]]; then
     HARD_BLOCK_FILES=(
         "CLAUDE.md"
         ".claude/protected-files.txt"
-        ".claude/.session-init/consent"
-        ".claude/.session-init/pending"
     )
 
     WRITE_PATTERNS=(

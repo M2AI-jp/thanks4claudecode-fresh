@@ -25,8 +25,6 @@ STATE_FILE="${STATE_FILE:-state.md}"
 HARD_BLOCK_FILES=(
     "CLAUDE.md"
     ".claude/protected-files.txt"
-    ".claude/.session-init/consent"
-    ".claude/.session-init/pending"
     ".claude/hooks/init-guard.sh"
     ".claude/hooks/critic-guard.sh"
     ".claude/hooks/scope-guard.sh"

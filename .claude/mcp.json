@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "codex": {
-      "command": "codex",
+      "command": "/Users/amano/.asdf/installs/nodejs/24.4.1/bin/codex",
       "args": ["mcp-server"],
       "env": {},
       "timeout": 600000
