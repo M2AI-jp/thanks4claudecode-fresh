@@ -20,7 +20,8 @@ project: plan/project.md
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-test-strengthening.md
+last_archived: plan/archive/playbook-p1.2-stop-py.md
+review_pending: false  # レビュー未完了なら true（stop.py がブロック）
 ```
 
 ---
@@ -28,9 +29,14 @@ last_archived: plan/archive/playbook-test-strengthening.md
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
+milestone: P1.2
+phase: p1
+done_criteria:
+  - .claude/hooks/stop.py が存在する
+  - stdin から JSON を受け取れる
+  - state.md の review_pending フラグを読み取れる
+  - review_pending: true の場合、decision: block を返す
+  - python3 -m py_compile でエラー 0
 ```
 
 ---
@@ -38,7 +44,7 @@ done_criteria: []
 ## session
 
 ```yaml
-last_start: 2025-12-23 01:00:41
+last_start: 2025-12-23 03:18:46
 last_end: 2025-12-22 22:35:47
 last_clear: 2025-12-13 00:30:00
 ```

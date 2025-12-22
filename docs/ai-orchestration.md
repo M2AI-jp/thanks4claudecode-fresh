@@ -195,9 +195,95 @@ toolstack に対してチェックします。
 
 ---
 
+## playbook_reviewer 仕様
+
+> **報酬詐欺防止のための独立検証エージェント**
+> criteria がクリアされるまで LOOP する仕組みの核心部分
+
+### 役割
+
+- playbook の done_when が「本当に」達成されているか独立検証
+- 作成者の PASS 判定を鵜呑みにしない
+- 自分でコードを実行して証拠を収集
+- **FAIL の場合、該当 subtask を特定して返す（親 Claude が再実行）**
+
+### LOOP メカニズム
+
+```
+実装フェーズ (p1 → p2 → p3 → p4)
+              ↓
+p_final: playbook_reviewer による独立検証
+              ↓
+         ┌─────────┐
+         │  PASS?  │
+         └────┬────┘
+         YES  │  NO
+    ┌────────┴────────┐
+    ↓                 ↓
+reviewed: true    FAIL した subtask を特定
+→ アーカイブ      親 Claude が再実行
+                  → 再度 playbook_reviewer
+                        ↑        │
+                        └────────┘
+                          LOOP
+```
+
+**重要**: FAIL 時は「レポート」ではなく、「再実行すべき subtask」を返す。
+親 Claude (orchestrator) がその subtask を再実行し、再度 playbook_reviewer を呼ぶ。
+
+### 検証タイプ
+
+| タイプ | 判定条件 | 検証内容 |
+|--------|----------|----------|
+| コードタスク | `coding: true` | 構文チェック + 実行テスト + edge case |
+| 非コードタスク | `coding: false` | 存在確認 + 内容確認 |
+
+### 独立性の担保
+
+```yaml
+禁止:
+  - 作成者が書いた「PASS」を見る
+  - playbook の [x] チェックボックスを信じる
+  - validations の結果文字列を鵜呑みにする
+
+必須:
+  - 自分で検証コマンドを実行
+  - edge case を自分で考えて追加テスト
+  - 疑わしきは FAIL
+```
+
+### 出力形式
+
+```yaml
+# PASS の場合
+result: PASS
+action: reviewed: true に設定し、アーカイブ可能
+
+# FAIL の場合
+result: FAIL
+failed_items:
+  - item: "done_when 項目"
+    related_subtask: p2.3  # ← 親 Claude はこれを再実行
+    fix_hint: "修正のヒント"
+action: 親 Claude は related_subtask を再実行
+```
+
+### 制約
+
+- **配置**: p_final の最後の subtask として必須
+- **条件**: reviewed: true でなければアーカイブ不可
+- **原則**: 疑わしきは FAIL
+
+### 詳細仕様
+
+→ `.claude/frameworks/playbook-reviewer-spec.md` を参照
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-23 | playbook_reviewer 仕様追加（LOOP メカニズム、独立検証） |
 | 2025-12-18 | Codex MCP 統合追加（M078） |
 | 2025-12-17 | 初版作成（M073） |

@@ -57,3 +57,4 @@ test/core/
 test/scenarios/
 test/results/
 test/template/
+.claude/hooks/__pycache__/

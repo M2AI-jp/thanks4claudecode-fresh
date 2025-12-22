@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-22 16:09:07"
+  generated: "2025-12-23 03:32:42"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 235
+  total_files: 271
 
 hooks:
   directory: .claude/hooks/
@@ -57,7 +57,7 @@ agents:
     - name: "critic"
       description: "各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する"
     - name: "health-checker"
-      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
+      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
     - name: "pm"
       description: "重要"
     - name: "reviewer"
@@ -73,7 +73,7 @@ skills:
   count: 8
   files:
     - name: "context-management"
-      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
+      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
     - name: "deploy-checker"
       description: "デプロイ準備・検証専門スキル"
     - name: "frontend-design"
@@ -108,7 +108,7 @@ commands:
     - name: "/state-rollback"
       description: "allowed-tools: Read, Write, Bash"
     - name: "/task-start"
-      description: "標準タスク開始コマンド。全てのタスクは project.md からの導出を経由する�"
+      description: "標準タスク開始コマンド。全てのタスクは project.md からの導出を経由する�"
     - name: "/test"
       description: "allowed-tools: Read, Bash"
 
@@ -119,7 +119,7 @@ docs:
     - name: "ARCHITECTURE.md"
       description: "リポジトリの構造と各コンポーネントの関係を文書化"
     - name: "admin-contract.md"
-      description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する�"
+      description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する�"
     - name: "ai-orchestration.md"
       description: "役割ベース executor 抽象化 - playbook の再利用性向上"
     - name: "archive-operation-rules.md"
@@ -159,7 +159,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 79
+      count: 95
     template:
       description: "playbook テンプレート"
       count: 6
@@ -284,7 +284,7 @@ hook_trigger_sequence:
             - script: "cleanup-hook.sh"
               description: "cleanup-hook.sh - playbook 完了時のテンポラリファイル自動クリーンアップ"
             - script: "create-pr-hook.sh"
-              description: "create-pr-hook.sh - playbook 完了時の PR 自動作成フック"
+              description: "create-pr-hook.sh - playbook 完了時の PR 自動作成 + マージフック"
         - matcher: "Task"
           hooks:
             - script: "log-subagent.sh"
@@ -358,7 +358,7 @@ workflows:
       when: "INIT 完了後、playbook が存在する場合"
       input:
         - "playbook（current phase, done_criteria）"
-        - "subtasks（criterion, executor, validations）"
+        - "subtasks（criterion, executor, test_command）"
       process:
         hooks:
           - "playbook-guard.sh: playbook 存在確認"
@@ -372,7 +372,7 @@ workflows:
         claude_md: "LOOP セクション → subtask 実行"
       output:
         - "ファイル変更（Edit/Write）"
-        - "validations 結果（3点検証）"
+        - "test_command 結果"
         - "critic 判定（PASS/FAIL）"
         - "phase.status = done（PASS の場合）"
       references:
@@ -425,7 +425,7 @@ workflows:
       when: "phase 完了申告時"
       input:
         - "phase.done_criteria"
-        - "validations 実行結果（3点検証）"
+        - "test_command 実行結果"
         - "変更内容"
       process:
         hooks:
@@ -474,71 +474,9 @@ workflows:
         - ".claude/hooks/merge-pr.sh"
 
 # ==============================================================================
-# Integration Points (M082)
-# Hook・SubAgent・Skill 間の依存関係
-# ==============================================================================
-
-integration_points:
-  description: "コンポーネント間の依存関係と連携ポイント"
-
-  hook_to_subagent:
-    - from: "critic-guard.sh"
-      to: "critic"
-      trigger: "Edit(playbook) で state: done への変更検出時"
-      purpose: "自己完了申告を防止、critic による検証を強制"
-    - from: "archive-playbook.sh"
-      to: "pm"
-      trigger: "playbook 完了（p_final 全 subtasks 完了）検出時"
-      purpose: "次 playbook の自動作成を提案"
-    - from: "log-subagent.sh"
-      to: "critic"
-      trigger: "Task(critic) 完了後"
-      purpose: "critic 結果を state.md に反映"
-
-  hook_to_skill:
-    - from: "test-done-criteria.sh"
-      to: "test-runner"
-      trigger: "done_criteria 検証時"
-      purpose: "自動テスト実行"
-
-  subagent_to_skill:
-    - from: "pm"
-      to: "post-loop"
-      trigger: "playbook 完了判定後"
-      purpose: "アーカイブ・クリーンアップ処理"
-
-  claude_md_integration:
-    description: "CLAUDE.md は全ワークフローの行動ルールを定義"
-    references:
-      - workflow: "init_flow"
-        section: "INIT"
-      - workflow: "work_loop"
-        section: "LOOP"
-      - workflow: "post_loop"
-        section: "POST_LOOP"
-      - workflow: "critique_process"
-        section: "CRITIQUE"
-
-  validation_chain:
-    description: "検証の連鎖（V15: validations ベース）"
-    flow:
-      - step: 1
-        component: "playbook subtask"
-        field: "validations (technical, consistency, completeness)"
-      - step: 2
-        component: "critic SubAgent"
-        action: "validations の 3 点を評価"
-      - step: 3
-        component: "critic-guard.sh"
-        action: "critic 未実行で done 変更をブロック"
-      - step: 4
-        component: "playbook"
-        action: "criterion に [x] マーク + validated timestamp"
-
-# ==============================================================================
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-22 16:09:07"
+  - date: "2025-12-23 03:32:42"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
