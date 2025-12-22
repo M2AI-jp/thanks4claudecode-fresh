@@ -31,6 +31,8 @@ done_when:
   - workflows セクションが最新の Hook/SubAgent/Skill 構成を反映している
   - 不要ファイル・孤立ファイルが特定され、削除計画が明確である
   - repository-map.yaml の自動更新スクリプトが正常に動作する
+  - 全 5 workflows（init_flow, work_loop, post_loop, critique_process, project_complete）の E2E 動作検証が完了している
+  - 変更が GitHub にプッシュされ main にマージされている
 ```
 
 ---
@@ -352,9 +354,99 @@ done_when:
 
 ---
 
+### p8: Workflows E2E 動作検証
+
+**goal**: repository-map.yaml に定義した 5 workflows が実際に動作することを E2E で検証する
+
+#### subtasks
+
+- [x] **p8.1**: init_flow E2E 検証 - セッション開始時の Hook チェーン動作確認 ✓
+  - executor: claudecode
+  - validations:
+    - technical: "PASS - session-start.sh, init-guard.sh 正常動作（M084/M085 で検証）"
+    - consistency: "PASS - state.md 読み込み、consent チェック正常"
+    - completeness: "PASS - 全 init Hook がエラーなく実行"
+  - validated: 2025-12-22T19:30:00
+  - note: M084/M085 で検証済み
+
+- [x] **p8.2**: work_loop E2E 検証 - playbook-guard → executor-guard チェーン動作確認 ✓
+  - executor: claudecode
+  - validations:
+    - technical: "PASS - executor-guard.sh バグ3件修正（state.md形式、pipefail、regex）"
+    - consistency: "PASS - playbook-guard → critic-guard → scope-guard → executor-guard チェーン正常"
+    - completeness: "PASS - Edit/Write/Bash 全てで Guard 発火確認"
+  - validated: 2025-12-22T19:00:00
+  - note: M085 で検証・修正済み（commit 62a487f）
+
+- [x] **p8.3**: post_loop E2E 検証 - subtask-guard → archive-playbook チェーン動作確認 ✓
+  - executor: claudecode
+  - validations:
+    - technical: "PASS - archive-playbook.sh バグ5件修正（Phase status、count、milestone検知）"
+    - consistency: "PASS - subtask 完了時に archive 提案が正常表示"
+    - completeness: "PASS - 全 Phase done 検知、final_tasks 検知正常"
+  - validated: 2025-12-22T19:10:00
+  - note: M086 で検証・修正済み（commit 9d5539b, d878fe0, 6622175）
+
+- [x] **p8.4**: critique_process E2E 検証 - critic-guard 動作確認 ✓
+  - executor: claudecode
+  - validations:
+    - technical: "PASS - critic-guard.sh が p_final 到達時に発火"
+    - consistency: "PASS - done_when 検証を強制"
+    - completeness: "PASS - critic SubAgent 呼び出し正常"
+  - validated: 2025-12-22T19:15:00
+  - note: M087 で検証済み
+
+- [x] **p8.5**: project_complete E2E 検証 - archive-playbook の milestone 検知動作確認 ✓
+  - executor: claudecode
+  - validations:
+    - technical: "PASS - milestone 検知ロジック追加（commit b0de8da）"
+    - consistency: "PASS - 全 milestone achieved 時に PROJECT COMPLETE メッセージ表示"
+    - completeness: "PASS - pending/in_progress milestone がない場合のみ発火"
+  - validated: 2025-12-22T19:20:00
+  - note: M088 で検証・修正済み
+
+**status**: done
+**max_iterations**: 5
+**depends_on**: [p7]
+
+---
+
+### p9: GitHub プッシュ・マージ
+
+**goal**: 全変更を GitHub にプッシュし main にマージして完遂する
+
+#### subtasks
+
+- [ ] **p9.1**: 変更をコミット
+  - executor: claudecode
+  - validations:
+    - technical: "pending"
+    - consistency: "pending"
+    - completeness: "pending"
+
+- [ ] **p9.2**: リモートにプッシュ
+  - executor: claudecode
+  - validations:
+    - technical: "pending"
+    - consistency: "pending"
+    - completeness: "pending"
+
+- [ ] **p9.3**: PR 作成またはマージ
+  - executor: claudecode
+  - validations:
+    - technical: "pending"
+    - consistency: "pending"
+    - completeness: "pending"
+
+**status**: pending
+**max_iterations**: 3
+**depends_on**: [p8]
+
+---
+
 ### p_final: 完了検証
 
-**goal**: repository-map.yaml の最適化が完全に達成されたことを確認
+**goal**: repository-map.yaml の最適化が完全に達成されたことを確認（E2E 動作検証を含む）
 
 #### subtasks
 
@@ -380,7 +472,7 @@ done_when:
     - technical: "PASS - 孤立ファイル削除済み（consent-guard.sh 等）"
     - consistency: "PASS - git 追跡可能"
     - completeness: "PASS - 残存ファイル全て必要"
-  - validated: 2025-12-22T18:30:00
+  - validated: 2025-12-22T18:35:00
 
 - [x] **p_final.4**: repository-map.yaml の自動更新スクリプトが正常に動作する ✓
   - executor: claudecode
@@ -390,7 +482,22 @@ done_when:
     - completeness: "PASS - 全セクション自動更新"
   - validated: 2025-12-22T18:35:00
 
-**status**: done
+- [ ] **p_final.5**: 全 5 workflows の E2E 動作検証が完了している
+  - executor: claudecode
+  - validations:
+    - technical: "pending"
+    - consistency: "pending"
+    - completeness: "pending"
+
+- [ ] **p_final.6**: 変更が GitHub にプッシュされ main にマージされている
+  - executor: claudecode
+  - validations:
+    - technical: "pending"
+    - consistency: "pending"
+    - completeness: "pending"
+
+**status**: pending
+**depends_on**: [p9]
 
 ---
 

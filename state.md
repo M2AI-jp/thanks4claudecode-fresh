@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: null
+current: m082-repository-optimization
 project: plan/project.md
 ```
 
@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-m082-repository-optimization.md
+branch: feat/m085-work-loop-verification
 last_archived: plan/archive/playbook-m088-project-complete-verification.md
 ```
 
@@ -28,9 +28,13 @@ last_archived: plan/archive/playbook-m088-project-complete-verification.md
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
+milestone: M082
+phase: p8
+done_criteria:
+  - repository-map.yaml が MECE 原則に基づいて整理されている
+  - workflows セクションが最新の Hook/SubAgent/Skill 構成を反映している
+  - 全 5 workflows の E2E 動作検証が完了している
+  - 変更が GitHub にプッシュされ main にマージされている
 ```
 
 ---
