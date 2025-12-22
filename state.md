@@ -18,9 +18,9 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-p1-1-session-start-py.md
-branch: feat/p1.1-session-start
-last_archived: plan/archive/playbook-test-strengthening.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-p1-1-session-start-py.md
 ```
 
 ---
