@@ -318,6 +318,23 @@ success_criteria:
     - [x] workflows セクションが組み合わせモジュール単位で整理されている
     - [x] generate-repository-map.sh に workflows 自動生成ロジックが統合されている
     - [x] commands と skills の違いが明示されている
+
+- id: M028
+  name: "PROJECT_COMPLETE フロー実装"
+  description: |
+    全 milestone 達成時の自動フローを実装。
+    feature ブランチを main にマージし、GitHub にプッシュ、
+    state.md を neutral 状態にリセットする。
+  status: in_progress
+  depends_on: [M027]
+  playbooks: []
+  done_when:
+    - [ ] project_complete 仕様が project.md に詳細定義されている
+    - [ ] CLAUDE.md POST_LOOP に project 完了時フローが追加されている
+    - [ ] workflows に PROJECT_COMPLETE モジュールが追加されている
+    - [ ] pm SubAgent が全 milestone 達成を検出できる
+    - [ ] main マージ後に GitHub プッシュが実行される
+    - [ ] state.md が neutral 状態にリセットされる
 ```
 
 ---
@@ -397,10 +414,63 @@ playbook_complete:
     - pm で新 playbook を自動作成
 
 project_complete:
-  trigger: 全 milestone が achieved
-  action:
-    - project.status = completed
-    - 「次の方向性を教えてください」と人間に確認
+  trigger: 全 milestone が status: achieved
+  detection: POST_LOOP 時に pm SubAgent が自動チェック
+
+  flow:
+    1_merge_to_main:
+      description: "feature ブランチを main にマージ"
+      steps:
+        - git checkout main
+        - git pull origin main
+        - git merge --no-ff {feature_branch}
+        - コンフリクト時は人間に確認して解決
+
+    2_push_to_github:
+      description: "main を GitHub にプッシュ"
+      steps:
+        - git push origin main
+        - 失敗時はエラー通知して人間に確認
+
+    3_reset_state:
+      description: "state.md を neutral 状態にリセット"
+      state_md:
+        playbook:
+          active: null
+          branch: null
+          last_archived: {最後にアーカイブした playbook}
+        goal:
+          milestone: null
+          phase: null
+          self_complete: false
+          last_completed_milestone: {最終 milestone}
+
+    4_cleanup:
+      description: "完了後の整理"
+      steps:
+        - feature ブランチを削除（オプション）
+        - git branch -d {feature_branch}
+        - project.status = completed
+
+    5_announce:
+      description: "完了通知"
+      output: |
+        ┌────────────────────────────────────────────────┐
+        │ 🎉 PROJECT 完了: {project_name}                │
+        │                                                │
+        │ 📊 達成 milestone: {X} 個                      │
+        │ 🔀 main にマージ済み                           │
+        │ ☁️ GitHub にプッシュ済み                       │
+        │                                                │
+        │ 💬 次の方向性を教えてください                  │
+        │                                                │
+        │ ⚠️ /clear を実行してください                   │
+        └────────────────────────────────────────────────┘
+
+  neutral_state:
+    description: "project 完了後の待機状態"
+    git_branch: main
+    ready_for: "新しいタスクまたは新プロジェクト開始"
 ```
 
 ---

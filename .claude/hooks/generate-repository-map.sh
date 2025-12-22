@@ -438,6 +438,34 @@ workflows:
         - ".claude/subagents/critic/"
         - ".claude/rules/frameworks/done-criteria-validation.md"
         - "CLAUDE.md#CRITIQUE"
+
+    - id: project_complete
+      name: "PROJECT_COMPLETE"
+      why: |
+        全 milestone 達成時に feature ブランチを main にマージし、GitHub にプッシュ。
+        state.md を neutral 状態にリセットして次の作業に備える。
+      when: "全 milestone が status: achieved"
+      input:
+        - "project.md（全 milestone の status）"
+        - "現在の feature ブランチ"
+        - "state.md"
+      process:
+        hooks: []
+        subagents:
+          - "pm: 全 milestone 達成を検出"
+        skills:
+          - "post-loop: 完了処理"
+        claude_md: "POST_LOOP#PROJECT_COMPLETE"
+      output:
+        - "main ブランチにマージ"
+        - "GitHub にプッシュ"
+        - "state.md neutral 状態"
+        - "PROJECT 完了アナウンス"
+        - "/clear 推奨"
+      references:
+        - "plan/project.md#project_complete"
+        - "CLAUDE.md#POST_LOOP"
+        - ".claude/hooks/merge-pr.sh"
 WORKFLOWS_HEADER
 }
 

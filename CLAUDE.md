@@ -284,6 +284,26 @@ playbook の全 phase が done → 以下を自動実行:
   └────────────────────────────────────────────────┘
 
 禁止: 「報告して待つ」パターン
+
+PROJECT_COMPLETE（全 milestone 達成時）:
+  条件: project.milestones の全てが status: achieved
+  検出: POST_LOOP 時に pm が自動チェック
+  フロー:
+    1. feature ブランチを main にマージ
+       - git checkout main && git pull origin main
+       - git merge --no-ff {feature_branch}
+       - コンフリクト時は人間に確認
+    2. main を GitHub にプッシュ
+       - git push origin main
+       - 失敗時はエラー通知
+    3. state.md を neutral 状態にリセット
+       - playbook.active = null
+       - playbook.branch = null
+       - goal.milestone = null
+       - goal.phase = null
+    4. feature ブランチを削除（オプション）
+    5. PROJECT 完了アナウンス + /clear 推奨
+    6. 「次の方向性を教えてください」と人間に確認
 ```
 
 ---
