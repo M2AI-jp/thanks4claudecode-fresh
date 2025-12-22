@@ -172,6 +172,105 @@ count_files() {
 }
 
 # ==============================================================================
+# M027: hook_trigger_sequence 生成関数
+# ==============================================================================
+
+# 公式トリガー順序（https://code.claude.com/docs/ja/hooks）
+TRIGGER_ORDER=("SessionStart" "UserPromptSubmit" "PreToolUse" "PostToolUse" "Stop" "PreCompact" "SessionEnd")
+
+# 指定トリガーの Hook 一覧を取得（詳細付き）
+get_hooks_for_trigger() {
+    local trigger="$1"
+    local settings_file="$PROJECT_ROOT/.claude/settings.json"
+
+    if [[ ! -f "$settings_file" ]] || ! command -v jq &> /dev/null; then
+        return
+    fi
+
+    # トリガー配下の Hook を取得
+    jq -r --arg trigger "$trigger" '
+        .hooks[$trigger][]? |
+        {matcher: .matcher, hooks: .hooks} |
+        .hooks[]? |
+        {matcher: .matcher, command: .command, timeout: .timeout}
+    ' "$settings_file" 2>/dev/null | jq -s '.' 2>/dev/null
+}
+
+# hook_trigger_sequence セクションを生成
+generate_hook_trigger_sequence() {
+    local settings_file="$PROJECT_ROOT/.claude/settings.json"
+
+    cat >> "$TEMP_FILE" << 'HTS_HEADER'
+
+# ==============================================================================
+# Hook Trigger Sequence (M027)
+# 公式ドキュメント準拠の発火順序
+# https://code.claude.com/docs/ja/hooks
+# ==============================================================================
+
+hook_trigger_sequence:
+  description: "Hook の発火順序（公式ドキュメント準拠）"
+  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd"
+  triggers:
+HTS_HEADER
+
+    for trigger in "${TRIGGER_ORDER[@]}"; do
+        # トリガーの存在チェック
+        local has_hooks
+        has_hooks=$(jq -r --arg t "$trigger" '.hooks[$t] | length' "$settings_file" 2>/dev/null || echo "0")
+
+        if [[ "$has_hooks" -gt 0 ]]; then
+            cat >> "$TEMP_FILE" << EOF
+    - trigger: "$trigger"
+      description: "$(get_trigger_description "$trigger")"
+      matchers:
+EOF
+            # matcher ごとに Hook を出力
+            jq -r --arg t "$trigger" '
+                .hooks[$t][]? |
+                "\(.matcher)"
+            ' "$settings_file" 2>/dev/null | sort -u | while read -r matcher; do
+                [[ -z "$matcher" ]] && continue
+                cat >> "$TEMP_FILE" << EOF
+        - matcher: "$matcher"
+          hooks:
+EOF
+                # 該当 matcher の Hook 一覧
+                jq -r --arg t "$trigger" --arg m "$matcher" '
+                    .hooks[$t][]? |
+                    select(.matcher == $m) |
+                    .hooks[]? |
+                    .command | split("/") | .[-1]
+                ' "$settings_file" 2>/dev/null | while read -r hook_script; do
+                    [[ -z "$hook_script" ]] && continue
+                    local hook_desc
+                    hook_desc=$(extract_description "$HOOKS_DIR/$hook_script" 2>/dev/null | head -c 100)
+                    cat >> "$TEMP_FILE" << EOF
+            - script: "$hook_script"
+              description: "$hook_desc"
+EOF
+                done
+            done
+        fi
+    done
+}
+
+# トリガーの説明を取得
+get_trigger_description() {
+    local trigger="$1"
+    case "$trigger" in
+        SessionStart)    echo "セッション開始時に発火" ;;
+        UserPromptSubmit) echo "ユーザープロンプト送信時に発火" ;;
+        PreToolUse)      echo "ツール実行前に発火（matcher でフィルタ可能）" ;;
+        PostToolUse)     echo "ツール実行後に発火（matcher でフィルタ可能）" ;;
+        Stop)            echo "セッション中断時（Ctrl+C, /stop）に発火" ;;
+        PreCompact)      echo "コンテキスト圧縮前に発火" ;;
+        SessionEnd)      echo "セッション終了時に発火" ;;
+        *)               echo "不明なトリガー" ;;
+    esac
+}
+
+# ==============================================================================
 # M025: system_specification 生成関数
 # ==============================================================================
 
@@ -191,27 +290,6 @@ extract_init_flow() {
         grep -E "^\s+[0-9]+\. Read:" | \
         sed 's/.*Read: */      - /' | \
         head -5 || echo "      - state.md"
-}
-
-# Hook 連鎖を抽出（settings.json から同一トリガーの Hook を連鎖として出力）
-extract_hook_chain() {
-    local settings_file="$PROJECT_ROOT/.claude/settings.json"
-    local trigger="$1"
-
-    if [[ ! -f "$settings_file" ]] || ! command -v jq &> /dev/null; then
-        echo "      - unknown"
-        return
-    fi
-
-    # 指定トリガーの Hook 一覧を取得
-    jq -r --arg trigger "$trigger" '
-        .hooks[$trigger][]? |
-        .hooks[]? |
-        .command |
-        split("/") | .[-1]
-    ' "$settings_file" 2>/dev/null | while read -r hook; do
-        [[ -n "$hook" ]] && echo "        - $hook"
-    done
 }
 
 # CLAUDE.md から禁止事項を抽出
@@ -275,31 +353,9 @@ SPEC_HEADER
       - "/clear 推奨アナウンス"
       - "次 milestone → pm"
 
-  hook_chains:
-    description: "Hook の発火順序と連鎖関係"
+  # 注: Hook 発火順序は hook_trigger_sequence セクションに統一（M027）
+
 SPEC_STEPS
-
-    # Hook 連鎖を出力
-    cat >> "$TEMP_FILE" << 'HOOK_CHAINS'
-    PreToolUse_Edit:
-      trigger: "PreToolUse:Edit"
-      order:
-HOOK_CHAINS
-    extract_hook_chain "PreToolUse" >> "$TEMP_FILE"
-
-    cat >> "$TEMP_FILE" << 'HOOK_CHAINS2'
-    PostToolUse_Edit:
-      trigger: "PostToolUse:Edit"
-      order:
-HOOK_CHAINS2
-    extract_hook_chain "PostToolUse" >> "$TEMP_FILE"
-
-    cat >> "$TEMP_FILE" << 'HOOK_CHAINS3'
-    SessionStart:
-      trigger: "SessionStart"
-      order:
-HOOK_CHAINS3
-    extract_hook_chain "SessionStart" >> "$TEMP_FILE"
 
     cat >> "$TEMP_FILE" << 'BEHAVIOR'
 
@@ -627,6 +683,12 @@ EOF
 # ==============================================================================
 echo "  Generating system specification..."
 generate_system_specification
+
+# ==============================================================================
+# Hook Trigger Sequence (M027)
+# ==============================================================================
+echo "  Generating hook trigger sequence..."
+generate_hook_trigger_sequence
 
 cat >> "$TEMP_FILE" << EOF
 

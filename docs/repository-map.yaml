@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-15 16:39:33"
+  generated: "2025-12-22 12:50:17"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 180
+  total_files: 219
 
 hooks:
   directory: .claude/hooks/
@@ -186,20 +186,16 @@ commands:
 
 docs:
   directory: docs/
-  count: 10
+  count: 8
   files:
     - name: "CLAUDE.md"
       description: "ドキュメント - 仕様書・運用ルール"
     - name: "archive-operation-rules.md"
       description: "目的"
-    - name: "artifact-management-rules.md"
-      description: "目的"
     - name: "criterion-validation-rules.md"
       description: "criterion（done_criteria の単位）の検証ルール"
     - name: "extension-system.md"
       description: "公式リファレンスに基づく発火タイミング・トリガー・連携の完全ガイド"
-    - name: "folder-management.md"
-      description: "全フォルダの役割、テンポラリ/永続区分、削除タイミングを定義"
     - name: "git-operations.md"
       description: "設計方針"
     - name: "hook-responsibilities.md"
@@ -212,10 +208,10 @@ plan:
   subdirectories:
     active:
       description: "進行中の playbook"
-      count: 1
+      count: 2
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 24
+      count: 77
     template:
       description: "playbook テンプレート"
       count: 7
@@ -242,11 +238,11 @@ summary:
   skills: 13
   frameworks: 0
   commands: 8
-  docs: 10
-  plan_active: 1
-  plan_archive: 24
+  docs: 8
+  plan_active: 2
+  plan_archive: 77
   plan_template: 7
-  total: 180
+  total: 219
 
 # ==============================================================================
 # System Specification (M025)
@@ -288,45 +284,8 @@ system_specification:
       - "/clear 推奨アナウンス"
       - "次 milestone → pm"
 
-  hook_chains:
-    description: "Hook の発火順序と連鎖関係"
-    PreToolUse_Edit:
-      trigger: "PreToolUse:Edit"
-      order:
-        - init-guard.sh
-        - check-main-branch.sh
-        - consent-guard.sh
-        - check-protected-edit.sh
-        - playbook-guard.sh
-        - depends-check.sh
-        - check-file-dependencies.sh
-        - critic-guard.sh
-        - scope-guard.sh
-        - executor-guard.sh
-        - consent-guard.sh
-        - check-protected-edit.sh
-        - playbook-guard.sh
-        - check-file-dependencies.sh
-        - critic-guard.sh
-        - scope-guard.sh
-        - executor-guard.sh
-        - pre-bash-check.sh
-        - check-coherence.sh
-        - lint-check.sh
-    PostToolUse_Edit:
-      trigger: "PostToolUse:Edit"
-      order:
-        - log-subagent.sh
-        - doc-freshness-check.sh
-        - archive-playbook.sh
-        - cleanup-hook.sh
-        - create-pr-hook.sh
-        - update-tracker.sh
-        - update-tracker.sh
-    SessionStart:
-      trigger: "SessionStart"
-      order:
-        - session-start.sh
+  # 注: Hook 発火順序は hook_trigger_sequence セクションに統一（M027）
+
 
   behavior_rules:
     description: "CLAUDE.md から抽出した行動ルール"
@@ -351,9 +310,131 @@ system_specification:
       - playbook 完了時に /clear を案内せずに次に進む
 
 # ==============================================================================
+# Hook Trigger Sequence (M027)
+# 公式ドキュメント準拠の発火順序
+# https://code.claude.com/docs/ja/hooks
+# ==============================================================================
+
+hook_trigger_sequence:
+  description: "Hook の発火順序（公式ドキュメント準拠）"
+  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd"
+  triggers:
+    - trigger: "SessionStart"
+      description: "セッション開始時に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "session-start.sh"
+              description: "session-start.sh - LLMの自己認識を形成し、LOOPを開始させる"
+    - trigger: "UserPromptSubmit"
+      description: "ユーザープロンプト送信時に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "prompt-guard.sh"
+              description: "prompt-guard.sh - UserPromptSubmit Hook"
+    - trigger: "PreToolUse"
+      description: "ツール実行前に発火（matcher でフィルタ可能）"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "init-guard.sh"
+              description: "init-guard.sh - セッション開始時の強制的自己認識ガード"
+            - script: "check-main-branch.sh"
+              description: "check-main-branch.sh - main ブランチでの作業をブロック"
+        - matcher: "Bash"
+          hooks:
+            - script: "pre-bash-check.sh"
+              description: "pre-bash-check.sh - Bash コマンド実行前のチェック"
+            - script: "check-coherence.sh"
+              description: "check-coherence.sh - 簡略版：state.md と playbook の整合性チェック"
+            - script: "lint-check.sh"
+              description: "lint-check.sh - 静的解析チェック Hook"
+        - matcher: "Edit"
+          hooks:
+            - script: "consent-guard.sh"
+              description: "consent-guard.sh - 合意プロセス強制フック"
+            - script: "check-protected-edit.sh"
+              description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
+            - script: "playbook-guard.sh"
+              description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
+            - script: "depends-check.sh"
+              description: "depends-check.sh - Phase の depends_on を検証"
+            - script: "check-file-dependencies.sh"
+              description: "check-file-dependencies.sh - ファイル依存関係チェック Hook"
+            - script: "critic-guard.sh"
+              description: "critic-guard.sh - state: done への変更を構造的にブロック"
+            - script: "scope-guard.sh"
+              description: "scope-guard.sh - done_criteria/done_when の無断変更を検出"
+            - script: "executor-guard.sh"
+              description: "executor-guard.sh - Phase の executor を構造的に強制"
+        - matcher: "Write"
+          hooks:
+            - script: "consent-guard.sh"
+              description: "consent-guard.sh - 合意プロセス強制フック"
+            - script: "check-protected-edit.sh"
+              description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
+            - script: "playbook-guard.sh"
+              description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
+            - script: "check-file-dependencies.sh"
+              description: "check-file-dependencies.sh - ファイル依存関係チェック Hook"
+            - script: "critic-guard.sh"
+              description: "critic-guard.sh - state: done への変更を構造的にブロック"
+            - script: "scope-guard.sh"
+              description: "scope-guard.sh - done_criteria/done_when の無断変更を検出"
+            - script: "executor-guard.sh"
+              description: "executor-guard.sh - Phase の executor を構造的に強制"
+    - trigger: "PostToolUse"
+      description: "ツール実行後に発火（matcher でフィルタ可能）"
+      matchers:
+        - matcher: "Edit"
+          hooks:
+            - script: "archive-playbook.sh"
+              description: "archive-playbook.sh - playbook 完了時の自動アーカイブ提案"
+            - script: "cleanup-hook.sh"
+              description: "cleanup-hook.sh - playbook 完了時のテンポラリファイル自動クリーンアップ"
+            - script: "create-pr-hook.sh"
+              description: "create-pr-hook.sh - playbook 完了時の PR 自動作成フック"
+            - script: "update-tracker.sh"
+              description: "update-tracker.sh - PostToolUse:Edit/Write Hook: 変更追跡と自動更新提案"
+        - matcher: "Read"
+          hooks:
+            - script: "doc-freshness-check.sh"
+              description: "doc-freshness-check.sh - PostToolUse:Read Hook: ドキュメント鮮度チェック"
+        - matcher: "Task"
+          hooks:
+            - script: "log-subagent.sh"
+              description: "log-subagent.sh - Subagent 発動ログ記録 + critic 結果処理"
+        - matcher: "Write"
+          hooks:
+            - script: "update-tracker.sh"
+              description: "update-tracker.sh - PostToolUse:Edit/Write Hook: 変更追跡と自動更新提案"
+    - trigger: "Stop"
+      description: "セッション中断時（Ctrl+C, /stop）に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "stop-summary.sh"
+              description: "stop-summary.sh - Stop Hook: Phase 状態サマリー + 整合性チェック"
+    - trigger: "PreCompact"
+      description: "コンテキスト圧縮前に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "pre-compact.sh"
+              description: "pre-compact.sh - PreCompact Hook: 完全な状態スナップショット保存"
+    - trigger: "SessionEnd"
+      description: "セッション終了時に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "session-end.sh"
+              description: "session-end.sh - セッション終了時に四つ組整合性チェック + リマインド"
+
+# ==============================================================================
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-15 16:39:33"
+  - date: "2025-12-22 12:50:17"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

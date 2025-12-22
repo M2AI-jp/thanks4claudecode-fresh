@@ -104,7 +104,7 @@ done_when:
       executor: claudecode
       test_command: "grep -q 'hook_trigger_sequence:' docs/repository-map.yaml && echo PASS || echo FAIL"
 
-  status: pending
+  status: done
   max_iterations: 5
 
 - id: p2
