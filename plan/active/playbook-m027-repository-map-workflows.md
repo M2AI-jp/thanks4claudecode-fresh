@@ -230,7 +230,7 @@ done_when:
       executor: claudecode
       test_command: "grep -r 'generate-repository-map' .claude/hooks/ | wc -l | awk '{if($1>0) print \"PASS\"; else print \"FAIL\"}'"
 
-  status: pending
+  status: done
   max_iterations: 3
 
 - id: p6

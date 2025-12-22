@@ -393,6 +393,11 @@ ultrathink:
 
 テンポラリファイル:
   tmp/: 一時ファイル置き場（playbook 完了時に自動クリーンアップ）
+
+システム構造（M027）:
+  docs/repository-map.yaml:
+    - hook_trigger_sequence: 公式ドキュメント準拠の Hook 発火順序
+    - workflows: INIT/LOOP/POST_LOOP/CONSENT/CRITIQUE の組み合わせモジュール
 ```
 
 ---

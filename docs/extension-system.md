@@ -144,6 +144,8 @@ Stop/SubagentStop → [継続判定]
 SessionEnd → [クリーンアップ]
 ```
 
+> **📌 詳細なトリガーシーケンスは `docs/repository-map.yaml` の `hook_trigger_sequence` セクションを参照**
+
 ---
 
 ### 1.8 Hook 連鎖関係（本リポジトリ固有）
