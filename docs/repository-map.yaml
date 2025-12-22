@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-22 15:40:35"
+  generated: "2025-12-22 16:09:07"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 234
+  total_files: 235
 
 hooks:
   directory: .claude/hooks/
@@ -57,13 +57,13 @@ agents:
     - name: "critic"
       description: "各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する"
     - name: "health-checker"
-      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、ファイル存在確認などを行う。"
+      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
     - name: "pm"
       description: "重要"
     - name: "reviewer"
       description: "役割"
     - name: "setup-guide"
-      description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environment setup, and Skills generation. Does not ask unnecessary questions."
+      description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environm"
 
 skills:
   directory: .claude/skills/
@@ -73,7 +73,7 @@ skills:
   count: 8
   files:
     - name: "context-management"
-      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外部ファイルに記録。"
+      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
     - name: "deploy-checker"
       description: "デプロイ準備・検証専門スキル"
     - name: "frontend-design"
@@ -81,11 +81,11 @@ skills:
     - name: "lint-checker"
       description: "コード品質チェック専門スキル"
     - name: "plan-management"
-      description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitioning phases, or managing plan hierarchy. Triggers on \"plan\", \"playbook\", \"phase\", \"roadmap\", \"milestone"
+      description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitionin"
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の自動処理"
     - name: "state"
-      description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state.md の更新、focus の切り替え、done_criteria の判定、CRITIQUE の実行時に使用す�"
+      description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
 
@@ -108,18 +108,18 @@ commands:
     - name: "/state-rollback"
       description: "allowed-tools: Read, Write, Bash"
     - name: "/task-start"
-      description: "標準タスク開始コマンド。全てのタスクは project.md からの導出を経由する。"
+      description: "標準タスク開始コマンド。全てのタスクは project.md からの導出を経由する�"
     - name: "/test"
       description: "allowed-tools: Read, Bash"
 
 docs:
   directory: docs/
-  count: 17
+  count: 18
   files:
     - name: "ARCHITECTURE.md"
       description: "リポジトリの構造と各コンポーネントの関係を文書化"
     - name: "admin-contract.md"
-      description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する限定権限"
+      description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する�"
     - name: "ai-orchestration.md"
       description: "役割ベース executor 抽象化 - playbook の再利用性向上"
     - name: "archive-operation-rules.md"
@@ -144,6 +144,8 @@ docs:
       description: "各 Hook の単一責任を明示（SOLID 原則: Single Responsibility Principle）"
     - name: "orchestration-contract.md"
       description: "ツールスタック構成と役割分担のルールを定義する契約"
+    - name: "repository-structure.md"
+      description: "> repository-map.yaml を活用したリポジトリ構造の理解ガイド"
     - name: "session-management.md"
       description: "M023: セッション管理ガイド - Named Sessions と Plan Mode の活用"
     - name: "toolstack-patterns.md"
@@ -357,7 +359,7 @@ workflows:
       when: "INIT 完了後、playbook が存在する場合"
       input:
         - "playbook（current phase, done_criteria）"
-        - "subtasks（criterion, executor, test_command）"
+        - "subtasks（criterion, executor, validations）"
       process:
         hooks:
           - "playbook-guard.sh: playbook 存在確認"
@@ -371,7 +373,7 @@ workflows:
         claude_md: "LOOP セクション → subtask 実行"
       output:
         - "ファイル変更（Edit/Write）"
-        - "test_command 結果"
+        - "validations 結果（3点検証）"
         - "critic 判定（PASS/FAIL）"
         - "phase.status = done（PASS の場合）"
       references:
@@ -424,7 +426,7 @@ workflows:
       when: "phase 完了申告時"
       input:
         - "phase.done_criteria"
-        - "test_command 実行結果"
+        - "validations 実行結果（3点検証）"
         - "変更内容"
       process:
         hooks:
@@ -473,9 +475,71 @@ workflows:
         - ".claude/hooks/merge-pr.sh"
 
 # ==============================================================================
+# Integration Points (M082)
+# Hook・SubAgent・Skill 間の依存関係
+# ==============================================================================
+
+integration_points:
+  description: "コンポーネント間の依存関係と連携ポイント"
+
+  hook_to_subagent:
+    - from: "critic-guard.sh"
+      to: "critic"
+      trigger: "Edit(playbook) で state: done への変更検出時"
+      purpose: "自己完了申告を防止、critic による検証を強制"
+    - from: "archive-playbook.sh"
+      to: "pm"
+      trigger: "playbook 完了（p_final 全 subtasks 完了）検出時"
+      purpose: "次 playbook の自動作成を提案"
+    - from: "log-subagent.sh"
+      to: "critic"
+      trigger: "Task(critic) 完了後"
+      purpose: "critic 結果を state.md に反映"
+
+  hook_to_skill:
+    - from: "test-done-criteria.sh"
+      to: "test-runner"
+      trigger: "done_criteria 検証時"
+      purpose: "自動テスト実行"
+
+  subagent_to_skill:
+    - from: "pm"
+      to: "post-loop"
+      trigger: "playbook 完了判定後"
+      purpose: "アーカイブ・クリーンアップ処理"
+
+  claude_md_integration:
+    description: "CLAUDE.md は全ワークフローの行動ルールを定義"
+    references:
+      - workflow: "init_flow"
+        section: "INIT"
+      - workflow: "work_loop"
+        section: "LOOP"
+      - workflow: "post_loop"
+        section: "POST_LOOP"
+      - workflow: "critique_process"
+        section: "CRITIQUE"
+
+  validation_chain:
+    description: "検証の連鎖（V15: validations ベース）"
+    flow:
+      - step: 1
+        component: "playbook subtask"
+        field: "validations (technical, consistency, completeness)"
+      - step: 2
+        component: "critic SubAgent"
+        action: "validations の 3 点を評価"
+      - step: 3
+        component: "critic-guard.sh"
+        action: "critic 未実行で done 変更をブロック"
+      - step: 4
+        component: "playbook"
+        action: "criterion に [x] マーク + validated timestamp"
+
+# ==============================================================================
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-22 15:40:35"
+  - date: "2025-12-22 16:09:07"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

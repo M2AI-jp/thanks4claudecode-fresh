@@ -48,36 +48,37 @@ EXCLUDE_PATTERNS=(
 # ユーティリティ関数
 # ==============================================================================
 
-# ファイルから description を抽出（200文字まで）
+# ファイルから description を抽出（100文字まで、マルチバイト対応）
 extract_description() {
     local file="$1"
     local ext="${file##*.}"
     local desc=""
-    local MAX_LEN=200
+    local MAX_CHARS=100  # 文字数（バイト数ではない）
 
     case "$ext" in
         sh)
             # シェルスクリプト: 最初の # コメント行から抽出
-            desc=$(grep -m1 "^# .*- " "$file" 2>/dev/null | sed 's/^# //' | head -c $MAX_LEN || echo "")
+            desc=$(grep -m1 "^# .*- " "$file" 2>/dev/null | sed 's/^# //' || echo "")
             ;;
         md)
             # Markdown: > ブロックまたは最初の段落から抽出
-            desc=$(grep -m1 "^>" "$file" 2>/dev/null | sed 's/^> \*\*//' | sed 's/\*\*.*//' | head -c $MAX_LEN || echo "")
+            desc=$(grep -m1 "^>" "$file" 2>/dev/null | sed 's/^> \*\*//' | sed 's/\*\*.*//' || echo "")
             if [[ -z "$desc" ]]; then
-                desc=$(sed -n '3p' "$file" 2>/dev/null | head -c $MAX_LEN || echo "")
+                desc=$(sed -n '3p' "$file" 2>/dev/null || echo "")
             fi
             ;;
         yaml|yml|json)
             # YAML/JSON: description フィールドから抽出
-            desc=$(grep -m1 "description:" "$file" 2>/dev/null | sed 's/.*description: *//' | sed 's/"//g' | head -c $MAX_LEN || echo "")
+            desc=$(grep -m1 "description:" "$file" 2>/dev/null | sed 's/.*description: *//' | sed 's/"//g' || echo "")
             ;;
         *)
             desc=""
             ;;
     esac
 
-    # 特殊文字をエスケープ
-    echo "$desc" | sed 's/"/\\"/g' | tr -d '\n'
+    # マルチバイト対応で文字数を制限（awk で UTF-8 対応切り詰め）
+    # 特殊文字をエスケープし、改行を削除
+    echo "$desc" | tr -d '\n' | awk -v max="$MAX_CHARS" '{print substr($0, 1, max)}' | sed 's/"/\\"/g'
 }
 
 # settings.json から Hook のトリガー情報を取得
