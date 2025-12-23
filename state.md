@@ -19,7 +19,7 @@ project: plan/project.md
 
 ```yaml
 active: null
-branch: feat/understanding-check-reimpl
+branch: null
 last_archived: plan/archive/playbook-m087-understanding-check.md
 review_pending: false
 ```
@@ -29,16 +29,10 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: M087
-phase: p_final (done)
-done_criteria:
-  - .claude/skills/understanding-check/ に Skill が存在する ✓
-  - pm.md に理解確認呼び出しが統合されている ✓
-  - project.md のスキーマが定義されている ✓
-  - prompt-guard.sh が vision.goal を注入している ✓
-  - pre-compact.sh が vision.goal を保護している ✓
-  - 動作検証で理解確認 → playbook 作成フローが動く ✓
-note: M087 完了。M088 で報酬詐欺防止の構造的修正を追加実施。
+milestone: null
+phase: null
+done_criteria: []
+note: M085-M087 完了。次は M088 (POST_LOOP ワークフロー完全自動化)
 ```
 
 ---

@@ -725,7 +725,7 @@ success_criteria:
     1. pm.md にタスク分類ロジックを「構造的強制」として追加
     2. executor-guard.sh の案内を SubAgent 呼び出しに強化
     3. docs/ai-orchestration.md にオーケストレーション自動化説明を追加
-  status: in_progress
+  status: achieved
   depends_on: [M083]
   playbooks:
     - playbook-m085-orchestration-automation.md
@@ -748,7 +748,7 @@ success_criteria:
     1. 現在の state.md, project.md, playbook 関連の実装マッピング
     2. 4QV+ 構成との比較（Hook が導火線になっているか、Skill が親として SubAgent をパッケージしているか）
     3. 仮想シナリオ「ChatGPT アプリを作る」での動線検証
-  status: not_started
+  status: achieved
   depends_on: [M085]
   playbooks:
     - playbook-m086-4qv-structure-analysis.md
@@ -791,14 +791,20 @@ success_criteria:
     - "grep -q 'vision' .claude/hooks/pre-compact.sh && echo PASS || echo FAIL"
 
 - id: M088
-  name: "PR 自動マージワークフロー"
+  name: "POST_LOOP ワークフロー完全自動化"
   description: |
-    playbook 完了時に PR 作成からマージ、main push までを自動で一連実行する。
+    playbook 完了時の POST_LOOP フローを完全自動化する。
+    1. playbook-guard.sh に POST_LOOP 例外を追加（アーカイブ後の project.md 更新を許可）
+    2. PR 作成からマージ、main push までを自動で一連実行
+    3. Phase-level status 監視を subtask-guard.sh に追加（M087 で実施済み）
   status: not_started
   depends_on: [M087]
   playbooks:
-    - playbook-auto-merge-workflow.md
+    - playbook-m088-post-loop-automation.md
   done_when:
+    - "[x] subtask-guard.sh が Phase-level status 変更を監視（M087 で実施済み）"
+    - "[x] prompt-guard.sh にループリマインダーを追加（M087 で実施済み）"
+    - "[ ] playbook-guard.sh に POST_LOOP 例外を追加（アーカイブ後の project.md 更新許可）"
     - "[ ] create-pr-hook.sh が PR 作成後に merge-pr.sh を自動呼び出しする"
     - "[ ] PR 作成 -> マージ -> main checkout -> pull が一連のフローで実行される"
     - "[ ] マージ失敗時は適切なエラーメッセージを表示して停止する"
