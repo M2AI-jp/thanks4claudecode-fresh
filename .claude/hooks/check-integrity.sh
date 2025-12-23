@@ -114,7 +114,7 @@ echo ""
 # ============================================================
 # 4. Settings.json が参照する hooks をチェック
 # ============================================================
-echo "[4/5] Checking settings.json → hooks references..."
+echo "[4/4] Checking settings.json → hooks references..."
 
 if [ -f ".claude/settings.json" ] && command -v jq &> /dev/null; then
     hooks=$(jq -r '.. | objects | select(.command) | .command' .claude/settings.json 2>/dev/null | grep -oE '\.claude/hooks/[a-zA-Z0-9_-]+\.sh' | sort -u || true)
@@ -132,36 +132,6 @@ else
 fi
 
 echo ""
-
-# ============================================================
-# 5. Achieved milestone の playbook アーカイブ漏れチェック
-# ============================================================
-echo "[5/5] Checking for unarchived playbooks of achieved milestones..."
-
-if [ -f "plan/project.md" ]; then
-    for playbook in plan/playbook-*.md; do
-        [ -f "$playbook" ] || continue
-
-        PLAYBOOK_NAME=$(basename "$playbook")
-
-        # derives_from から milestone ID を取得
-        MILESTONE_ID=$(grep "derives_from:" "$playbook" 2>/dev/null | head -1 | sed 's/.*derives_from: *//' | tr -d ' ')
-
-        if [ -n "$MILESTONE_ID" ]; then
-            # project.md でその milestone が achieved かチェック
-            MILESTONE_STATUS=$(awk "/id: $MILESTONE_ID\$/,/^- id:/" plan/project.md 2>/dev/null | grep "status:" | head -1 | sed 's/.*status: *//')
-
-            if [ "$MILESTONE_STATUS" = "achieved" ]; then
-                log_err "$PLAYBOOK_NAME → $MILESTONE_ID is achieved but playbook not archived"
-                echo "       → Run: mv $playbook plan/archive/"
-            else
-                log_ok "$PLAYBOOK_NAME → $MILESTONE_ID (status: ${MILESTONE_STATUS:-in_progress})"
-            fi
-        fi
-    done
-else
-    log_warn "plan/project.md not found"
-fi
 
 echo ""
 

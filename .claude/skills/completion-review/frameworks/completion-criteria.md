@@ -1,6 +1,6 @@
 # completion-criteria.md
 
-> **playbook/milestone 完了時の検証基準**
+> **playbook 完了時の検証基準**
 >
 > アーカイブ前に満たすべき条件を定義する。
 
@@ -68,18 +68,6 @@ playbook をアーカイブする前に、全ての完了条件が満たされ�
   - validations が全て PASS であること
 ```
 
-### 5. milestone レベル
-
-```yaml
-必須条件:
-  - [ ] milestone の done_when が全て満たされている
-  - [ ] project.md の milestone status が updated
-  - [ ] 依存 milestone との整合性
-
-検証方法:
-  - playbook の goal.done_when と project.md の一致確認
-```
-
 ---
 
 ## 完了禁止条件
@@ -102,13 +90,11 @@ playbook をアーカイブする前に、全ての完了条件が満たされ�
   1. state.md の playbook.active がこの playbook を指しているか
   2. 全 Phase, subtask, final_tasks が完了しているか
   3. p_final の検証が完了しているか
-  4. project.md の milestone status が更新されているか
-  5. 関連ドキュメントが更新されているか
+  4. 関連ドキュメントが更新されているか
 
 アーカイブ後の作業:
   1. mv plan/playbook-*.md plan/archive/
   2. state.md の playbook.active を null に更新
-  3. project.md の milestone status を achieved に更新
 ```
 
 ---

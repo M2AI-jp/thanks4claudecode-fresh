@@ -362,7 +362,6 @@ severity による判定:
 
 ## 参照ファイル
 
-- plan/project.md - プロジェクト計画
 - plan/playbook-*.md - 検証対象
 - plan/template/playbook-format.md - フォーマット仕様
 - .claude/frameworks/done-criteria-validation.md - done_criteria 評価基準

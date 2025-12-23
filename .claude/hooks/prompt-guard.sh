@@ -42,41 +42,22 @@ fi
 # State Injection - 常に state/project/playbook 情報を収集
 # ==============================================================================
 STATE_FILE="state.md"
-PROJECT_FILE="plan/project.md"
 WARNINGS=""
 
 # state.md から情報抽出
 if [ -f "$STATE_FILE" ]; then
     SI_FOCUS=$(grep -A5 "## focus" "$STATE_FILE" 2>/dev/null | grep "current:" | head -1 | sed 's/.*current: *//' | sed 's/ *#.*//')
-    SI_MILESTONE=$(grep -A10 "## goal" "$STATE_FILE" 2>/dev/null | grep "milestone:" | head -1 | sed 's/.*milestone: *//' | sed 's/ *#.*//')
     SI_PHASE=$(grep -A10 "## goal" "$STATE_FILE" 2>/dev/null | grep "phase:" | head -1 | sed 's/.*phase: *//' | sed 's/ *#.*//')
     SI_PLAYBOOK=$(awk '/## playbook/,/^---/' "$STATE_FILE" 2>/dev/null | grep "active:" | head -1 | sed 's/.*active: *//' | sed 's/ *#.*//')
     SI_BRANCH=$(awk '/## playbook/,/^---/' "$STATE_FILE" 2>/dev/null | grep "branch:" | head -1 | sed 's/.*branch: *//' | sed 's/ *#.*//')
-
-    # done_criteria は State Injection から削除（ユーザー指示）
-    # 理由: LLM は playbook を直接読むべき。Hook での二重出力は不要。
-    SI_CRITERIA=""
 else
     SI_FOCUS="(state.md not found)"
-    SI_MILESTONE="null"
     SI_PHASE="null"
     SI_PLAYBOOK="null"
     SI_BRANCH="unknown"
-    SI_CRITERIA=""
 fi
 
-# project.md から情報抽出
-if [ -f "$PROJECT_FILE" ]; then
-    SI_PROJECT_GOAL=$(grep -A5 "## vision" "$PROJECT_FILE" 2>/dev/null | grep "goal:" | head -1 | sed 's/.*goal: *//' | sed 's/"//g')
-    # 残り milestone 数をカウント（not_started + in_progress）
-    SI_REMAINING_MS=$(grep -E "status: (not_started|in_progress)" "$PROJECT_FILE" 2>/dev/null | wc -l | tr -d ' ')
-    # vision.goal を抽出（長期目標保護用）
-    SI_VISION_GOAL="$SI_PROJECT_GOAL"
-else
-    SI_PROJECT_GOAL="(project.md not found)"
-    SI_REMAINING_MS="?"
-    SI_VISION_GOAL=""
-fi
+# project.md は廃止済み - 参照なし
 
 # last_critic を取得（最新の p*-test-results.md から）
 LOGS_DIR=".claude/logs"
@@ -219,12 +200,7 @@ escape_json() {
 
 # systemMessage を構築（簡素化版）
 SI_MESSAGE="━━━ State Injection ━━━\\n"
-# vision.goal を最上部に表示（長期目標保護）
-if [ -n "$SI_VISION_GOAL" ] && [ "$SI_VISION_GOAL" != "(project.md not found)" ]; then
-    SI_MESSAGE="${SI_MESSAGE}🎯 vision.goal: $(escape_json "$SI_VISION_GOAL")\\n"
-fi
 SI_MESSAGE="${SI_MESSAGE}focus: $(escape_json "$SI_FOCUS")\\n"
-SI_MESSAGE="${SI_MESSAGE}milestone: $(escape_json "$SI_MILESTONE")\\n"
 
 # playbook がある場合のみ詳細を出力
 if [ -n "$SI_PLAYBOOK" ] && [ "$SI_PLAYBOOK" != "null" ]; then
@@ -259,7 +235,6 @@ fi
 
 SI_MESSAGE="${SI_MESSAGE}branch: $(escape_json "$SI_GIT_BRANCH")\\n"
 SI_MESSAGE="${SI_MESSAGE}git: $(escape_json "$SI_GIT_STATUS")\\n"
-SI_MESSAGE="${SI_MESSAGE}remaining_milestones: ${SI_REMAINING_MS}\\n"
 SI_MESSAGE="${SI_MESSAGE}━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # 警告があれば追加

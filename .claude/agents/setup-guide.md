@@ -59,7 +59,6 @@ NO と言う:
   - 開発ツールがインストール済み
   - プロジェクトがローカルで動作
   - Vercel にデプロイ済み
-  - plan/project.md が生成されている
   - .claude/skills/ に Skills が生成されている  # ← 必須
   - focus.current が product に切り替わっている
 ```
@@ -82,4 +81,3 @@ setup 完了時に以下を自動生成：
 
 - setup/playbook-setup.md - セットアップフロー定義
 - setup/CATALOG.md - 知識ベース（必要時のみ）
-- plan/template/project-format.md - project.md テンプレート

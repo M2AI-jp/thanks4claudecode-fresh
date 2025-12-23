@@ -12,7 +12,6 @@
 | Immutable principles | CLAUDE.md | No (frozen) |
 | Procedures, tools, examples | RUNBOOK.md (this file) | Yes |
 | Current state | state.md | Yes (auto-updated) |
-| Project goals | plan/project.md | Yes |
 | Task details | plan/playbook-*.md | Yes |
 
 ---

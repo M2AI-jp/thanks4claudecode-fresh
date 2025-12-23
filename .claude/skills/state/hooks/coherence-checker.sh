@@ -1,20 +1,19 @@
 #!/bin/bash
 # ==============================================================================
-# coherence-checker.sh - 四つ組整合性チェック Hook
+# coherence-checker.sh - 三つ組整合性チェック Hook
 # ==============================================================================
-# 目的: state.md, playbook, project.md, git branch の整合性を検証
+# 目的: state.md, playbook, git branch の整合性を検証
 # トリガー: SessionStart または手動実行
 #
 # 設計思想:
-#   - 「四つ組」の整合性を維持することで状態の乖離を防止
+#   - 「三つ組」の整合性を維持することで状態の乖離を防止
 #   - 不整合があればセッション開始時に警告
 #   - 深刻な不整合はブロック（exit 2）
 #
-# 四つ組:
+# 三つ組:
 #   1. state.md の playbook.active
 #   2. playbook ファイルの存在と内容
-#   3. project.md の milestone status
-#   4. git の現在ブランチ
+#   3. git の現在ブランチ
 #
 # 参照: .claude/skills/state/SKILL.md
 # ==============================================================================
@@ -22,7 +21,6 @@
 set -euo pipefail
 
 STATE_FILE="${STATE_FILE:-state.md}"
-PROJECT_FILE="${PROJECT_FILE:-plan/project.md}"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -34,7 +32,7 @@ WARNINGS=0
 
 echo ""
 echo "=========================================="
-echo "  [coherence-checker] 四つ組整合性チェック"
+echo "  [coherence-checker] 三つ組整合性チェック"
 echo "=========================================="
 
 # --------------------------------------------------
@@ -100,34 +98,7 @@ else
 fi
 
 # --------------------------------------------------
-# 4. Milestone の整合性チェック
-# --------------------------------------------------
-
-echo ""
-echo "  --- Milestone ---"
-
-if [[ -f "$PROJECT_FILE" ]]; then
-    STATE_MILESTONE=$(grep -A6 "^## goal" "$STATE_FILE" 2>/dev/null | grep "^milestone:" | head -1 | sed 's/milestone: *//' | sed 's/ *#.*//' | tr -d ' ')
-    echo -e "    state.md: ${STATE_MILESTONE:-null}"
-
-    if [[ -n "$STATE_MILESTONE" && "$STATE_MILESTONE" != "null" ]]; then
-        # project.md で該当 milestone の status を確認
-        MILESTONE_STATUS=$(grep -A 10 "id: $STATE_MILESTONE" "$PROJECT_FILE" 2>/dev/null | grep "status:" | head -1 | sed 's/.*status: *//' | tr -d ' ')
-        echo -e "    project.md: status = ${MILESTONE_STATUS:-unknown}"
-
-        if [[ "$MILESTONE_STATUS" == "achieved" ]]; then
-            echo -e "    ${YELLOW}[WARN]${NC} milestone は既に achieved ですが作業中になっています"
-            WARNINGS=$((WARNINGS + 1))
-        else
-            echo -e "    ${GREEN}[OK]${NC} milestone 整合"
-        fi
-    fi
-else
-    echo -e "    ${YELLOW}[INFO]${NC} project.md が存在しません"
-fi
-
-# --------------------------------------------------
-# 5. 孤立 playbook チェック
+# 4. 孤立 playbook チェック
 # --------------------------------------------------
 
 echo ""

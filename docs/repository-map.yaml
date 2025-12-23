@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-23 21:14:08"
+  generated: "2025-12-23 22:21:10"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 309
+  total_files: 308
 
 hooks:
   directory: .claude/hooks/
@@ -67,7 +67,7 @@ skills:
   count: 13
   files:
     - name: "completion-review"
-      description: "playbook/milestone 完了時の検証とアーカイブを管理する"
+      description: "playbook 完了時の検証とアーカイブを管理する"
     - name: "context-management"
       description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
     - name: "deploy-checker"
@@ -79,7 +79,7 @@ skills:
     - name: "phase-critique"
       description: "Phase 完了時の critic 評価を構造的に強制する"
     - name: "plan-management"
-      description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitionin"
+      description: "description: Playbook management. Use when creating playbooks or transitioning phases. Triggers on \""
     - name: "playbook-review"
       description: "playbook 作成後のレビューを構造的に強制する"
     - name: "post-loop"
@@ -112,7 +112,7 @@ commands:
     - name: "/state-rollback"
       description: "allowed-tools: Read, Write, Bash"
     - name: "/task-start"
-      description: "標準タスク開始コマンド。全てのタスクは project.md からの導出を経由する�"
+      description: "標準タスク開始コマンド。pm SubAgent を呼び出して playbook を作成する。"
     - name: "/test"
       description: "allowed-tools: Read, Bash"
 
@@ -165,7 +165,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 106
+      count: 107
     template:
       description: "playbook テンプレート"
       count: 6
@@ -493,6 +493,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-23 21:14:08"
+  - date: "2025-12-23 22:21:10"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

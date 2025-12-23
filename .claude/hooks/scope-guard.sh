@@ -24,7 +24,6 @@ set -euo pipefail
 STRICT_MODE="${STRICT_MODE:-false}"
 
 STATE_FILE="${STATE_FILE:-state.md}"
-PROJECT_FILE="plan/project.md"
 
 # stdin から JSON を読み込む
 INPUT=$(cat)
@@ -44,17 +43,8 @@ fi
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 RELATIVE_PATH="${FILE_PATH#$PROJECT_DIR/}"
 
-# playbook または project.md 以外は無視
-IS_PLAYBOOK=false
-IS_PROJECT=false
-
-if [[ "$RELATIVE_PATH" == plan/playbook-*.md ]] || [[ "$RELATIVE_PATH" == *playbook*.md ]]; then
-    IS_PLAYBOOK=true
-elif [[ "$RELATIVE_PATH" == "$PROJECT_FILE" ]]; then
-    IS_PROJECT=true
-fi
-
-if [[ "$IS_PLAYBOOK" == false && "$IS_PROJECT" == false ]]; then
+# playbook 以外は無視
+if [[ "$RELATIVE_PATH" != plan/playbook-*.md ]] && [[ "$RELATIVE_PATH" != *playbook*.md ]]; then
     exit 0
 fi
 

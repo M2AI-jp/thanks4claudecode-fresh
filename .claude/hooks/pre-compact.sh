@@ -29,7 +29,6 @@ INIT_DIR=".claude/.session-init"
 INTENT_FILE="$INIT_DIR/user-intent.md"
 SNAPSHOT_FILE="$INIT_DIR/snapshot.json"
 STATE_FILE="state.md"
-PROJECT_FILE="plan/project.md"
 
 mkdir -p "$INIT_DIR"
 
@@ -53,12 +52,6 @@ PHASE_GOAL=""
 DONE_CRITERIA=""
 SELF_COMPLETE=""
 BRANCH=""
-VISION_GOAL=""
-
-# project.md から vision.goal を取得（長期目標保護）
-if [ -f "$PROJECT_FILE" ]; then
-    VISION_GOAL=$(grep -A5 "## vision" "$PROJECT_FILE" 2>/dev/null | grep "goal:" | head -1 | sed 's/.*goal: *//' | sed 's/"//g')
-fi
 
 if [ -f "$STATE_FILE" ]; then
     FOCUS=$(grep -A5 "## focus" "$STATE_FILE" 2>/dev/null | grep "current:" | head -1 | sed 's/.*current: *//' | sed 's/ *#.*//')
@@ -90,13 +83,11 @@ json_escape() {
 ESCAPED_INTENTS=$(json_escape "$USER_INTENTS")
 ESCAPED_DONE_CRITERIA=$(json_escape "$DONE_CRITERIA")
 ESCAPED_GIT_STATUS=$(json_escape "$GIT_STATUS")
-ESCAPED_VISION_GOAL=$(json_escape "$VISION_GOAL")
 
 cat > "$SNAPSHOT_FILE" << EOF
 {
   "timestamp": "$TIMESTAMP",
   "trigger": "$TRIGGER",
-  "vision_goal": $ESCAPED_VISION_GOAL,
   "focus": "$FOCUS",
   "playbook": "$PLAYBOOK_PATH",
   "current_phase": "$CURRENT_PHASE",
@@ -116,14 +107,10 @@ EOF
 
 ADDITIONAL_CONTEXT="## 📦 Compact 前の状態スナップショット（自動保存済み）
 
-### 🎯 長期目標（vision.goal）
-$VISION_GOAL
-
 ### ユーザー意図（最新の指示）
 $USER_INTENTS
 
 ### 現在の作業状態
-- **vision.goal**: $VISION_GOAL
 - **focus**: $FOCUS
 - **branch**: $BRANCH
 - **playbook**: $PLAYBOOK_PATH
