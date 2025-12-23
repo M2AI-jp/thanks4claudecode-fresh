@@ -70,9 +70,12 @@ if [ -f "$PROJECT_FILE" ]; then
     SI_PROJECT_GOAL=$(grep -A5 "## vision" "$PROJECT_FILE" 2>/dev/null | grep "goal:" | head -1 | sed 's/.*goal: *//' | sed 's/"//g')
     # 残り milestone 数をカウント（not_started + in_progress）
     SI_REMAINING_MS=$(grep -E "status: (not_started|in_progress)" "$PROJECT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+    # vision.goal を抽出（長期目標保護用）
+    SI_VISION_GOAL="$SI_PROJECT_GOAL"
 else
     SI_PROJECT_GOAL="(project.md not found)"
     SI_REMAINING_MS="?"
+    SI_VISION_GOAL=""
 fi
 
 # last_critic を取得（最新の p*-test-results.md から）
@@ -216,6 +219,10 @@ escape_json() {
 
 # systemMessage を構築（簡素化版）
 SI_MESSAGE="━━━ State Injection ━━━\\n"
+# vision.goal を最上部に表示（長期目標保護）
+if [ -n "$SI_VISION_GOAL" ] && [ "$SI_VISION_GOAL" != "(project.md not found)" ]; then
+    SI_MESSAGE="${SI_MESSAGE}🎯 vision.goal: $(escape_json "$SI_VISION_GOAL")\\n"
+fi
 SI_MESSAGE="${SI_MESSAGE}focus: $(escape_json "$SI_FOCUS")\\n"
 SI_MESSAGE="${SI_MESSAGE}milestone: $(escape_json "$SI_MILESTONE")\\n"
 

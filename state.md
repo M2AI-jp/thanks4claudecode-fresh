@@ -18,10 +18,10 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-m086-4qv-structure-analysis.md
-branch: feat/state-project-playbook-optimization
+active: plan/playbook-m087-understanding-check.md
+branch: feat/understanding-check-reimpl
 last_archived: plan/archive/playbook-m085-orchestration-automation.md
-review_pending: false
+review_pending: true
 ```
 
 ---
@@ -29,13 +29,15 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: M086
+milestone: M087
 phase: p1
 done_criteria:
-  - tmp/analysis-4qv-structure.md に現状マッピング図が存在する
-  - 課題リストが 5 項目以上含まれている
-  - 改善の方向性案が記載されている
-  - 仮想シナリオ「ChatGPT アプリを作る」の動線検証結果が含まれている
+  - .claude/skills/understanding-check/ に Skill が存在する
+  - pm.md に理解確認呼び出しが統合されている
+  - project.md のスキーマが定義されている
+  - prompt-guard.sh が vision.goal を注入している
+  - pre-compact.sh が vision.goal を保護している
+  - 動作検証で理解確認 → playbook 作成フローが動く
 ```
 
 ---
@@ -43,7 +45,7 @@ done_criteria:
 ## session
 
 ```yaml
-last_start: 2025-12-23 16:20:03
+last_start: 2025-12-23 16:57:46
 last_end: 2025-12-22 22:35:47
 last_clear: 2025-12-13 00:30:00
 ```

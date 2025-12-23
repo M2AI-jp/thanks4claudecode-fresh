@@ -763,6 +763,32 @@ success_criteria:
     - "grep -q '改善' tmp/analysis-4qv-structure.md && echo PASS || echo FAIL"
     - "grep -q 'ChatGPT' tmp/analysis-4qv-structure.md && echo PASS || echo FAIL"
 
+- id: M087
+  name: "理解確認システム再実装 + project.md 改善"
+  description: |
+    理解確認が M063 で誤削除された問題を修正し、project.md 肥大化と長期 goal 保護の問題を解決する。
+    1. 5W1H ベースの理解確認 Skill を作成
+    2. pm.md に理解確認呼び出しを統合
+    3. project.md のスキーマを定義
+    4. prompt-guard.sh と pre-compact.sh で vision.goal を保護
+  status: not_started
+  depends_on: [M086]
+  playbooks:
+    - playbook-m087-understanding-check.md
+  done_when:
+    - "[ ] .claude/skills/understanding-check/ に Skill が存在する"
+    - "[ ] pm.md に理解確認呼び出しが統合されている"
+    - "[ ] project.md のスキーマが .claude/schema/project-schema.md に定義されている"
+    - "[ ] prompt-guard.sh が vision.goal を注入している"
+    - "[ ] pre-compact.sh が vision.goal を保護している"
+    - "[ ] 動作検証で理解確認 → playbook 作成フローが動く"
+  test_commands:
+    - "test -d .claude/skills/understanding-check && test -f .claude/skills/understanding-check/instructions.md && echo PASS || echo FAIL"
+    - "grep -q '理解確認' .claude/agents/pm.md && grep -q 'understanding-check' .claude/agents/pm.md && echo PASS || echo FAIL"
+    - "test -f .claude/schema/project-schema.md && wc -l .claude/schema/project-schema.md | awk '{if($1>=50) print \"PASS\"; else print \"FAIL\"}'"
+    - "grep -q 'vision' .claude/hooks/prompt-guard.sh && echo PASS || echo FAIL"
+    - "grep -q 'vision' .claude/hooks/pre-compact.sh && echo PASS || echo FAIL"
+
 ```
 
 ---
