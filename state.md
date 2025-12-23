@@ -18,10 +18,10 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-m091-post-loop-order-fix.md
-branch: feat/understanding-check-reimpl
-last_archived: plan/archive/playbook-m090-structural-integrity.md
-review_pending: true
+active: null
+branch: null
+last_archived: null
+review_pending: false
 ```
 
 ---
@@ -29,13 +29,10 @@ review_pending: true
 ## goal
 
 ```yaml
-milestone: M091
-phase: p1
-done_criteria:
-  - post-loop/SKILL.md の step 3 が step 0.5 の前に移動している
-  - ステップ番号が適切にリナンバリングされている
-  - 変更理由がコメントとして記載されている
-note: POST_LOOP 処理順序修正
+milestone: null
+phase: null
+done_criteria: []
+note: null
 ```
 
 ---
@@ -43,9 +40,9 @@ note: POST_LOOP 処理順序修正
 ## session
 
 ```yaml
-last_start: 2025-12-23 19:17:45
-last_end: 2025-12-23 18:22:19
-last_clear: 2025-12-13 00:30:00
+last_start: null
+last_end: null
+last_clear: 2025-12-24 03:20:00
 ```
 
 ---
