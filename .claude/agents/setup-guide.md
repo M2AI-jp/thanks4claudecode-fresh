@@ -1,0 +1,1 @@
+../skills/session-manager/agents/setup-guide.md

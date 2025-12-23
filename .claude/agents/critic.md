@@ -1,0 +1,1 @@
+../skills/reward-guard/agents/critic.md

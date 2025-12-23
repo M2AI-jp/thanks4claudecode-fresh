@@ -533,50 +533,52 @@ exit 0
 
 ## 6. Skill 内 SubAgent の動作原理
 
-### 6.1 コンテキスト分離
-
-```
-┌────────────────────────────────────────────────────────────────┐
-│  親セッション（Claude Code）                                    │
-│    context: [会話履歴, ファイル読み込み, etc.]                  │
-│                                                                 │
-│    Task(subagent_type='critic', prompt='done_when を検証')     │
-│         │                                                       │
-│         ↓                                                       │
-│    ┌──────────────────────────────────────────────────────┐    │
-│    │  critic SubAgent                                      │    │
-│    │    context: [専用の小さなコンテキスト]                │    │
-│    │    location: .claude/skills/reward-guard/agents/      │    │
-│    │                                                       │    │
-│    │    作業:                                              │    │
-│    │      1. done_when を読み込み                          │    │
-│    │      2. 各項目の証拠を確認                            │    │
-│    │      3. PASS/FAIL を判定                              │    │
-│    │      4. 結果を親に返す                                │    │
-│    └──────────────────────────────────────────────────────┘    │
-│         │                                                       │
-│         ↓                                                       │
-│    結果: { judgment: "PASS", evidence: [...] }                 │
-└────────────────────────────────────────────────────────────────┘
-
-利点:
-  - 親セッションのコンテキストを消費しない
-  - SubAgent は専門的な作業に集中
-  - 複雑なワークフローを分割できる
-```
-
-### 6.2 SubAgent の配置
+### 6.1 SubAgent の配置と呼び出し
 
 ```yaml
 配置ルール:
   - SubAgent は関連する Skill の agents/ フォルダに配置
-  - Task() 呼び出し時に自動的に参照される
-  - .claude/agents/ は空にする（後方互換性のため残すが非推奨）
+  - .claude/agents/ にはシンボリックリンクを作成（後方互換性）
 
-例:
+配置例:
   .claude/skills/golden-path/agents/pm.md
   .claude/skills/reward-guard/agents/critic.md
   .claude/skills/quality-assurance/agents/reviewer.md
+
+重要な制限事項:
+  - Claude Code の Task() は custom SubAgents を認識しない
+  - Task(subagent_type='pm') は動作しない（predefined types のみ）
+  - 利用可能な predefined types: general-purpose, Explore, Plan, etc.
+
+呼び出し方法:
+  - Skill() ツール経由で Skills 内のロジックを呼び出す
+  - または /skill-name コマンドで直接呼び出す
+  - SubAgents は Skill 内のプロンプトテンプレートとして機能
+```
+
+### 6.2 SubAgent の利用パターン
+
+```yaml
+パターン 1: Skill 経由（推奨）
+  # pm の機能を使う場合
+  Skill(skill='plan-management', args='create-playbook')
+
+  # critic の機能を使う場合
+  Skill(skill='crit')
+
+パターン 2: general-purpose Task で代替
+  # pm 相当の機能
+  Task(subagent_type='general-purpose',
+       prompt='playbook を作成してください。.claude/skills/golden-path/agents/pm.md を参照')
+
+  # critic 相当の機能
+  Task(subagent_type='general-purpose',
+       prompt='done_when を検証してください。.claude/skills/reward-guard/agents/critic.md を参照')
+
+利点:
+  - SubAgent ファイルは Skill 内に論理的に配置されている
+  - プロンプトテンプレートとして再利用可能
+  - 将来的に Claude Code が custom SubAgents をサポートした場合に移行が容易
 ```
 
 ---

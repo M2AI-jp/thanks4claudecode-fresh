@@ -29,15 +29,12 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p2
+phase: p0
 done_criteria:
-  - playbook-gate 関連 Hook が .claude/skills/playbook-gate/guards/ に移動
-  - reward-guard 関連 Hook が .claude/skills/reward-guard/guards/ に移動
-  - access-control 関連 Hook が .claude/skills/access-control/guards/ に移動
-  - session-manager 関連 Hook が .claude/skills/session-manager/handlers/ に移動
-  - quality-assurance 関連 Hook が .claude/skills/quality-assurance/checkers/ に移動
-  - 共通ライブラリが .claude/lib/ に統合されている
-note: 4QV+ 既存 Hook のロジック移動フェーズ
+  - 4 導火線が発火し Skills を呼び出す
+  - guards/handlers/checkers が期待通りに動作
+  - SubAgents の制限事項をドキュメント化
+note: p0 4QV+ 全機能動作検証 - CONDITIONAL PASS
 ```
 
 ---
@@ -45,7 +42,7 @@ note: 4QV+ 既存 Hook のロジック移動フェーズ
 ## session
 
 ```yaml
-last_start: 2025-12-24 04:56:05
+last_start: 2025-12-24 05:17:16
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```

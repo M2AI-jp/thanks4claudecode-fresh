@@ -1,0 +1,20 @@
+# Protected Files List
+#
+# Format:
+#   HARD_BLOCK:path  - Absolutely protected (cannot be bypassed even in admin mode)
+#   BLOCK:path       - Protected (can be bypassed in admin/trusted mode)
+#   WARN:path        - Warning only (editing is allowed)
+#   path             - Same as BLOCK:path
+#
+# Wildcards supported: *.md, .claude/hooks/*
+
+# === HARD_BLOCK: Absolutely Protected (M079 Core Contract) ===
+HARD_BLOCK:CLAUDE.md
+HARD_BLOCK:.claude/protected-files.txt
+
+# === BLOCK: Protected Files ===
+BLOCK:.claude/settings.json
+BLOCK:state.md
+
+# === WARN: Cautionary Files ===
+WARN:RUNBOOK.md

@@ -1,0 +1,1 @@
+../skills/golden-path/agents/pm.md
