@@ -163,14 +163,24 @@ rollback_plan:
 
 #### subtasks
 
-- [ ] **p_final.1**: regression-test.sh が PASS
+- [x] **p_final.1**: regression-test.sh が PASS
   - executor: claudecode
+  - validations:
+    - technical: "PASS - PASS=37, FAIL=0"
+    - consistency: "PASS - 全 hooks 構文チェック OK"
+    - completeness: "PASS - agents/frameworks も確認済み"
+  - validated: 2025-12-23T22:52:00
 
-- [ ] **p_final.2**: regression-test.sh PASS 後に変更がコミットされている
+- [x] **p_final.2**: regression-test.sh PASS 後に変更がコミットされている
   - executor: claudecode
   - precondition: p_final.1 が PASS であること
+  - validations:
+    - technical: "PASS - commit 9c1a92b"
+    - consistency: "PASS - 5 files changed"
+    - completeness: "PASS - 全変更をコミット"
+  - validated: 2025-12-23T22:52:00
 
-**status**: pending
+**status**: done
 
 ---
 
