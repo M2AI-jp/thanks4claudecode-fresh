@@ -696,6 +696,48 @@ success_criteria:
     - "grep -c 'Skill' tmp/full-system-verification.md | awk '{if($1>=9) print \"PASS\"; else print \"FAIL\"}'"
     - "grep -q '52' tmp/full-system-verification.md && echo PASS || echo FAIL"
 
+- id: M083
+  name: "孤立 playbook 検出・整合性システム"
+  description: |
+    孤立 playbook（plan/ に存在するが state.md に登録されていない playbook）を検出し、
+    state.md との整合性を構造的に保証するシステムを実装する。
+  status: achieved
+  achieved_at: 2025-12-23
+  depends_on: [M081]
+  playbooks:
+    - playbook-m083-orphan-detection.md
+  done_when:
+    - "[x] session-start.sh が plan/*.md をスキャンし、state.md の playbook.active と照合する"
+    - "[x] 孤立 playbook 検出時に警告メッセージを出力する"
+    - "[x] 完了済み孤立 playbook を自動アーカイブする提案を出力する"
+    - "[x] docs/playbook-management.md に孤立防止ルールが文書化されている"
+    - "[x] plan/ に孤立 playbook が存在しない"
+  test_commands:
+    - "grep -q 'plan/playbook-' .claude/hooks/session-start.sh && echo PASS || echo FAIL"
+    - "grep -qE '孤立|orphan' .claude/hooks/session-start.sh && echo PASS || echo FAIL"
+    - "test -f docs/playbook-management.md && wc -l docs/playbook-management.md | awk '{if($1>=50) print \"PASS\"}'"
+
+- id: M085
+  name: "オーケストレーション完全自動化"
+  description: |
+    pm が playbook 作成時に executor を「自動判定・自動割り当て」し、
+    executor-guard.sh が SubAgent 呼び出しを案内するようにする。
+    1. pm.md にタスク分類ロジックを「構造的強制」として追加
+    2. executor-guard.sh の案内を SubAgent 呼び出しに強化
+    3. docs/ai-orchestration.md にオーケストレーション自動化説明を追加
+  status: in_progress
+  depends_on: [M083]
+  playbooks:
+    - playbook-m085-orchestration-automation.md
+  done_when:
+    - "[ ] pm.md にタスク分類パターンが構造的強制として定義されている"
+    - "[ ] executor-guard.sh が SubAgent 呼び出し（Task(subagent_type='codex-delegate')）を案内している"
+    - "[ ] docs/ai-orchestration.md にオーケストレーション自動化の説明が追加されている"
+  test_commands:
+    - "grep -q 'タスク分類パターン' .claude/agents/pm.md && echo PASS || echo FAIL"
+    - "grep -q 'Task(subagent_type' .claude/hooks/executor-guard.sh && echo PASS || echo FAIL"
+    - "grep -q 'オーケストレーション自動化' docs/ai-orchestration.md && echo PASS || echo FAIL"
+
 ```
 
 ---

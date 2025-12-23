@@ -224,14 +224,21 @@ playbook なしで作業開始しない:
       - 最終 Phase に「クリーンアップ」の subtask を追加
    → 参照: docs/file-creation-process-design.md
 
-8. plan/playbook-{name}.md を作成（ドラフト状態）
+8. 【必須】p_self_update 自動追加チェック（M082）
+   → Phase 数をカウント（p1, p2, p3... の数）
+   → 3つ以上の通常 Phase がある場合:
+     - p_self_update Phase を自動追加
+     - p_final の depends_on に p_self_update を追加
+   → 2つ以下の場合: スキップ可能
 
-9. 【必須】reviewer を呼び出し（スキップ禁止）★
+9. plan/playbook-{name}.md を作成（ドラフト状態）
+
+10. 【必須】reviewer を呼び出し（スキップ禁止）★
    → Task(subagent_type="reviewer", prompt="playbook をレビュー")
    → PASS: 次のステップへ
    → FAIL: 問題点を修正して再レビュー（最大3回）
 
-10. state.md を更新 & ブランチ作成
+11. state.md を更新 & ブランチ作成
 ```
 
 ---
@@ -271,6 +278,139 @@ coderabbit:
 user:
   キーワード: 手動、外部サービス、API キー、目視確認
   例: "Vercel にデプロイされている"、"API キーが設定されている"
+```
+
+---
+
+## タスク分類パターン（構造的強制）
+
+> **M085: pm が playbook 作成時に executor を「自動判定・自動割り当て」するための分類ルール**
+>
+> criterion のキーワードに基づき、executor を構造的に強制する。
+
+### タスク分類マトリクス
+
+```yaml
+coding_task:
+  description: 本格的なコード実装・ロジック変更
+  keywords:
+    - 実装
+    - コーディング
+    - ロジック
+    - リファクタリング
+    - アルゴリズム
+    - 関数追加
+    - クラス作成
+    - API 実装
+    - npm test
+    - テストコード
+    - ".ts", ".tsx", ".js", ".jsx", ".py", ".go", ".rs"
+  executor: worker  # toolstack に応じて解決
+
+review_task:
+  description: コードレビュー・品質チェック
+  keywords:
+    - レビュー
+    - 品質チェック
+    - セキュリティ
+    - コードレビュー
+    - PR レビュー
+    - 脆弱性
+  executor: reviewer  # toolstack に応じて解決
+
+human_task:
+  description: 人間の介入が必要な作業
+  keywords:
+    - 手動
+    - 外部サービス
+    - API キー
+    - 目視確認
+    - Vercel
+    - 登録
+    - サインアップ
+    - 支払い
+    - デプロイ
+    - 環境変数設定
+  executor: human  # 常に user
+
+default:
+  description: 上記に該当しない場合
+  keywords:
+    - ドキュメント
+    - 設定
+    - ファイル作成
+    - 軽量な修正
+    - ".md", ".yaml", ".json"
+  executor: orchestrator  # 常に claudecode
+```
+
+### executor 判定フロー
+
+```
+criterion を分析
+       ↓
+┌──────────────────────────────────┐
+│  パターンマッチング              │
+│  (keywords を順にチェック)       │
+└────────────┬─────────────────────┘
+             ↓
+    ┌────────┴────────┐
+    ↓                 ↓
+  該当あり          該当なし
+    ↓                 ↓
+  分類決定         default (orchestrator)
+    ↓
+┌──────────────────────────────────┐
+│  役割名 → 具体的 executor 解決    │
+│  (role-resolver.sh)              │
+└────────────┬─────────────────────┘
+             ↓
+  toolstack に応じた executor 確定
+    ↓
+  playbook に executor を記載
+```
+
+### 判定例
+
+```yaml
+# 例1: coding_task
+criterion: "npm test が exit 0 で終了する"
+matched_keywords: ["npm test"]
+classification: coding_task
+executor: worker → (toolstack B) → codex
+
+# 例2: review_task
+criterion: "コードレビューが完了している"
+matched_keywords: ["コードレビュー"]
+classification: review_task
+executor: reviewer → (toolstack C) → coderabbit
+
+# 例3: human_task
+criterion: "Vercel にデプロイされている"
+matched_keywords: ["Vercel", "デプロイ"]
+classification: human_task
+executor: human → user
+
+# 例4: default
+criterion: "README.md が存在する"
+matched_keywords: [".md"]
+classification: default
+executor: orchestrator → claudecode
+```
+
+### 強制ルール
+
+```yaml
+pm の責務:
+  - playbook 作成時に全 criterion をタスク分類パターンで判定
+  - 判定結果に基づき executor を自動割り当て
+  - 役割名（worker, reviewer, human, orchestrator）を使用
+  - toolstack による解決は実行時に role-resolver.sh が行う
+
+禁止事項:
+  - criterion の内容を無視して手動で executor を決める
+  - パターンに該当するのに別の executor を選ぶ
+  - 役割名ではなく具体的な executor 名を直接使う（非推奨）
 ```
 
 ### validations 定義パターン
@@ -414,7 +554,8 @@ user:
 
 ## 参照ファイル
 
-- plan/template/playbook-format.md - playbook テンプレート（V12: validations ベース）
+- plan/template/playbook-format.md - playbook テンプレート（V16: p_self_update 必須化）
+- .claude/frameworks/playbook-integrity-validation.md - playbook 整合性チェック基準（M082）
 - docs/criterion-validation-rules.md - criterion 検証ルール（禁止パターン）
 - state.md - 現在の playbook、focus
 - CLAUDE.md - playbook ルール（POST_LOOP: アーカイブ実行を含む）

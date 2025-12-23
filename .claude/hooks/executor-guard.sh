@@ -214,23 +214,23 @@ case "$EXECUTOR" in
     codex)
         cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ⛔ executor: codex - Codex CLI を使用してください
+  ⛔ executor: codex - Codex SubAgent を呼び出してください
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   この Phase は Codex が担当です。
   Claude Code が直接コードを編集することは許可されていません。
 
-  正しい手順:
-    1. Codex CLI を実行:
-       codex exec "実装内容を説明"
+  正しい手順（M085: SubAgent 呼び出し）:
+    Task(subagent_type='codex-delegate', prompt='実装内容を説明')
 
-    2. Codex の出力を確認
+  代替手順（Codex MCP 直接実行）:
+    mcp__codex__codex(prompt='実装内容を説明')
 
-    3. 必要に応じて修正を依頼:
-       codex apply
+  代替手順（Codex CLI）:
+    Bash: codex exec "実装内容を説明"
 
   playbook の executor を変更したい場合:
-    pm エージェントに依頼してください。
+    Task(subagent_type='pm', prompt='executor を変更')
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
@@ -244,22 +244,23 @@ EOF
     coderabbit)
         cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ⛔ executor: coderabbit - CodeRabbit CLI を使用してください
+  ⛔ executor: coderabbit - Reviewer SubAgent を呼び出してください
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   この Phase は CodeRabbit によるレビューです。
   Claude Code が直接コードを編集することは許可されていません。
 
-  正しい手順:
-    1. CodeRabbit CLI を実行:
-       Bash: coderabbit review
+  正しい手順（M085: SubAgent 呼び出し）:
+    Task(subagent_type='reviewer', prompt='レビュー対象を説明')
 
-    2. レビュー結果を確認
+  代替手順（CodeRabbit CLI）:
+    Bash: coderabbit review
 
-    3. 指摘事項を別の Phase で対応
+  レビュー後の対応:
+    指摘事項は別の Phase（executor: worker）で対応
 
   playbook の executor を変更したい場合:
-    pm エージェントに依頼してください。
+    Task(subagent_type='pm', prompt='executor を変更')
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF

@@ -18,10 +18,10 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
-last_archived: plan/archive/playbook-p1.2-stop-py.md
-review_pending: false  # レビュー未完了なら true（stop.py がブロック）
+active: plan/playbook-m085-orchestration-automation.md
+branch: feat/orchestration-automation
+last_archived: plan/archive/playbook-m084-hook-stdin-fix.md
+review_pending: true  # レビュー未完了なら true（stop.py がブロック）
 ```
 
 ---
@@ -29,14 +29,12 @@ review_pending: false  # レビュー未完了なら true（stop.py がブロッ
 ## goal
 
 ```yaml
-milestone: P1.2
-phase: p1
+milestone: M085
+phase: p2
 done_criteria:
-  - .claude/hooks/stop.py が存在する
-  - stdin から JSON を受け取れる
-  - state.md の review_pending フラグを読み取れる
-  - review_pending: true の場合、decision: block を返す
-  - python3 -m py_compile でエラー 0
+  - pm.md にタスク分類パターンが構造的強制として定義されている
+  - executor-guard.sh が SubAgent 呼び出しを案内している
+  - docs/ai-orchestration.md にオーケストレーション自動化説明が追加されている
 ```
 
 ---
@@ -44,7 +42,7 @@ done_criteria:
 ## session
 
 ```yaml
-last_start: 2025-12-23 03:18:46
+last_start: 2025-12-23 16:20:03
 last_end: 2025-12-22 22:35:47
 last_clear: 2025-12-13 00:30:00
 ```

@@ -280,10 +280,88 @@ action: 親 Claude は related_subtask を再実行
 
 ---
 
+## オーケストレーション自動化（M085）
+
+> **pm が playbook 作成時に executor を自動判定・自動割り当て**
+
+### 概要
+
+タスク内容から自動的に適切な executor を判定し、playbook に割り当てる仕組み。
+これにより、ユーザーが executor を明示的に指定しなくても、適切な役割分担が行われる。
+
+### タスク分類パターン
+
+| パターン | キーワード例 | 自動割り当て | 解決後 (Toolstack B) |
+|----------|-------------|-------------|---------------------|
+| coding_task | 実装, コーディング, ロジック, リファクタリング, 修正 | worker | codex |
+| review_task | レビュー, 検証, チェック, 監査 | reviewer | claudecode |
+| human_task | アカウント, 登録, 支払い, 手動, 確認 | human | user |
+| default | 上記以外 | orchestrator | claudecode |
+
+### 自動化フロー
+
+```
+ユーザー: "認証機能を実装して"
+              ↓
+    ┌─────────────────────┐
+    │      pm.md          │ タスク分類ロジック
+    └─────────┬───────────┘
+              ↓ "実装" キーワード → coding_task
+    ┌─────────────────────┐
+    │   playbook 作成     │ executor: worker
+    └─────────┬───────────┘
+              ↓
+    ┌─────────────────────┐
+    │  role-resolver.sh   │ worker → codex (Toolstack B)
+    └─────────┬───────────┘
+              ↓
+    ┌─────────────────────┐
+    │  executor-guard.sh  │ ブロック + SubAgent 案内
+    └─────────┬───────────┘
+              ↓
+    ┌─────────────────────┐
+    │  SubAgent 呼び出し  │ Task(subagent_type='codex-delegate')
+    └─────────────────────┘
+```
+
+### executor-guard.sh の案内
+
+executor-guard.sh は、ブロック時に適切な SubAgent の呼び出し方を案内する：
+
+```
+# codex ブロック時の案内
+正しい手順（M085: SubAgent 呼び出し）:
+  Task(subagent_type='codex-delegate', prompt='実装内容を説明')
+
+代替手順（Codex MCP 直接実行）:
+  mcp__codex__codex(prompt='実装内容を説明')
+
+# coderabbit ブロック時の案内
+正しい手順（M085: SubAgent 呼び出し）:
+  Task(subagent_type='reviewer', prompt='レビュー対象を説明')
+```
+
+### Hook → Skill → SubAgent 構造
+
+```yaml
+構造設計:
+  Hook: 導火線（トリガー）
+  Skill: 親（エントリーポイント）
+  SubAgent: パッケージ（動作保証された実行単位）
+
+利点:
+  - 動線が分離しない（安定性）
+  - 新規機能追加が最小限
+  - 各レイヤーの責任が明確
+```
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-23 | オーケストレーション自動化追加（M085: タスク分類、SubAgent 案内） |
 | 2025-12-23 | playbook_reviewer 仕様追加（LOOP メカニズム、独立検証） |
 | 2025-12-18 | Codex MCP 統合追加（M078） |
 | 2025-12-17 | 初版作成（M073） |
