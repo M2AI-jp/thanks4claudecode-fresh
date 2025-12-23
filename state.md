@@ -30,14 +30,15 @@ review_pending: true
 
 ```yaml
 milestone: M087
-phase: p1
+phase: p_final (done)
 done_criteria:
-  - .claude/skills/understanding-check/ に Skill が存在する
-  - pm.md に理解確認呼び出しが統合されている
-  - project.md のスキーマが定義されている
-  - prompt-guard.sh が vision.goal を注入している
-  - pre-compact.sh が vision.goal を保護している
-  - 動作検証で理解確認 → playbook 作成フローが動く
+  - .claude/skills/understanding-check/ に Skill が存在する ✓
+  - pm.md に理解確認呼び出しが統合されている ✓
+  - project.md のスキーマが定義されている ✓
+  - prompt-guard.sh が vision.goal を注入している ✓
+  - pre-compact.sh が vision.goal を保護している ✓
+  - 動作検証で理解確認 → playbook 作成フローが動く ✓
+note: M087 完了。M088 で報酬詐欺防止の構造的修正を追加実施。
 ```
 
 ---
@@ -45,8 +46,8 @@ done_criteria:
 ## session
 
 ```yaml
-last_start: 2025-12-23 16:57:46
-last_end: 2025-12-22 22:35:47
+last_start: 2025-12-23 17:53:08
+last_end: 2025-12-23 17:27:09
 last_clear: 2025-12-13 00:30:00
 ```
 

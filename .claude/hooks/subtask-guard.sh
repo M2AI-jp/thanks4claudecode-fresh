@@ -76,6 +76,71 @@ if [[ "$NEW_STRING" == *"status: PASS"* ]]; then
     CHECKBOX_CHANGE=true
 fi
 
+# ==============================================================================
+# M088: Phase レベルの status 変更を検出（報酬詐欺防止強化）
+# ==============================================================================
+# パターン 4: **status**: pending/in_progress → **status**: done (Phase レベル)
+# Phase を done にする前に、全 subtask が完了していることを確認
+# ==============================================================================
+PHASE_STATUS_CHANGE=false
+
+if [[ "$OLD_STRING" == *"**status**: pending"* || "$OLD_STRING" == *"**status**: in_progress"* ]]; then
+    if [[ "$NEW_STRING" == *"**status**: done"* ]]; then
+        PHASE_STATUS_CHANGE=true
+    fi
+fi
+
+# Phase status 変更の場合、該当 Phase の subtask 完了状態をチェック
+if [[ "$PHASE_STATUS_CHANGE" == "true" ]]; then
+    if [[ -f "$FILE_PATH" ]]; then
+        # 変更対象の Phase を特定（**status**: pending/in_progress を含む Phase を検索）
+        # ファイル内で OLD_STRING の位置を見つけ、その直前の ### p{N}: を取得
+        TARGET_PHASE=$(awk '
+            /^### p[0-9_a-z]*:/ { phase = $0; gsub(/^### /, "", phase); gsub(/:.*/, "", phase) }
+            /\*\*status\*\*: (pending|in_progress)/ { print phase; exit }
+        ' "$FILE_PATH" 2>/dev/null)
+
+        if [[ -n "$TARGET_PHASE" ]]; then
+            # その Phase の subtask セクションを抽出
+            PHASE_SECTION=$(awk "/^### ${TARGET_PHASE}:/,/^### p[0-9_]|^## final_tasks/" "$FILE_PATH" 2>/dev/null)
+
+            # 未完了 subtask (- [ ]) があるかチェック
+            INCOMPLETE_SUBTASKS=$(echo "$PHASE_SECTION" | grep -c '\- \[ \]' 2>/dev/null | tr -d '\n' || echo "0")
+
+            if [[ "$INCOMPLETE_SUBTASKS" -gt 0 ]]; then
+                echo "[subtask-guard] ❌ BLOCKED: Phase ${TARGET_PHASE} を done にする前に全 subtask を完了してください。"
+                echo ""
+                echo "未完了の subtask が ${INCOMPLETE_SUBTASKS} 個あります。"
+                echo ""
+                echo "各 subtask を完了するには:"
+                echo "  1. criterion を満たす作業を実施"
+                echo "  2. validations (3点検証) を記入"
+                echo "  3. チェックボックスを [x] に変更"
+                echo "  4. validated タイムスタンプを追加"
+                echo ""
+                echo "参照: plan/template/playbook-format.md"
+                exit 2
+            fi
+
+            # validated タイムスタンプの存在をチェック
+            COMPLETED_SUBTASKS=$(echo "$PHASE_SECTION" | grep -c '\- \[x\]' 2>/dev/null | tr -d '\n' || echo "0")
+            VALIDATED_COUNT=$(echo "$PHASE_SECTION" | grep -c 'validated:' 2>/dev/null | tr -d '\n' || echo "0")
+
+            if [[ "$COMPLETED_SUBTASKS" -gt 0 && "$VALIDATED_COUNT" -lt "$COMPLETED_SUBTASKS" ]]; then
+                echo "[subtask-guard] ⚠️ WARNING: Phase ${TARGET_PHASE} の一部の完了 subtask に validated タイムスタンプがありません。"
+                echo ""
+                echo "完了 subtask: ${COMPLETED_SUBTASKS} 個"
+                echo "validated あり: ${VALIDATED_COUNT} 個"
+                echo ""
+                echo "推奨: 各完了 subtask に validated: $(date -u +%Y-%m-%dT%H:%M:%S) を追加してください。"
+            fi
+        fi
+    fi
+
+    # Phase status 変更自体は許可（subtask チェックが通った場合）
+    exit 0
+fi
+
 # チェックボックス/status 変更がない場合はパス
 if [[ "$CHECKBOX_CHANGE" == "false" ]]; then
     exit 0

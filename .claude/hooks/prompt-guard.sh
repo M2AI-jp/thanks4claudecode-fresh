@@ -232,6 +232,27 @@ if [ -n "$SI_PLAYBOOK" ] && [ "$SI_PLAYBOOK" != "null" ]; then
     SI_MESSAGE="${SI_MESSAGE}playbook: $(escape_json "$SI_PLAYBOOK")\\n"
     SI_MESSAGE="${SI_MESSAGE}remaining: ${SI_REMAINING_PH} phases\\n"
     # done_criteria は出力しない（LLM は playbook を直接読む）
+
+    # ==============================================================================
+    # M088: 未完了 Phase/subtask のリマインダー（ループ促進）
+    # ==============================================================================
+    if [ -f "$SI_PLAYBOOK" ]; then
+        # 最初の pending/in_progress Phase を検出
+        CURRENT_PHASE=$(awk '/^### p[0-9_].*:/{phase=$0} /\*\*status\*\*: (pending|in_progress)/{print phase; exit}' "$SI_PLAYBOOK" 2>/dev/null | head -1)
+
+        if [ -n "$CURRENT_PHASE" ]; then
+            # Phase ID を抽出（例: "### p1: 理解確認 Skill 作成" → "p1"）
+            PHASE_ID=$(echo "$CURRENT_PHASE" | sed 's/### \(p[0-9_a-z]*\):.*/\1/')
+
+            # 全 subtasks セクションの未完了 subtask 数をカウント（シンプル版）
+            INCOMPLETE=$(grep -c '\- \[ \] \*\*'"${PHASE_ID}"'\.' "$SI_PLAYBOOK" 2>/dev/null || echo "0")
+
+            if [ "$INCOMPLETE" -gt 0 ] 2>/dev/null; then
+                WARNINGS="${WARNINGS}\\n\\n🔄 【LOOP】${PHASE_ID} に未完了 subtask が ${INCOMPLETE} 個あります。"
+                WARNINGS="${WARNINGS}\\n📋 Read: ${SI_PLAYBOOK} → subtask を完了させてください。"
+            fi
+        fi
+    fi
 else
     SI_MESSAGE="${SI_MESSAGE}playbook: null\\n"
 fi

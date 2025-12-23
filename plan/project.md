@@ -789,6 +789,33 @@ success_criteria:
     - "grep -q 'vision' .claude/hooks/prompt-guard.sh && echo PASS || echo FAIL"
     - "grep -q 'vision' .claude/hooks/pre-compact.sh && echo PASS || echo FAIL"
 
+- id: M088
+  name: "PR 自動マージワークフロー"
+  description: |
+    playbook 完了時に PR 作成からマージ、main push までを自動で一連実行する。
+  status: not_started
+  depends_on: [M087]
+  playbooks:
+    - playbook-auto-merge-workflow.md
+  done_when:
+    - "[ ] create-pr-hook.sh が PR 作成後に merge-pr.sh を自動呼び出しする"
+    - "[ ] PR 作成 -> マージ -> main checkout -> pull が一連のフローで実行される"
+    - "[ ] マージ失敗時は適切なエラーメッセージを表示して停止する"
+
+- id: M089
+  name: "テストアサーション強化"
+  description: |
+    既存テストの弱いアサーションを厳格化し、E2E テストを強化する。
+  status: not_started
+  depends_on: [M087]
+  playbooks:
+    - playbook-test-strengthening.md
+  done_when:
+    - "[ ] 既存テストのフォールバック else パターンが全て明示的な fail に置き換えられている"
+    - "[ ] exit code を条件としない「処理された」パターンが削除されている"
+    - "[ ] 各テストが明確な期待値を持ち、それ以外は FAIL する"
+    - "[ ] bash scripts/test-workflows.sh が全テスト PASS で終了する"
+
 ```
 
 ---

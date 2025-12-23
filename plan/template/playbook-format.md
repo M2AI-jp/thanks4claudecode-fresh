@@ -624,6 +624,47 @@ enforcement:
   check_coherence:
     trigger: git commit 前
     action: state.md と playbook の整合性チェック
+
+  # M088: Phase status 変更の構造的強制
+  subtask_guard:
+    trigger: PreToolUse(Edit) で playbook を編集する際
+    location: .claude/hooks/subtask-guard.sh
+    checks:
+      - Phase **status**: pending/in_progress → done の変更を検出
+      - 全 subtask が [x]（完了）であることを確認
+      - validated タイムスタンプの存在を確認（警告のみ）
+    action: |
+      未完了 subtask がある場合 → BLOCK (exit 2)
+      validated なし → WARNING（ブロックはしない）
+```
+
+### Phase done 変更の前提条件（M088）
+
+> **Phase の `**status**: done` への変更は subtask-guard.sh で構造的にブロックされる。**
+> **以下の条件を全て満たさない限り、Phase を完了にできない。**
+
+```yaml
+phase_done_prerequisites:
+  # 必須条件（満たさない場合はブロック）
+  required:
+    - 全 subtask が `- [x]` である（未完了 `- [ ]` がない）
+
+  # 推奨条件（満たさない場合は警告）
+  recommended:
+    - 全完了 subtask に `validated:` タイムスタンプがある
+    - validations の 3 点が全て PASS である
+
+  # ブロック時のメッセージ
+  block_message: |
+    [subtask-guard] ❌ BLOCKED: Phase を done にする前に全 subtask を完了してください。
+
+    未完了の subtask が {N} 個あります。
+
+    各 subtask を完了するには:
+      1. criterion を満たす作業を実施
+      2. validations (3点検証) を記入
+      3. チェックボックスを [x] に変更
+      4. validated タイムスタンプを追加
 ```
 
 ---
@@ -1020,6 +1061,7 @@ status 更新:
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-23 | V16: M088 Phase done 前提条件を追加。subtask-guard.sh で Phase status 変更を構造的にブロック。 |
 | 2025-12-22 | V15: test_command を廃止。validations（3点検証）ベースに完全移行。 |
 | 2025-12-17 | V14: final_tasks を V12 チェックボックス形式に統一。archive-playbook.sh と整合。 |
 | 2025-12-14 | V13: final_tasks セクション追加。M019 playbook自己完結システム対応。 |
