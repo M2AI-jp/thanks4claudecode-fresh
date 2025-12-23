@@ -17,9 +17,9 @@ current: product
 ## playbook
 
 ```yaml
-active: plan/playbook-setup-redesign.md
-branch: chore/setup-redesign
-last_archived: plan/archive/playbook-claude-md-change-control.md
+active: plan/playbook-cleanup-project-refs.md
+branch: chore/cleanup-project-refs
+last_archived: plan/archive/playbook-setup-redesign.md
 review_pending: false
 ```
 
@@ -38,7 +38,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2025-12-23 22:22:26
+last_start: 2025-12-23 23:50:34
 last_end: 2025-12-23 21:33:11
 last_clear: 2025-12-13 00:30:00
 ```

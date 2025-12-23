@@ -3,7 +3,7 @@
 #
 # 設計方針（8.5 Hooks 設計ガイドライン準拠）:
 #   - 軽量な出力のみ（1KB 目標）
-#   - state.md, project.md, playbook は LLM に Read させる
+#   - state.md, playbook は LLM に Read させる
 #   - OOM 防止のため全文出力は禁止
 #
 # 自動更新機能:
