@@ -17,9 +17,9 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-4qv-e2e-verification-v2.md
+active: plan/playbook-4qv-e2e-verification-v3.md
 branch: refactor/4qv-architecture-rebuild
-last_archived: plan/archive/playbook-4qv-e2e-verification-v1.md
+last_archived: plan/archive/playbook-4qv-e2e-verification-v2.md
 review_pending: false
 ```
 
@@ -36,7 +36,7 @@ done_criteria:
   - Reward Guard E2E: done_when 未達成で完了ブロック → Skill(crit) 呼び出し誘導が動作
   - Access Control E2E: HARD_BLOCK ファイル保護が動作
   - 全テスト ALL GREEN
-note: 4QV+ E2E 動作検証 - Iteration 2 開始
+note: 4QV+ E2E 動作検証 - Iteration 3 (最終検証)
 ```
 
 ---
