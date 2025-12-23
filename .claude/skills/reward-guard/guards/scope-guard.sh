@@ -78,7 +78,7 @@ fi
 
 # スコープ変更を検出したら警告（ブロックはしない）
 if [[ "$MODIFYING_SCOPE" == true ]]; then
-    cat << 'EOF'
+    cat >&2 << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ⚠️ スコープ変更を検出
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -92,8 +92,8 @@ if [[ "$MODIFYING_SCOPE" == true ]]; then
 
   正しい手順:
     1. ユーザーに変更理由を説明
-    2. pm エージェントで playbook を更新
-       Task(subagent_type='pm', prompt='スコープを変更したい')
+    2. plan-management Skill で playbook を更新
+       Skill(skill='plan-management') または /plan-management
     3. 承認を得てから編集
 
   スコープクリープの例（禁止）:
@@ -101,22 +101,14 @@ if [[ "$MODIFYING_SCOPE" == true ]]; then
     × 「もっと良くするために△△も」
     × ユーザーに聞かずに done_criteria を追加
 
+  対象ファイル: $RELATIVE_PATH
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
-    echo "  対象ファイル: $RELATIVE_PATH"
-    echo ""
 
     if [[ "$STRICT_MODE" == "true" ]]; then
-        echo "  🚫 STRICT_MODE=true: この変更はブロックされます"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
+        echo "  🚫 STRICT_MODE=true: この変更はブロックされます" >&2
         exit 2
-    else
-        echo "  ⚠️ 警告のみ（STRICT_MODE=true でブロック可能）"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
     fi
 fi
 

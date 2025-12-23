@@ -28,7 +28,7 @@ inject_state() {
   "messages": [
     {
       "role": "user",
-      "content": "[State Injection]\n\nplaybook.active = null\n\n⚠️ Core Contract #1: タスク依頼を受けたら pm を呼んで playbook を作成すること。\n\n直接 Edit/Write してはいけない。"
+      "content": "[State Injection]\n\nplaybook.active = null\n\n⚠️ Core Contract #1: タスク依頼を受けたら Skill(skill='playbook-init') で playbook を作成すること。\n\n直接 Edit/Write してはいけない。"
     }
   ]
 }

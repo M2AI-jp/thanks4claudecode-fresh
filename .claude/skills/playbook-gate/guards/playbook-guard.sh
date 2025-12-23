@@ -85,8 +85,8 @@ if [[ -z "$PLAYBOOK" || "$PLAYBOOK" == "null" ]]; then
 
   対処法（いずれかを実行）:
 
-    [推奨] pm エージェントを呼び出す:
-      Task(subagent_type='pm', prompt='playbook を作成してください')
+    [推奨] playbook-init Skill を呼び出す:
+      Skill(skill='playbook-init')
 
     または /playbook-init を実行:
       /playbook-init
@@ -113,7 +113,7 @@ if [[ "$REVIEWED" == "false" ]]; then
     cat << 'EOF'
 {
   "decision": "allow",
-  "systemMessage": "[playbook-guard] ⚠️ playbook 未レビュー\n\n実装開始前に reviewer による検証を推奨します:\n  Task(subagent_type='reviewer', prompt='playbook をレビュー')\n\nレビュー完了後、playbook の reviewed: true に更新してください。"
+  "systemMessage": "[playbook-guard] ⚠️ playbook 未レビュー\n\n実装開始前に reviewer による検証を推奨します:\n  Skill(skill='crit') または /crit\n\nレビュー完了後、playbook の reviewed: true に更新してください。"
 }
 EOF
     exit 0

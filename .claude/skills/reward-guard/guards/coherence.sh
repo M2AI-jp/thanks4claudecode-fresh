@@ -112,7 +112,7 @@ if git diff --cached --name-only 2>/dev/null | grep -q "^state.md$"; then
         else
             echo -e "  ${RED}[BLOCKED]${NC} state: done requires critic PASS"
             echo -e ""
-            echo -e "  ${RED}call Task(subagent_type='critic') before commit${NC}"
+            echo -e "  ${RED}call Skill(skill='crit') or /crit before commit${NC}"
             echo -e ""
             ERRORS=$((ERRORS + 1))
         fi

@@ -102,7 +102,7 @@ if [[ "$USE_CONTRACT" == "false" ]]; then
                 echo "  playbook=null の状態では変更系コマンドは実行できません。" >&2
                 echo "" >&2
                 echo "  対処法:" >&2
-                echo "    Task(subagent_type='pm', prompt='playbook を作成')" >&2
+                echo "    Skill(skill='playbook-init') または /playbook-init" >&2
                 echo "" >&2
                 echo "========================================" >&2
                 exit 2

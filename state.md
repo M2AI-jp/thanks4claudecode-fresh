@@ -17,10 +17,10 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-4qv-architecture-rebuild.md
+active: plan/playbook-4qv-e2e-verification.md
 branch: refactor/4qv-architecture-rebuild
-last_archived: null
-review_pending: false
+last_archived: plan/archive/playbook-4qv-architecture-rebuild.md
+review_pending: true
 ```
 
 ---
@@ -31,10 +31,12 @@ review_pending: false
 milestone: null
 phase: p0
 done_criteria:
-  - 4 導火線が発火し Skills を呼び出す
-  - guards/handlers/checkers が期待通りに動作
-  - SubAgents の制限事項をドキュメント化
-note: p0 4QV+ 全機能動作検証 - CONDITIONAL PASS
+  - Golden Path E2E: 自然言語タスク依頼 → Skill(playbook-init) → playbook 作成が動作
+  - Playbook Gate E2E: playbook=null で Edit がブロック → Skill 呼び出し誘導が動作
+  - Reward Guard E2E: done_when 未達成で完了ブロック → Skill(crit) 呼び出し誘導が動作
+  - Access Control E2E: HARD_BLOCK ファイル保護が動作
+  - 全テスト ALL GREEN
+note: 4QV+ E2E 動作検証開始
 ```
 
 ---
@@ -42,7 +44,7 @@ note: p0 4QV+ 全機能動作検証 - CONDITIONAL PASS
 ## session
 
 ```yaml
-last_start: 2025-12-24 05:17:16
+last_start: 2025-12-24 06:07:24
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```

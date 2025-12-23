@@ -82,8 +82,8 @@ cat >&2 << 'EOF'
 
     1. done_criteria の全項目に証拠を示す
 
-    2. critic エージェントを呼び出す:
-       Task(subagent_type='critic')
+    2. critic Skill を呼び出す:
+       Skill(skill='crit')
        または /crit
 
     3. critic が PASS を返したら:

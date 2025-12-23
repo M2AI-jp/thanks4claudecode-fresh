@@ -27,10 +27,6 @@ INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // {}')
 
-# Edit ツール以外はパス
-if [[ "$TOOL_NAME" != "Edit" ]]; then
-    exit 0
-fi
 
 # playbook ファイルへの編集のみチェック
 FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty')
@@ -85,7 +81,8 @@ fi
 PHASE_STATUS_CHANGE=false
 
 if [[ "$OLD_STRING" == *"**status**: pending"* || "$OLD_STRING" == *"**status**: in_progress"* ]]; then
-    if [[ "$NEW_STRING" == *"**status**: done"* ]]; then
+    # done または completed を完了として扱う
+    if [[ "$NEW_STRING" == *"**status**: done"* || "$NEW_STRING" == *"**status**: completed"* ]]; then
         PHASE_STATUS_CHANGE=true
     fi
 fi
@@ -152,21 +149,53 @@ fi
 # V12 形式: - [x] の後に validations ブロックがあるか
 # V11 形式: status: done の後に validations があるか
 # ==============================================================================
+# validations の存在と内容をチェック
+# - validations: がない → ブロック
+# - validations: はあるが technical/consistency/completeness が null → ブロック
+# ==============================================================================
 if [[ "$NEW_STRING" != *"validations:"* ]]; then
     # validations がない場合はブロック
-    echo "[subtask-guard] ❌ BLOCKED: subtask 完了には validations が必須です。"
-    echo ""
-    echo "V15 形式（チェックボックス）で以下の 3 検証を追加してください:"
-    echo ""
-    echo "- [x] **p1.1**: criterion が満たされている ✓"
-    echo "  - executor: claudecode"
-    echo "  - validations:"
-    echo "    - technical: \"PASS - 技術的に正しい\""
-    echo "    - consistency: \"PASS - 整合性がある\""
-    echo "    - completeness: \"PASS - 完全に実装\""
-    echo "  - validated: $(date -u +%Y-%m-%dT%H:%M:%S)"
-    echo ""
-    echo "参照: plan/template/playbook-format.md"
+    cat >&2 << 'EOF'
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⛔ subtask 完了には validations が必須です
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  以下の 3 検証を追加してください:
+
+  - [x] **p1.1**: criterion が満たされている ✓
+    - validations:
+      - technical: "PASS - 技術的に正しい"
+      - consistency: "PASS - 整合性がある"
+      - completeness: "PASS - 完全に実装"
+    - validated: 2025-12-24T00:00:00
+
+  または Skill(skill='crit') / /crit を呼び出して検証を実行
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
+    exit 2
+fi
+
+# validations があっても値が null の場合はブロック
+if [[ "$NEW_STRING" == *"technical: null"* ]] || \
+   [[ "$NEW_STRING" == *"consistency: null"* ]] || \
+   [[ "$NEW_STRING" == *"completeness: null"* ]]; then
+    cat >&2 << 'EOF'
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⛔ validations の値が null です
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  3 つの検証すべてに具体的な値を入力してください:
+
+  - validations:
+    - technical: "PASS - (技術的な検証結果)"
+    - consistency: "PASS - (整合性の検証結果)"
+    - completeness: "PASS - (完全性の検証結果)"
+
+  または Skill(skill='crit') / /crit を呼び出して検証を実行
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
     exit 2
 fi
 

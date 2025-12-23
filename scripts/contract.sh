@@ -261,8 +261,6 @@ ADMIN_MAINTENANCE_PATTERNS=(
     '^mv[[:space:]]+plan/playbook-[^[:space:]]+\.md[[:space:]]+plan/archive/?$'
     # git add state.md（単独）
     '^git[[:space:]]+add[[:space:]]+state\.md$'
-    # git add -A（全ファイル追加）
-    '^git[[:space:]]+add[[:space:]]+-A$'
     # git add plan/archive/（単独またはファイル指定）
     '^git[[:space:]]+add[[:space:]]+plan/archive(/[^[:space:]]*)?$'
     # git add state.md plan/archive/（2つ同時）
@@ -276,16 +274,23 @@ ADMIN_MAINTENANCE_PATTERNS=(
 BOOTSTRAP_COMPOUND_PATTERNS=(
     # git add state.md && git commit -m "..."
     '^git[[:space:]]+add[[:space:]]+state\.md[[:space:]]+&&[[:space:]]+git[[:space:]]+commit'
-    # git add -A && git commit -m "..."
-    '^git[[:space:]]+add[[:space:]]+-A[[:space:]]+&&[[:space:]]+git[[:space:]]+commit'
-    # git add ... && git status (確認用)
-    '^git[[:space:]]+add[[:space:]]+.*&&[[:space:]]+git[[:space:]]+status'
+    # git add state.md && git status (確認用)
+    '^git[[:space:]]+add[[:space:]]+state\.md[[:space:]]+&&[[:space:]]+git[[:space:]]+status'
 )
 
 # Bootstrap 例外: 単独コマンドでも許可（playbook=null + admin）
+# 注意: 安全のため、許可する git 操作を明示的にリスト
 BOOTSTRAP_SINGLE_PATTERNS=(
-    # 全ての git 操作を許可（main でのマージ/コミット/プッシュ等に必要）
-    '^git[[:space:]]+'
+    # 読み取り専用 git 操作
+    '^git[[:space:]]+(status|diff|log|show|branch|remote|fetch|pull)'
+    # git push（main へのマージ完了後に必要）
+    '^git[[:space:]]+push'
+    # git commit（メンテナンスコミット用）
+    '^git[[:space:]]+commit'
+    # git merge（PR マージ用）
+    '^git[[:space:]]+merge'
+    # git checkout（ブランチ切り替え用）
+    '^git[[:space:]]+checkout'
     # gh pr create（PR 作成用）
     '^gh[[:space:]]+pr[[:space:]]+create'
     # gh pr merge（PR マージ用）

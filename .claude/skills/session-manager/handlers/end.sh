@@ -147,7 +147,7 @@ echo -e "  ${RED}[CRITIQUE 必須]${NC}"
 echo -e "  Phase を done にする前に critic を呼び出しましたか？"
 echo ""
 echo -e "  ${YELLOW}呼び出し方法:${NC}"
-echo "    Task(subagent_type='critic')"
+echo "    Skill(skill='crit')"
 echo "    または /crit コマンド"
 echo ""
 

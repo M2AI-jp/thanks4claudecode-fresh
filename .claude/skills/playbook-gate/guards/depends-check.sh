@@ -51,18 +51,19 @@ for DEP in $DEPENDS_ON; do
         continue
     fi
 
-    # 依存 Phase の status を取得
-    DEP_STATUS=$(awk "/^### ${DEP}:/,/^---/" "$PLAYBOOK" | grep "status:" | head -1 | sed 's/.*status: *//' | sed 's/ *#.*//')
+    # 依存 Phase の status を取得（YAML形式とMarkdown形式両対応）
+    DEP_STATUS=$(awk "/^### ${DEP}[: ]/,/^---/" "$PLAYBOOK" | grep -E "(status:|\\*\\*status\\*\\*:)" | head -1 | sed 's/.*status[*]*: *//' | sed 's/\*//g' | sed 's/ *#.*//')
 
     if [ -z "$DEP_STATUS" ]; then
         echo -e "  ${YELLOW}[WARN]${NC} $DEP: status not found"
         continue
     fi
 
-    if [ "$DEP_STATUS" = "done" ]; then
-        echo -e "  ${GREEN}[OK]${NC} $DEP: done"
+    # done または completed を完了として扱う
+    if [ "$DEP_STATUS" = "done" ] || [ "$DEP_STATUS" = "completed" ]; then
+        echo -e "  ${GREEN}[OK]${NC} $DEP: $DEP_STATUS"
     else
-        echo -e "  ${RED}[ERROR]${NC} $DEP: $DEP_STATUS (not done)"
+        echo -e "  ${RED}[ERROR]${NC} $DEP: $DEP_STATUS (not done/completed)"
         echo -e "       → ${CURRENT_PHASE} を進める前に ${DEP} を完了してください"
         ERRORS=$((ERRORS + 1))
     fi

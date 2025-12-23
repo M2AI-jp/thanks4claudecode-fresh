@@ -14,7 +14,8 @@
 #      - user: ユーザー作業であることを通知
 #   5. コードファイル編集をブロック
 
-set -euo pipefail
+set -uo pipefail
+# Note: -e を外す（grep が空の結果を返す場合のpipefail回避）
 
 STATE_FILE="${STATE_FILE:-state.md}"
 
@@ -30,7 +31,8 @@ STATE_FILE="${STATE_FILE:-state.md}"
 # ============================================================
 TOOLSTACK="A"  # デフォルト
 if [ -f "$STATE_FILE" ]; then
-    TS=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "toolstack:" | head -1 | sed 's/toolstack: *//' | sed 's/ *#.*//' | tr -d ' ')
+    # -A10 に変更（config セクション全体を取得）
+    TS=$(grep -A10 "^## config" "$STATE_FILE" 2>/dev/null | grep "toolstack:" | head -1 | sed 's/toolstack: *//' | sed 's/ *#.*//' | tr -d ' ' || echo "")
     if [[ -n "$TS" ]]; then
         TOOLSTACK="$TS"
     fi
@@ -78,8 +80,8 @@ if [[ ! -f "$PLAYBOOK_PATH" ]]; then
 fi
 
 # playbook から in_progress の Phase を探す
-# 形式: status: in_progress
-IN_PROGRESS_LINE=$(grep -n "status: in_progress" "$PLAYBOOK_PATH" 2>/dev/null | head -1 || echo "")
+# 形式: status: in_progress または **status**: in_progress
+IN_PROGRESS_LINE=$(grep -n -E "(status:|\\*\\*status\\*\\*:).*in_progress" "$PLAYBOOK_PATH" 2>/dev/null | head -1 || echo "")
 if [[ -z "$IN_PROGRESS_LINE" ]]; then
     exit 0
 fi
@@ -220,17 +222,14 @@ case "$EXECUTOR" in
   この Phase は Codex が担当です。
   Claude Code が直接コードを編集することは許可されていません。
 
-  正しい手順（M085: SubAgent 呼び出し）:
-    Task(subagent_type='codex-delegate', prompt='実装内容を説明')
-
-  代替手順（Codex MCP 直接実行）:
+  正しい手順（Codex MCP）:
     mcp__codex__codex(prompt='実装内容を説明')
 
   代替手順（Codex CLI）:
     Bash: codex exec "実装内容を説明"
 
   playbook の executor を変更したい場合:
-    Task(subagent_type='pm', prompt='executor を変更')
+    Skill(skill='plan-management') または /plan-management
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
@@ -250,8 +249,8 @@ EOF
   この Phase は CodeRabbit によるレビューです。
   Claude Code が直接コードを編集することは許可されていません。
 
-  正しい手順（M085: SubAgent 呼び出し）:
-    Task(subagent_type='reviewer', prompt='レビュー対象を説明')
+  正しい手順（crit Skill）:
+    Skill(skill='crit') または /crit
 
   代替手順（CodeRabbit CLI）:
     Bash: coderabbit review
@@ -260,7 +259,7 @@ EOF
     指摘事項は別の Phase（executor: worker）で対応
 
   playbook の executor を変更したい場合:
-    Task(subagent_type='pm', prompt='executor を変更')
+    Skill(skill='plan-management') または /plan-management
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
