@@ -18,10 +18,10 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-m085-orchestration-automation.md
-branch: feat/orchestration-automation
-last_archived: plan/archive/playbook-m084-hook-stdin-fix.md
-review_pending: true  # レビュー未完了なら true（stop.py がブロック）
+active: plan/playbook-m086-4qv-structure-analysis.md
+branch: feat/state-project-playbook-optimization
+last_archived: plan/archive/playbook-m085-orchestration-automation.md
+review_pending: false
 ```
 
 ---
@@ -29,12 +29,13 @@ review_pending: true  # レビュー未完了なら true（stop.py がブロッ�
 ## goal
 
 ```yaml
-milestone: M085
-phase: p2
+milestone: M086
+phase: p1
 done_criteria:
-  - pm.md にタスク分類パターンが構造的強制として定義されている
-  - executor-guard.sh が SubAgent 呼び出しを案内している
-  - docs/ai-orchestration.md にオーケストレーション自動化説明が追加されている
+  - tmp/analysis-4qv-structure.md に現状マッピング図が存在する
+  - 課題リストが 5 項目以上含まれている
+  - 改善の方向性案が記載されている
+  - 仮想シナリオ「ChatGPT アプリを作る」の動線検証結果が含まれている
 ```
 
 ---

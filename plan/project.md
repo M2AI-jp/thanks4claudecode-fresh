@@ -738,6 +738,31 @@ success_criteria:
     - "grep -q 'Task(subagent_type' .claude/hooks/executor-guard.sh && echo PASS || echo FAIL"
     - "grep -q 'オーケストレーション自動化' docs/ai-orchestration.md && echo PASS || echo FAIL"
 
+- id: M086
+  name: "4QV+ 構成最適化 - Hook/SubAgent/Skill 運用分析"
+  description: |
+    state.md, project.md, playbook の3つの挙動周りの Hooks, SubAgents, Skills 運用を
+    4QV+ 構成（Hook が導火線、Skills に SubAgents をパッケージ）に最適化するための現状把握。
+
+    分析観点:
+    1. 現在の state.md, project.md, playbook 関連の実装マッピング
+    2. 4QV+ 構成との比較（Hook が導火線になっているか、Skill が親として SubAgent をパッケージしているか）
+    3. 仮想シナリオ「ChatGPT アプリを作る」での動線検証
+  status: not_started
+  depends_on: [M085]
+  playbooks:
+    - playbook-m086-4qv-structure-analysis.md
+  done_when:
+    - "[ ] tmp/analysis-4qv-structure.md に現状マッピング図（テキスト形式）が存在する"
+    - "[ ] tmp/analysis-4qv-structure.md に課題リストが 5 項目以上含まれている"
+    - "[ ] tmp/analysis-4qv-structure.md に改善の方向性案が記載されている"
+    - "[ ] 仮想シナリオ「ChatGPT アプリを作る」の動線検証結果が含まれている"
+  test_commands:
+    - "test -f tmp/analysis-4qv-structure.md && echo PASS || echo FAIL"
+    - "grep -c '^- ' tmp/analysis-4qv-structure.md 2>/dev/null | awk '{if($1>=5) print \"PASS\"; else print \"FAIL\"}'"
+    - "grep -q '改善' tmp/analysis-4qv-structure.md && echo PASS || echo FAIL"
+    - "grep -q 'ChatGPT' tmp/analysis-4qv-structure.md && echo PASS || echo FAIL"
+
 ```
 
 ---
