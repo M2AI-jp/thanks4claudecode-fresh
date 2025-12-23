@@ -17,8 +17,8 @@ current: product
 ## playbook
 
 ```yaml
-active: plan/playbook-archive-cleanup.md
-branch: main
+active: plan/playbook-setup-redesign.md
+branch: chore/setup-redesign
 last_archived: plan/archive/playbook-claude-md-change-control.md
 review_pending: false
 ```
