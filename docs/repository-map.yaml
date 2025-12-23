@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-23 19:24:26"
+  generated: "2025-12-23 21:14:08"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 295
+  total_files: 309
 
 hooks:
   directory: .claude/hooks/
@@ -50,18 +50,12 @@ hooks:
 
 agents:
   directory: .claude/agents/
-  count: 6
+  count: 3
   files:
     - name: "codex-delegate"
       description: "Codex MCP をラップし、コンテキスト膨張を防止する SubAgent"
-    - name: "critic"
-      description: "各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する"
     - name: "health-checker"
       description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
-    - name: "pm"
-      description: "重要"
-    - name: "reviewer"
-      description: "役割"
     - name: "setup-guide"
       description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environm"
 
@@ -70,8 +64,10 @@ skills:
   invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
   usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
   auto_invoke: true
-  count: 9
+  count: 13
   files:
+    - name: "completion-review"
+      description: "playbook/milestone 完了時の検証とアーカイブを管理する"
     - name: "context-management"
       description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
     - name: "deploy-checker"
@@ -80,12 +76,18 @@ skills:
       description: "プロダクション品質のフロントエンドインターフェースを作成する"
     - name: "lint-checker"
       description: "コード品質チェック専門スキル"
+    - name: "phase-critique"
+      description: "Phase 完了時の critic 評価を構造的に強制する"
     - name: "plan-management"
       description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitionin"
+    - name: "playbook-review"
+      description: "playbook 作成後のレビューを構造的に強制する"
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の自動処理"
     - name: "state"
       description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
+    - name: "subtask-review"
+      description: "subtask 完了時の 3 点検証を構造的に強制する"
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
     - name: "understanding-check"
@@ -163,7 +165,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 105
+      count: 106
     template:
       description: "playbook テンプレート"
       count: 6
@@ -254,22 +256,30 @@ hook_trigger_sequence:
               description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
             - script: "playbook-guard.sh"
               description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
+            - script: "playbook-review-trigger.sh"
+              description: ""
             - script: "depends-check.sh"
               description: "depends-check.sh - Phase の depends_on を検証"
             - script: "critic-guard.sh"
               description: "critic-guard.sh - state: done への変更を構造的にブロック"
+            - script: "critic-enforcer.sh"
+              description: ""
             - script: "scope-guard.sh"
               description: "scope-guard.sh - done_criteria/done_when の無断変更を検出"
             - script: "executor-guard.sh"
               description: "executor-guard.sh - Phase の executor を構造的に強制"
             - script: "subtask-guard.sh"
               description: "subtask-guard.sh - subtask の 3 検証を強制（V12: チェックボックス形式対応）"
+            - script: "subtask-validator.sh"
+              description: ""
         - matcher: "Write"
           hooks:
             - script: "check-protected-edit.sh"
               description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
             - script: "playbook-guard.sh"
               description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
+            - script: "playbook-review-trigger.sh"
+              description: ""
             - script: "critic-guard.sh"
               description: "critic-guard.sh - state: done への変更を構造的にブロック"
             - script: "scope-guard.sh"
@@ -285,6 +295,8 @@ hook_trigger_sequence:
           hooks:
             - script: "archive-playbook.sh"
               description: "archive-playbook.sh - playbook 完了時の自動アーカイブ提案"
+            - script: "archive-validator.sh"
+              description: ""
             - script: "cleanup-hook.sh"
               description: "cleanup-hook.sh - playbook 完了時のテンポラリファイル自動クリーンアップ"
             - script: "create-pr-hook.sh"
@@ -481,6 +493,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-23 19:24:26"
+  - date: "2025-12-23 21:14:08"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

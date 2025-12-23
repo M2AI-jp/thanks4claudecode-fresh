@@ -7,6 +7,15 @@ description: Multi-layer planning and playbook management. Use when creating pla
 
 Multi-layer planning system for long-running agent sessions.
 
+## Structure
+
+```
+.claude/skills/plan-management/
+├── SKILL.md                    # この仕様書
+└── agents/
+    └── pm.md                   # playbook 管理 SubAgent
+```
+
 ## Plan Hierarchy Structure
 
 ```

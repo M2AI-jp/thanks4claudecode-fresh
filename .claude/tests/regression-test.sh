@@ -29,12 +29,19 @@ for f in .claude/agents/*.md; do
     fi
 done
 
-# Frameworks 存在チェック
-if [ -f ".claude/frameworks/done-criteria-validation.md" ]; then
-    pass "done-criteria-validation.md: exists"
-else
-    fail "done-criteria-validation.md: missing"
-fi
+# Skills パッケージ構造チェック（M092 で移動済み）
+SKILL_CHECKS=(
+    ".claude/skills/phase-critique/frameworks/done-criteria-validation.md"
+    ".claude/skills/playbook-review/frameworks/playbook-review-criteria.md"
+    ".claude/skills/plan-management/agents/pm.md"
+)
+for f in "${SKILL_CHECKS[@]}"; do
+    if [ -f "$f" ]; then
+        pass "$(basename $f): exists"
+    else
+        fail "$(basename $f): missing"
+    fi
+done
 
 # 結果
 echo ""

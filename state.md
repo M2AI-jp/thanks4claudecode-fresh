@@ -18,8 +18,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: feat/understanding-check-reimpl
+active: plan/playbook-m092-skill-packaging.md
+branch: feat/skill-packaging
 last_archived: plan/archive/playbook-m091-post-loop-order-fix.md
 review_pending: false
 ```
@@ -29,10 +29,19 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-note: M091 完了。次のタスクを待機中。
+milestone: M092
+phase: p_final
+done_criteria:
+  - playbook-review/ Skill ディレクトリが存在し、reviewer.md と playbook-review-criteria.md を含む ✓
+  - subtask-review/ Skill ディレクトリが存在し、subtask-validator.sh を含む ✓
+  - phase-critique/ Skill ディレクトリが存在し、critic.md と done-criteria-validation.md を含む ✓
+  - completion-review/ Skill ディレクトリが存在し、archive-validator.sh を含む ✓
+  - understanding-check/hooks/ が追加され、understanding-enforcer.sh を含む ✓
+  - state/hooks/ が追加され、orphan-detector.sh と coherence-checker.sh を含む ✓
+  - .claude/settings.json が新しいパスを参照している ✓
+  - reviewed: false の playbook で Edit を実行すると exit 2 でブロックされる ✓
+  - 孤立 playbook がアーカイブされている ✓
+note: M092 全検証 PASS。コミット待ち。
 ```
 
 ---
@@ -40,8 +49,8 @@ note: M091 完了。次のタスクを待機中。
 ## session
 
 ```yaml
-last_start: 2025-12-23 19:17:45
-last_end: 2025-12-23 18:22:19
+last_start: 2025-12-23 21:33:12
+last_end: 2025-12-23 21:33:11
 last_clear: 2025-12-13 00:30:00
 ```
 

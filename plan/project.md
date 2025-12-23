@@ -869,6 +869,26 @@ success_criteria:
     - "grep -n 'project.milestone' .claude/skills/post-loop/SKILL.md | head -1 | cut -d: -f1"
     - "grep -n 'アーカイブ' .claude/skills/post-loop/SKILL.md | head -1 | cut -d: -f1"
 
+- id: M092
+  name: "Skill パッケージ化（4QV+ 機能分割）"
+  description: |
+    4QV+ レビューシステムの機能不全を解消するため、各レビュー機能を
+    独立した Skill パッケージに分割。Hook を導火線として使い、
+    機能ごとに hooks/agents/frameworks/ を内包する構造に再編成。
+  status: in_progress
+  depends_on: [M091]
+  playbooks:
+    - playbook-m092-skill-packaging.md
+  done_when:
+    - "[ ] playbook-review/ Skill ディレクトリが存在し、reviewer.md と playbook-review-criteria.md を含む"
+    - "[ ] subtask-review/ Skill ディレクトリが存在し、subtask-validator.sh を含む"
+    - "[ ] phase-critique/ Skill ディレクトリが存在し、critic.md と done-criteria-validation.md を含む"
+    - "[ ] completion-review/ Skill ディレクトリが存在し、archive-validator.sh を含む"
+    - "[ ] understanding-check/hooks/ が追加され、understanding-enforcer.sh を含む"
+    - "[ ] state/hooks/ が追加され、orphan-detector.sh と coherence-checker.sh を含む"
+    - "[ ] .claude/settings.json が新しいパスを参照している"
+    - "[ ] reviewed: false の playbook で Edit を実行すると exit 2 でブロックされる"
+
 ```
 
 ---
