@@ -17,9 +17,9 @@ current: product
 ## playbook
 
 ```yaml
-active: plan/playbook-refactor-remove-project.md
-branch: refactor/remove-project
-last_archived: plan/archive/playbook-m092-skill-packaging.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-refactor-remove-project.md
 review_pending: false
 ```
 
