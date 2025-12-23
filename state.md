@@ -17,9 +17,9 @@ current: product
 ## playbook
 
 ```yaml
-active: plan/playbook-claude-md-change-control.md
-branch: chore/claude-md-change-control
-last_archived: plan/archive/playbook-docs-cleanup-milestone.md
+active: plan/playbook-archive-cleanup.md
+branch: main
+last_archived: plan/archive/playbook-claude-md-change-control.md
 review_pending: false
 ```
 
