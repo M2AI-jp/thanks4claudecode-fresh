@@ -2,7 +2,7 @@
 
 > **最上位概念: このリポジトリの存在意義**
 >
-> 全ての判断はここに立ち返る。state.md も playbook も、mission を達成するための手段。
+> 全ての判断はここに立ち返る。project.md も playbook も、mission を達成するための手段。
 
 ---
 
@@ -59,15 +59,15 @@ reward_fraud:
     - 全ての判断の最上位基準
     - 変更には明示的なユーザー承認が必要
 
-  L1_playbook: |
-    plan/playbook-*.md
-    - mission を達成するための具体的タスク計画
-    - 完了したらアーカイブ
+  L1_project: |
+    plan/project.md
+    - mission を達成するためのプロジェクト計画
+    - vision は mission から導出される
 
-  L2_state: |
-    state.md
-    - 現在地を示す Single Source of Truth
-    - focus, playbook, goal を管理
+  L2_playbook: |
+    plan/playbook-*.md
+    - project を達成するための具体的タスク
+    - 完了したらアーカイブ
 
 自動チェック:
   SessionStart:

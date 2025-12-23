@@ -60,6 +60,7 @@
 | `plan/playbook-*.md` | 一時 | 進行中の playbook（直下に配置） | playbook 完了後に archive へ移動 |
 | `plan/archive/` | 永続 | 完了した playbook のアーカイブ | - |
 | `plan/template/` | 永続 | playbook テンプレート | - |
+| `plan/project.md` | 永続 | プロジェクト計画 | - |
 
 ### docs/ 配下
 

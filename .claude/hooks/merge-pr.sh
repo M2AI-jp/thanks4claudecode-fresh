@@ -279,6 +279,7 @@ if gh pr merge "$PR_NUMBER" \
         sed -i '' 's/^branch: .*/branch: null/' "$STATE_FILE" 2>/dev/null || true
 
         # goal セクションを null に
+        sed -i '' 's/^milestone: .*/milestone: null/' "$STATE_FILE" 2>/dev/null || true
         sed -i '' 's/^phase: .*/phase: null/' "$STATE_FILE" 2>/dev/null || true
 
         log_info "state.md を neutral 状態にリセットしました"

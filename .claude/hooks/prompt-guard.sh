@@ -42,22 +42,41 @@ fi
 # State Injection - 常に state/project/playbook 情報を収集
 # ==============================================================================
 STATE_FILE="state.md"
+PROJECT_FILE="plan/project.md"
 WARNINGS=""
 
 # state.md から情報抽出
 if [ -f "$STATE_FILE" ]; then
     SI_FOCUS=$(grep -A5 "## focus" "$STATE_FILE" 2>/dev/null | grep "current:" | head -1 | sed 's/.*current: *//' | sed 's/ *#.*//')
+    SI_MILESTONE=$(grep -A10 "## goal" "$STATE_FILE" 2>/dev/null | grep "milestone:" | head -1 | sed 's/.*milestone: *//' | sed 's/ *#.*//')
     SI_PHASE=$(grep -A10 "## goal" "$STATE_FILE" 2>/dev/null | grep "phase:" | head -1 | sed 's/.*phase: *//' | sed 's/ *#.*//')
     SI_PLAYBOOK=$(awk '/## playbook/,/^---/' "$STATE_FILE" 2>/dev/null | grep "active:" | head -1 | sed 's/.*active: *//' | sed 's/ *#.*//')
     SI_BRANCH=$(awk '/## playbook/,/^---/' "$STATE_FILE" 2>/dev/null | grep "branch:" | head -1 | sed 's/.*branch: *//' | sed 's/ *#.*//')
+
+    # done_criteria は State Injection から削除（ユーザー指示）
+    # 理由: LLM は playbook を直接読むべき。Hook での二重出力は不要。
+    SI_CRITERIA=""
 else
     SI_FOCUS="(state.md not found)"
+    SI_MILESTONE="null"
     SI_PHASE="null"
     SI_PLAYBOOK="null"
     SI_BRANCH="unknown"
+    SI_CRITERIA=""
 fi
 
-# project.md は廃止済み - 参照なし
+# project.md から情報抽出
+if [ -f "$PROJECT_FILE" ]; then
+    SI_PROJECT_GOAL=$(grep -A5 "## vision" "$PROJECT_FILE" 2>/dev/null | grep "goal:" | head -1 | sed 's/.*goal: *//' | sed 's/"//g')
+    # 残り milestone 数をカウント（not_started + in_progress）
+    SI_REMAINING_MS=$(grep -E "status: (not_started|in_progress)" "$PROJECT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+    # vision.goal を抽出（長期目標保護用）
+    SI_VISION_GOAL="$SI_PROJECT_GOAL"
+else
+    SI_PROJECT_GOAL="(project.md not found)"
+    SI_REMAINING_MS="?"
+    SI_VISION_GOAL=""
+fi
 
 # last_critic を取得（最新の p*-test-results.md から）
 LOGS_DIR=".claude/logs"
@@ -162,11 +181,6 @@ if [ -z "$PLAYBOOK" ] || [ "$PLAYBOOK" = "null" ]; then
         WARNINGS="${WARNINGS}\\n⛔ 返答を始めてはいけない。まず pm を呼び出してください。"
         WARNINGS="${WARNINGS}\\n\\n実行すべきアクション:"
         WARNINGS="${WARNINGS}\\n  Task(subagent_type='pm', prompt='playbook を作成')"
-        WARNINGS="${WARNINGS}\\n\\n📋 pm は理解確認（5W1H）を必ず実施します:"
-        WARNINGS="${WARNINGS}\\n  - What/Why/Who/When/Where/How の分析"
-        WARNINGS="${WARNINGS}\\n  - リスク分析と対策の提示"
-        WARNINGS="${WARNINGS}\\n  - 不明点の洗い出し"
-        WARNINGS="${WARNINGS}\\n  - ユーザー承認後に playbook 作成"
         WARNINGS="${WARNINGS}\\n\\n理由: CLAUDE.md Core Contract により、playbook なしでの作業は禁止されています。"
     fi
 fi
@@ -195,21 +209,69 @@ if [ -n "$PLAYBOOK" ] && [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
 fi
 
 # ==============================================================================
-# 警告のみ出力（State Injection 表示は削除）
+# State Injection - 常に systemMessage を出力
 # ==============================================================================
 
-# 警告がある場合のみ systemMessage を出力
-if [ -n "$WARNINGS" ]; then
-    # JSON 用に特殊文字をエスケープ
-    escape_json() {
-        echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed 's/	/\\t/g'
-    }
+# JSON 用に特殊文字をエスケープ
+escape_json() {
+    echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed 's/	/\\t/g'
+}
 
-    cat <<EOF
+# systemMessage を構築（簡素化版）
+SI_MESSAGE="━━━ State Injection ━━━\\n"
+# vision.goal を最上部に表示（長期目標保護）
+if [ -n "$SI_VISION_GOAL" ] && [ "$SI_VISION_GOAL" != "(project.md not found)" ]; then
+    SI_MESSAGE="${SI_MESSAGE}🎯 vision.goal: $(escape_json "$SI_VISION_GOAL")\\n"
+fi
+SI_MESSAGE="${SI_MESSAGE}focus: $(escape_json "$SI_FOCUS")\\n"
+SI_MESSAGE="${SI_MESSAGE}milestone: $(escape_json "$SI_MILESTONE")\\n"
+
+# playbook がある場合のみ詳細を出力
+if [ -n "$SI_PLAYBOOK" ] && [ "$SI_PLAYBOOK" != "null" ]; then
+    SI_MESSAGE="${SI_MESSAGE}phase: $(escape_json "$SI_PHASE")\\n"
+    SI_MESSAGE="${SI_MESSAGE}playbook: $(escape_json "$SI_PLAYBOOK")\\n"
+    SI_MESSAGE="${SI_MESSAGE}remaining: ${SI_REMAINING_PH} phases\\n"
+    # done_criteria は出力しない（LLM は playbook を直接読む）
+
+    # ==============================================================================
+    # M088: 未完了 Phase/subtask のリマインダー（ループ促進）
+    # ==============================================================================
+    if [ -f "$SI_PLAYBOOK" ]; then
+        # 最初の pending/in_progress Phase を検出
+        CURRENT_PHASE=$(awk '/^### p[0-9_].*:/{phase=$0} /\*\*status\*\*: (pending|in_progress)/{print phase; exit}' "$SI_PLAYBOOK" 2>/dev/null | head -1)
+
+        if [ -n "$CURRENT_PHASE" ]; then
+            # Phase ID を抽出（例: "### p1: 理解確認 Skill 作成" → "p1"）
+            PHASE_ID=$(echo "$CURRENT_PHASE" | sed 's/### \(p[0-9_a-z]*\):.*/\1/')
+
+            # 全 subtasks セクションの未完了 subtask 数をカウント（シンプル版）
+            INCOMPLETE=$(grep -c '\- \[ \] \*\*'"${PHASE_ID}"'\.' "$SI_PLAYBOOK" 2>/dev/null || echo "0")
+
+            if [ "$INCOMPLETE" -gt 0 ] 2>/dev/null; then
+                WARNINGS="${WARNINGS}\\n\\n🔄 【LOOP】${PHASE_ID} に未完了 subtask が ${INCOMPLETE} 個あります。"
+                WARNINGS="${WARNINGS}\\n📋 Read: ${SI_PLAYBOOK} → subtask を完了させてください。"
+            fi
+        fi
+    fi
+else
+    SI_MESSAGE="${SI_MESSAGE}playbook: null\\n"
+fi
+
+SI_MESSAGE="${SI_MESSAGE}branch: $(escape_json "$SI_GIT_BRANCH")\\n"
+SI_MESSAGE="${SI_MESSAGE}git: $(escape_json "$SI_GIT_STATUS")\\n"
+SI_MESSAGE="${SI_MESSAGE}remaining_milestones: ${SI_REMAINING_MS}\\n"
+SI_MESSAGE="${SI_MESSAGE}━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# 警告があれば追加
+if [ -n "$WARNINGS" ]; then
+    SI_MESSAGE="${SI_MESSAGE}\\n${WARNINGS}"
+fi
+
+# systemMessage を JSON で出力
+cat <<EOF
 {
-  "systemMessage": "${WARNINGS}"
+  "systemMessage": "${SI_MESSAGE}"
 }
 EOF
-fi
 
 exit 0

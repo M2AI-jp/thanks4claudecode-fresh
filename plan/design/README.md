@@ -7,7 +7,7 @@
 ## 役割
 
 このフォルダは、プロジェクトのアーキテクチャ設計や思想を詳細に説明するドキュメントを保存します。
-state.md + playbook を核としたオーケストレーションシステムの設計根拠を提供します。
+project.md の vision を深堀りし、実装の根拠を提供します。
 
 ---
 
@@ -48,8 +48,8 @@ state.md + playbook を核としたオーケストレーションシステムの
 
 - **目的**: 計画連鎖システムの設計
 - **内容**:
-  - playbook → phase の二層構造
-  - done_criteria による追跡
+  - project.md → playbook の連鎖
+  - derives_from による追跡
   - Phase 分割のルール
 - **参照タイミング**: playbook 作成ルールの確認時
 
@@ -58,9 +58,9 @@ state.md + playbook を核としたオーケストレーションシステムの
 ## 連携
 
 ```
-state.md (現在地)
+project.md (vision)
     │
-    └── plan/design/mission.md (ミッションの詳細)
+    └── plan/design/mission.md (vision の詳細)
             │
             ├── self-healing-system.md (自己修復の設計)
             └── plan-chain-system.md (計画管理の設計)
@@ -72,7 +72,7 @@ state.md (現在地)
 
 - 設計ドキュメントは「なぜそうするか」を説明
 - 実装の詳細は docs/current-implementation.md を参照
-- 変更時は CLAUDE.md との整合性を確認
+- 変更時は project.md の notes セクションとの整合性を確認
 
 ---
 
@@ -80,5 +80,4 @@ state.md (現在地)
 
 | 日時 | 内容 |
 |------|------|
-| 2025-12-23 | project.md 参照を削除。playbook ベースのアーキテクチャに更新。 |
 | 2025-12-10 | 初版作成。設計ドキュメントの役割と参照タイミングを説明。 |

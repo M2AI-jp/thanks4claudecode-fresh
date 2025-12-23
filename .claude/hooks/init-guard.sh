@@ -47,10 +47,15 @@ if [[ -f "state.md" ]]; then
     FOCUS=$(get_focus_current)
 fi
 
-# 必須ファイル: state.md のみ
+# 必須ファイル: state.md と plan/project.md（M082: repository-map.yaml との整合性確保）
 REQUIRED_FILES=(
     "state.md"
 )
+
+# plan/project.md は存在する場合のみ追加（デッドロック回避）
+if [[ -f "plan/project.md" ]]; then
+    REQUIRED_FILES+=("plan/project.md")
+fi
 
 # playbook は state.md から動的に取得（session-start.sh で設定済み）
 # デッドロック対策: playbook ファイルが実際に存在する場合のみ REQUIRED_FILES に追加

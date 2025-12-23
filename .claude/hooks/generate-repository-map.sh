@@ -21,10 +21,10 @@
 
 set -euo pipefail
 
-# エンコーディング設定（UTF-8 対応）
-# macOS/Linux で UTF-8 を正しく処理するための設定
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
+# エンコーディング設定（sed/grep の互換性のため LC_ALL=C を使用）
+# 注: 日本語文字が含まれるファイルの description は正しく抽出されない可能性あり
+export LC_ALL=C
+export LANG=C
 
 # ==============================================================================
 # 設定
@@ -76,9 +76,9 @@ extract_description() {
             ;;
     esac
 
-    # マルチバイト対応で文字数を制限（Python3 で UTF-8 対応切り詰め）
+    # マルチバイト対応で文字数を制限（awk で UTF-8 対応切り詰め）
     # 特殊文字をエスケープし、改行を削除
-    echo "$desc" | tr -d '\n' | python3 -c "import sys; s=sys.stdin.read(); print(s[:$MAX_CHARS])" 2>/dev/null | sed 's/"/\\"/g'
+    echo "$desc" | tr -d '\n' | awk -v max="$MAX_CHARS" '{print substr($0, 1, max)}' | sed 's/"/\\"/g'
 }
 
 # settings.json から Hook のトリガー情報を取得
@@ -247,7 +247,7 @@ EOF
                 ' "$settings_file" 2>/dev/null | while IFS= read -r hook_script; do
                     [[ -z "$hook_script" ]] && continue
                     local hook_desc
-                    hook_desc=$(extract_description "$HOOKS_DIR/$hook_script" 2>/dev/null || echo "")
+                    hook_desc=$(extract_description "$HOOKS_DIR/$hook_script" 2>/dev/null | head -c 100 || echo "")
                     cat >> "$TEMP_FILE" << EOF
             - script: "$hook_script"
               description: "$hook_desc"
@@ -294,11 +294,12 @@ workflows:
       name: "INIT"
       why: |
         LLM は状態を保持しないため、毎セッション開始時に現在地を再認識する必要がある。
-        state.md/playbook の強制読み込みにより、コンテキストを確実に復元する。
+        state.md/project.md/playbook の強制読み込みにより、コンテキストを確実に復元する。
       when: "SessionStart 発火時"
       input:
         - "ユーザーの最初のプロンプト"
         - "state.md（focus, playbook, goal）"
+        - "plan/project.md（milestones）"
         - "playbook（active な場合）"
       process:
         hooks:
@@ -309,7 +310,7 @@ workflows:
         skills: []
         claude_md: "INIT セクション → [自認] 出力"
       output:
-        - "[自認] ブロック（what, phase, branch...）"
+        - "[自認] ブロック（what, milestone, phase, branch...）"
         - "pending ファイル削除"
       references:
         - ".claude/hooks/session-start.sh"
@@ -317,6 +318,7 @@ workflows:
         - ".claude/hooks/check-main-branch.sh"
         - "CLAUDE.md"
         - "state.md"
+        - "plan/project.md"
 
     - id: work_loop
       name: "LOOP"
@@ -354,12 +356,12 @@ workflows:
     - id: post_loop
       name: "POST_LOOP"
       why: |
-        playbook 完了時に自動でアーカイブ、次 playbook 作成を行う。
+        playbook 完了時に自動でアーカイブ、project.milestone 更新、次 playbook 作成を行う。
         手動操作なしで継続的な進捗を実現する。
       when: "playbook の全 phase が done"
       input:
         - "playbook（全 phase done）"
-        - "state.md"
+        - "project.md（milestone）"
       process:
         hooks:
           - "archive-playbook.sh: アーカイブ提案"
@@ -369,10 +371,11 @@ workflows:
           - "pm: 次 playbook 作成"
         skills:
           - "post-loop: 完了処理"
-        claude_md: "POST_LOOP セクション → 完了処理"
+        claude_md: "POST_LOOP セクション → milestone 更新"
       output:
         - "playbook アーカイブ（plan/archive/）"
         - "state.md 更新（playbook.active = null）"
+        - "project.md 更新（milestone.status = achieved）"
         - "次 playbook（存在する場合）"
         - "/clear 推奨アナウンス"
       references:
@@ -382,6 +385,7 @@ workflows:
         - ".claude/agents/pm.md"
         - ".claude/skills/post-loop/"
         - "CLAUDE.md"
+        - "plan/project.md"
 
     - id: critique_process
       name: "CRITIQUE"
@@ -410,119 +414,35 @@ workflows:
         - ".claude/frameworks/done-criteria-validation.md"
         - "CLAUDE.md"
 
-    - id: merge_flow
-      name: "MERGE"
+    - id: project_complete
+      name: "PROJECT_COMPLETE"
       why: |
-        playbook 完了後、feature ブランチを main にマージし、GitHub にプッシュ。
+        全 milestone 達成時に feature ブランチを main にマージし、GitHub にプッシュ。
         state.md を neutral 状態にリセットして次の作業に備える。
-      when: "playbook 完了後、ユーザーがマージを要求"
+      when: "全 milestone が status: achieved"
       input:
+        - "project.md（全 milestone の status）"
         - "現在の feature ブランチ"
         - "state.md"
       process:
         hooks:
           - "merge-pr.sh: main マージ"
-        subagents: []
+        subagents:
+          - "pm: 全 milestone 達成を検出"
         skills:
           - "post-loop: 完了処理"
-        claude_md: "POST_LOOP セクション"
+        claude_md: "POST_LOOP#PROJECT_COMPLETE"
       output:
         - "main ブランチにマージ"
         - "GitHub にプッシュ"
         - "state.md neutral 状態"
+        - "PROJECT 完了アナウンス"
         - "/clear 推奨"
       references:
+        - "plan/project.md"
         - "CLAUDE.md"
         - ".claude/hooks/merge-pr.sh"
 WORKFLOWS_HEADER
-}
-
-# ==============================================================================
-# Design Philosophy (4QV+ / 導火線モデル)
-# docs/design-philosophy.md の内容を YAML 形式で出力
-# ==============================================================================
-
-generate_design_philosophy() {
-    cat >> "$TEMP_FILE" << 'DESIGN_HEADER'
-
-# ==============================================================================
-# Design Philosophy
-# 拡張システムの設計思想（docs/design-philosophy.md より）
-# ==============================================================================
-
-design_philosophy:
-  description: "Hook/Skill/SubAgent の設計思想と検証フレームワーク"
-  reference: "docs/design-philosophy.md"
-
-  fuse_model:
-    name: "導火線モデル（Fuse Model）"
-    description: "イベント駆動の処理チェーン"
-    flow: "Event → Hook → Skill → SubAgent"
-    components:
-      hook:
-        role: "イベント検知と発火（導火線）"
-        trigger: "自動（イベント駆動）"
-        control: "ブロック可能（exit 2）"
-        config: "settings.json"
-      skill:
-        role: "専門知識とガイドライン提供"
-        trigger: "自動（文脈判断）"
-        control: "ブロック不可（ガイダンスのみ）"
-        config: ".claude/skills/{name}/SKILL.md"
-      subagent:
-        role: "複雑タスクの独立実行"
-        trigger: "自動/手動（Task ツール）"
-        control: "独立実行（別コンテキスト）"
-        config: ".claude/agents/{name}.md"
-
-  four_quadrant_validation:
-    name: "4QV+ 構成（Four-Quadrant Validation Plus）"
-    description: "subtask 検証の 4 象限フレームワーク"
-    quadrants:
-      Q1_technical:
-        name: "Technical（技術的正確性）"
-        checks:
-          - "コマンド実行結果確認"
-          - "ファイル存在確認"
-          - "構文エラーチェック"
-      Q2_consistency:
-        name: "Consistency（整合性）"
-        checks:
-          - "state.md との整合"
-          - "playbook との整合"
-          - "設定ファイルとの整合"
-      Q3_completeness:
-        name: "Completeness（完全性）"
-        checks:
-          - "全 done_criteria 確認"
-          - "関連ファイル更新確認"
-          - "抜け漏れチェック"
-      Q4_evidence:
-        name: "Evidence（証拠ベース検証）"
-        checks:
-          - "critic SubAgent 検証"
-          - "実行結果の記録"
-          - "タイムスタンプ付与"
-    validation_format:
-      technical: "Q1 - 技術的に正しく動作するか"
-      consistency: "Q2 - 他コンポーネントと整合性があるか"
-      completeness: "Q3 - 必要な変更が全て完了しているか"
-      note: "Q4+ は critic SubAgent が証拠ベースで実行"
-
-  integration_patterns:
-    - pattern: "Hook → Skill"
-      scenario: "セッション開始時の状態確認"
-      example: "SessionStart → session-start.sh → state Skill"
-    - pattern: "Skill → SubAgent"
-      scenario: "playbook 作成の委譲"
-      example: "plan-management Skill → pm SubAgent"
-    - pattern: "Hook → SubAgent"
-      scenario: "Phase 完了時の検証"
-      example: "critic-guard.sh → critic SubAgent"
-    - pattern: "Circular (LOOP)"
-      scenario: "タスク実行ループ"
-      example: "playbook-guard → test-runner → critic → subtask-guard → (repeat)"
-DESIGN_HEADER
 }
 
 # ==============================================================================
@@ -562,7 +482,7 @@ system_specification:
   behavior_rules:
     description: "CLAUDE.md から抽出した行動ルール"
     core_principles:
-      - "pdca_autonomy: playbook 完了 → 次 playbook 自動作成"
+      - "pdca_autonomy: playbook 完了 → milestone 更新 → 次 playbook 自動作成"
       - "tdd_first: done_criteria = テスト仕様、根拠必須"
       - "validation: critic は frameworks/ を参照"
       - "plan_based: playbook=null で Edit/Write → ブロック"
@@ -696,43 +616,7 @@ if [[ -d "$SKILLS_DIR" ]]; then
         if [[ -n "$skill_file" ]]; then
             ((SKILLS_COUNT++))
             desc=$(extract_description "$skill_file")
-
-            # サブディレクトリ構造を検出
-            subdirs=""
-            has_hooks=false has_agents=false has_frameworks=false
-            hooks_count=0 agents_count=0 frameworks_count=0
-
-            if [[ -d "$skill_dir/hooks" ]]; then
-                has_hooks=true
-                hooks_count=$(find "$skill_dir/hooks" -maxdepth 1 -type f -name "*.sh" 2>/dev/null | wc -l | tr -d ' ')
-            fi
-            if [[ -d "$skill_dir/agents" ]]; then
-                has_agents=true
-                agents_count=$(find "$skill_dir/agents" -maxdepth 1 -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-            fi
-            if [[ -d "$skill_dir/frameworks" ]]; then
-                has_frameworks=true
-                frameworks_count=$(find "$skill_dir/frameworks" -maxdepth 1 -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-            fi
-
-            # 出力を構築
-            skill_entry="    - name: \"$skill_name\"\n      description: \"$desc\""
-
-            # サブディレクトリがある場合は追加
-            if $has_hooks || $has_agents || $has_frameworks; then
-                skill_entry+="\n      structure:"
-                if $has_hooks; then
-                    skill_entry+="\n        hooks: $hooks_count"
-                fi
-                if $has_agents; then
-                    skill_entry+="\n        agents: $agents_count"
-                fi
-                if $has_frameworks; then
-                    skill_entry+="\n        frameworks: $frameworks_count"
-                fi
-            fi
-
-            skills_list+=("$skill_entry")
+            skills_list+=("    - name: \"$skill_name\"\n      description: \"$desc\"")
         fi
     done
 
@@ -888,12 +772,6 @@ generate_hook_trigger_sequence
 # ==============================================================================
 echo "  Generating workflows..."
 generate_workflows
-
-# ==============================================================================
-# Design Philosophy (4QV+ / 導火線モデル)
-# ==============================================================================
-echo "  Generating design philosophy..."
-generate_design_philosophy
 
 cat >> "$TEMP_FILE" << EOF
 

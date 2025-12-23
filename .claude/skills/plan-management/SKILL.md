@@ -1,26 +1,19 @@
 ---
 name: plan-management
-description: Playbook management. Use when creating playbooks or transitioning phases. Triggers on "plan", "playbook", "phase" keywords.
+description: Multi-layer planning and playbook management. Use when creating playbooks, transitioning phases, or managing plan hierarchy. Triggers on "plan", "playbook", "phase", "roadmap", "milestone" keywords.
 ---
 
 # Plan Management Skill
 
 Multi-layer planning system for long-running agent sessions.
 
-## Structure
-
-```
-.claude/skills/plan-management/
-├── SKILL.md                    # この仕様書
-└── agents/
-    └── pm.md                   # playbook 管理 SubAgent
-```
-
 ## Plan Hierarchy Structure
 
 ```
-playbooks (1 task = 1 playbook = 1 branch)
-  └── phases
+roadmap (最上位)
+  └── milestones
+        └── playbooks (1 task = 1 playbook = 1 branch)
+              └── phases
 ```
 
 ## When to Use This Skill
@@ -78,7 +71,9 @@ Phase 完了条件:
 ```yaml
 必須 Read:
   1. state.md → focus.current 確認
-  2. playbook (if session=task)
+  2. roadmap (if workspace layer)
+  3. playbook (if session=task)
+  4. project.md (if product layer)
 
 branch 確認:
   - main なら新ブランチ作成
@@ -94,6 +89,7 @@ playbook 確認:
 This skill activates when Claude detects:
 - "計画を立てて" / "plan" / "playbook"
 - "次のフェーズ" / "phase"
+- "ロードマップ" / "roadmap" / "milestone"
 - Session start with session=task
 
 ## Integration with Hooks

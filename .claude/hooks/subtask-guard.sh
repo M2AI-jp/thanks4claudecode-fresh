@@ -170,42 +170,6 @@ if [[ "$NEW_STRING" != *"validations:"* ]]; then
     exit 2
 fi
 
-# ==============================================================================
-# 3 点検証の完全性チェック（technical, consistency, completeness）
-# ==============================================================================
-MISSING_FIELDS=""
-
-if [[ "$NEW_STRING" != *"technical:"* ]]; then
-    MISSING_FIELDS="${MISSING_FIELDS}- technical\n"
-fi
-
-if [[ "$NEW_STRING" != *"consistency:"* ]]; then
-    MISSING_FIELDS="${MISSING_FIELDS}- consistency\n"
-fi
-
-if [[ "$NEW_STRING" != *"completeness:"* ]]; then
-    MISSING_FIELDS="${MISSING_FIELDS}- completeness\n"
-fi
-
-if [[ -n "$MISSING_FIELDS" ]]; then
-    echo "[subtask-guard] ❌ BLOCKED: validations フィールドに以下の検証が不足しています:"
-    echo ""
-    echo -e "$MISSING_FIELDS"
-    echo ""
-    echo "3 点検証が全て必要です:"
-    echo ""
-    echo "- [x] **pN.M**: criterion が満たされている ✓"
-    echo "  - executor: claudecode"
-    echo "  - validations:"
-    echo "    - technical: \"PASS - 技術的検証の詳細\""
-    echo "    - consistency: \"PASS - 整合性検証の詳細\""
-    echo "    - completeness: \"PASS - 完全性検証の詳細\""
-    echo "  - validated: $(date -u +%Y-%m-%dT%H:%M:%S)"
-    echo ""
-    echo "参照: plan/template/playbook-format.md"
-    exit 2
-fi
-
-# validations が完全な場合は許可（公式 Hook 仕様: exit 0 のみで十分）
+# validations がある場合は許可（公式 Hook 仕様: exit 0 のみで十分）
 # M085: 不要な JSON 出力を削除（公式仕様では stdout への JSON は意味を持たない）
 exit 0

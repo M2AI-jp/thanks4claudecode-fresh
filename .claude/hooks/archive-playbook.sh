@@ -216,4 +216,50 @@ cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 
+# ==============================================================================
+# M088: 全 milestone achieved 検知（project_complete workflow）
+# ==============================================================================
+# playbook 完了時に project.md を参照し、全 milestone が achieved なら
+# project_complete メッセージを出力
+
+PROJECT_FILE="plan/project.md"
+
+if [ -f "$PROJECT_FILE" ]; then
+    # milestone 総数と未達成数をカウント（より正確な方法）
+    TOTAL_MILESTONES=$(grep -c "^- id: M" "$PROJECT_FILE" 2>/dev/null) || TOTAL_MILESTONES=0
+    # pending または in_progress の milestone がないことを確認
+    PENDING_MILESTONES=$(grep -c "status: pending\|status: in_progress" "$PROJECT_FILE" 2>/dev/null) || PENDING_MILESTONES=0
+
+    # milestone が存在し、未達成がない場合 = 全 milestone achieved
+    if [ "$TOTAL_MILESTONES" -gt 0 ] && [ "$PENDING_MILESTONES" -eq 0 ]; then
+        cat << 'PROJECTCOMPLETE'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🎉 PROJECT COMPLETE - 全 Milestone 達成
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  全ての Milestone が achieved になりました。
+
+  次のアクションを実行してください:
+
+  1. PR をマージ:
+     gh pr merge --merge --delete-branch
+
+  2. main ブランチを pull:
+     git checkout main && git pull
+
+  3. GitHub にプッシュ（必要に応じて）:
+     git push origin main
+
+  4. state.md を neutral 状態に:
+     playbook.active: null
+     focus.current: null
+
+  おめでとうございます！
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROJECTCOMPLETE
+    fi
+fi
+
 exit 0

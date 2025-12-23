@@ -14,7 +14,7 @@
 ├── SubAgents: 6 定義
 ├── Skills: 5 定義
 ├── Commands: 8 スラッシュコマンド
-└── 状態管理: state.md + playbook
+└── 状態管理: state.md + project.md + playbook
 ```
 
 ### 設計思想
@@ -32,8 +32,9 @@ Claude Code がセッション開始時に読み込む順序:
 ```
 1. CLAUDE.md          - 行動ルール（Frozen Constitution）
 2. state.md           - 現在の状態（focus, playbook, goal）
-3. playbook (if any)  - 現在の作業計画
-4. docs/repository-map.yaml - 全ファイルマッピング
+3. plan/project.md    - プロジェクト計画（milestones）
+4. playbook (if any)  - 現在の作業計画
+5. docs/repository-map.yaml - 全ファイルマッピング
 ```
 
 ---
@@ -60,6 +61,8 @@ Claude Code がセッション開始時に読み込む順序:
 │   └── tests/             # done_criteria テスト
 │
 ├── plan/                  # 計画管理
+│   ├── project.md         # プロジェクト計画
+│   ├── active/            # 進行中 playbook
 │   ├── archive/           # 完了済み playbook (51+)
 │   └── template/          # playbook テンプレート
 │
@@ -239,8 +242,16 @@ Edit/Write 試行
 ### 8.3 3層構造
 
 ```
-playbook (作業計画)
-├── meta.branch: ブランチ名
+project.md (永続)
+├── vision: 最上位目標
+├── milestones[]: 中間目標
+│   ├── M001: achieved
+│   ├── M002: achieved
+│   └── M078: achieved (最新)
+└── constraints: 制約条件
+
+playbook (一時的)
+├── meta.derives_from: milestone ID
 ├── goal.done_when: 達成条件
 └── phases[]: 作業単位
     ├── p0: done
@@ -264,6 +275,7 @@ phase (作業単位)
 | ファイル | 役割 |
 |----------|------|
 | state.md | 現在状態（focus, playbook, goal, config） |
+| plan/project.md | プロジェクト計画（milestones） |
 | .claude/settings.json | Hook 登録・権限 |
 | docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
 
@@ -318,14 +330,14 @@ security: admin  # 全ガードバイパス
 
 ## 12. ドキュメント整理方針
 
-### アーカイブ済み（.archive/docs/ に移動済み）
+### アーカイブ候補（.archive/docs/ に移動）
 
-| ファイル | 理由 | アーカイブ日 |
-|----------|------|-------------|
-| fraud-investigation-report.md | M062 一回限りの調査レポート | 2025-12-18 |
-| e2e-simulation-log.md | M062 テストログ | 2025-12-18 |
-| e2e-simulation-scenarios.md | M062 テストシナリオ | 2025-12-18 |
-| deprecated-references.md | 廃止参照リスト（対応完了） | 2025-12-24 |
+| ファイル | 理由 |
+|----------|------|
+| fraud-investigation-report.md | M062 一回限りの調査レポート |
+| e2e-simulation-log.md | M062 テストログ |
+| e2e-simulation-scenarios.md | M062 テストシナリオ |
+| deprecated-references.md | 廃止参照リスト（対応完了後アーカイブ） |
 
 ### 保持（必須）
 
@@ -350,7 +362,7 @@ security: admin  # 全ガードバイパス
 ## 13. 既知の問題
 
 1. ~~playbook-guard.sh が admin モード未対応~~: 修正済み（2025-12-18）
-2. ~~repository-map.yaml の description 切り詰め~~: 修正済み（2025-12-24、UTF-8 対応）
+2. **repository-map.yaml の description 切り詰め**: 一部の description が途中で切れている
 
 ---
 
@@ -361,4 +373,3 @@ security: admin  # 全ガードバイパス
 | 2025-12-18 | 初版作成（cleanup/architecture-audit） |
 | 2025-12-18 | playbook-guard.sh に admin モードチェック追加 |
 | 2025-12-18 | audit-unused.sh 作成、pm.md 修正、docs 整理（17→14） |
-| 2025-12-24 | design-philosophy.md 追加、repository-map.yaml 強化、deprecated-references.md アーカイブ |

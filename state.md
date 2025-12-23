@@ -9,7 +9,8 @@
 ## focus
 
 ```yaml
-current: product
+current: thanks4claudecode
+project: plan/project.md
 ```
 
 ---
@@ -17,9 +18,9 @@ current: product
 ## playbook
 
 ```yaml
-active: plan/playbook-repo-map-enhancement.md
-branch: feat/repo-map-enhancement
-last_archived: plan/archive/playbook-cleanup-project-refs.md
+active: plan/playbook-m091-post-loop-order-fix.md
+branch: feat/understanding-check-reimpl
+last_archived: plan/archive/playbook-m090-structural-integrity.md
 review_pending: true
 ```
 
@@ -28,17 +29,13 @@ review_pending: true
 ## goal
 
 ```yaml
-phase: p_final2
+milestone: M091
+phase: p1
 done_criteria:
-  - generate-repository-map.sh が description を正しく抽出し、途中で切れない
-  - repository-map.yaml に Skill パッケージ構造（hooks/, agents/, frameworks/）が記録されている
-  - repository-map.yaml に 4QV+ 構成と導火線モデルが記録されている
-  - deprecated-references.md の対応状況が確認され、必要に応じてアーカイブされている
-  - ARCHITECTURE.md のアーカイブ候補が整理されている
-  - prompt-guard.sh の表示が project.md 削除後の仕様に適合している
-  - state.md の構造が project.md 不要の設計と整合している
-  - 孤立ファイル（参照・被参照なし）が整理されている
-note: repository-map.yaml 強化 + post-project.md 整合性確保
+  - post-loop/SKILL.md の step 3 が step 0.5 の前に移動している
+  - ステップ番号が適切にリナンバリングされている
+  - 変更理由がコメントとして記載されている
+note: POST_LOOP 処理順序修正
 ```
 
 ---
@@ -46,8 +43,8 @@ note: repository-map.yaml 強化 + post-project.md 整合性確保
 ## session
 
 ```yaml
-last_start: 2025-12-24 00:43:16
-last_end: 2025-12-24 00:43:15
+last_start: 2025-12-23 19:17:45
+last_end: 2025-12-23 18:22:19
 last_clear: 2025-12-13 00:30:00
 ```
 
@@ -72,5 +69,6 @@ roles:
 | ファイル | 役割 |
 |----------|------|
 | CLAUDE.md | LLM の振る舞いルール |
+| plan/project.md | プロジェクト計画 |
 | docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
 | docs/folder-management.md | フォルダ管理ルール |

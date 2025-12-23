@@ -2,9 +2,9 @@
 
 ```yaml
 Status: FROZEN
-Version: 1.2.0
+Version: 1.1.0
 Owner: Repo Maintainers
-Last Updated: 2025-12-23
+Last Updated: 2025-12-18
 ```
 
 > **This file is the immutable operating constitution for Claude in this repository.**
@@ -137,6 +137,10 @@ primary_state: state.md
   - Current focus, active task, session info
   - Read this FIRST at session start
 
+project_state: plan/project.md
+  - Long-term goals, milestones
+  - Reference when planning new work
+
 task_state: plan/playbook-*.md
   - Current task details, acceptance criteria
   - Check playbook.active in state.md
@@ -245,6 +249,7 @@ admin_can_relax:
 |------|---------|
 | `RUNBOOK.md` | Procedures, tools, examples (can change) |
 | `state.md` | Current state (source of truth) |
+| `plan/project.md` | Project goals and milestones |
 | `governance/PROMPT_CHANGELOG.md` | Change history for this file |
 
 ---
@@ -253,6 +258,5 @@ admin_can_relax:
 
 | Version | Date | Summary |
 |---------|------|---------|
-| 1.2.0 | 2025-12-23 | project.md 参照を削除（playbook + state.md 中心モデルへ移行） |
 | 1.1.0 | 2025-12-18 | Core Contract + Admin Mode Contract 追加（M079） |
 | 1.0.0 | 2025-12-18 | Initial frozen constitution. Extracted procedures to RUNBOOK.md. |

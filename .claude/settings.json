@@ -51,22 +51,12 @@
           },
           {
             "type": "command",
-            "command": "bash .claude/skills/playbook-review/hooks/playbook-review-trigger.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
             "command": "bash .claude/hooks/depends-check.sh",
             "timeout": 3000
           },
           {
             "type": "command",
             "command": "bash .claude/hooks/critic-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/skills/phase-critique/hooks/critic-enforcer.sh",
             "timeout": 3000
           },
           {
@@ -82,16 +72,6 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/subtask-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/skills/subtask-review/hooks/subtask-validator.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/skills/understanding-check/hooks/understanding-enforcer.sh",
             "timeout": 3000
           }
         ]
@@ -111,11 +91,6 @@
           },
           {
             "type": "command",
-            "command": "bash .claude/skills/playbook-review/hooks/playbook-review-trigger.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
             "command": "bash .claude/hooks/critic-guard.sh",
             "timeout": 3000
           },
@@ -132,11 +107,6 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/subtask-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/skills/understanding-check/hooks/understanding-enforcer.sh",
             "timeout": 3000
           }
         ]
@@ -169,11 +139,6 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/prompt-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/skills/understanding-check/hooks/pre-playbook-understanding.sh",
             "timeout": 3000
           }
         ]
@@ -208,11 +173,6 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/archive-playbook.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/skills/completion-review/hooks/archive-validator.sh",
             "timeout": 3000
           },
           {

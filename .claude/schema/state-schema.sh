@@ -24,6 +24,7 @@ SECTION_CONFIG="## config"
 FIELD_CURRENT="current:"
 FIELD_ACTIVE="active:"
 FIELD_BRANCH="branch:"
+FIELD_MILESTONE="milestone:"
 FIELD_PHASE="phase:"
 FIELD_SECURITY="security:"
 FIELD_LAST_START="last_start:"
@@ -34,6 +35,7 @@ FIELD_LAST_ARCHIVED="last_archived:"
 # ファイルパス定義
 # --------------------------------------------------
 STATE_FILE="${STATE_FILE:-state.md}"
+PROJECT_FILE="plan/project.md"
 PLAYBOOK_DIR="plan"
 ARCHIVE_DIR="plan/archive"
 
@@ -54,6 +56,11 @@ get_playbook_active() {
 # playbook.branch を取得
 get_playbook_branch() {
     grep -A5 "$SECTION_PLAYBOOK" "$STATE_FILE" | grep "$FIELD_BRANCH" | head -1 | sed "s/$FIELD_BRANCH *//" | sed 's/ *#.*//' | tr -d ' '
+}
+
+# goal.milestone を取得
+get_goal_milestone() {
+    grep -A5 "$SECTION_GOAL" "$STATE_FILE" | grep "$FIELD_MILESTONE" | head -1 | sed "s/$FIELD_MILESTONE *//" | sed 's/ *#.*//' | tr -d ' '
 }
 
 # goal.phase を取得
@@ -87,6 +94,21 @@ validate_state_structure() {
     if [[ -n "$missing" ]]; then
         echo "Missing sections: $missing" >&2
         return 1
+    fi
+    return 0
+}
+
+# playbook と milestone の整合性を確認
+validate_playbook_milestone_consistency() {
+    local playbook=$(get_playbook_active)
+    local milestone=$(get_goal_milestone)
+
+    # playbook が存在するのに milestone が null は不整合
+    if [[ -n "$playbook" && "$playbook" != "null" ]]; then
+        if [[ -z "$milestone" || "$milestone" == "null" ]]; then
+            echo "Inconsistency: playbook exists but milestone is null" >&2
+            return 1
+        fi
     fi
     return 0
 }
