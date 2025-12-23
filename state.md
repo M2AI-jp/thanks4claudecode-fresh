@@ -17,9 +17,9 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-4qv-e2e-verification-v4.md
+active: plan/playbook-4qv-e2e-verification-v5.md
 branch: refactor/4qv-architecture-rebuild
-last_archived: plan/archive/playbook-4qv-e2e-verification-v3.md
+last_archived: plan/archive/playbook-4qv-e2e-verification-v4.md
 review_pending: false
 ```
 
@@ -44,7 +44,7 @@ note: 4QV+ E2E 動作検証 - Iteration 4
 ## session
 
 ```yaml
-last_start: 2025-12-24 06:07:24
+last_start: 2025-12-24 06:24:22
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
