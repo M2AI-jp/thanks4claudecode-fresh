@@ -28,14 +28,17 @@ review_pending: true
 ## goal
 
 ```yaml
-phase: p0
+phase: p_final2
 done_criteria:
   - generate-repository-map.sh が description を正しく抽出し、途中で切れない
   - repository-map.yaml に Skill パッケージ構造（hooks/, agents/, frameworks/）が記録されている
   - repository-map.yaml に 4QV+ 構成と導火線モデルが記録されている
   - deprecated-references.md の対応状況が確認され、必要に応じてアーカイブされている
   - ARCHITECTURE.md のアーカイブ候補が整理されている
-note: repository-map.yaml 強化 + ドキュメント整理
+  - prompt-guard.sh の表示が project.md 削除後の仕様に適合している
+  - state.md の構造が project.md 不要の設計と整合している
+  - 孤立ファイル（参照・被参照なし）が整理されている
+note: repository-map.yaml 強化 + post-project.md 整合性確保
 ```
 
 ---

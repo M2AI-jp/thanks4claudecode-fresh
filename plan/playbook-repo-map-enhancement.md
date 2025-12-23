@@ -18,13 +18,16 @@ roles:
 ## goal
 
 ```yaml
-summary: repository-map.yaml の強化とドキュメント整理
+summary: repository-map.yaml の強化とドキュメント整理 + post-project.md 整合性確保
 done_when:
   - generate-repository-map.sh が description を正しく抽出し、途中で切れない
   - repository-map.yaml に Skill パッケージ構造（hooks/, agents/, frameworks/）が記録されている
   - repository-map.yaml に 4QV+ 構成と導火線モデルが記録されている
   - deprecated-references.md の対応状況が確認され、必要に応じてアーカイブされている
   - ARCHITECTURE.md のアーカイブ候補が整理されている
+  - prompt-guard.sh の表示が project.md 削除後の仕様に適合している
+  - state.md の構造が project.md 不要の設計と整合している
+  - 孤立ファイル（参照・被参照なし）が整理されている
 ```
 
 ---
@@ -277,6 +280,154 @@ done_when:
     - consistency: "PASS - ARCHITECTURE.md の「アーカイブ済み」セクションに更新"
     - completeness: "PASS - 2025-12-24 の変更履歴が追加"
   - validated: 2025-12-24T01:35:00
+
+**status**: done
+**max_iterations**: 5
+
+---
+
+### p4: prompt-guard.sh の表示仕様見直し
+
+**goal**: project.md 削除後の仕様に適合した表示に変更
+
+**depends_on**: [p_final]
+
+#### subtasks
+
+- [x] **p4.1**: 現在の prompt-guard.sh の表示ロジックを分析する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - prompt-guard.sh 202-238行で表示を生成"
+    - consistency: "PASS - playbook 有無で条件分岐、常に branch/git を表示"
+    - completeness: "PASS - 表示項目: focus, phase, playbook, remaining, branch, git"
+  - validated: 2025-12-24T02:00:00
+
+- [x] **p4.2**: playbook 完了状態（remaining: 0）での表示仕様を決定する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - 完了時: ✅ playbook 完了 + next action 表示"
+    - consistency: "PASS - 通常時: phase (remaining: N) 形式に簡素化"
+    - completeness: "PASS - 新仕様: 完了時は冗長な phase/remaining を省略し next action を提示"
+  - validated: 2025-12-24T02:05:00
+
+- [x] **p4.3**: prompt-guard.sh を修正し、新しい表示仕様を実装する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - 完了時に ✅ playbook 完了 + next action 表示を確認"
+    - consistency: "PASS - 通常時は phase (remaining: N) 形式"
+    - completeness: "PASS - echo '{\"prompt\": \"test\"}' | bash prompt-guard.sh でテスト成功"
+  - validated: 2025-12-24T02:10:00
+
+**status**: done
+**max_iterations**: 5
+
+---
+
+### p5: state.md の仕様見直し
+
+**goal**: project.md 不要の設計と整合する state.md 構造
+
+**depends_on**: [p4]
+
+#### subtasks
+
+- [x] **p5.1**: 現在の state.md の構造と各セクションの役割を確認する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - 5セクション: focus, playbook, goal, session, config"
+    - consistency: "PASS - state-schema.sh と整合、hooks が参照"
+    - completeness: "PASS - 全セクションの役割を確認: goal が playbook と重複"
+  - validated: 2025-12-24T02:15:00
+
+- [x] **p5.2**: project.md 削除後に不要になった項目を特定する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - goal.done_criteria は playbook と重複するが quick reference として有用"
+    - consistency: "PASS - goal.phase は critic-guard.sh が参照、playbook と同期必須"
+    - completeness: "PASS - 不要項目なし、現状維持で整合。playbook との同期ルールを維持"
+  - validated: 2025-12-24T02:20:00
+
+- [x] **p5.3**: state.md のスキーマ（state-schema.sh）を更新する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - state-schema.sh は現状で整合、更新不要"
+    - consistency: "PASS - 5セクション（focus, playbook, goal, session, config）に対応"
+    - completeness: "PASS - validate_state_structure() が必須セクションを検証"
+  - validated: 2025-12-24T02:25:00
+
+**status**: done
+**max_iterations**: 5
+
+---
+
+### p6: 孤立ファイル整理
+
+**goal**: 参照・被参照のないファイルを整理（削除またはアーカイブ）
+
+**depends_on**: [p5]
+
+#### subtasks
+
+- [x] **p6.1**: 削除候補ファイル（.bak, __pycache__）を削除する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - rm -f prompt-guard.sh.bak && rm -rf __pycache__ 成功"
+    - consistency: "PASS - バックアップ・キャッシュファイルはバージョン管理対象外"
+    - completeness: "PASS - 2件削除: prompt-guard.sh.bak, __pycache__/"
+  - validated: 2025-12-24T02:30:00
+
+- [x] **p6.2**: 検討候補ファイル（context/, lib/common.sh）の用途を確認する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - context/history.md, context/claude-md-history.md, lib/common.sh が存在"
+    - consistency: "PASS - これらは .archive/ からのみ参照、現在の hooks では未使用"
+    - completeness: "PASS - 3件がアーカイブ候補: context/*.md, lib/common.sh"
+  - validated: 2025-12-24T02:35:00
+
+- [x] **p6.3**: 不要と判断されたファイルをアーカイブする ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - mv で .archive/.claude/ に移動完了"
+    - consistency: "PASS - .archive/ 以下に context/, hooks/lib/ を作成"
+    - completeness: "PASS - 3件移動: history.md, claude-md-history.md, common.sh"
+  - validated: 2025-12-24T02:40:00
+
+**status**: done
+**max_iterations**: 5
+
+---
+
+### p_final2: システム整合性検証
+
+**goal**: 全変更後のシステム動作を検証
+
+**depends_on**: [p6]
+
+#### subtasks
+
+- [x] **p_final2.1**: prompt-guard.sh の表示が新仕様に従っていることを確認する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - ✅ playbook 完了 + next: マージ → アーカイブ → /clear が表示"
+    - consistency: "PASS - remaining: 0 の完了状態で簡素な表示"
+    - completeness: "PASS - focus, branch, git も表示"
+  - validated: 2025-12-24T02:45:00
+
+- [x] **p_final2.2**: state.md が新スキーマに準拠していることを確認する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - validate_state_structure() が成功"
+    - consistency: "PASS - 5セクション（focus, playbook, goal, session, config）存在"
+    - completeness: "PASS - state-schema.sh の getter 関数が正常動作"
+  - validated: 2025-12-24T02:45:00
+
+- [x] **p_final2.3**: 孤立ファイルが整理されていることを確認する ✓
+  - executor: orchestrator
+  - validations:
+    - technical: "PASS - .bak, __pycache__, context/, hooks/lib/ が存在しない"
+    - consistency: "PASS - 不要ファイルは .archive/ に移動済み"
+    - completeness: "PASS - 削除候補が存在しない"
+  - validated: 2025-12-24T02:45:00
 
 **status**: done
 **max_iterations**: 5

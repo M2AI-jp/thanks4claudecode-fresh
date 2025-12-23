@@ -198,34 +198,40 @@ escape_json() {
     echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed 's/	/\\t/g'
 }
 
-# systemMessage を構築（簡素化版）
-SI_MESSAGE="━━━ State Injection ━━━\\n"
+# systemMessage を構築（簡素化版 - M095: post-project.md 対応）
+SI_MESSAGE="━━━━━━━━━━━━━━━━━━━━━━━━\\n"
 SI_MESSAGE="${SI_MESSAGE}focus: $(escape_json "$SI_FOCUS")\\n"
 
 # playbook がある場合のみ詳細を出力
 if [ -n "$SI_PLAYBOOK" ] && [ "$SI_PLAYBOOK" != "null" ]; then
-    SI_MESSAGE="${SI_MESSAGE}phase: $(escape_json "$SI_PHASE")\\n"
-    SI_MESSAGE="${SI_MESSAGE}playbook: $(escape_json "$SI_PLAYBOOK")\\n"
-    SI_MESSAGE="${SI_MESSAGE}remaining: ${SI_REMAINING_PH} phases\\n"
-    # done_criteria は出力しない（LLM は playbook を直接読む）
+    # playbook 完了状態（remaining = 0）と通常状態で表示を分岐
+    if [ "$SI_REMAINING_PH" = "0" ]; then
+        # 完了状態: 簡素な完了表示 + next action
+        SI_MESSAGE="${SI_MESSAGE}✅ playbook 完了: $(escape_json "$SI_PLAYBOOK")\\n"
+        SI_MESSAGE="${SI_MESSAGE}next: マージ → アーカイブ → /clear\\n"
+    else
+        # 通常状態: 簡素化した表示
+        SI_MESSAGE="${SI_MESSAGE}playbook: $(escape_json "$SI_PLAYBOOK")\\n"
+        SI_MESSAGE="${SI_MESSAGE}phase: $(escape_json "$SI_PHASE") (remaining: ${SI_REMAINING_PH})\\n"
 
-    # ==============================================================================
-    # M088: 未完了 Phase/subtask のリマインダー（ループ促進）
-    # ==============================================================================
-    if [ -f "$SI_PLAYBOOK" ]; then
-        # 最初の pending/in_progress Phase を検出
-        CURRENT_PHASE=$(awk '/^### p[0-9_].*:/{phase=$0} /\*\*status\*\*: (pending|in_progress)/{print phase; exit}' "$SI_PLAYBOOK" 2>/dev/null | head -1)
+        # ==============================================================================
+        # M088: 未完了 Phase/subtask のリマインダー（ループ促進）
+        # ==============================================================================
+        if [ -f "$SI_PLAYBOOK" ]; then
+            # 最初の pending/in_progress Phase を検出
+            CURRENT_PHASE=$(awk '/^### p[0-9_].*:/{phase=$0} /\*\*status\*\*: (pending|in_progress)/{print phase; exit}' "$SI_PLAYBOOK" 2>/dev/null | head -1)
 
-        if [ -n "$CURRENT_PHASE" ]; then
-            # Phase ID を抽出（例: "### p1: 理解確認 Skill 作成" → "p1"）
-            PHASE_ID=$(echo "$CURRENT_PHASE" | sed 's/### \(p[0-9_a-z]*\):.*/\1/')
+            if [ -n "$CURRENT_PHASE" ]; then
+                # Phase ID を抽出（例: "### p1: 理解確認 Skill 作成" → "p1"）
+                PHASE_ID=$(echo "$CURRENT_PHASE" | sed 's/### \(p[0-9_a-z]*\):.*/\1/')
 
-            # 全 subtasks セクションの未完了 subtask 数をカウント（シンプル版）
-            INCOMPLETE=$(grep -c '\- \[ \] \*\*'"${PHASE_ID}"'\.' "$SI_PLAYBOOK" 2>/dev/null || echo "0")
+                # 全 subtasks セクションの未完了 subtask 数をカウント（シンプル版）
+                INCOMPLETE=$(grep -c '\- \[ \] \*\*'"${PHASE_ID}"'\.' "$SI_PLAYBOOK" 2>/dev/null || echo "0")
 
-            if [ "$INCOMPLETE" -gt 0 ] 2>/dev/null; then
-                WARNINGS="${WARNINGS}\\n\\n🔄 【LOOP】${PHASE_ID} に未完了 subtask が ${INCOMPLETE} 個あります。"
-                WARNINGS="${WARNINGS}\\n📋 Read: ${SI_PLAYBOOK} → subtask を完了させてください。"
+                if [ "$INCOMPLETE" -gt 0 ] 2>/dev/null; then
+                    WARNINGS="${WARNINGS}\\n\\n🔄 【LOOP】${PHASE_ID} に未完了 subtask が ${INCOMPLETE} 個あります。"
+                    WARNINGS="${WARNINGS}\\n📋 Read: ${SI_PLAYBOOK} → subtask を完了させてください。"
+                fi
             fi
         fi
     fi
