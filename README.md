@@ -83,7 +83,6 @@ is_compound_command()   # 複合コマンド検出
 ├── RUNBOOK.md              # 運用手順
 ├── state.md                # 現在の状態
 ├── plan/
-│   ├── project.md          # プロジェクト計画（82 milestone）
 │   ├── archive/            # 完了した playbook
 │   └── template/           # playbook テンプレート
 ├── scripts/
@@ -119,11 +118,10 @@ bash scripts/e2e-contract-test.sh scenario_c  # playbook=active
 
 ```bash
 bash .claude/hooks/check-integrity.sh
-# [1/5] commands → hooks 参照チェック
-# [2/5] state.md 参照チェック
-# [3/5] agents → framework 参照チェック
-# [4/5] settings.json → hooks 参照チェック
-# [5/5] achieved milestone のアーカイブ漏れチェック
+# [1/4] commands → hooks 参照チェック
+# [2/4] state.md 参照チェック
+# [3/4] agents → framework 参照チェック
+# [4/4] settings.json → hooks 参照チェック
 ```
 
 ---
@@ -143,7 +141,7 @@ bash .claude/hooks/check-integrity.sh
 
 ## 開発履歴
 
-- **82 milestone** を達成（M001〜M082）
+- **82 playbook** を完了（初期開発 M001〜M082）
 - **52 E2E テスト** で契約システムを保証
 - **CLAUDE.md** を 648行 → 262行に最適化
 
