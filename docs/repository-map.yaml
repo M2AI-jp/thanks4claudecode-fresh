@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-23 23:01:09"
+  generated: "2025-12-24 00:16:39"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 309
+  total_files: 313
 
 hooks:
   directory: .claude/hooks/
@@ -55,7 +55,7 @@ agents:
     - name: "codex-delegate"
       description: "Codex MCP をラップし、コンテキスト膨張を防止する SubAgent"
     - name: "health-checker"
-      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
+      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、ファイル存在確認などを行う。"
     - name: "setup-guide"
       description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environm"
 
@@ -68,8 +68,11 @@ skills:
   files:
     - name: "completion-review"
       description: "playbook 完了時の検証とアーカイブを管理する"
+      structure:
+        hooks: 1
+        frameworks: 1
     - name: "context-management"
-      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
+      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外部ファイルに記録。"
     - name: "deploy-checker"
       description: "デプロイ準備・検証専門スキル"
     - name: "frontend-design"
@@ -78,20 +81,37 @@ skills:
       description: "コード品質チェック専門スキル"
     - name: "phase-critique"
       description: "Phase 完了時の critic 評価を構造的に強制する"
+      structure:
+        hooks: 1
+        agents: 1
+        frameworks: 1
     - name: "plan-management"
       description: "description: Playbook management. Use when creating playbooks or transitioning phases. Triggers on \""
+      structure:
+        agents: 1
     - name: "playbook-review"
       description: "playbook 作成後のレビューを構造的に強制する"
+      structure:
+        hooks: 1
+        agents: 1
+        frameworks: 1
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の自動処理"
     - name: "state"
-      description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
+      description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state.md の更新、focus の切り替え、done_criteria の判定、CRIT"
+      structure:
+        hooks: 2
     - name: "subtask-review"
       description: "subtask 完了時の 3 点検証を構造的に強制する"
+      structure:
+        hooks: 1
+        frameworks: 1
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
     - name: "understanding-check"
-      description: "description: タスク依頼時の理解確認システム（5W1H）。playbook 作成前にユー�"
+      description: "description: タスク依頼時の理解確認システム（5W1H）。playbook 作成前にユーザーの意図を確認し、リスク分析と不明点の洗い出しを行う。pm SubAgent から呼び出される。"
+      structure:
+        hooks: 1
 
 commands:
   directory: .claude/commands/
@@ -120,12 +140,12 @@ docs:
   directory: docs/
   count: 19
   files:
-    - name: "ARCHITECTURE.md"
-      description: "リポジトリの構造と各コンポーネントの関係を文書化"
     - name: "admin-contract.md"
-      description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する�"
+      description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する限定権限"
     - name: "ai-orchestration.md"
       description: "役割ベース executor 抽象化 - playbook の再利用性向上"
+    - name: "ARCHITECTURE.md"
+      description: "リポジトリの構造と各コンポーネントの関係を文書化"
     - name: "archive-operation-rules.md"
       description: "目的"
     - name: "artifact-management-rules.md"
@@ -165,10 +185,10 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 108
+      count: 112
     template:
       description: "playbook テンプレート"
-      count: 6
+      count: 5
 
 root:
   description: "ルートディレクトリの主要ファイル"
@@ -482,9 +502,87 @@ workflows:
         - ".claude/hooks/merge-pr.sh"
 
 # ==============================================================================
+# Design Philosophy
+# 拡張システムの設計思想（docs/design-philosophy.md より）
+# ==============================================================================
+
+design_philosophy:
+  description: "Hook/Skill/SubAgent の設計思想と検証フレームワーク"
+  reference: "docs/design-philosophy.md"
+
+  fuse_model:
+    name: "導火線モデル（Fuse Model）"
+    description: "イベント駆動の処理チェーン"
+    flow: "Event → Hook → Skill → SubAgent"
+    components:
+      hook:
+        role: "イベント検知と発火（導火線）"
+        trigger: "自動（イベント駆動）"
+        control: "ブロック可能（exit 2）"
+        config: "settings.json"
+      skill:
+        role: "専門知識とガイドライン提供"
+        trigger: "自動（文脈判断）"
+        control: "ブロック不可（ガイダンスのみ）"
+        config: ".claude/skills/{name}/SKILL.md"
+      subagent:
+        role: "複雑タスクの独立実行"
+        trigger: "自動/手動（Task ツール）"
+        control: "独立実行（別コンテキスト）"
+        config: ".claude/agents/{name}.md"
+
+  four_quadrant_validation:
+    name: "4QV+ 構成（Four-Quadrant Validation Plus）"
+    description: "subtask 検証の 4 象限フレームワーク"
+    quadrants:
+      Q1_technical:
+        name: "Technical（技術的正確性）"
+        checks:
+          - "コマンド実行結果確認"
+          - "ファイル存在確認"
+          - "構文エラーチェック"
+      Q2_consistency:
+        name: "Consistency（整合性）"
+        checks:
+          - "state.md との整合"
+          - "playbook との整合"
+          - "設定ファイルとの整合"
+      Q3_completeness:
+        name: "Completeness（完全性）"
+        checks:
+          - "全 done_criteria 確認"
+          - "関連ファイル更新確認"
+          - "抜け漏れチェック"
+      Q4_evidence:
+        name: "Evidence（証拠ベース検証）"
+        checks:
+          - "critic SubAgent 検証"
+          - "実行結果の記録"
+          - "タイムスタンプ付与"
+    validation_format:
+      technical: "Q1 - 技術的に正しく動作するか"
+      consistency: "Q2 - 他コンポーネントと整合性があるか"
+      completeness: "Q3 - 必要な変更が全て完了しているか"
+      note: "Q4+ は critic SubAgent が証拠ベースで実行"
+
+  integration_patterns:
+    - pattern: "Hook → Skill"
+      scenario: "セッション開始時の状態確認"
+      example: "SessionStart → session-start.sh → state Skill"
+    - pattern: "Skill → SubAgent"
+      scenario: "playbook 作成の委譲"
+      example: "plan-management Skill → pm SubAgent"
+    - pattern: "Hook → SubAgent"
+      scenario: "Phase 完了時の検証"
+      example: "critic-guard.sh → critic SubAgent"
+    - pattern: "Circular (LOOP)"
+      scenario: "タスク実行ループ"
+      example: "playbook-guard → test-runner → critic → subtask-guard → (repeat)"
+
+# ==============================================================================
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-23 23:01:09"
+  - date: "2025-12-24 00:16:39"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

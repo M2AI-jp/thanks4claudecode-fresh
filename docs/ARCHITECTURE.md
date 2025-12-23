@@ -318,14 +318,14 @@ security: admin  # 全ガードバイパス
 
 ## 12. ドキュメント整理方針
 
-### アーカイブ候補（.archive/docs/ に移動）
+### アーカイブ済み（.archive/docs/ に移動済み）
 
-| ファイル | 理由 |
-|----------|------|
-| fraud-investigation-report.md | M062 一回限りの調査レポート |
-| e2e-simulation-log.md | M062 テストログ |
-| e2e-simulation-scenarios.md | M062 テストシナリオ |
-| deprecated-references.md | 廃止参照リスト（対応完了後アーカイブ） |
+| ファイル | 理由 | アーカイブ日 |
+|----------|------|-------------|
+| fraud-investigation-report.md | M062 一回限りの調査レポート | 2025-12-18 |
+| e2e-simulation-log.md | M062 テストログ | 2025-12-18 |
+| e2e-simulation-scenarios.md | M062 テストシナリオ | 2025-12-18 |
+| deprecated-references.md | 廃止参照リスト（対応完了） | 2025-12-24 |
 
 ### 保持（必須）
 
@@ -350,7 +350,7 @@ security: admin  # 全ガードバイパス
 ## 13. 既知の問題
 
 1. ~~playbook-guard.sh が admin モード未対応~~: 修正済み（2025-12-18）
-2. **repository-map.yaml の description 切り詰め**: 一部の description が途中で切れている
+2. ~~repository-map.yaml の description 切り詰め~~: 修正済み（2025-12-24、UTF-8 対応）
 
 ---
 
@@ -361,3 +361,4 @@ security: admin  # 全ガードバイパス
 | 2025-12-18 | 初版作成（cleanup/architecture-audit） |
 | 2025-12-18 | playbook-guard.sh に admin モードチェック追加 |
 | 2025-12-18 | audit-unused.sh 作成、pm.md 修正、docs 整理（17→14） |
+| 2025-12-24 | design-philosophy.md 追加、repository-map.yaml 強化、deprecated-references.md アーカイブ |

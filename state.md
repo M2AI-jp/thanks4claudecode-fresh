@@ -17,10 +17,10 @@ current: product
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-repo-map-enhancement.md
+branch: feat/repo-map-enhancement
 last_archived: plan/archive/playbook-cleanup-project-refs.md
-review_pending: false
+review_pending: true
 ```
 
 ---
@@ -28,9 +28,14 @@ review_pending: false
 ## goal
 
 ```yaml
-phase: null
-done_criteria: []
-note: null
+phase: p0
+done_criteria:
+  - generate-repository-map.sh が description を正しく抽出し、途中で切れない
+  - repository-map.yaml に Skill パッケージ構造（hooks/, agents/, frameworks/）が記録されている
+  - repository-map.yaml に 4QV+ 構成と導火線モデルが記録されている
+  - deprecated-references.md の対応状況が確認され、必要に応じてアーカイブされている
+  - ARCHITECTURE.md のアーカイブ候補が整理されている
+note: repository-map.yaml 強化 + ドキュメント整理
 ```
 
 ---
@@ -38,8 +43,8 @@ note: null
 ## session
 
 ```yaml
-last_start: 2025-12-23 23:50:34
-last_end: 2025-12-23 21:33:11
+last_start: 2025-12-24 00:43:16
+last_end: 2025-12-24 00:43:15
 last_clear: 2025-12-13 00:30:00
 ```
 
