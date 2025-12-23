@@ -195,69 +195,21 @@ if [ -n "$PLAYBOOK" ] && [ "$PLAYBOOK" != "null" ] && [ -f "$PLAYBOOK" ]; then
 fi
 
 # ==============================================================================
-# State Injection - 常に systemMessage を出力
+# 警告のみ出力（State Injection 表示は削除）
 # ==============================================================================
 
-# JSON 用に特殊文字をエスケープ
-escape_json() {
-    echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed 's/	/\\t/g'
-}
-
-# systemMessage を構築（簡素化版 - M095: post-project.md 対応）
-SI_MESSAGE="━━━━━━━━━━━━━━━━━━━━━━━━\\n"
-SI_MESSAGE="${SI_MESSAGE}focus: $(escape_json "$SI_FOCUS")\\n"
-
-# playbook がある場合のみ詳細を出力
-if [ -n "$SI_PLAYBOOK" ] && [ "$SI_PLAYBOOK" != "null" ]; then
-    # playbook 完了状態（remaining = 0）と通常状態で表示を分岐
-    if [ "$SI_REMAINING_PH" = "0" ]; then
-        # 完了状態: 簡素な完了表示 + next action
-        SI_MESSAGE="${SI_MESSAGE}✅ playbook 完了: $(escape_json "$SI_PLAYBOOK")\\n"
-        SI_MESSAGE="${SI_MESSAGE}next: マージ → アーカイブ → /clear\\n"
-    else
-        # 通常状態: 簡素化した表示
-        SI_MESSAGE="${SI_MESSAGE}playbook: $(escape_json "$SI_PLAYBOOK")\\n"
-        SI_MESSAGE="${SI_MESSAGE}phase: $(escape_json "$SI_PHASE") (remaining: ${SI_REMAINING_PH})\\n"
-
-        # ==============================================================================
-        # M088: 未完了 Phase/subtask のリマインダー（ループ促進）
-        # ==============================================================================
-        if [ -f "$SI_PLAYBOOK" ]; then
-            # 最初の pending/in_progress Phase を検出
-            CURRENT_PHASE=$(awk '/^### p[0-9_].*:/{phase=$0} /\*\*status\*\*: (pending|in_progress)/{print phase; exit}' "$SI_PLAYBOOK" 2>/dev/null | head -1)
-
-            if [ -n "$CURRENT_PHASE" ]; then
-                # Phase ID を抽出（例: "### p1: 理解確認 Skill 作成" → "p1"）
-                PHASE_ID=$(echo "$CURRENT_PHASE" | sed 's/### \(p[0-9_a-z]*\):.*/\1/')
-
-                # 全 subtasks セクションの未完了 subtask 数をカウント（シンプル版）
-                INCOMPLETE=$(grep -c '\- \[ \] \*\*'"${PHASE_ID}"'\.' "$SI_PLAYBOOK" 2>/dev/null || echo "0")
-
-                if [ "$INCOMPLETE" -gt 0 ] 2>/dev/null; then
-                    WARNINGS="${WARNINGS}\\n\\n🔄 【LOOP】${PHASE_ID} に未完了 subtask が ${INCOMPLETE} 個あります。"
-                    WARNINGS="${WARNINGS}\\n📋 Read: ${SI_PLAYBOOK} → subtask を完了させてください。"
-                fi
-            fi
-        fi
-    fi
-else
-    SI_MESSAGE="${SI_MESSAGE}playbook: null\\n"
-fi
-
-SI_MESSAGE="${SI_MESSAGE}branch: $(escape_json "$SI_GIT_BRANCH")\\n"
-SI_MESSAGE="${SI_MESSAGE}git: $(escape_json "$SI_GIT_STATUS")\\n"
-SI_MESSAGE="${SI_MESSAGE}━━━━━━━━━━━━━━━━━━━━━━━━"
-
-# 警告があれば追加
+# 警告がある場合のみ systemMessage を出力
 if [ -n "$WARNINGS" ]; then
-    SI_MESSAGE="${SI_MESSAGE}\\n${WARNINGS}"
-fi
+    # JSON 用に特殊文字をエスケープ
+    escape_json() {
+        echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed 's/	/\\t/g'
+    }
 
-# systemMessage を JSON で出力
-cat <<EOF
+    cat <<EOF
 {
-  "systemMessage": "${SI_MESSAGE}"
+  "systemMessage": "${WARNINGS}"
 }
 EOF
+fi
 
 exit 0
