@@ -149,12 +149,15 @@ Build: OK
 
 ```yaml
 done_criteria の検証:
-  - playbook の test_method を自動実行
+  - playbook の validations（3点検証）を自動実行
   - 結果を done_criteria と照合
   - PASS/FAIL を明確に報告
 
 例:
   done_criteria: "ログイン機能が動作する"
-  test_method: "pnpm test -- auth.test.ts"
-  実行結果: PASS → done_criteria 満たす
+  validations:
+    technical: "pnpm test -- auth.test.ts を実行し PASS を確認"
+    consistency: "認証ロジックと整合性確認"
+    completeness: "全認証フローがテストされている"
+  実行結果: validations 全 PASS → done_criteria 満たす
 ```

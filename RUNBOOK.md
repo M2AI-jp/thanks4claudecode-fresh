@@ -156,7 +156,7 @@ Claude の自動対応:
 |-----------|------|
 | `hooks` | 31 Hook スクリプト一覧 |
 | `agents` | 6 SubAgent 定義一覧 |
-| `skills` | 8 Skill 一覧 |
+| `skills` | 9 Skill 一覧 |
 | `commands` | 8 コマンド一覧 |
 | `docs` | 17 ドキュメント一覧 |
 | `workflows` | 5 ワークフロー定義 |
@@ -191,9 +191,15 @@ Claude の自動対応:
 
 | Skill | Purpose |
 |-------|---------|
-| state | State file management |
-| test-runner | Run tests |
-| lint-checker | Code quality |
+| context-management | /compact 最適化と履歴要約のガイドライン |
+| deploy-checker | デプロイ準備・検証（環境変数、ビルド、セキュリティ） |
+| frontend-design | プロダクション品質のフロントエンド UI 作成 |
+| lint-checker | コード品質チェック（ESLint、TypeScript） |
+| plan-management | Multi-layer planning と playbook 管理 |
+| post-loop | playbook 完了後の自動コミット、マージ、次タスク導出 |
+| state | state.md 管理、playbook 運用、done_criteria 判定 |
+| test-runner | テスト実行・検証（Unit、E2E、型チェック、ビルド） |
+| understanding-check | タスク依頼時の理解確認（5W1H）とリスク分析 |
 
 ---
 

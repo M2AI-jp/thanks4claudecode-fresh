@@ -11,7 +11,7 @@ project: thanks4claudecode
 branch: feat/auto-merge-workflow
 created: 2025-12-22
 issue: null
-derives_from: null  # 新規機能追加
+derives_from: M088  # POST_LOOP ワークフロー完全自動化
 reviewed: true
 roles:
   worker: claudecode  # シェルスクリプト修正のため claudecode

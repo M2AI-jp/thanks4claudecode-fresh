@@ -608,11 +608,11 @@ success_criteria:
   playbooks:
     - playbook-m078-codex-mcp.md
   done_when:
-    - "[ ] .claude/mcp.json が存在し、codex mcp-server が登録されている"
-    - "[ ] codex-delegate.md が MCP ツール mcp__codex__codex を使用する形式に更新されている"
-    - "[ ] docs/ai-orchestration.md に Codex MCP の説明が追加されている"
-    - "[ ] toolstack C で簡単なコーディングタスクを Codex MCP 経由で実行し、正常に動作することが確認されている"
-    - "[ ] テスト完了後、toolstack: A に復元されている"
+    - "[x] .claude/mcp.json が存在し、codex mcp-server が登録されている"
+    - "[x] codex-delegate.md が MCP ツール mcp__codex__codex を使用する形式に更新されている"
+    - "[x] docs/ai-orchestration.md に Codex MCP の説明が追加されている"
+    - "[x] toolstack C で簡単なコーディングタスクを Codex MCP 経由で実行し、正常に動作することが確認されている"
+    - "[x] テスト完了後、toolstack: A に復元されている"
   test_commands:
     - "test -f .claude/mcp.json && grep -q 'codex' .claude/mcp.json && echo PASS || echo FAIL"
     - "grep -q 'mcp__codex__codex' .claude/agents/codex-delegate.md && echo PASS || echo FAIL"
@@ -730,9 +730,9 @@ success_criteria:
   playbooks:
     - playbook-m085-orchestration-automation.md
   done_when:
-    - "[ ] pm.md にタスク分類パターンが構造的強制として定義されている"
-    - "[ ] executor-guard.sh が SubAgent 呼び出し（Task(subagent_type='codex-delegate')）を案内している"
-    - "[ ] docs/ai-orchestration.md にオーケストレーション自動化の説明が追加されている"
+    - "[x] pm.md にタスク分類パターンが構造的強制として定義されている"
+    - "[x] executor-guard.sh が SubAgent 呼び出し（Task(subagent_type='codex-delegate')）を案内している"
+    - "[x] docs/ai-orchestration.md にオーケストレーション自動化の説明が追加されている"
   test_commands:
     - "grep -q 'タスク分類パターン' .claude/agents/pm.md && echo PASS || echo FAIL"
     - "grep -q 'Task(subagent_type' .claude/hooks/executor-guard.sh && echo PASS || echo FAIL"
@@ -753,10 +753,11 @@ success_criteria:
   playbooks:
     - playbook-m086-4qv-structure-analysis.md
   done_when:
-    - "[ ] tmp/analysis-4qv-structure.md に現状マッピング図（テキスト形式）が存在する"
-    - "[ ] tmp/analysis-4qv-structure.md に課題リストが 5 項目以上含まれている"
-    - "[ ] tmp/analysis-4qv-structure.md に改善の方向性案が記載されている"
-    - "[ ] 仮想シナリオ「ChatGPT アプリを作る」の動線検証結果が含まれている"
+    - "[x] tmp/analysis-4qv-structure.md に現状マッピング図（テキスト形式）が存在する"
+    - "[x] tmp/analysis-4qv-structure.md に課題リストが 5 項目以上含まれている"
+    - "[x] tmp/analysis-4qv-structure.md に改善の方向性案が記載されている"
+    - "[x] 仮想シナリオ「ChatGPT アプリを作る」の動線検証結果が含まれている"
+  note: "tmp/ は一時フォルダのため playbook 完了後に削除済み。分析結果は playbook 内に記録"
   test_commands:
     - "test -f tmp/analysis-4qv-structure.md && echo PASS || echo FAIL"
     - "grep -c '^- ' tmp/analysis-4qv-structure.md 2>/dev/null | awk '{if($1>=5) print \"PASS\"; else print \"FAIL\"}'"
@@ -777,18 +778,44 @@ success_criteria:
   playbooks:
     - playbook-m087-understanding-check.md
   done_when:
-    - "[ ] .claude/skills/understanding-check/ に Skill が存在する"
-    - "[ ] pm.md に理解確認呼び出しが統合されている"
-    - "[ ] project.md のスキーマが .claude/schema/project-schema.md に定義されている"
-    - "[ ] prompt-guard.sh が vision.goal を注入している"
-    - "[ ] pre-compact.sh が vision.goal を保護している"
-    - "[ ] 動作検証で理解確認 → playbook 作成フローが動く"
+    - "[x] .claude/skills/understanding-check/ に Skill が存在する"
+    - "[x] pm.md に理解確認呼び出しが統合されている"
+    - "[x] project.md のスキーマが .claude/schema/project-schema.md に定義されている"
+    - "[x] prompt-guard.sh が vision.goal を注入している"
+    - "[x] pre-compact.sh が vision.goal を保護している"
+    - "[x] 動作検証で理解確認 → playbook 作成フローが動く"
   test_commands:
-    - "test -d .claude/skills/understanding-check && test -f .claude/skills/understanding-check/instructions.md && echo PASS || echo FAIL"
+    - "test -d .claude/skills/understanding-check && test -f .claude/skills/understanding-check/SKILL.md && echo PASS || echo FAIL"
     - "grep -q '理解確認' .claude/agents/pm.md && grep -q 'understanding-check' .claude/agents/pm.md && echo PASS || echo FAIL"
     - "test -f .claude/schema/project-schema.md && wc -l .claude/schema/project-schema.md | awk '{if($1>=50) print \"PASS\"; else print \"FAIL\"}'"
     - "grep -q 'vision' .claude/hooks/prompt-guard.sh && echo PASS || echo FAIL"
     - "grep -q 'vision' .claude/hooks/pre-compact.sh && echo PASS || echo FAIL"
+
+- id: M090
+  name: "構造的整合性の根本修正"
+  description: |
+    Claude 視点でのメタ認知機能を阻害する構造問題を根本解決する。
+    1. 用語統一: done_when/done_criteria/criterion/success_indicators → 統一
+    2. テンプレート同期: 全 SKILL.md を V16 形式に更新
+    3. 設計思想の明確化: Hook/Skill/SubAgent の関係性を再定義
+    4. ドキュメント同期: repository-map.yaml, RUNBOOK.md の情報更新
+    5. 廃止された参照の削除: test_command, active_playbooks.{layer} 等
+  status: achieved
+  achieved_at: 2025-12-23
+  depends_on: [M087]
+  playbooks:
+    - playbook-m090-structural-integrity.md
+  done_when:
+    - "[x] 全 SKILL.md が V16 形式（validations ベース）に更新されている"
+    - "[x] 廃止された用語（test_command, active_playbooks.{layer}）への参照が 0 件"
+    - "[x] repository-map.yaml の skills.count が実際のディレクトリ数（9）と一致"
+    - "[x] RUNBOOK.md の Hook/SubAgent/Skill 一覧が実態と一致"
+    - "[x] docs/design-philosophy.md に Hook/Skill/SubAgent の関係性が定義されている"
+  test_commands:
+    - "grep -r 'test_command' .claude/skills/ | wc -l | awk '{if($1==0) print \"PASS\"; else print \"FAIL\"}'"
+    - "grep -r 'active_playbooks' .claude/skills/ | wc -l | awk '{if($1==0) print \"PASS\"; else print \"FAIL\"}'"
+    - "grep 'count: 9' docs/repository-map.yaml && echo PASS || echo FAIL"
+    - "test -f docs/design-philosophy.md && wc -l docs/design-philosophy.md | awk '{if($1>=50) print \"PASS\"}'"
 
 - id: M088
   name: "POST_LOOP ワークフロー完全自動化"
@@ -798,7 +825,7 @@ success_criteria:
     2. PR 作成からマージ、main push までを自動で一連実行
     3. Phase-level status 監視を subtask-guard.sh に追加（M087 で実施済み）
   status: not_started
-  depends_on: [M087]
+  depends_on: [M090]
   playbooks:
     - playbook-m088-post-loop-automation.md
   done_when:
@@ -814,7 +841,7 @@ success_criteria:
   description: |
     既存テストの弱いアサーションを厳格化し、E2E テストを強化する。
   status: not_started
-  depends_on: [M087]
+  depends_on: [M090]
   playbooks:
     - playbook-test-strengthening.md
   done_when:
@@ -822,6 +849,24 @@ success_criteria:
     - "[ ] exit code を条件としない「処理された」パターンが削除されている"
     - "[ ] 各テストが明確な期待値を持ち、それ以外は FAIL する"
     - "[ ] bash scripts/test-workflows.sh が全テスト PASS で終了する"
+
+- id: M091
+  name: "POST_LOOP 処理順序修正"
+  description: |
+    POST_LOOP で milestone 更新（step 3）が playbook-guard によりブロックされる問題を修正。
+    原因: step 0.5 で playbook.active = null に設定された後に step 3 で project.md を編集しようとするため。
+    解決策: milestone 更新を playbook アーカイブの前に移動する。
+  status: in_progress
+  depends_on: [M090]
+  playbooks:
+    - playbook-m091-post-loop-order-fix.md
+  done_when:
+    - "[ ] post-loop/SKILL.md の step 3（project.milestone 更新）が step 0.5（アーカイブ）の前に移動している"
+    - "[ ] ステップ番号が適切にリナンバリングされている"
+    - "[ ] 変更理由がコメントとして記載されている"
+  test_commands:
+    - "grep -n 'project.milestone' .claude/skills/post-loop/SKILL.md | head -1 | cut -d: -f1"
+    - "grep -n 'アーカイブ' .claude/skills/post-loop/SKILL.md | head -1 | cut -d: -f1"
 
 ```
 

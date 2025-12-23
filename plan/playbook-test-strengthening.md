@@ -13,7 +13,7 @@ project: thanks4claudecode
 branch: feat/test-strengthening
 created: 2025-12-23
 issue: null
-derives_from: M082  # テスト強化（新規マイルストーン）
+derives_from: M089  # テストアサーション強化
 reviewed: true  # 2025-12-23 reviewer PASS
 roles:
   worker: claudecode  # テストコード修正は claudecode で実行

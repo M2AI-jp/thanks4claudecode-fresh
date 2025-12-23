@@ -92,30 +92,45 @@ playbook 自体の妥当性: {問題なし|修正が必要}
   - 「計画なしで作業 → 自己報酬詐欺」の防止
 ```
 
-## playbook 作成テンプレート
+## playbook 作成テンプレート（V16 形式）
 
-```yaml
+```markdown
 # plan/playbook-{name}.md
 
 ## meta
+
+```yaml
 project: {プロジェクト名}
-branch: {ブランチ名}
+branch: {type}/{description}
 created: {今日の日付}
 derives_from: {project.milestone の ID}
+reviewed: false
+```
 
 ## goal
+
+```yaml
 summary: {1行の目標}
 done_when:
   - {最終完了条件1}
   - {最終完了条件2}
+```
 
 ## phases
-- id: p1
-  name: {フェーズ名}
-  goal: {このフェーズの目標}
-  executor: claudecode
-  done_criteria:
-    - {完了条件1}
-    - {完了条件2}
-  status: pending
+
+### p1: {フェーズ名}
+
+**goal**: {このフェーズの目標}
+
+#### subtasks
+
+- [ ] **p1.1**: {対象} が {状態} である
+  - executor: claudecode
+  - validations:
+    - technical: "{技術的に正しく動作するか}"
+    - consistency: "{他コンポーネントと整合性があるか}"
+    - completeness: "{必要な変更が全て完了しているか}"
+
+**status**: pending
+**max_iterations**: 5
 ```

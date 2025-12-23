@@ -18,10 +18,10 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
-last_archived: plan/archive/playbook-m087-understanding-check.md
-review_pending: false
+active: plan/playbook-m091-post-loop-order-fix.md
+branch: feat/understanding-check-reimpl
+last_archived: plan/archive/playbook-m090-structural-integrity.md
+review_pending: true
 ```
 
 ---
@@ -29,10 +29,13 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-note: M085-M087 完了。次は M088 (POST_LOOP ワークフロー完全自動化)
+milestone: M091
+phase: p1
+done_criteria:
+  - post-loop/SKILL.md の step 3 が step 0.5 の前に移動している
+  - ステップ番号が適切にリナンバリングされている
+  - 変更理由がコメントとして記載されている
+note: POST_LOOP 処理順序修正
 ```
 
 ---
@@ -40,8 +43,8 @@ note: M085-M087 完了。次は M088 (POST_LOOP ワークフロー完全自動�
 ## session
 
 ```yaml
-last_start: 2025-12-23 17:53:08
-last_end: 2025-12-23 17:27:09
+last_start: 2025-12-23 19:17:45
+last_end: 2025-12-23 18:22:19
 last_clear: 2025-12-13 00:30:00
 ```
 

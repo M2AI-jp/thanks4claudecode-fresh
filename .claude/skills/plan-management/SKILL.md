@@ -30,8 +30,7 @@ roadmap (最上位)
 2. Check existing playbooks in plan/
 3. Create playbook using plan/template/playbook-format.md
 4. Update state.md:
-   - active_playbooks.{layer}: path/to/playbook
-   - layer.{layer}.playbook: path/to/playbook
+   - playbook.active: path/to/playbook
 5. Commit playbook
 ```
 
@@ -48,7 +47,7 @@ roadmap (最上位)
 
 Phase 完了条件:
   1. done_criteria の全項目に証拠がある
-  2. test_method を実際に実行した
+  2. validations（3点検証）が全て PASS である
   3. critic が PASS を返した
 ```
 

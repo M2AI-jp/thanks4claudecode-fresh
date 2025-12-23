@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-23 03:32:42"
+  generated: "2025-12-23 19:24:26"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 271
+  total_files: 295
 
 hooks:
   directory: .claude/hooks/
@@ -70,7 +70,7 @@ skills:
   invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
   usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
   auto_invoke: true
-  count: 8
+  count: 9
   files:
     - name: "context-management"
       description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
@@ -88,6 +88,8 @@ skills:
       description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
+    - name: "understanding-check"
+      description: "description: タスク依頼時の理解確認システム（5W1H）。playbook 作成前にユー�"
 
 commands:
   directory: .claude/commands/
@@ -114,7 +116,7 @@ commands:
 
 docs:
   directory: docs/
-  count: 18
+  count: 19
   files:
     - name: "ARCHITECTURE.md"
       description: "リポジトリの構造と各コンポーネントの関係を文書化"
@@ -134,6 +136,8 @@ docs:
       description: "> このファイルは「古い表記」を特定するための基準を定義する。"
     - name: "deprecated-references.md"
       description: "> このファイルは「古い表記」を含むファイルを記録する。"
+    - name: "design-philosophy.md"
+      description: "Claude Code ワークスペースにおける拡張システムの設計思想を定義"
     - name: "extension-system.md"
       description: "公式リファレンスに基づく発火タイミング・トリガー・連携の完全ガイド"
     - name: "folder-management.md"
@@ -159,7 +163,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 95
+      count: 105
     template:
       description: "playbook テンプレート"
       count: 6
@@ -477,6 +481,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-23 03:32:42"
+  - date: "2025-12-23 19:24:26"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
