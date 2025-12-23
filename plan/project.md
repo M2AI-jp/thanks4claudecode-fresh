@@ -771,8 +771,9 @@ success_criteria:
     2. pm.md に理解確認呼び出しを統合
     3. project.md のスキーマを定義
     4. prompt-guard.sh と pre-compact.sh で vision.goal を保護
-  status: not_started
+  status: achieved
   depends_on: [M086]
+  note: "M088 で報酬詐欺防止（Phase-level status monitoring）を追加実施"
   playbooks:
     - playbook-m087-understanding-check.md
   done_when:

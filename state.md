@@ -18,10 +18,10 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: plan/playbook-m087-understanding-check.md
+active: null
 branch: feat/understanding-check-reimpl
-last_archived: plan/archive/playbook-m085-orchestration-automation.md
-review_pending: true
+last_archived: plan/archive/playbook-m087-understanding-check.md
+review_pending: false
 ```
 
 ---
