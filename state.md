@@ -17,9 +17,9 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-4qv-e2e-verification-v13.md
+active: plan/playbook-4qv-e2e-verification-v14.md
 branch: refactor/4qv-architecture-rebuild
-last_archived: plan/archive/playbook-4qv-e2e-verification-v12.md
+last_archived: plan/archive/playbook-4qv-e2e-verification-v13.md
 review_pending: false
 ```
 
