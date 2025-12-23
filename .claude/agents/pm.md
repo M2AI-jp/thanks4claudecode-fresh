@@ -1,0 +1,1 @@
+/Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/plan-management/agents/pm.md

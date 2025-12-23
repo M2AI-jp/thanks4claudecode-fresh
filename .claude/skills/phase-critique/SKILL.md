@@ -46,19 +46,25 @@ Phase を完了（state: done）としてマークする際、critic エージ�
 flow:
   1. Claude が Phase を done としてマーク（Edit）
   2. critic-enforcer.sh が PreToolUse で発火
-  3. state: done への変更を検出
-  4. self_complete: true フラグの有無をチェック
+  3. playbook 内の **status**: done への変更を検出
+  4. critic_approved: true フラグの有無をチェック
   5. フラグなし → exit 2（ブロック）
   6. Claude が critic SubAgent を呼び出し
-  7. critic が done_criteria を評価（done-criteria-validation.md 参照）
-  8. PASS → self_complete: true を設定
+  7. critic が subtasks の validations を評価（done-criteria-validation.md 参照）
+  8. PASS → Phase に **critic_approved**: true を追加
   9. FAIL → 修正ループ
-  10. self_complete: true → state: done への変更許可
+  10. **critic_approved**: true があれば **status**: done への変更許可
 
 enforcement:
-  - critic PASS なしで state: done → exit 2（ブロック）
+  - critic PASS なしで **status**: done → exit 2（ブロック）
   - 証拠なしの PASS 判定は不可
   - 5 項目の妥当性チェック必須
+
+trigger_conditions:
+  - File: plan/playbook-*.md
+  - Old: **status**: (pending|in_progress)
+  - New: **status**: done
+  - Bypass: **critic_approved**: true が含まれる
 ```
 
 ---

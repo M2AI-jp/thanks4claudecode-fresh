@@ -88,6 +88,11 @@
             "type": "command",
             "command": "bash .claude/skills/subtask-review/hooks/subtask-validator.sh",
             "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/skills/understanding-check/hooks/understanding-enforcer.sh",
+            "timeout": 3000
           }
         ]
       },
@@ -128,6 +133,11 @@
             "type": "command",
             "command": "bash .claude/hooks/subtask-guard.sh",
             "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/skills/understanding-check/hooks/understanding-enforcer.sh",
+            "timeout": 3000
           }
         ]
       },
@@ -159,6 +169,11 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/prompt-guard.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/skills/understanding-check/hooks/pre-playbook-understanding.sh",
             "timeout": 3000
           }
         ]

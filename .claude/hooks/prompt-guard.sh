@@ -162,6 +162,11 @@ if [ -z "$PLAYBOOK" ] || [ "$PLAYBOOK" = "null" ]; then
         WARNINGS="${WARNINGS}\\n⛔ 返答を始めてはいけない。まず pm を呼び出してください。"
         WARNINGS="${WARNINGS}\\n\\n実行すべきアクション:"
         WARNINGS="${WARNINGS}\\n  Task(subagent_type='pm', prompt='playbook を作成')"
+        WARNINGS="${WARNINGS}\\n\\n📋 pm は理解確認（5W1H）を必ず実施します:"
+        WARNINGS="${WARNINGS}\\n  - What/Why/Who/When/Where/How の分析"
+        WARNINGS="${WARNINGS}\\n  - リスク分析と対策の提示"
+        WARNINGS="${WARNINGS}\\n  - 不明点の洗い出し"
+        WARNINGS="${WARNINGS}\\n  - ユーザー承認後に playbook 作成"
         WARNINGS="${WARNINGS}\\n\\n理由: CLAUDE.md Core Contract により、playbook なしでの作業は禁止されています。"
     fi
 fi

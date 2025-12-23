@@ -164,5 +164,49 @@ EOF
     exit 2
 fi
 
-# validations がある場合は許可
+# ==============================================================================
+# 3 点検証の完全性チェック（technical, consistency, completeness）
+# ==============================================================================
+MISSING_FIELDS=""
+
+if [[ "$NEW_STRING" != *"technical:"* ]]; then
+    MISSING_FIELDS="${MISSING_FIELDS}- technical\n"
+fi
+
+if [[ "$NEW_STRING" != *"consistency:"* ]]; then
+    MISSING_FIELDS="${MISSING_FIELDS}- consistency\n"
+fi
+
+if [[ "$NEW_STRING" != *"completeness:"* ]]; then
+    MISSING_FIELDS="${MISSING_FIELDS}- completeness\n"
+fi
+
+if [[ -n "$MISSING_FIELDS" ]]; then
+    cat >&2 << EOF
+========================================
+  [subtask-validator] 不完全な検証
+========================================
+
+  validations フィールドに以下の検証が不足しています:
+
+$(echo -e "$MISSING_FIELDS")
+
+  3 点検証が全て必要です:
+
+  - [x] **pN.M**: criterion が満たされている
+    - executor: claudecode
+    - validations:
+      - technical: "PASS - 技術的検証の詳細"
+      - consistency: "PASS - 整合性検証の詳細"
+      - completeness: "PASS - 完全性検証の詳細"
+    - validated: $(date -u +%Y-%m-%dT%H:%M:%S)
+
+  参照: .claude/skills/subtask-review/frameworks/subtask-validation-rules.md
+
+========================================
+EOF
+    exit 2
+fi
+
+# validations が完全な場合は許可
 exit 0

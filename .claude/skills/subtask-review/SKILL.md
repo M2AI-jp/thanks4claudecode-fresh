@@ -50,11 +50,13 @@ flow:
   2. subtask-validator.sh が PreToolUse で発火
   3. 変更が subtask 完了変更か判定
   4. validations フィールドの有無をチェック
-  5. validations なし → exit 2（ブロック）
-  6. validations あり → exit 0（許可）
+  5. 3 点検証（technical/consistency/completeness）の完全性をチェック
+  6. validations なし or 不完全 → exit 2（ブロック）
+  7. validations 完全 → exit 0（許可）
 
 enforcement:
   - subtask 完了時に validations 必須（exit 2 でブロック）
+  - 3 点検証の完全性チェック（technical/consistency/completeness が全て存在）
   - Phase 完了時に全 subtask 完了を確認（未完了あれば exit 2）
   - final_tasks の変更は例外（validations 不要）
 ```

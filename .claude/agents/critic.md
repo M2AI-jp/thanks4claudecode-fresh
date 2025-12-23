@@ -1,0 +1,1 @@
+/Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/phase-critique/agents/critic.md
