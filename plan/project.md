@@ -856,14 +856,15 @@ success_criteria:
     POST_LOOP で milestone 更新（step 3）が playbook-guard によりブロックされる問題を修正。
     原因: step 0.5 で playbook.active = null に設定された後に step 3 で project.md を編集しようとするため。
     解決策: milestone 更新を playbook アーカイブの前に移動する。
-  status: in_progress
+  status: achieved
+  achieved_at: 2025-12-23
   depends_on: [M090]
   playbooks:
     - playbook-m091-post-loop-order-fix.md
   done_when:
-    - "[ ] post-loop/SKILL.md の step 3（project.milestone 更新）が step 0.5（アーカイブ）の前に移動している"
-    - "[ ] ステップ番号が適切にリナンバリングされている"
-    - "[ ] 変更理由がコメントとして記載されている"
+    - "[x] post-loop/SKILL.md の step 3（project.milestone 更新）が step 0.5（アーカイブ）の前に移動している"
+    - "[x] ステップ番号が適切にリナンバリングされている"
+    - "[x] 変更理由がコメントとして記載されている"
   test_commands:
     - "grep -n 'project.milestone' .claude/skills/post-loop/SKILL.md | head -1 | cut -d: -f1"
     - "grep -n 'アーカイブ' .claude/skills/post-loop/SKILL.md | head -1 | cut -d: -f1"
