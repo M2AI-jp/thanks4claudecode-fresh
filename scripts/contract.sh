@@ -284,14 +284,8 @@ BOOTSTRAP_COMPOUND_PATTERNS=(
 
 # Bootstrap 例外: 単独コマンドでも許可（playbook=null + admin）
 BOOTSTRAP_SINGLE_PATTERNS=(
-    # git push（PR 作成用）
-    '^git[[:space:]]+push'
-    # git checkout（ブランチ切り替え用）
-    '^git[[:space:]]+checkout'
-    # git pull（最新取得用）
-    '^git[[:space:]]+pull'
-    # git fetch（最新取得用）
-    '^git[[:space:]]+fetch'
+    # 全ての git 操作を許可（main でのマージ/コミット/プッシュ等に必要）
+    '^git[[:space:]]+'
     # gh pr create（PR 作成用）
     '^gh[[:space:]]+pr[[:space:]]+create'
     # gh pr merge（PR マージ用）

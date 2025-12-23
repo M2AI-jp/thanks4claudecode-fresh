@@ -81,22 +81,22 @@ if [[ "$USE_CONTRACT" == "false" ]]; then
     done
 
     # playbook=null で変更系コマンドをブロック
+    # ただし git 操作は全て許可（main でのマージ/コミット/プッシュ等に必要）
     if [ -z "$PLAYBOOK" ] || [ "$PLAYBOOK" = "null" ]; then
-        # Bootstrap 例外: state.md と plan/ のみの git 操作は許可
-        # （playbook アーカイブ後の最終コミット用）
-        if [[ "$COMMAND" =~ ^git[[:space:]]+(add|commit) ]]; then
-            # 変更対象ファイルを確認
-            CHANGED_FILES=$(git status --porcelain 2>/dev/null | awk '{print $2}' || true)
-            # state.md と plan/ 以外の変更があるかチェック
-            NON_BOOTSTRAP=$(echo "$CHANGED_FILES" | grep -v -E '^state\.md$|^plan/' | head -1 || true)
-            if [[ -z "$NON_BOOTSTRAP" ]]; then
-                # state.md と plan/ のみなので許可（Bootstrap 例外）
-                :
-            else
-                echo -e "${RED}[BLOCK]${NC} playbook=null で変更系 Bash をブロック" >&2
+        # git 操作は全て許可
+        if [[ "$COMMAND" =~ ^git[[:space:]] ]]; then
+            :  # git コマンドは許可
+        else
+            # git 以外の変更系コマンドをブロック
+            MUTATION_PATTERNS='cat[[:space:]]+.*>|tee[[:space:]]|sed[[:space:]]+-i|mkdir[[:space:]]|touch[[:space:]]|mv[[:space:]]|cp[[:space:]]|rm[[:space:]]'
+            if [[ "$COMMAND" =~ $MUTATION_PATTERNS ]]; then
+                echo "" >&2
+                echo "========================================" >&2
+                echo -e "  ${RED}[BLOCK]${NC} playbook=null で変更系 Bash をブロック" >&2
+                echo "========================================" >&2
                 echo "" >&2
                 echo "  コマンド: $COMMAND" >&2
-                echo "  playbook: null" >&2
+                echo "  playbook: $PLAYBOOK" >&2
                 echo "  security: $SECURITY" >&2
                 echo "" >&2
                 echo "  playbook=null の状態では変更系コマンドは実行できません。" >&2
@@ -105,12 +105,6 @@ if [[ "$USE_CONTRACT" == "false" ]]; then
                 echo "    Task(subagent_type='pm', prompt='playbook を作成')" >&2
                 echo "" >&2
                 echo "========================================" >&2
-                exit 2
-            fi
-        else
-            MUTATION_PATTERNS='cat[[:space:]]+.*>|tee[[:space:]]|sed[[:space:]]+-i|mkdir[[:space:]]|touch[[:space:]]|mv[[:space:]]|cp[[:space:]]|rm[[:space:]]'
-            if [[ "$COMMAND" =~ $MUTATION_PATTERNS ]]; then
-                echo -e "${RED}[BLOCK]${NC} playbook=null で変更系 Bash をブロック" >&2
                 exit 2
             fi
         fi

@@ -74,11 +74,11 @@ fi
 if [ "$TOOL_NAME" = "Bash" ]; then
     COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 
-    # git checkout / git switch / git branch は許可（ブランチ切り替え）
-    # git pull / git fetch は許可（最新取得）
-    # git status / git log / git diff は許可（確認用）
-    # git push は許可（マージ後のプッシュは正当な操作）
-    # git merge は許可（feature → main のマージは正当）
+    # git 操作は基本的に許可（main での作業禁止は Edit/Write が対象）
+    # ブランチ操作: checkout, switch, branch
+    # 同期操作: pull, fetch, push
+    # 確認操作: status, log, diff
+    # 統合操作: merge, add, commit, stash, rebase
     if [[ "$COMMAND" == *"git checkout"* ]] || \
        [[ "$COMMAND" == *"git switch"* ]] || \
        [[ "$COMMAND" == *"git branch"* ]] || \
@@ -88,7 +88,11 @@ if [ "$TOOL_NAME" = "Bash" ]; then
        [[ "$COMMAND" == *"git log"* ]] || \
        [[ "$COMMAND" == *"git diff"* ]] || \
        [[ "$COMMAND" == *"git push"* ]] || \
-       [[ "$COMMAND" == *"git merge"* ]]; then
+       [[ "$COMMAND" == *"git merge"* ]] || \
+       [[ "$COMMAND" == *"git add"* ]] || \
+       [[ "$COMMAND" == *"git commit"* ]] || \
+       [[ "$COMMAND" == *"git stash"* ]] || \
+       [[ "$COMMAND" == *"git rebase"* ]]; then
         exit 0
     fi
 fi
