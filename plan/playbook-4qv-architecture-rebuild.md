@@ -548,9 +548,11 @@ rollback:
   - command: `find tmp/ -type f ! -name 'README.md' -delete 2>/dev/null || true`
   - status: done
 
-- [ ] **ft3**: 変更を全てコミットする
-  - command: `git add -A && git status`
-  - status: pending
+- [x] **ft3**: 変更を全てコミットする
+  - command: `git commit`
+  - status: done
+  - commit: "3e42bad refactor: 4QV+ architecture rebuild - 31 hooks to 4 fuse + 7 Skills"
+  - stats: "85 files changed, 2367 insertions(+), 4457 deletions(-)"
 
 ---
 
