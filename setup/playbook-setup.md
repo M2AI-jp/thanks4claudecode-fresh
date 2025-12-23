@@ -51,8 +51,8 @@ claude .
   docs/: ドキュメント体系の実例
 
 学習の流れ:
-  1. まず setup を完了（Phase 0-8）
-  2. plan/project.md を生成
+  1. まず setup を完了（Phase 0-7）
+  2. 作りたい機能を伝え、playbook を作成
   3. 実際にプロダクトを開発しながら仕組みを体験
   4. 必要に応じて .claude/ の中身を参照・カスタマイズ
 
@@ -85,7 +85,6 @@ done_when:
   - プロジェクトがローカルで動作する
   - Vercel にデプロイ済み
   - .claude/skills/ に Skills が存在する（事前配置済み）
-  - plan/project.md が生成されている
   - focus.current が product に切り替わっている
 ```
 
@@ -238,12 +237,12 @@ LLM の行動（選択後）:
 原則:
   - 初心者: デフォルト推奨、技術選択は聞かない
   - 経験者: 技術選択・非機能要件を確認
-  - どちらの場合も決定を plan/project.md に永続化
-  - LLM は plan/project.md の決定に従い続ける
+  - 決定は playbook 内または state.md に記録
+  - LLM は state.md を参照して一貫性を維持
 
 LLM の性質を活用:
   - 最初に決めたことに引っ張られる → setup で全て決める
-  - plan/project.md をセッション開始時に読む → 決定が維持される
+  - state.md をセッション開始時に読む → 決定が維持される
   - 曖昧さを排除 → 後のセッションで迷わない
 ```
 
@@ -313,19 +312,18 @@ LLM の性質を活用:
 
 ```yaml
 構造:
-  project（project.md）→ playbook → phase
+  playbook → phase（二層構造）
 
 フロー:
-  1. project.md の done_when を分析
-  2. depends_on を解決し、着手可能なタスクを特定
-  3. decomposition を参照して playbook を自動生成
-  4. Phase ごとに done_criteria を検証
-  5. playbook 完了 → project.md の done_when を achieved に
-  6. 次の playbook を自動導出
+  1. ユーザーの要求を分析
+  2. pm SubAgent が playbook を作成
+  3. Phase ごとに done_criteria を検証
+  4. playbook 完了 → アーカイブ
+  5. 次の playbook を作成（必要に応じて）
 
 必須経由点:
   - 全タスク開始は pm SubAgent 経由
-  - derives_from なしの playbook は禁止
+  - playbook なしの Edit/Write は禁止
 ```
 
 ### コンテキスト外部化
@@ -336,7 +334,7 @@ LLM の性質を活用:
   - LLM が「何をやっているか」が不明確になる
 
 解決:
-  - state.md / project.md / playbook を唯一の真実源に
+  - state.md / playbook を唯一の真実源に
   - チャット履歴に依存しない
   - .claude/logs/context-log.md で処理経過を記録
   - 80% コンテキスト超過時は /clear を推奨
@@ -774,7 +772,7 @@ omakase_stack:
 1. 経験者: 4層 → 認証・決済 → 費用概算 → 非機能要件 の順で質問
 2. 初心者: 「おまかせ構成」を適用、質問しない
 3. 「デフォルト」「スキップ」→ デフォルト値を使用
-4. 全ての決定を内部で記録（Phase 8 で project.md に書き出し）
+4. 全ての決定を内部で記録（playbook 作成時に参照）
 5. 費用概算は必ず提示する（初心者にも）
 
 ---
@@ -1314,18 +1312,14 @@ status: pending
 ```yaml
 id: p8
 name: 開発移行
-goal: Skills を確認し、plan/project.md を生成し、product レイヤーへ移行
+goal: Skills を確認し、product レイヤーへ移行
 executor: llm
 depends_on: [p7]
 done_criteria:
   - .claude/skills/lint-checker/ が存在する（事前配置済み）
   - .claude/skills/test-runner/ が存在する（事前配置済み）
   - .claude/skills/deploy-checker/ が存在する（事前配置済み）
-  - plan/template/project-format.md を読んだ
-  - plan/project.md が生成されている（tech_decisions, non_functional_requirements 含む）
-  - state.md の project_context.generated が true
   - state.md の focus.current が product
-  - layer.setup.state が done
 status: pending
 ```
 
@@ -1343,27 +1337,10 @@ status: pending
    ```
    ※ Skills は .claude/skills/ に事前配置されている。新規生成は不要。
 
-2. `plan/template/project-format.md` を読む
-3. `plan/project.md` を生成:
-   - **meta**: プロジェクト名、作成日、タイプ、場所
-   - **vision**: ユーザーの意図、成功の定義
-   - **tech_decisions**: 開発言語、フレームワーク、ライブラリ、デプロイ先（Phase 1-A で決定 or デフォルト）
-   - **non_functional_requirements**: 規模、パフォーマンス、セキュリティ、可用性、予算、期間
-   - **stack**: tech_decisions から導出した最終構成
-   - **constraints**: 制約条件
-   - **milestones**: マイルストーン
-
-3. **重要**: tech_decisions と non_functional_requirements は必ず記載
-   - 初心者ルート → デフォルト値を記載（理由: 「デフォルト推奨に従った」）
-   - 経験者ルート → Phase 1-A の回答を記載
-
-4. `state.md` を更新:
-   - `project_context.generated: true`
-   - `project_context.project_plan: plan/project.md`
-   - `layer.setup.state: done`
+2. `state.md` を更新:
    - `focus.current: product`
 
-5. 完了メッセージ:
+3. 完了メッセージ:
    ```
    おめでとうございます！
    開発環境のセットアップが完了しました。
@@ -1378,17 +1355,9 @@ status: pending
    - フレームワーク: {framework}
    - デプロイ: {deploy}
 
-   技術選択と非機能要件は plan/project.md に記録しました。
-   今後の開発はこの設定に基づいて進めます。
-
    追加したい機能があれば教えてください。
-   開発計画（playbook）を作成します。
+   playbook を作成して開発を進めます。
    ```
-
-**tech_decisions 永続化の意図:**
-- LLM は次セッション以降も plan/project.md を読む
-- 最初に決めた技術選択に引っ張られ続ける
-- 一貫性のある開発が可能になる
 
 ---
 
@@ -1565,11 +1534,11 @@ critic が FAIL を返したら:
   例: projects/my-ai-chat/
 
 開発計画:
-  dev-workspace のルートに plan/project.md を生成
-  プロジェクトコードとは別の場所
+  plan/ に playbook を作成
+  機能追加ごとに playbook を作成して進行
 
 Skills:
-  .claude/skills/ に自動生成
+  .claude/skills/ に事前配置済み
   lint-checker, test-runner, deploy-checker
 ```
 
