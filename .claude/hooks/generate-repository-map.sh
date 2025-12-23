@@ -294,12 +294,11 @@ workflows:
       name: "INIT"
       why: |
         LLM は状態を保持しないため、毎セッション開始時に現在地を再認識する必要がある。
-        state.md/project.md/playbook の強制読み込みにより、コンテキストを確実に復元する。
+        state.md/playbook の強制読み込みにより、コンテキストを確実に復元する。
       when: "SessionStart 発火時"
       input:
         - "ユーザーの最初のプロンプト"
         - "state.md（focus, playbook, goal）"
-        - "plan/project.md（milestones）"
         - "playbook（active な場合）"
       process:
         hooks:
@@ -310,7 +309,7 @@ workflows:
         skills: []
         claude_md: "INIT セクション → [自認] 出力"
       output:
-        - "[自認] ブロック（what, milestone, phase, branch...）"
+        - "[自認] ブロック（what, phase, branch...）"
         - "pending ファイル削除"
       references:
         - ".claude/hooks/session-start.sh"
@@ -318,7 +317,6 @@ workflows:
         - ".claude/hooks/check-main-branch.sh"
         - "CLAUDE.md"
         - "state.md"
-        - "plan/project.md"
 
     - id: work_loop
       name: "LOOP"
@@ -356,12 +354,12 @@ workflows:
     - id: post_loop
       name: "POST_LOOP"
       why: |
-        playbook 完了時に自動でアーカイブ、project.milestone 更新、次 playbook 作成を行う。
+        playbook 完了時に自動でアーカイブ、次 playbook 作成を行う。
         手動操作なしで継続的な進捗を実現する。
       when: "playbook の全 phase が done"
       input:
         - "playbook（全 phase done）"
-        - "project.md（milestone）"
+        - "state.md"
       process:
         hooks:
           - "archive-playbook.sh: アーカイブ提案"
@@ -371,11 +369,10 @@ workflows:
           - "pm: 次 playbook 作成"
         skills:
           - "post-loop: 完了処理"
-        claude_md: "POST_LOOP セクション → milestone 更新"
+        claude_md: "POST_LOOP セクション → 完了処理"
       output:
         - "playbook アーカイブ（plan/archive/）"
         - "state.md 更新（playbook.active = null）"
-        - "project.md 更新（milestone.status = achieved）"
         - "次 playbook（存在する場合）"
         - "/clear 推奨アナウンス"
       references:
@@ -385,7 +382,6 @@ workflows:
         - ".claude/agents/pm.md"
         - ".claude/skills/post-loop/"
         - "CLAUDE.md"
-        - "plan/project.md"
 
     - id: critique_process
       name: "CRITIQUE"
@@ -414,32 +410,28 @@ workflows:
         - ".claude/frameworks/done-criteria-validation.md"
         - "CLAUDE.md"
 
-    - id: project_complete
-      name: "PROJECT_COMPLETE"
+    - id: merge_flow
+      name: "MERGE"
       why: |
-        全 milestone 達成時に feature ブランチを main にマージし、GitHub にプッシュ。
+        playbook 完了後、feature ブランチを main にマージし、GitHub にプッシュ。
         state.md を neutral 状態にリセットして次の作業に備える。
-      when: "全 milestone が status: achieved"
+      when: "playbook 完了後、ユーザーがマージを要求"
       input:
-        - "project.md（全 milestone の status）"
         - "現在の feature ブランチ"
         - "state.md"
       process:
         hooks:
           - "merge-pr.sh: main マージ"
-        subagents:
-          - "pm: 全 milestone 達成を検出"
+        subagents: []
         skills:
           - "post-loop: 完了処理"
-        claude_md: "POST_LOOP#PROJECT_COMPLETE"
+        claude_md: "POST_LOOP セクション"
       output:
         - "main ブランチにマージ"
         - "GitHub にプッシュ"
         - "state.md neutral 状態"
-        - "PROJECT 完了アナウンス"
         - "/clear 推奨"
       references:
-        - "plan/project.md"
         - "CLAUDE.md"
         - ".claude/hooks/merge-pr.sh"
 WORKFLOWS_HEADER
@@ -482,7 +474,7 @@ system_specification:
   behavior_rules:
     description: "CLAUDE.md から抽出した行動ルール"
     core_principles:
-      - "pdca_autonomy: playbook 完了 → milestone 更新 → 次 playbook 自動作成"
+      - "pdca_autonomy: playbook 完了 → 次 playbook 自動作成"
       - "tdd_first: done_criteria = テスト仕様、根拠必須"
       - "validation: critic は frameworks/ を参照"
       - "plan_based: playbook=null で Edit/Write → ブロック"

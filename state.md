@@ -17,8 +17,8 @@ current: product
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-cleanup-milestone-residue.md
+branch: refactor/cleanup-milestone-residue
 last_archived: plan/archive/playbook-refactor-remove-project.md
 review_pending: false
 ```
@@ -28,9 +28,12 @@ review_pending: false
 ## goal
 
 ```yaml
-phase: null
-done_criteria: []
-note: null
+phase: p0
+done_criteria:
+  - get_current_milestone の呼び出し箇所が存在しない
+  - get_roadmap_milestone の呼び出し箇所が存在しない
+  - plan/project.md が存在しない
+note: 使用状況の検証フェーズ
 ```
 
 ---

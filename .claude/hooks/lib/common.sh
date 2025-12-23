@@ -65,15 +65,6 @@ get_playbook() {
     fi
 }
 
-# plan_hierarchy.current_milestone を取得
-get_current_milestone() {
-    if [ -f "$STATE_MD" ]; then
-        grep -A20 "^## plan_hierarchy" "$STATE_MD" | grep "current_milestone:" | head -1 | sed 's/.*current_milestone:[[:space:]]*//' | sed 's/[[:space:]]*#.*//'
-    else
-        echo ""
-    fi
-}
-
 # plan_hierarchy.current_phase を取得
 get_current_phase() {
     if [ -f "$STATE_MD" ]; then
@@ -116,15 +107,6 @@ has_unpushed_commits() {
 # ------------------------------------------------------------------------------
 # roadmap 関連関数
 # ------------------------------------------------------------------------------
-
-# roadmap.current_focus.milestone を取得
-get_roadmap_milestone() {
-    if [ -f "$ROADMAP_MD" ]; then
-        grep -A5 "^## current_focus" "$ROADMAP_MD" | grep "milestone:" | head -1 | sed 's/.*milestone:[[:space:]]*//' | sed 's/[[:space:]]*#.*//'
-    else
-        echo ""
-    fi
-}
 
 # roadmap.current_focus.next_actions を取得（配列として）
 get_roadmap_next_actions() {
