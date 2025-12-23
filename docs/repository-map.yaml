@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-24 00:16:39"
+  generated: "2025-12-24 01:09:04"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 313
+  total_files: 307
 
 hooks:
   directory: .claude/hooks/
@@ -138,7 +138,7 @@ commands:
 
 docs:
   directory: docs/
-  count: 19
+  count: 18
   files:
     - name: "admin-contract.md"
       description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する限定権限"
@@ -156,8 +156,6 @@ docs:
       description: "criterion（done_criteria の単位）の検証ルール"
     - name: "current-definitions.md"
       description: "> このファイルは「古い表記」を特定するための基準を定義する。"
-    - name: "deprecated-references.md"
-      description: "> このファイルは「古い表記」を含むファイルを記録する。"
     - name: "design-philosophy.md"
       description: "Claude Code ワークスペースにおける拡張システムの設計思想を定義"
     - name: "extension-system.md"
@@ -583,6 +581,6 @@ design_philosophy:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-24 00:16:39"
+  - date: "2025-12-24 01:09:04"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
