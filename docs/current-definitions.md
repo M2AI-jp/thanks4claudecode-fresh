@@ -11,18 +11,18 @@
 
 | 用語 | 定義 |
 |------|------|
-| project | リポジトリ全体のビジョンと目標（永続）。ファイル: plan/project.md |
-| milestone | project の中間目標。ID形式: M001, M002, ... |
-| playbook | milestone を達成するための実行計画（一時的）。ファイル: plan/playbook-{name}.md |
+| playbook | 作業計画。ファイル: plan/playbook-{name}.md |
 | phase | playbook 内の作業単位。ID形式: p0, p1, p2, ... |
 | subtask | phase 内の個別タスク。形式: `- [ ]` / `- [x]` |
-| focus.current | 現在作業中のプロジェクト名（state.md で定義） |
+| focus.current | 現在の作業モード（state.md で定義） |
 
 ### 廃止された用語
 
 | 廃止用語 | 代替 | 廃止日 |
 |----------|------|--------|
-| Macro | project | 2025-12-13 (V7.0) |
+| project | 廃止（playbook に統合） | 2025-12-23 |
+| milestone | 廃止（playbook に統合） | 2025-12-23 |
+| Macro | 廃止 | 2025-12-13 (V7.0) |
 | layer | 廃止（使用しない） | 2025-12-13 (V7.0) |
 | architecture-*.md | 廃止（docs/ に統合） | 2025-12-08 |
 | spec.yaml | 廃止 | 2025-12-08 |
@@ -168,7 +168,6 @@ check-main-branch.sh より：
 | ファイル | 役割 |
 |----------|------|
 | state.md | 現在地（Single Source of Truth） |
-| plan/project.md | プロジェクト計画 |
 | playbook（state.md の playbook.active） | 現在の計画 |
 | docs/repository-map.yaml | ファイルマッピング |
 

@@ -19,7 +19,7 @@ current: null
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-cleanup-milestone-residue.md
+last_archived: plan/archive/playbook-docs-cleanup-milestone.md
 review_pending: false
 ```
 
