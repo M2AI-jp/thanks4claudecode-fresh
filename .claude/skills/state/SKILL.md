@@ -13,7 +13,6 @@ description: このワークスペースの state.md 管理、playbook 運用の
 # 必須セクション
 focus:
   current: <focus-value>    # setup | product | plan-template
-  project: plan/project.md  # プロジェクト計画ファイル
 
 playbook:
   active: <playbook-path>   # 現在の playbook パス
@@ -21,7 +20,6 @@ playbook:
   review_pending: false     # true: レビュー未完了（stop.py がセッション終了をブロック）
 
 goal:
-  milestone: <milestone-id> # 現在のマイルストーン
   phase: <phase-id>         # 現在のフェーズ
   done_criteria:            # 達成条件（テストとして扱う）
     - criteria1
@@ -103,7 +101,6 @@ playbook 自体の妥当性: {問題なし|修正が必要}
 project: {プロジェクト名}
 branch: {type}/{description}
 created: {今日の日付}
-derives_from: {project.milestone の ID}
 reviewed: false
 ```
 

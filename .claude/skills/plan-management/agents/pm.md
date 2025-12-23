@@ -77,17 +77,14 @@ meta:
 タスク開始フロー:
   1. ユーザーが新規タスクを要求
   2. Claude が pm を呼び出す（必須）
-  3. pm が project.md を参照
-  4. pm が derives_from を設定して playbook を作成（ドラフト）
-  5. pm が reviewer を呼び出す（必須）★
-  6. reviewer が PASS → pm が state.md 更新 & ブランチ作成
+  3. pm が playbook を作成（ドラフト）
+  4. pm が reviewer を呼び出す（必須）★
+  5. reviewer が PASS → pm が state.md 更新 & ブランチ作成
      reviewer が FAIL → pm が playbook 修正 → 再レビュー
-  7. Claude が LOOP を開始
+  6. Claude が LOOP を開始
 
 禁止事項:
   - pm を経由せずに playbook を作成
-  - project.md を参照せずにタスクを開始
-  - derives_from なしの playbook 作成
   - main ブランチでの直接作業
   - reviewer の PASS なしで playbook を確定 ★
 
@@ -106,23 +103,17 @@ meta:
 
 ## 責務
 
-1. **計画の導出（Plan Derivation）** ← 新規追加
-   - project.md の not_achieved を分析
-   - depends_on を解決し、着手可能な done_when を特定
-   - decomposition を参照して playbook skeleton を生成
-   - 優先度（priority）に基づく実行順序の決定
-
-2. **playbook 作成**
+1. **playbook 作成**
    - ユーザーの要望をヒアリング（最小限）
    - plan/template/playbook-format.md に従って作成
    - state.md の active_playbooks を更新
 
-3. **進捗管理**
+2. **進捗管理**
    - Phase の状態更新（pending → in_progress → done）
    - done_criteria の達成追跡
    - 次の Phase への移行判断
 
-4. **スコープ管理**
+3. **スコープ管理**
    - 「それは別タスクです」と NO を言う
    - スコープクリープを検出して警告
    - 別 playbook の作成を提案
@@ -150,36 +141,6 @@ playbook なしで作業開始しない:
   - 詳細は自分で決める
 ```
 
-## 計画の導出フロー（Plan Derivation）
-
-> **project.done_when から playbook を自動導出する手順**
-
-```
-1. project.md の not_achieved を読み込み
-   → 未達成の done_when を全て取得
-
-2. 依存解決（depends_on の分析）
-   → 着手可能な done_when を特定
-   → 依存先が全て achieved であるもののみ対象
-
-3. 優先度判断
-   → priority: high > medium > low
-   → 同一優先度なら estimated_effort が小さいものを優先
-
-4. decomposition を参照
-   → playbook_summary → goal.summary
-   → success_indicators → goal.done_when
-   → phase_hints → phases
-
-5. playbook skeleton を生成
-   → derives_from: done_when.id を設定
-   → phases の done_criteria は Claude が具体化
-
-6. 提案または自動作成
-   → 複雑な場合: ユーザーに確認
-   → 単純な場合: 自動で作成
-```
-
 ## playbook 作成フロー（V11: subtasks 構造対応）
 
 > **ユーザーの要望から playbook を作成する手順**
@@ -200,59 +161,55 @@ playbook なしで作業開始しない:
    → ユーザーから「この理解で進めて」の承認を得る
    → 目的: 手戻りを防ぎ、経験が浅いユーザーでもゴールに辿り着けるよう支援
 
-2. project.md との関連を確認
-   → not_achieved に該当するものがあれば derives_from を設定
-   → なければ新規 done_when として追加を検討
-
-3. 技術的な criterion を書く前に検証
+2. 技術的な criterion を書く前に検証
    → context7 でライブラリの推奨パターンを確認
    → 公式ドキュメントの最新安定版を確認
 
-4. Phase を分割し subtasks を定義
+3. Phase を分割し subtasks を定義
    → 2-5 Phase が理想
    → 各 Phase に subtasks を定義（criterion + executor + validations）
    → docs/criterion-validation-rules.md の禁止パターンをチェック
 
-4.5. 【必須】criterion 検証可能性チェック
+3.5. 【必須】criterion 検証可能性チェック
    → 各 criterion に対して:
      - [ ] 状態形式か？（「〜である」「〜が存在する」）
      - [ ] validations（3点検証）が書けるか？
      - [ ] 禁止パターンに該当しないか？
    → 1つでも該当 → criterion を修正
 
-5. executor を選択（subtask 単位）
+4. executor を選択（subtask 単位）
    → 参照: plan/template/playbook-format.md の「executor 選択ガイドライン」
    → claudecode: ファイル作成、設計、軽量スクリプト
    → codex: 本格的なコード実装
    → coderabbit: コードレビュー
    → user: 手動確認、外部操作
 
-6. validations を定義（subtask 単位）
+5. validations を定義（subtask 単位）
    → 3点検証を定義:
      - technical: 技術的に正しく動作するか
      - consistency: 他コンポーネントと整合性があるか
      - completeness: 必要な変更が全て完了しているか
 
-7. 【必須】中間成果物の確認
+6. 【必須】中間成果物の確認
    → 中間成果物がある場合:
       - 最終 Phase に「クリーンアップ」の subtask を追加
    → 参照: docs/file-creation-process-design.md
 
-8. 【必須】p_self_update 自動追加チェック（M082）
+7. 【必須】p_self_update 自動追加チェック（M082）
    → Phase 数をカウント（p1, p2, p3... の数）
    → 3つ以上の通常 Phase がある場合:
      - p_self_update Phase を自動追加
      - p_final の depends_on に p_self_update を追加
    → 2つ以下の場合: スキップ可能
 
-9. plan/playbook-{name}.md を作成（ドラフト状態）
+8. plan/playbook-{name}.md を作成（ドラフト状態）
 
-10. 【必須】reviewer を呼び出し（スキップ禁止）★
+9. 【必須】reviewer を呼び出し（スキップ禁止）★
    → Task(subagent_type="reviewer", prompt="playbook をレビュー")
    → PASS: 次のステップへ
    → FAIL: 問題点を修正して再レビュー（最大3回）
 
-11. state.md を更新 & ブランチ作成
+10. state.md を更新 & ブランチ作成
 ```
 
 ---
@@ -548,7 +505,6 @@ pm の責務:
      - 依存関係チェック
      - done_criteria の検証可能性
   4. reviewer: 批判的検討
-     - project.md との整合性
      - 抜け漏れ検出
      - リスク特定
   5. 判定:
