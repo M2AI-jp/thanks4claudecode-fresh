@@ -39,42 +39,47 @@ done_when:
 
 #### subtasks
 
-- [ ] **p1.1**: plan/project.md が削除されている
+- [x] **p1.1**: plan/project.md が削除されている
   - executor: claudecode
   - validations:
-    - technical: "test ! -f plan/project.md で存在しないことを確認"
-    - consistency: "他のファイルが project.md を参照していない"
-    - completeness: "削除のみで他の修正は行わない"
+    - technical: "PASS - test ! -f plan/project.md で存在しないことを確認"
+    - consistency: "PASS - 他のファイルから参照削除完了"
+    - completeness: "PASS - 削除完了"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p1.2**: .claude/schema/project-schema.md が削除されている
+- [x] **p1.2**: .claude/schema/project-schema.md が削除されている
   - executor: claudecode
   - validations:
-    - technical: "test ! -f .claude/schema/project-schema.md で存在しないことを確認"
-    - consistency: "schema を参照している箇所がない"
-    - completeness: "削除のみで他の修正は行わない"
+    - technical: "PASS - test ! -f で確認、存在しない"
+    - consistency: "PASS - schema 参照箇所なし"
+    - completeness: "PASS - 削除完了"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p1.3**: .claude/skills/completion-review/hooks/milestone-impact-analyzer.sh が削除されている
+- [x] **p1.3**: .claude/skills/completion-review/hooks/milestone-impact-analyzer.sh が削除されている
   - executor: claudecode
   - validations:
-    - technical: "test ! -f .claude/skills/completion-review/hooks/milestone-impact-analyzer.sh で存在しないことを確認"
-    - consistency: "settings.json に登録されていない"
-    - completeness: "削除のみで他の修正は行わない"
+    - technical: "PASS - test ! -f で確認、存在しない"
+    - consistency: "PASS - settings.json に未登録"
+    - completeness: "PASS - 削除完了"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p1.4**: plan/template/playbook-format.md から derives_from フィールドが削除されている
+- [x] **p1.4**: plan/template/playbook-format.md から derives_from フィールドが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q derives_from plan/template/playbook-format.md で検出されない"
-    - consistency: "meta セクションの説明も更新されている"
-    - completeness: "playbook 導出ガイドセクションも修正されている"
+    - technical: "PASS - grep で検出されない"
+    - consistency: "PASS - meta セクション更新済み"
+    - completeness: "PASS - 導出ガイドセクションも削除済み"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p1.5**: plan/template/state-initial.md から milestone フィールドが削除されている
+- [x] **p1.5**: plan/template/state-initial.md から milestone フィールドが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q milestone plan/template/state-initial.md で検出されない"
-    - consistency: "goal セクションの構造が正しい"
-    - completeness: "他のフィールドは保持されている"
+    - technical: "PASS - grep milestone で検出されない"
+    - consistency: "PASS - goal セクション構造正常"
+    - completeness: "PASS - 他フィールド保持"
+  - validated: 2025-12-23T22:00:00
 
-**status**: pending
+**status**: done
 
 ---
 
@@ -86,70 +91,79 @@ done_when:
 
 #### subtasks
 
-- [ ] **p2.1**: prompt-guard.sh から vision.goal 注入が削除されている
+- [x] **p2.1**: prompt-guard.sh から vision.goal 注入が削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q 'vision.goal' .claude/hooks/prompt-guard.sh で検出されない"
-    - consistency: "他の注入ロジックは保持されている"
-    - completeness: "動作確認用の bash -n でシンタックスエラーがない"
+    - technical: "PASS - grep vision.goal で検出されない"
+    - consistency: "PASS - 他の注入ロジック保持"
+    - completeness: "PASS - bash -n OK"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p2.2**: pre-compact.sh から vision.goal 保護が削除されている
+- [x] **p2.2**: pre-compact.sh から vision.goal 保護が削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q 'vision.goal' .claude/hooks/pre-compact.sh で検出されない"
-    - consistency: "他の保護ロジックは保持されている"
-    - completeness: "bash -n でシンタックスエラーがない"
+    - technical: "PASS - grep vision.goal で検出されない"
+    - consistency: "PASS - 他の保護ロジック保持"
+    - completeness: "PASS - bash -n OK"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p2.3**: archive-playbook.sh から milestone 更新ロジックが削除されている
+- [x] **p2.3**: archive-playbook.sh から milestone 更新ロジックが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q milestone .claude/hooks/archive-playbook.sh で検出されない"
-    - consistency: "アーカイブの主要機能は保持されている"
-    - completeness: "bash -n でシンタックスエラーがない"
+    - technical: "PASS - grep milestone で検出されない"
+    - consistency: "PASS - アーカイブ機能保持"
+    - completeness: "PASS - bash -n OK"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p2.4**: cleanup-hook.sh から milestone 進捗表示が削除されている
+- [x] **p2.4**: cleanup-hook.sh から milestone 進捗表示が削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q milestone .claude/hooks/cleanup-hook.sh で検出されない"
-    - consistency: "cleanup ロジックは保持されている"
-    - completeness: "bash -n でシンタックスエラーがない"
+    - technical: "PASS - grep milestone で検出されない"
+    - consistency: "PASS - cleanup ロジック保持"
+    - completeness: "PASS - bash -n OK"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p2.5**: init-guard.sh から project.md 必須チェックが削除されている
+- [x] **p2.5**: init-guard.sh から project.md 必須チェックが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q project.md .claude/hooks/init-guard.sh で検出されない"
-    - consistency: "他の必須ファイルチェックは保持されている"
-    - completeness: "bash -n でシンタックスエラーがない"
+    - technical: "PASS - grep project.md で検出されない"
+    - consistency: "PASS - 他の必須チェック保持"
+    - completeness: "PASS - bash -n OK"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p2.6**: system-health-check.sh から milestone 整合性チェックが削除されている
+- [x] **p2.6**: system-health-check.sh から milestone 整合性チェックが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q milestone .claude/hooks/system-health-check.sh で検出されない"
-    - consistency: "他のヘルスチェックは保持されている"
-    - completeness: "bash -n でシンタックスエラーがない"
+    - technical: "PASS - grep milestone で検出されない"
+    - consistency: "PASS - 他のヘルスチェック保持"
+    - completeness: "PASS - bash -n OK"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p2.7**: check-integrity.sh から milestone チェックが削除されている
+- [x] **p2.7**: check-integrity.sh から milestone チェックが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q milestone .claude/hooks/check-integrity.sh で検出されない"
-    - consistency: "他の整合性チェックは保持されている"
-    - completeness: "bash -n でシンタックスエラーがない"
+    - technical: "PASS - grep milestone で検出されない"
+    - consistency: "PASS - 他の整合性チェック保持"
+    - completeness: "PASS - bash -n OK"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p2.8**: merge-pr.sh から milestone リセットが削除されている
+- [x] **p2.8**: merge-pr.sh から milestone リセットが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q milestone .claude/hooks/merge-pr.sh で検出されない"
-    - consistency: "マージの主要機能は保持されている"
-    - completeness: "bash -n でシンタックスエラーがない"
+    - technical: "PASS - grep milestone で検出されない"
+    - consistency: "PASS - マージ機能保持"
+    - completeness: "PASS - bash -n OK"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p2.9**: scope-guard.sh から project.md 監視が削除されている
+- [x] **p2.9**: scope-guard.sh から project.md 監視が削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q project.md .claude/hooks/scope-guard.sh で検出されない"
-    - consistency: "スコープガードの主要機能は保持されている"
-    - completeness: "bash -n でシンタックスエラーがない"
+    - technical: "PASS - grep project.md で検出されない"
+    - consistency: "PASS - スコープガード保持"
+    - completeness: "PASS - bash -n OK"
+  - validated: 2025-12-23T22:00:00
 
-**status**: pending
+**status**: done
 
 ---
 
@@ -161,56 +175,63 @@ done_when:
 
 #### subtasks
 
-- [ ] **p3.1**: plan-management Skill から project.md 参照と milestone トリガーが削除されている
+- [x] **p3.1**: plan-management Skill から project.md 参照と milestone トリガーが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -rq 'project.md\\|milestone' .claude/skills/plan-management/ で検出されない"
-    - consistency: "playbook 管理機能は保持されている"
-    - completeness: "SKILL.md の説明も更新されている"
+    - technical: "PASS - grep で検出されない"
+    - consistency: "PASS - playbook 管理機能保持"
+    - completeness: "PASS - SKILL.md 更新済み"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p3.2**: completion-review Skill から milestone 機能が削除されている
+- [x] **p3.2**: completion-review Skill から milestone 機能が削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -rq milestone .claude/skills/completion-review/ で検出されない"
-    - consistency: "完了検証の主要機能は保持されている"
-    - completeness: "frameworks/ 配下のドキュメントも更新されている"
+    - technical: "PASS - grep milestone で検出されない"
+    - consistency: "PASS - 完了検証機能保持"
+    - completeness: "PASS - frameworks/ も更新済み"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p3.3**: post-loop Skill から milestone 更新が削除されている
+- [x] **p3.3**: post-loop Skill から milestone 更新が削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -rq milestone .claude/skills/post-loop/ で検出されない"
-    - consistency: "post-loop の主要機能は保持されている"
-    - completeness: "SKILL.md の説明も更新されている"
+    - technical: "PASS - grep milestone で検出されない"
+    - consistency: "PASS - post-loop 機能保持"
+    - completeness: "PASS - SKILL.md 更新済み"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p3.4**: state Skill から milestone フィールド定義が削除されている
+- [x] **p3.4**: state Skill から milestone フィールド定義が削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -rq milestone .claude/skills/state/ で検出されない"
-    - consistency: "state.md 管理の主要機能は保持されている"
-    - completeness: "SKILL.md の説明も更新されている"
+    - technical: "PASS - grep milestone で検出されない"
+    - consistency: "PASS - state.md 管理機能保持"
+    - completeness: "PASS - SKILL.md 更新済み"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p3.5**: state.md から focus.project と goal.milestone フィールドが削除されている
+- [x] **p3.5**: state.md から focus.project と goal.milestone フィールドが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q 'project:\\|milestone:' state.md で検出されない"
-    - consistency: "他の state.md フィールドは保持されている"
-    - completeness: "YAML 構造が正しい"
+    - technical: "PASS - grep で検出されない"
+    - consistency: "PASS - 他のフィールド保持"
+    - completeness: "PASS - YAML 構造正常"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p3.6**: CLAUDE.md から project.md 参照が削除されている
+- [x] **p3.6**: CLAUDE.md から project.md 参照が削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q project.md CLAUDE.md で検出されない"
-    - consistency: "他のルールは保持されている"
-    - completeness: "参照テーブルが更新されている"
+    - technical: "PASS - grep project.md で検出されない"
+    - consistency: "PASS - 他のルール保持"
+    - completeness: "PASS - 参照テーブル更新済み"
+  - validated: 2025-12-23T22:00:00
 
-- [ ] **p3.7**: RUNBOOK.md から project.md の説明が削除されている
+- [x] **p3.7**: RUNBOOK.md から project.md の説明が削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q project.md RUNBOOK.md で検出されない"
-    - consistency: "他の手順は保持されている"
-    - completeness: "目次が更新されている"
+    - technical: "PASS - grep project.md で検出されない"
+    - consistency: "PASS - 他の手順保持"
+    - completeness: "PASS - 目次更新済み"
+  - validated: 2025-12-23T22:00:00
 
-**status**: pending
+**status**: done
 
 ---
 
@@ -222,62 +243,71 @@ done_when:
 
 #### subtasks
 
-- [ ] **p_final.1**: plan/project.md が削除されている
+- [x] **p_final.1**: plan/project.md が削除されている
   - executor: claudecode
   - validations:
-    - technical: "test ! -f plan/project.md で存在しないことを確認"
-    - consistency: "git status で削除が記録されている"
-    - completeness: "他の削除対象ファイルも確認"
+    - technical: "PASS - test ! -f で確認、存在しない"
+    - consistency: "PASS - git status で削除記録済み"
+    - completeness: "PASS - 他の削除対象も確認済み"
+  - validated: 2025-12-23T22:10:00
 
-- [ ] **p_final.2**: state.md に project と milestone フィールドが存在しない
+- [x] **p_final.2**: state.md に project と milestone フィールドが存在しない
   - executor: claudecode
   - validations:
-    - technical: "grep -q 'project:\\|milestone:' state.md で検出されない"
-    - consistency: "state.md の YAML 構造が正しい"
-    - completeness: "他の必須フィールドは全て存在する"
+    - technical: "PASS - grep で検出されない"
+    - consistency: "PASS - YAML 構造正常"
+    - completeness: "PASS - 必須フィールド全て存在"
+  - validated: 2025-12-23T22:10:00
 
-- [ ] **p_final.3**: hooks から vision.goal 注入と milestone 更新ロジックが削除されている
+- [x] **p_final.3**: hooks から vision.goal 注入と milestone 更新ロジックが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -r 'vision.goal\\|milestone' .claude/hooks/ --include='*.sh' | grep -v 'Binary\\|archive/' で検出されない"
-    - consistency: "hooks の主要機能が保持されている"
-    - completeness: "全 9 つの hooks が修正されている"
+    - technical: "PASS - grep で検出されない"
+    - consistency: "PASS - hooks 主要機能保持"
+    - completeness: "PASS - 全 9 hooks 修正済み"
+  - validated: 2025-12-23T22:10:00
 
-- [ ] **p_final.4**: Skills から project.md 参照と milestone トリガーが削除されている
+- [x] **p_final.4**: Skills から project.md 参照と milestone トリガーが削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -r 'project.md\\|milestone' .claude/skills/ --include='*.md' --include='*.sh' | grep -v archive で検出されない"
-    - consistency: "Skills の主要機能が保持されている"
-    - completeness: "全 4 つの Skills が修正されている"
+    - technical: "PASS - grep で検出されない"
+    - consistency: "PASS - Skills 主要機能保持"
+    - completeness: "PASS - 全 4 Skills 修正済み"
+  - validated: 2025-12-23T22:10:00
 
-- [ ] **p_final.5**: derives_from フィールドが playbook テンプレートから削除されている
+- [x] **p_final.5**: derives_from フィールドが playbook テンプレートから削除されている
   - executor: claudecode
   - validations:
-    - technical: "grep -q derives_from plan/template/playbook-format.md で検出されない"
-    - consistency: "テンプレートの構造が正しい"
-    - completeness: "関連する説明も全て削除されている"
+    - technical: "PASS - grep derives_from で検出されない"
+    - consistency: "PASS - テンプレート構造正常"
+    - completeness: "PASS - 関連説明も削除済み"
+  - validated: 2025-12-23T22:10:00
 
-- [ ] **p_final.6**: 全ての hooks が正常に動作する
+- [x] **p_final.6**: 全ての hooks が正常に動作する
   - executor: claudecode
   - validations:
-    - technical: "find .claude/hooks -name '*.sh' -exec bash -n {} \\; でシンタックスエラーがない"
-    - consistency: "hooks の登録が settings.json と一致"
-    - completeness: "主要な hooks を実際に実行して確認"
+    - technical: "PASS - regression-test.sh で PASS=37, FAIL=0"
+    - consistency: "PASS - settings.json と一致"
+    - completeness: "PASS - 主要 hooks 確認済み"
+  - validated: 2025-12-23T22:10:00
 
-**status**: pending
+**status**: done
 
 ---
 
 ## final_tasks
 
-- [ ] **ft1**: repository-map.yaml を更新する
+- [x] **ft1**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
-  - status: pending
+  - status: done
+  - validated: 2025-12-23T22:21:00
 
-- [ ] **ft2**: tmp/ 内の一時ファイルを削除する
+- [x] **ft2**: tmp/ 内の一時ファイルを削除する
   - command: `find tmp/ -type f ! -name 'README.md' -delete 2>/dev/null || true`
-  - status: pending
+  - status: done
+  - validated: 2025-12-23T22:21:00
 
-- [ ] **ft3**: 変更を全てコミットする
+- [x] **ft3**: 変更を全てコミットする
   - command: `git add -A && git status`
-  - status: pending
+  - status: done
+  - validated: 2025-12-23T22:21:00
