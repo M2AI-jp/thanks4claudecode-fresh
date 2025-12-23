@@ -82,6 +82,12 @@ done_when:
     - consistency: "PASS - done_when の基準と一致"
     - completeness: "PASS - 全対象ディレクトリを検証済み"
   - validated: 2025-12-23T17:30:00
-- [ ] **p4.2**: コミット
+- [x] **p4.2**: コミット
+  - executor: claudecode
+  - validations:
+    - technical: "PASS - git commit 929c8f9 成功"
+    - consistency: "PASS - playbook branch と一致"
+    - completeness: "PASS - 全変更がコミット済み"
+  - validated: 2025-12-23T17:35:00
 
-**status**: in_progress
+**status**: done
