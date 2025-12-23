@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: product
+current: null
 ```
 
 ---
@@ -19,7 +19,7 @@ current: product
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-refactor-remove-project.md
+last_archived: plan/archive/playbook-cleanup-milestone-residue.md
 review_pending: false
 ```
 
