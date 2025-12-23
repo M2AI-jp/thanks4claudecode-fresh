@@ -35,9 +35,7 @@ FIELD_LAST_ARCHIVED="last_archived:"
 # ファイルパス定義
 # --------------------------------------------------
 STATE_FILE="${STATE_FILE:-state.md}"
-PROJECT_FILE="plan/project.md"
 PLAYBOOK_DIR="plan"
-ARCHIVE_DIR="plan/archive"
 
 # --------------------------------------------------
 # Getter 関数

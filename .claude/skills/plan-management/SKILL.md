@@ -71,9 +71,8 @@ Phase 完了条件:
 ```yaml
 必須 Read:
   1. state.md → focus.current 確認
-  2. roadmap (if workspace layer)
-  3. playbook (if session=task)
-  4. project.md (if product layer)
+  2. playbook (if playbook.active is set)
+  3. RUNBOOK.md (for procedures)
 
 branch 確認:
   - main なら新ブランチ作成

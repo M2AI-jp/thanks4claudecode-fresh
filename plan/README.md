@@ -9,15 +9,12 @@
 ```
 plan/
 ├── README.md                    # このファイル
-├── project.md                   # 根幹計画（vision, tech_decisions, milestones）
 ├── playbook-{name}.md           # アクティブな playbook（直下に配置）
-├── archive/                     # 完了した playbook のアーカイブ
 ├── design/                      # 設計ドキュメント
-│   ├── mission.md               # 最上位概念（vision の詳細）
+│   ├── mission.md               # 最上位概念
 │   ├── self-healing-system.md   # Self-Healing System 設計
 │   └── plan-chain-system.md     # 計画連鎖システム設計
 └── template/                    # テンプレート群
-    ├── project-format.md        # project.md 生成テンプレート
     ├── playbook-format.md       # playbook 作成テンプレート
     ├── playbook-examples.md     # playbook の例
     ├── planning-rules.md        # 計画作成ルール
@@ -28,13 +25,6 @@ plan/
 ---
 
 ## ファイルの役割
-
-### project.md（根幹計画）
-
-- プロジェクト全体の **vision**（ユーザーの意図、成功の定義）
-- **tech_decisions**（技術選択とその理由）
-- **milestones**（達成すべきマイルストーン）
-- playbook 作成時の参照元
 
 ### playbook-{name}.md（進行中 playbook）
 
@@ -50,8 +40,7 @@ plan/
 
 ### template/（テンプレート）
 
-- 新規 project.md / playbook 作成時に参照
-- setup Phase 8 で project.md を生成
+- 新規 playbook 作成時に参照
 - pm SubAgent が playbook 作成時に参照
 
 ---

@@ -7,7 +7,7 @@
 ## 役割
 
 このフォルダは、プロジェクトのアーキテクチャ設計や思想を詳細に説明するドキュメントを保存します。
-project.md の vision を深堀りし、実装の根拠を提供します。
+ミッションや設計の根拠を提供します。
 
 ---
 
@@ -17,7 +17,6 @@ project.md の vision を深堀りし、実装の根拠を提供します。
 |----------|------|----------------|
 | mission.md | 最上位概念（存在意義） | セッション開始時、方向性の確認時 |
 | self-healing-system.md | Self-Healing System 設計 | 自己修復機能の実装・改善時 |
-| plan-chain-system.md | 計画連鎖システム設計 | playbook 作成、計画管理の改善時 |
 
 ---
 
@@ -44,26 +43,14 @@ project.md の vision を深堀りし、実装の根拠を提供します。
   - Self-Improvement（失敗学習）
 - **参照タイミング**: 自己修復機能の実装・改善時
 
-### plan-chain-system.md
-
-- **目的**: 計画連鎖システムの設計
-- **内容**:
-  - project.md → playbook の連鎖
-  - derives_from による追跡
-  - Phase 分割のルール
-- **参照タイミング**: playbook 作成ルールの確認時
-
 ---
 
 ## 連携
 
 ```
-project.md (vision)
-    │
-    └── plan/design/mission.md (vision の詳細)
-            │
-            ├── self-healing-system.md (自己修復の設計)
-            └── plan-chain-system.md (計画管理の設計)
+plan/design/mission.md (最上位概念)
+        │
+        └── self-healing-system.md (自己修復の設計)
 ```
 
 ---
@@ -72,7 +59,6 @@ project.md (vision)
 
 - 設計ドキュメントは「なぜそうするか」を説明
 - 実装の詳細は docs/current-implementation.md を参照
-- 変更時は project.md の notes セクションとの整合性を確認
 
 ---
 

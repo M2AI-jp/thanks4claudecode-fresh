@@ -14,7 +14,7 @@
 | plan/design/mission.md | - | Macro 計画 | project に置換 |
 | plan/design/plan-chain-system.md | - | Macro チェック | project に置換 |
 | plan/template/state-initial.md | - | Macro 計画 | project に置換 |
-| setup/playbook-setup.md | - | Macro（project.md） | project に置換 |
+| setup/playbook-setup.md | - | Macro | project に置換 |
 | .claude/frameworks/playbook-review-criteria.md | - | Macro 計画 | project に置換 |
 
 ### 2. 廃止ファイル「architecture-*.md」への参照
@@ -49,7 +49,6 @@
 | .claude/state-history/ | state.md の変更履歴 |
 | .claude/logs/ | セッションログ |
 | .claude/context/history.md | 変更履歴（参照用） |
-| plan/archive/ | アーカイブ済み playbook |
 
 ---
 

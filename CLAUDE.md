@@ -137,10 +137,6 @@ primary_state: state.md
   - Current focus, active task, session info
   - Read this FIRST at session start
 
-project_state: plan/project.md
-  - Long-term goals, milestones
-  - Reference when planning new work
-
 task_state: plan/playbook-*.md
   - Current task details, acceptance criteria
   - Check playbook.active in state.md
@@ -249,7 +245,6 @@ admin_can_relax:
 |------|---------|
 | `RUNBOOK.md` | Procedures, tools, examples (can change) |
 | `state.md` | Current state (source of truth) |
-| `plan/project.md` | Project goals and milestones |
 | `governance/PROMPT_CHANGELOG.md` | Change history for this file |
 
 ---

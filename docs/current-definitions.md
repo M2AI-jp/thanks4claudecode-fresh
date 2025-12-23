@@ -11,9 +11,7 @@
 
 | 用語 | 定義 |
 |------|------|
-| project | リポジトリ全体のビジョンと目標（永続）。ファイル: plan/project.md |
-| milestone | project の中間目標。ID形式: M001, M002, ... |
-| playbook | milestone を達成するための実行計画（一時的）。ファイル: plan/playbook-{name}.md |
+| playbook | タスクを達成するための実行計画。ファイル: plan/playbook-{name}.md |
 | phase | playbook 内の作業単位。ID形式: p0, p1, p2, ... |
 | subtask | phase 内の個別タスク。形式: `- [ ]` / `- [x]` |
 | focus.current | 現在作業中のプロジェクト名（state.md で定義） |
@@ -168,8 +166,8 @@ check-main-branch.sh より：
 | ファイル | 役割 |
 |----------|------|
 | state.md | 現在地（Single Source of Truth） |
-| plan/project.md | プロジェクト計画 |
 | playbook（state.md の playbook.active） | 現在の計画 |
+| RUNBOOK.md | 運用手順 |
 | docs/repository-map.yaml | ファイルマッピング |
 
 ### 存在しないファイルへの参照（削除対象）

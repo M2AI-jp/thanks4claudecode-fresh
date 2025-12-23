@@ -144,7 +144,7 @@ PR 本文形式:
 ```yaml
 タスク開始フロー:
   1. ユーザーが /task-start を実行
-  2. pm が project.md を参照
+  2. pm がユーザー要求を確認
   3. pm がブランチ作成を実行
   4. pm が playbook を作成
   5. pm が state.md を更新
@@ -173,7 +173,7 @@ playbook 完了フロー:
 git add -A && git commit -m "$(cat <<'EOF'
 feat(phase-1): タスク開始プロセス標準化 完了
 
-- pm SubAgent が project.md を参照して playbook を生成
+- pm SubAgent がユーザー要求から playbook を生成
 - /task-start コマンドが pm 経由でタスクを開始
 - CLAUDE.md の INIT/POST_LOOP が pm 経由を強制
 - タスク開始フロー図が作成

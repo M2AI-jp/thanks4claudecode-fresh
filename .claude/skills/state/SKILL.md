@@ -13,7 +13,6 @@ description: このワークスペースの state.md 管理、playbook 運用の
 # 必須セクション
 focus:
   current: <focus-value>    # setup | product | plan-template
-  project: plan/project.md  # プロジェクト計画ファイル
 
 playbook:
   active: <playbook-path>   # 現在の playbook パス

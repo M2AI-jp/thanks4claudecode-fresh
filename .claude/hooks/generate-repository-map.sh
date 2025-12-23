@@ -294,12 +294,11 @@ workflows:
       name: "INIT"
       why: |
         LLM は状態を保持しないため、毎セッション開始時に現在地を再認識する必要がある。
-        state.md/project.md/playbook の強制読み込みにより、コンテキストを確実に復元する。
+        state.md/playbook の強制読み込みにより、コンテキストを確実に復元する。
       when: "SessionStart 発火時"
       input:
         - "ユーザーの最初のプロンプト"
         - "state.md（focus, playbook, goal）"
-        - "plan/project.md（milestones）"
         - "playbook（active な場合）"
       process:
         hooks:
@@ -318,7 +317,6 @@ workflows:
         - ".claude/hooks/check-main-branch.sh"
         - "CLAUDE.md"
         - "state.md"
-        - "plan/project.md"
 
     - id: work_loop
       name: "LOOP"
@@ -356,12 +354,11 @@ workflows:
     - id: post_loop
       name: "POST_LOOP"
       why: |
-        playbook 完了時に自動でアーカイブ、project.milestone 更新、次 playbook 作成を行う。
+        playbook 完了時に自動でアーカイブ、次 playbook 作成を行う。
         手動操作なしで継続的な進捗を実現する。
       when: "playbook の全 phase が done"
       input:
         - "playbook（全 phase done）"
-        - "project.md（milestone）"
       process:
         hooks:
           - "archive-playbook.sh: アーカイブ提案"
@@ -375,7 +372,6 @@ workflows:
       output:
         - "playbook アーカイブ（plan/archive/）"
         - "state.md 更新（playbook.active = null）"
-        - "project.md 更新（milestone.status = achieved）"
         - "次 playbook（存在する場合）"
         - "/clear 推奨アナウンス"
       references:
@@ -385,7 +381,6 @@ workflows:
         - ".claude/agents/pm.md"
         - ".claude/skills/post-loop/"
         - "CLAUDE.md"
-        - "plan/project.md"
 
     - id: critique_process
       name: "CRITIQUE"
@@ -417,18 +412,17 @@ workflows:
     - id: project_complete
       name: "PROJECT_COMPLETE"
       why: |
-        全 milestone 達成時に feature ブランチを main にマージし、GitHub にプッシュ。
+        playbook 完了時に feature ブランチを main にマージし、GitHub にプッシュ。
         state.md を neutral 状態にリセットして次の作業に備える。
-      when: "全 milestone が status: achieved"
+      when: "playbook が完了した場合"
       input:
-        - "project.md（全 milestone の status）"
         - "現在の feature ブランチ"
         - "state.md"
       process:
         hooks:
           - "merge-pr.sh: main マージ"
         subagents:
-          - "pm: 全 milestone 達成を検出"
+          - "pm: 完了を検出"
         skills:
           - "post-loop: 完了処理"
         claude_md: "POST_LOOP#PROJECT_COMPLETE"
@@ -436,10 +430,9 @@ workflows:
         - "main ブランチにマージ"
         - "GitHub にプッシュ"
         - "state.md neutral 状態"
-        - "PROJECT 完了アナウンス"
+        - "完了アナウンス"
         - "/clear 推奨"
       references:
-        - "plan/project.md"
         - "CLAUDE.md"
         - ".claude/hooks/merge-pr.sh"
 WORKFLOWS_HEADER
@@ -555,29 +548,36 @@ if [[ -d "$HOOKS_DIR" ]]; then
 fi
 
 # ==============================================================================
-# SubAgents
+# SubAgents (4QV+: now in .claude/skills/*/agents/)
 # ==============================================================================
 echo "  Scanning agents..."
-AGENTS_DIR="$PROJECT_ROOT/.claude/agents"
-AGENTS_COUNT=$(count_files "$AGENTS_DIR" "*.md")
+SKILLS_DIR_AGENTS="$PROJECT_ROOT/.claude/skills"
+AGENTS_COUNT=0
+
+# Count agents in Skills directories
+if [[ -d "$SKILLS_DIR_AGENTS" ]]; then
+    AGENTS_COUNT=$(find "$SKILLS_DIR_AGENTS" -path '*/agents/*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
+fi
 
 cat >> "$TEMP_FILE" << EOF
 
 agents:
-  directory: .claude/agents/
+  directory: .claude/skills/*/agents/
+  note: "4QV+ アーキテクチャ: SubAgents は各 Skill 内に配置"
   count: $AGENTS_COUNT
   files:
 EOF
 
-if [[ -d "$AGENTS_DIR" ]]; then
-    for agent in "$AGENTS_DIR"/*.md; do
+if [[ -d "$SKILLS_DIR_AGENTS" ]]; then
+    for agent in $(find "$SKILLS_DIR_AGENTS" -path '*/agents/*.md' -type f 2>/dev/null | sort); do
         [[ -f "$agent" ]] || continue
         name=$(basename "$agent" .md)
-        [[ "$name" == "CLAUDE" ]] && continue  # CLAUDE.md は除外
+        skill=$(echo "$agent" | sed "s|$SKILLS_DIR_AGENTS/||" | cut -d'/' -f1)
         desc=$(extract_description "$agent")
 
         cat >> "$TEMP_FILE" << EOF
     - name: "$name"
+      skill: "$skill"
       description: "$desc"
 EOF
     done
@@ -709,15 +709,23 @@ plan:
       description: "進行中の playbook"
 EOF
 
-ACTIVE_COUNT=$(find "$PLAN_DIR/active" -maxdepth 1 -name "playbook-*.md" 2>/dev/null | wc -l | tr -d ' ')
+if [[ -d "$PLAN_DIR/active" ]]; then
+    ACTIVE_COUNT=$(find "$PLAN_DIR/active" -maxdepth 1 -name "playbook-*.md" 2>/dev/null | wc -l | tr -d ' ')
+else
+    ACTIVE_COUNT=0
+fi
 echo "      count: $ACTIVE_COUNT" >> "$TEMP_FILE"
 
 cat >> "$TEMP_FILE" << EOF
     archive:
-      description: "完了した playbook のアーカイブ"
+      description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
 EOF
 
-ARCHIVE_COUNT=$(find "$PLAN_DIR/archive" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+if [[ -d "$PLAN_DIR/archive" ]]; then
+    ARCHIVE_COUNT=$(find "$PLAN_DIR/archive" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+else
+    ARCHIVE_COUNT=0
+fi
 echo "      count: $ARCHIVE_COUNT" >> "$TEMP_FILE"
 
 cat >> "$TEMP_FILE" << EOF

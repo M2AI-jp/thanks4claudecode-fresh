@@ -20,14 +20,13 @@ for f in .claude/hooks/*.sh; do
     fi
 done
 
-# Agents 存在チェック
-for f in .claude/agents/*.md; do
-    if [ -f "$f" ]; then
-        pass "$(basename $f): exists"
-    else
-        fail "$(basename $f): missing"
-    fi
-done
+# Agents 存在チェック（4QV+: .claude/skills/*/agents/ に移動）
+AGENT_COUNT=$(find .claude/skills -path '*/agents/*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
+if [ "$AGENT_COUNT" -ge 6 ]; then
+    pass "agents: $AGENT_COUNT found in Skills"
+else
+    fail "agents: expected >= 6, found $AGENT_COUNT"
+fi
 
 # Frameworks 存在チェック
 if [ -f ".claude/frameworks/done-criteria-validation.md" ]; then

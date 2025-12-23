@@ -14,7 +14,7 @@
 ├── SubAgents: 6 定義
 ├── Skills: 5 定義
 ├── Commands: 8 スラッシュコマンド
-└── 状態管理: state.md + project.md + playbook
+└── 状態管理: state.md + playbook
 ```
 
 ### 設計思想
@@ -32,8 +32,8 @@ Claude Code がセッション開始時に読み込む順序:
 ```
 1. CLAUDE.md          - 行動ルール（Frozen Constitution）
 2. state.md           - 現在の状態（focus, playbook, goal）
-3. plan/project.md    - プロジェクト計画（milestones）
-4. playbook (if any)  - 現在の作業計画
+3. playbook (if any)  - 現在の作業計画（plan/playbook-*.md）
+4. RUNBOOK.md         - 運用手順
 5. docs/repository-map.yaml - 全ファイルマッピング
 ```
 
@@ -61,9 +61,8 @@ Claude Code がセッション開始時に読み込む順序:
 │   └── tests/             # done_criteria テスト
 │
 ├── plan/                  # 計画管理
-│   ├── project.md         # プロジェクト計画
-│   ├── active/            # 進行中 playbook
-│   ├── archive/           # 完了済み playbook (51+)
+│   ├── playbook-*.md      # 進行中 playbook
+│   ├── archive/           # 完了済み playbook
 │   └── template/          # playbook テンプレート
 │
 ├── docs/                  # ドキュメント (17 files)
@@ -242,16 +241,8 @@ Edit/Write 試行
 ### 8.3 3層構造
 
 ```
-project.md (永続)
-├── vision: 最上位目標
-├── milestones[]: 中間目標
-│   ├── M001: achieved
-│   ├── M002: achieved
-│   └── M078: achieved (最新)
-└── constraints: 制約条件
-
-playbook (一時的)
-├── meta.derives_from: milestone ID
+playbook (タスク単位)
+├── meta: メタ情報（branch, created）
 ├── goal.done_when: 達成条件
 └── phases[]: 作業単位
     ├── p0: done
@@ -275,7 +266,7 @@ phase (作業単位)
 | ファイル | 役割 |
 |----------|------|
 | state.md | 現在状態（focus, playbook, goal, config） |
-| plan/project.md | プロジェクト計画（milestones） |
+| plan/playbook-*.md | 進行中のタスク計画 |
 | .claude/settings.json | Hook 登録・権限 |
 | docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
 

@@ -8,61 +8,42 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-23 19:24:26"
+  generated: "2025-12-24 05:06:48"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 295
+  total_files: 191
 
 hooks:
   directory: .claude/hooks/
-  count: 31
+  count: 5
   files:
-    - name: "archive-playbook.sh"
-    - name: "audit-unused.sh"
-    - name: "check-coherence.sh"
-    - name: "check-integrity.sh"
-    - name: "check-main-branch.sh"
-    - name: "check-protected-edit.sh"
-    - name: "cleanup-hook.sh"
-    - name: "create-pr-hook.sh"
-    - name: "create-pr.sh"
-    - name: "critic-guard.sh"
-    - name: "depends-check.sh"
-    - name: "executor-guard.sh"
-    - name: "failure-logger.sh"
     - name: "generate-repository-map.sh"
-    - name: "init-guard.sh"
-    - name: "lint-check.sh"
-    - name: "log-subagent.sh"
-    - name: "merge-pr.sh"
-    - name: "playbook-guard.sh"
-    - name: "pre-bash-check.sh"
-    - name: "pre-compact.sh"
-    - name: "prompt-guard.sh"
-    - name: "role-resolver.sh"
-    - name: "scope-guard.sh"
-    - name: "session-end.sh"
-    - name: "session-start.sh"
-    - name: "stop-summary.sh"
-    - name: "subtask-guard.sh"
-    - name: "system-health-check.sh"
-    - name: "test-done-criteria.sh"
-    - name: "test-hooks.sh"
+    - name: "post-tool.sh"
+    - name: "pre-tool.sh"
+    - name: "prompt.sh"
+    - name: "session.sh"
 
 agents:
-  directory: .claude/agents/
+  directory: .claude/skills/*/agents/
+  note: "4QV+ アーキテクチャ: SubAgents は各 Skill 内に配置"
   count: 6
   files:
     - name: "codex-delegate"
+      skill: "golden-path"
       description: "Codex MCP をラップし、コンテキスト膨張を防止する SubAgent"
-    - name: "critic"
-      description: "各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する"
-    - name: "health-checker"
-      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
     - name: "pm"
+      skill: "golden-path"
       description: "重要"
+    - name: "health-checker"
+      skill: "quality-assurance"
+      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
     - name: "reviewer"
+      skill: "quality-assurance"
       description: "役割"
+    - name: "critic"
+      skill: "reward-guard"
+      description: "各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する"
     - name: "setup-guide"
+      skill: "session-manager"
       description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environm"
 
 skills:
@@ -70,20 +51,34 @@ skills:
   invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
   usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
   auto_invoke: true
-  count: 9
+  count: 16
   files:
+    - name: "access-control"
+      description: "アクセス制御"
     - name: "context-management"
       description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
     - name: "deploy-checker"
       description: "デプロイ準備・検証専門スキル"
     - name: "frontend-design"
       description: "プロダクション品質のフロントエンドインターフェースを作成する"
+    - name: "git-workflow"
+      description: "Git/PR ワークフロー"
+    - name: "golden-path"
+      description: "Core Contract #1: Golden Path"
     - name: "lint-checker"
       description: "コード品質チェック専門スキル"
     - name: "plan-management"
       description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitionin"
+    - name: "playbook-gate"
+      description: "Core Contract #2: Playbook Gate"
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の自動処理"
+    - name: "quality-assurance"
+      description: "品質保証"
+    - name: "reward-guard"
+      description: "Core Contract #3: Reward Fraud Prevention"
+    - name: "session-manager"
+      description: "セッション管理"
     - name: "state"
       description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
     - name: "test-runner"
@@ -93,7 +88,7 @@ skills:
 
 commands:
   directory: .claude/commands/
-  count: 8
+  count: 7
   invocation: "ユーザーが /command で明示的に呼び出す（例: /test, /lint）"
   usage: "即座に実行される CLI 機能。ユーザーの意図を明確に反映。"
   files:
@@ -109,15 +104,15 @@ commands:
       description: "allowed-tools: Read, Bash"
     - name: "/state-rollback"
       description: "allowed-tools: Read, Write, Bash"
-    - name: "/task-start"
-      description: "標準タスク開始コマンド。全てのタスクは project.md からの導出を経由する�"
     - name: "/test"
       description: "allowed-tools: Read, Bash"
 
 docs:
   directory: docs/
-  count: 19
+  count: 20
   files:
+    - name: "4qv-architecture.md"
+      description: "Hook（導火線）→ Skill（ユースケース単位のパッケージ）→ 必要な機能の�"
     - name: "ARCHITECTURE.md"
       description: "リポジトリの構造と各コンポーネントの関係を文書化"
     - name: "admin-contract.md"
@@ -162,11 +157,11 @@ plan:
       description: "進行中の playbook"
       count: 0
     archive:
-      description: "完了した playbook のアーカイブ"
-      count: 105
+      description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
+      count: 0
     template:
       description: "playbook テンプレート"
-      count: 6
+      count: 5
 
 root:
   description: "ルートディレクトリの主要ファイル"
@@ -222,98 +217,29 @@ hook_trigger_sequence:
       matchers:
         - matcher: "*"
           hooks:
-            - script: "session-start.sh"
-              description: "session-start.sh - LLMの自己認識を形成し、LOOPを開始させる"
+            - script: "session.sh"
+              description: "session.sh - SessionStart/End/PreCompact 導火線"
     - trigger: "UserPromptSubmit"
       description: "ユーザープロンプト送信時に発火"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "prompt-guard.sh"
-              description: "prompt-guard.sh - UserPromptSubmit Hook"
+            - script: "prompt.sh"
+              description: "prompt.sh - UserPromptSubmit 導火線"
     - trigger: "PreToolUse"
       description: "ツール実行前に発火（matcher でフィルタ可能）"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "init-guard.sh"
-              description: "init-guard.sh - セッション開始時の強制的自己認識ガード"
-            - script: "check-main-branch.sh"
-              description: "check-main-branch.sh - main ブランチでの作業をブロック"
-        - matcher: "Bash"
-          hooks:
-            - script: "pre-bash-check.sh"
-              description: "pre-bash-check.sh - Bash コマンド実行前の契約チェック"
-            - script: "check-coherence.sh"
-              description: "check-coherence.sh - 簡略版：state.md と playbook の整合性チェック"
-            - script: "lint-check.sh"
-              description: "lint-check.sh - 静的解析チェック Hook"
-        - matcher: "Edit"
-          hooks:
-            - script: "check-protected-edit.sh"
-              description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
-            - script: "playbook-guard.sh"
-              description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
-            - script: "depends-check.sh"
-              description: "depends-check.sh - Phase の depends_on を検証"
-            - script: "critic-guard.sh"
-              description: "critic-guard.sh - state: done への変更を構造的にブロック"
-            - script: "scope-guard.sh"
-              description: "scope-guard.sh - done_criteria/done_when の無断変更を検出"
-            - script: "executor-guard.sh"
-              description: "executor-guard.sh - Phase の executor を構造的に強制"
-            - script: "subtask-guard.sh"
-              description: "subtask-guard.sh - subtask の 3 検証を強制（V12: チェックボックス形式対応）"
-        - matcher: "Write"
-          hooks:
-            - script: "check-protected-edit.sh"
-              description: "check-protected-edit.sh - 保護対象ファイルの編集をブロック"
-            - script: "playbook-guard.sh"
-              description: "playbook-guard.sh - Edit/Write 時に playbook=null ならブロック"
-            - script: "critic-guard.sh"
-              description: "critic-guard.sh - state: done への変更を構造的にブロック"
-            - script: "scope-guard.sh"
-              description: "scope-guard.sh - done_criteria/done_when の無断変更を検出"
-            - script: "executor-guard.sh"
-              description: "executor-guard.sh - Phase の executor を構造的に強制"
-            - script: "subtask-guard.sh"
-              description: "subtask-guard.sh - subtask の 3 検証を強制（V12: チェックボックス形式対応）"
+            - script: "pre-tool.sh"
+              description: "pre-tool.sh - PreToolUse(*) 導火線"
     - trigger: "PostToolUse"
       description: "ツール実行後に発火（matcher でフィルタ可能）"
       matchers:
-        - matcher: "Edit"
-          hooks:
-            - script: "archive-playbook.sh"
-              description: "archive-playbook.sh - playbook 完了時の自動アーカイブ提案"
-            - script: "cleanup-hook.sh"
-              description: "cleanup-hook.sh - playbook 完了時のテンポラリファイル自動クリーンアップ"
-            - script: "create-pr-hook.sh"
-              description: "create-pr-hook.sh - playbook 完了時の PR 自動作成 + マージフック"
-        - matcher: "Task"
-          hooks:
-            - script: "log-subagent.sh"
-              description: "log-subagent.sh - Subagent 発動ログ記録 + critic 結果処理"
-    - trigger: "Stop"
-      description: "セッション中断時（Ctrl+C, /stop）に発火"
-      matchers:
         - matcher: "*"
           hooks:
-            - script: "stop-summary.sh"
-              description: "stop-summary.sh - Stop Hook: Phase 状態サマリー + 整合性チェック"
-    - trigger: "PreCompact"
-      description: "コンテキスト圧縮前に発火"
-      matchers:
-        - matcher: "*"
-          hooks:
-            - script: "pre-compact.sh"
-              description: "pre-compact.sh - PreCompact Hook: 完全な状態スナップショット保存"
-    - trigger: "SessionEnd"
-      description: "セッション終了時に発火"
-      matchers:
-        - matcher: "*"
-          hooks:
-            - script: "session-end.sh"
-              description: "session-end.sh - セッション終了時に四つ組整合性チェック + リマインド"
+            - script: "post-tool.sh"
+              description: "post-tool.sh - PostToolUse(*) 導火線"
 
 # ==============================================================================
 # Workflows (M027)
@@ -328,12 +254,11 @@ workflows:
       name: "INIT"
       why: |
         LLM は状態を保持しないため、毎セッション開始時に現在地を再認識する必要がある。
-        state.md/project.md/playbook の強制読み込みにより、コンテキストを確実に復元する。
+        state.md/playbook の強制読み込みにより、コンテキストを確実に復元する。
       when: "SessionStart 発火時"
       input:
         - "ユーザーの最初のプロンプト"
         - "state.md（focus, playbook, goal）"
-        - "plan/project.md（milestones）"
         - "playbook（active な場合）"
       process:
         hooks:
@@ -352,7 +277,6 @@ workflows:
         - ".claude/hooks/check-main-branch.sh"
         - "CLAUDE.md"
         - "state.md"
-        - "plan/project.md"
 
     - id: work_loop
       name: "LOOP"
@@ -390,12 +314,11 @@ workflows:
     - id: post_loop
       name: "POST_LOOP"
       why: |
-        playbook 完了時に自動でアーカイブ、project.milestone 更新、次 playbook 作成を行う。
+        playbook 完了時に自動でアーカイブ、次 playbook 作成を行う。
         手動操作なしで継続的な進捗を実現する。
       when: "playbook の全 phase が done"
       input:
         - "playbook（全 phase done）"
-        - "project.md（milestone）"
       process:
         hooks:
           - "archive-playbook.sh: アーカイブ提案"
@@ -409,7 +332,6 @@ workflows:
       output:
         - "playbook アーカイブ（plan/archive/）"
         - "state.md 更新（playbook.active = null）"
-        - "project.md 更新（milestone.status = achieved）"
         - "次 playbook（存在する場合）"
         - "/clear 推奨アナウンス"
       references:
@@ -419,7 +341,6 @@ workflows:
         - ".claude/agents/pm.md"
         - ".claude/skills/post-loop/"
         - "CLAUDE.md"
-        - "plan/project.md"
 
     - id: critique_process
       name: "CRITIQUE"
@@ -451,18 +372,17 @@ workflows:
     - id: project_complete
       name: "PROJECT_COMPLETE"
       why: |
-        全 milestone 達成時に feature ブランチを main にマージし、GitHub にプッシュ。
+        playbook 完了時に feature ブランチを main にマージし、GitHub にプッシュ。
         state.md を neutral 状態にリセットして次の作業に備える。
-      when: "全 milestone が status: achieved"
+      when: "playbook が完了した場合"
       input:
-        - "project.md（全 milestone の status）"
         - "現在の feature ブランチ"
         - "state.md"
       process:
         hooks:
           - "merge-pr.sh: main マージ"
         subagents:
-          - "pm: 全 milestone 達成を検出"
+          - "pm: 完了を検出"
         skills:
           - "post-loop: 完了処理"
         claude_md: "POST_LOOP#PROJECT_COMPLETE"
@@ -470,10 +390,9 @@ workflows:
         - "main ブランチにマージ"
         - "GitHub にプッシュ"
         - "state.md neutral 状態"
-        - "PROJECT 完了アナウンス"
+        - "完了アナウンス"
         - "/clear 推奨"
       references:
-        - "plan/project.md"
         - "CLAUDE.md"
         - ".claude/hooks/merge-pr.sh"
 
@@ -481,6 +400,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-23 19:24:26"
+  - date: "2025-12-24 05:06:48"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

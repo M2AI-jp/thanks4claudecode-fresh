@@ -10,7 +10,6 @@
 
 ```yaml
 current: thanks4claudecode
-project: plan/project.md
 ```
 
 ---
@@ -18,8 +17,8 @@ project: plan/project.md
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-4qv-architecture-rebuild.md
+branch: refactor/4qv-architecture-rebuild
 last_archived: null
 review_pending: false
 ```
@@ -30,9 +29,15 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: null
-done_criteria: []
-note: null
+phase: p2
+done_criteria:
+  - playbook-gate 関連 Hook が .claude/skills/playbook-gate/guards/ に移動
+  - reward-guard 関連 Hook が .claude/skills/reward-guard/guards/ に移動
+  - access-control 関連 Hook が .claude/skills/access-control/guards/ に移動
+  - session-manager 関連 Hook が .claude/skills/session-manager/handlers/ に移動
+  - quality-assurance 関連 Hook が .claude/skills/quality-assurance/checkers/ に移動
+  - 共通ライブラリが .claude/lib/ に統合されている
+note: 4QV+ 既存 Hook のロジック移動フェーズ
 ```
 
 ---
@@ -40,8 +45,8 @@ note: null
 ## session
 
 ```yaml
-last_start: null
-last_end: null
+last_start: 2025-12-24 04:56:05
+last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
 
@@ -66,6 +71,5 @@ roles:
 | ファイル | 役割 |
 |----------|------|
 | CLAUDE.md | LLM の振る舞いルール |
-| plan/project.md | プロジェクト計画 |
 | docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
 | docs/folder-management.md | フォルダ管理ルール |

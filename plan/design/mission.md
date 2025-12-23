@@ -2,7 +2,7 @@
 
 > **最上位概念: このリポジトリの存在意義**
 >
-> 全ての判断はここに立ち返る。project.md も playbook も、mission を達成するための手段。
+> 全ての判断はここに立ち返る。playbook は mission を達成するための手段。
 
 ---
 
@@ -59,14 +59,9 @@ reward_fraud:
     - 全ての判断の最上位基準
     - 変更には明示的なユーザー承認が必要
 
-  L1_project: |
-    plan/project.md
-    - mission を達成するためのプロジェクト計画
-    - vision は mission から導出される
-
-  L2_playbook: |
+  L1_playbook: |
     plan/playbook-*.md
-    - project を達成するための具体的タスク
+    - mission を達成するための具体的タスク
     - 完了したらアーカイブ
 
 自動チェック:
@@ -79,7 +74,7 @@ reward_fraud:
     - 逸脱している場合は警告
 
   PreToolUse:
-    - Edit/Write 前に playbook → project → mission の連鎖を確認
+    - Edit/Write 前に playbook → mission の連鎖を確認
 
   Stop:
     - セッション終了時に mission 達成度を評価

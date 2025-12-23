@@ -26,120 +26,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/init-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/check-main-branch.sh",
-            "timeout": 3000
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/check-protected-edit.sh",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/playbook-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/depends-check.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/critic-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/scope-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/executor-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/subtask-guard.sh",
-            "timeout": 3000
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/check-protected-edit.sh",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/playbook-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/critic-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/scope-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/executor-guard.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/subtask-guard.sh",
-            "timeout": 3000
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/pre-bash-check.sh",
-            "timeout": 10000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/check-coherence.sh",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/lint-check.sh",
+            "command": "bash .claude/hooks/pre-tool.sh",
             "timeout": 10000
           }
         ]
       }
     ],
-    "UserPromptSubmit": [
+    "PostToolUse": [
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/prompt-guard.sh",
-            "timeout": 3000
+            "command": "bash .claude/hooks/post-tool.sh",
+            "timeout": 10000
           }
         ]
       }
@@ -150,76 +50,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/session-start.sh",
+            "command": "bash .claude/hooks/session.sh",
             "timeout": 5000
           }
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/log-subagent.sh",
-            "timeout": 3000
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/archive-playbook.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/cleanup-hook.sh",
-            "timeout": 3000
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/create-pr-hook.sh",
-            "timeout": 30000
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
+    "UserPromptSubmit": [
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/session-end.sh",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/stop-summary.sh",
+            "command": "bash .claude/hooks/prompt.sh",
             "timeout": 3000
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/pre-compact.sh",
-            "timeout": 5000
           }
         ]
       }

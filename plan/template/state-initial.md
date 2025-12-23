@@ -27,7 +27,6 @@
 
 ```yaml
 current: setup  # setup | product | plan-template
-project: null   # setup 完了後: plan/project.md
 ```
 
 ---
@@ -49,7 +48,6 @@ milestone: setup
 phase: p0
 done_criteria:
   - setup/playbook-setup.md Phase 0-8 を完了する
-  - plan/project.md が生成される
   - focus.current が product に切り替わる
 ```
 
@@ -83,7 +81,6 @@ roles:
 | ファイル | 役割 |
 |----------|------|
 | CLAUDE.md | LLM の振る舞いルール |
-| plan/project.md | プロジェクト計画（setup 完了後に生成） |
 | docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
 | docs/folder-management.md | フォルダ管理ルール |
 ```
