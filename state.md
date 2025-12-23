@@ -17,9 +17,9 @@ current: product
 ## playbook
 
 ```yaml
-active: plan/playbook-cleanup-project-refs.md
-branch: chore/cleanup-project-refs
-last_archived: plan/archive/playbook-setup-redesign.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-cleanup-project-refs.md
 review_pending: false
 ```
 
