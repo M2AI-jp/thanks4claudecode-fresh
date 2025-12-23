@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: null
+current: product
 ```
 
 ---
@@ -17,8 +17,8 @@ current: null
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-claude-md-change-control.md
+branch: chore/claude-md-change-control
 last_archived: plan/archive/playbook-docs-cleanup-milestone.md
 review_pending: false
 ```

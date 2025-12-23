@@ -11,6 +11,33 @@
 
 ---
 
+## [1.2.0] - 2025-12-23
+
+### Removed
+- Section 7: `project_state: plan/project.md` 参照を削除
+- References テーブル: `plan/project.md` エントリを削除
+
+### Rationale
+project.md 機能が廃止されたため、存在しないファイルへの参照を削除。
+playbook + state.md を核としたシンプルなオーケストレーションモデルへの移行完了。
+
+### Verification
+- `grep "project.md" CLAUDE.md` が 0 件であること
+
+---
+
+## [1.1.0] - 2025-12-18
+
+### Added
+- Section 11: Core Contract（golden_path, playbook_gate, reviewer_gate）
+- Section 12: Admin Mode Contract（admin 権限の境界定義）
+
+### Rationale
+タスク依頼時の pm 呼び出し必須化、playbook=null での Edit/Write ブロック、
+reviewer PASS 必須化により、構造的な品質保証を実現。
+
+---
+
 ## [1.0.0] - 2025-12-18
 
 ### Added
