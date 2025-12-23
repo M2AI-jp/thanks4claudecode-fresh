@@ -9,7 +9,7 @@
 ## focus
 
 ```yaml
-current: product
+current: null
 ```
 
 ---
@@ -17,9 +17,9 @@ current: product
 ## playbook
 
 ```yaml
-active: plan/playbook-docs-cleanup-milestone.md
-branch: docs/cleanup-milestone-references
-last_archived: plan/archive/playbook-cleanup-milestone-residue.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-docs-cleanup-milestone.md
 review_pending: false
 ```
 
