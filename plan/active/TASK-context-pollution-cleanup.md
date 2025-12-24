@@ -63,7 +63,7 @@
 | ID | パターン | ファイル | 対応状況 |
 |----|---------|---------|---------|
 | A2 | reviewer の責務分散 | reviewer.md, pm.md, playbook-review-criteria.md | ✅ 用語統一・正規ソース明示 |
-| A3 | critic の validations 検証方法混在 | critic.md, 4qv-architecture.md, pm.md | ❌ 未対応 |
+| A3 | critic の validations 検証方法混在 | critic.md, 4qv-architecture.md, pm.md | ✅ 正規ソース参照追加 |
 | B1 | 廃止用語の参照残存 | plan-management/SKILL.md | ✅ 修正済み |
 | B2 | 古い playbook フォーマットバージョン参照 | 複数ファイル | ✅ F1 で対応 |
 | C2 | understanding-check のタイミング曖昧 | understanding-check/SKILL.md, pm.md | ✅ 修正済み |
@@ -250,6 +250,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 2025-12-24 | A3 修正: validations の正規ソース参照を pm.md, critic.md に追加。 |
 | 2025-12-24 | A2 修正: reviewer 用語統一、正規ソース明示。「慎重に」の定義追加。 |
 | 2025-12-24 | F1, C3 修正。D1, C2 は前回コミット済み。 |
 | 2025-12-24 | 初版作成 |

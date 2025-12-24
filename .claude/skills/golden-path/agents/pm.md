@@ -253,6 +253,8 @@ playbook なしで作業開始しない:
 ## subtasks 生成ガイドライン（V16: validations ベース）
 
 > **criterion + executor + validations を1セットで定義する**
+>
+> **正規ソース**: `plan/template/playbook-format.md` の「validations」セクション
 
 ### 構造
 

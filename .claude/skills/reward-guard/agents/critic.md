@@ -73,6 +73,8 @@ playbook リセットのトリガー:
 ## subtasks 検証ロジック（V16: validations ベース）
 
 > **各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する**
+>
+> **正規ソース**: `plan/template/playbook-format.md` の「validations」セクション
 
 ### 検証フロー
 
