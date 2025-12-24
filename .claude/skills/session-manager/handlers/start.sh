@@ -136,6 +136,82 @@ restore_from_snapshot() {
     return 0
 }
 
+# ==============================================================================
+# verify_hooks - settings.json の Hook 存在・実行権限を検証・自動修復
+# settings.json に登録された全 Hook の存在・実行権限をチェックし、
+# 実行権限がない場合は自動修復（chmod +x）を行う
+# ==============================================================================
+verify_hooks() {
+    local SETTINGS_FILE=".claude/settings.json"
+    local ISSUES_FOUND=false
+    local FIXED_COUNT=0
+    local WARN_COUNT=0
+
+    # settings.json が存在しない場合はスキップ
+    if [ ! -f "$SETTINGS_FILE" ]; then
+        return 0
+    fi
+
+    # jq がインストールされているか確認
+    if ! command -v jq &> /dev/null; then
+        echo "[WARN] jq がインストールされていません。Hook 検証をスキップします。"
+        return 0
+    fi
+
+    # settings.json から全 Hook のコマンドを抽出
+    # 構造: .hooks.{EventType}[].hooks[].command
+    local HOOK_COMMANDS=$(jq -r '
+        .hooks // {} |
+        to_entries[] |
+        .value[]? |
+        .hooks[]? |
+        .command // empty
+    ' "$SETTINGS_FILE" 2>/dev/null)
+
+    # Hook コマンドがない場合はスキップ
+    [ -z "$HOOK_COMMANDS" ] && return 0
+
+    # 各 Hook コマンドを検証
+    while IFS= read -r CMD; do
+        [ -z "$CMD" ] && continue
+
+        # "bash path/to/script.sh" 形式からパスを抽出
+        local HOOK_PATH=$(echo "$CMD" | sed -n 's/^bash \([^ ]*\).*/\1/p')
+        [ -z "$HOOK_PATH" ] && continue
+
+        # ファイル存在チェック
+        if [ ! -f "$HOOK_PATH" ]; then
+            ISSUES_FOUND=true
+            WARN_COUNT=$((WARN_COUNT + 1))
+            echo "[WARN] Hook ファイルが存在しません: $HOOK_PATH"
+            echo "  → settings.json から削除するか、ファイルを作成してください"
+            continue
+        fi
+
+        # 実行権限チェック
+        if [ ! -x "$HOOK_PATH" ]; then
+            ISSUES_FOUND=true
+            # 自動修復を試行
+            if chmod +x "$HOOK_PATH" 2>/dev/null; then
+                FIXED_COUNT=$((FIXED_COUNT + 1))
+                echo "[AUTO-FIX] 実行権限を付与しました: $HOOK_PATH"
+            else
+                WARN_COUNT=$((WARN_COUNT + 1))
+                echo "[WARN] 実行権限を付与できません: $HOOK_PATH"
+                echo "  → chmod +x $HOOK_PATH を手動で実行してください"
+            fi
+        fi
+    done <<< "$HOOK_COMMANDS"
+
+    # サマリー出力（問題があった場合のみ）
+    if [ "$ISSUES_FOUND" = true ]; then
+        echo ""
+        if [ $FIXED_COUNT -gt 0 ] || [ $WARN_COUNT -gt 0 ]; then
+            echo "[Hook 検証] 完了: 自動修復 $FIXED_COUNT 件, 要対応 $WARN_COUNT 件"
+        fi
+    fi
+}
+
 # === stdin から JSON を読み込み、trigger を検出 ===
 INPUT=$(cat)
 TRIGGER=$(echo "$INPUT" | jq -r '.trigger // "startup"' 2>/dev/null || echo "startup")
@@ -198,6 +274,9 @@ echo "$PLAYBOOK" > "$INIT_DIR/required_playbook"
 
 # === compact 後の状態復元（snapshot.json が存在する場合のみ） ===
 restore_from_snapshot
+
+# === Hook 検証（settings.json の全 Hook を自動検証） ===
+verify_hooks
 
 # === repository-map.yaml 差分チェック ===
 check_repository_map_drift

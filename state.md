@@ -17,8 +17,8 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-feature-verification.md
+branch: feat/feature-verification
 last_archived: plan/archive/playbook-context-continuity.md
 review_pending: false
 ```
@@ -29,9 +29,12 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: null
-done_criteria: []
-note: playbook-context-continuity 完了 - Self-Healing Layer 1 実装済み
+phase: p1
+done_criteria:
+  - SessionStart で settings.json に登録された全 Hook の存在・実行権限を自動検証する
+  - 問題検出時に警告メッセージが表示される
+  - 自動修復可能な問題（chmod +x）は自動修復される
+note: Self-Healing Layer 3 - Hook 故障の自動検知と修復
 ```
 
 ---
@@ -39,7 +42,7 @@ note: playbook-context-continuity 完了 - Self-Healing Layer 1 実装済み
 ## session
 
 ```yaml
-last_start: 2025-12-24 16:23:14
+last_start: 2025-12-24 16:34:45
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
