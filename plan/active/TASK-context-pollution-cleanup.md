@@ -1,0 +1,198 @@
+# TASK: コンテキスト汚染の排除
+
+> **このファイルは /compact 後も読むこと。タスクの継続に必要な全情報が含まれている。**
+
+---
+
+## 現在の状態
+
+```yaml
+ブランチ: fix/golden-path-chain
+状態: ドキュメント精査完了、汚染排除待ち
+前提条件: main へのマージは汚染排除後
+
+コミット済み:
+  - 776153f: コードレベルの修正（playbook-init Skill 作成等）
+  - 9e6baf0: ドキュメント精査（誤作動定義、重複排除）
+```
+
+---
+
+## 背景（なぜこのタスクが必要か）
+
+### 2025-12-24 に発生した誤作動
+
+```
+ユーザー: 「ボタンコンポーネント作って」
+期待: Skill → pm SubAgent → understanding-check → playbook → 実装
+実際: Skill 呼び出し後、pm に委譲せず自分で処理 → バイパス → 直接実装
+
+根本原因: コード自体よりも「コンテキスト汚染」による誤判断
+```
+
+### 誤作動の分類
+
+| 分類 | 説明 |
+|------|------|
+| 委譲失敗 | SubAgent に委譲すべき処理を自分で実行 |
+| バイパス | Hook のブロックを回避（state.md 手動編集） |
+| 検証スキップ | reviewer, critic をスキップ |
+| コンテキスト誤解釈 | ドキュメントの曖昧さによる誤判断 |
+
+---
+
+## 特定されたコンテキスト汚染（19件）
+
+### 優先度: 高（今回の誤作動に直接関連）
+
+| ID | パターン | ファイル | 対応状況 |
+|----|---------|---------|---------|
+| A1 | playbook-init の重複説明 | commands/playbook-init.md | ✅ 修正済み |
+| C1 | playbook-init vs golden-path の責務曖昧 | 複数ファイル | ⚠️ 部分修正 |
+| E2 | playbook-init Skill の責務曖昧 | playbook-init/SKILL.md | ⚠️ 要確認 |
+
+### 優先度: 高（バージョン不整合）
+
+| ID | パターン | ファイル | 対応状況 |
+|----|---------|---------|---------|
+| F1 | playbook フォーマットバージョン混在 | pm.md, critic.md, state/SKILL.md | ❌ 未対応 |
+| F2 | Core Contract と実装の版数不一致 | CLAUDE.md vs 実装 | ❌ 未対応 |
+
+### 優先度: 中
+
+| ID | パターン | ファイル | 対応状況 |
+|----|---------|---------|---------|
+| A2 | reviewer の責務分散 | reviewer.md, pm.md, playbook-review-criteria.md | ❌ 未対応 |
+| A3 | critic の validations 検証方法混在 | critic.md, 4qv-architecture.md, pm.md | ❌ 未対応 |
+| B1 | 廃止用語の参照残存 | plan-management/SKILL.md | ✅ 修正済み |
+| B2 | 古い playbook フォーマットバージョン参照 | 複数ファイル | ❌ 未対応 |
+| C2 | understanding-check のタイミング曖昧 | understanding-check/SKILL.md, pm.md | ❌ 未対応 |
+| C3 | critic の判定基準「疑わしきは FAIL」具体性不足 | critic.md | ❌ 未対応 |
+| D1 | pm → reviewer の循環（最大リトライ未定義） | pm.md, playbook-review-criteria.md | ❌ 未対応 |
+| D2 | understanding-check → pm の潜在的循環 | pm.md | ❌ 未対応 |
+| E1 | understanding-check の責務分散 | understanding-check/SKILL.md, pm.md | ❌ 未対応 |
+| E3 | reviewer と critic の責務重複 | reviewer.md, critic.md | ❌ 未対応 |
+
+### 優先度: 低
+
+| ID | パターン | ファイル | 対応状況 |
+|----|---------|---------|---------|
+| G1 | executor の名称と役割混在 | pm.md, ai-orchestration.md | ❌ 未対応 |
+| G2 | done_criteria の禁止パターン記載重複 | criterion-validation-rules.md, pm.md | ❌ 未対応 |
+| G3 | post-loop の責務曖昧 | post-loop/SKILL.md | ❌ 未対応 |
+
+---
+
+## 排除前の影響分析（必須）
+
+### 分析手順
+
+各汚染パターンを排除する前に、以下を確認すること：
+
+```yaml
+1. 参照元の特定:
+   - grep -r "対象用語" .claude/ docs/
+   - 全ての参照箇所をリスト化
+
+2. 依存関係の確認:
+   - この定義に依存する Skill/SubAgent は？
+   - 削除/変更すると動作しなくなる箇所は？
+
+3. 影響範囲の評価:
+   - 影響を受けるファイル数
+   - Hook チェーンへの影響
+   - ユーザー向けコマンドへの影響
+
+4. ロールバック計画:
+   - 問題発生時にどう戻すか
+   - テスト方法
+```
+
+### 排除時の原則
+
+```yaml
+正規ソースの原則:
+  - 各概念には「正規ソース」を一つ定義
+  - 他は正規ソースを参照するのみ
+  - 重複説明は削除
+
+単一責務の原則:
+  - 各 Skill/SubAgent は一つの責務のみ
+  - 責務の境界を明確化
+
+明示的委譲の原則:
+  - Skill は処理を自分で実行しない
+  - 必ず SubAgent に委譲
+  - 委譲先と委譲内容を明示
+```
+
+---
+
+## 次のステップ
+
+### 即時対応（このセッションで実行可能）
+
+1. **F1: playbook フォーマットバージョン統一**
+   - 最新版（V16）に統一
+   - pm.md, critic.md, state/SKILL.md を更新
+
+2. **C2: understanding-check のタイミング明確化**
+   - 「全プロンプト」の定義を明確化
+   - スキップ条件を厳密化
+
+3. **D1: pm → reviewer の循環防止**
+   - 最大リトライ数を定義（例: 3回）
+   - pm.md に記載
+
+### 後続対応（別セッションでも可）
+
+4. **A2, A3, E1, E3: 責務の整理**
+   - reviewer, critic, understanding-check の責務を再定義
+   - 正規ソースを特定し、他は参照に変更
+
+5. **G1, G2, G3: 微細な汚染の除去**
+   - 用語統一
+   - 重複記載の削除
+
+---
+
+## チェックリスト
+
+### セッション開始時
+
+- [ ] このファイルを読んだ
+- [ ] state.md の状態を確認した
+- [ ] fix/golden-path-chain ブランチにいる
+- [ ] 前回のコミット（9e6baf0）を確認した
+
+### 汚染排除時
+
+- [ ] 影響分析を実行した（上記手順）
+- [ ] 参照元を全て特定した
+- [ ] テスト方法を決定した
+- [ ] 修正を実行した
+- [ ] 動作確認した
+
+### セッション終了時
+
+- [ ] このファイルを更新した
+- [ ] コミットした
+- [ ] state.md を更新した
+
+---
+
+## 参照
+
+| ファイル | 役割 |
+|----------|------|
+| docs/context-pollution-analysis.md | 誤作動の定義と防止策 |
+| .claude/skills/playbook-init/SKILL.md | playbook-init の正規ソース |
+| CLAUDE.md | Core Contract（FROZEN） |
+
+---
+
+## 変更履歴
+
+| 日付 | 内容 |
+|------|------|
+| 2025-12-24 | 初版作成 |
