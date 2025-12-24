@@ -11,6 +11,48 @@
 
 ---
 
+## [2.0.0] - 2025-12-24
+
+### Added
+- Section 1: 設計思想（purpose, problem_statement, solution trinity）
+- Section 2: 保護アーキテクチャ（4QV+ 導火線モデル、L1-L3 レイヤー構造）
+- reward_fraud_prevention ルール（critic による独立検証必須）
+
+### Changed
+- 全セクションを YAML 形式に統一（LLM 向け最適化）
+- 日本語に統一（言語混在を解消）
+- セクション構成を 12 → 7 に再編（MECE 化）
+- 行数を 262 → 230 に削減（12% 圧縮）
+
+### Removed
+- Section 2 (Operating Principles) - 汎用的すぎるため削除
+- Section 3 (Non-Negotiables) - Core Contract に統合
+- Section 4 (Quality Bar) - 実行プロトコルに統合
+- Section 6 (Communication Rules) - 汎用的すぎるため削除
+- Section 9 (Prohibited Actions) - Core Contract に統合
+- Section 12 (Admin Mode Contract) - Core Contract に統合
+
+### Rationale
+CLAUDE.md は LLM のシステムプロンプトとして機能する。以下の問題を解決：
+1. **設計思想の欠如**: 「なぜこのフレームワークが存在するか」が不明だった
+2. **MECE でない**: Non-Negotiables と Prohibited Actions が重複
+3. **汎用的すぎる**: セクション 2-6 は一般的な Claude ルールで冗長
+4. **保護メカニズム不明**: 4QV+ アーキテクチャへの言及がなかった
+5. **言語混在**: 英語/日本語が混在
+
+### Risk Assessment
+- CLAUDE.md は全セッションで読み込まれる最重要ファイル
+- 大規模な再編のため、意図しない動作変更のリスクあり
+- 移行期間は旧バージョンとの差分を監視
+
+### Verification
+1. 設計思想が明記されていることを確認: `grep "problem_statement" CLAUDE.md`
+2. 4QV+ アーキテクチャが記載されていることを確認: `grep "導火線モデル" CLAUDE.md`
+3. コア契約が維持されていることを確認: `grep "golden_path" CLAUDE.md`
+4. タスク依頼時のフローが正しく動作することをテスト
+
+---
+
 ## [1.2.0] - 2025-12-24
 
 ### Changed

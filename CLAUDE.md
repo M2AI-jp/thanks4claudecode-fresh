@@ -1,254 +1,221 @@
-# CLAUDE.md (Frozen Constitution)
+# CLAUDE.md
 
 ```yaml
-Status: FROZEN
-Version: 1.2.0
-Owner: Repo Maintainers
-Last Updated: 2025-12-24
+version: 2.0.0
+status: FROZEN
+updated: 2025-12-24
 ```
 
-> **This file is the immutable operating constitution for Claude in this repository.**
-> If something changes often, it does NOT belong here. See RUNBOOK.md for procedures.
-
 ---
 
-## 1. Instruction Priority
+## 1. 設計思想
 
-When instructions conflict, follow this order:
-
-1. System / platform policies (Claude's built-in safety)
-2. **This CLAUDE.md** (frozen constitution)
-3. Task-specific instructions (issue, ticket, user request)
-4. Other repository docs (RUNBOOK.md, docs/, etc.)
-
-If conflict prevents safe execution: **stop and ask** only after making best-effort attempt with stated assumptions.
-
----
-
-## 2. Default Operating Principles
+このリポジトリは **Claude Code 自律運用フレームワーク** である。
 
 ```yaml
-deliver_now:
-  - Produce usable results in THIS response/session
-  - Never promise "I'll do it later" or give time estimates
-  - If blocked, explain why and propose alternatives NOW
+purpose: |
+  LLM の「自己承認バイアス」と「スコープクリープ」を構造的に防止し、
+  検証可能な成果物のみを生産するシステム。
 
-concrete_over_abstract:
-  - Prefer patches, files, commands, checklists over explanations
-  - Output what can be directly applied or verified
-  - "Working code > design document"
+problem_statement:
+  - LLM は自分の出力を「完了」と判断しがち（報酬詐欺）
+  - ユーザープロンプトに引きずられてスコープが肥大する
+  - コンテキストリセット後に状態を失う
 
-explicit_assumptions:
-  - State assumptions when proceeding with incomplete info
-  - Never invent facts or hallucinate
-  - If unsure, say "I don't know" and propose verification steps
+solution:
+  trinity:
+    hooks: 構造的強制（Edit/Write 前にゲートチェック）
+    subagents: 独立検証（critic が done_criteria を判定）
+    claude_md: 思考制御（このファイル）
 
-minimal_scope:
-  - Do the requested job, nothing more
-  - Propose improvements separately, don't sneak them in
-  - Avoid scope creep
+  enforcement: |
+    「お願い」ではなく「ブロック」で制御する。
+    Hook が BLOCK を返せば Claude は進めない。
 ```
 
 ---
 
-## 3. Non-Negotiables (Hard Constraints)
-
-These rules are absolute. No exceptions.
+## 2. 保護アーキテクチャ（4QV+）
 
 ```yaml
-no_hallucination:
-  rule: If you don't know, say so
-  action: Propose how to verify instead of guessing
+model: 導火線モデル（Fuse Model）
 
-no_future_promises:
-  rule: No "I'll do it later" or "wait for me"
-  action: Deliver what's possible NOW, explain blockers
+layers:
+  L1_hooks:
+    role: トリガー（導火線）
+    files: .claude/hooks/{pre,post}-tool.sh
+    behavior: |
+      全ツール呼び出し前後に発火
+      条件不成立 → BLOCK/WARN を返す
 
-no_unauthorized_edits:
-  rule: Do not modify frozen files without Change Control
-  targets:
-    - CLAUDE.md (this file)
-    - Files listed in .claude/protected-files.txt
+  L2_skills:
+    role: ユースケースパッケージ
+    files: .claude/skills/*/
+    behavior: |
+      Hook から呼び出される
+      SubAgent を内包する場合あり
 
-no_unsafe_actions:
-  rule: Refuse unsafe/illegal instructions
-  action: Offer safe alternatives instead
+  L3_subagents:
+    role: 専門検証者
+    files: .claude/skills/*/agents/
+    critical_agents:
+      pm: タスク開始の必須エントリーポイント
+      critic: done_criteria 検証（PASS/FAIL 判定）
+      reviewer: playbook 検証
 
-no_self_approval:
-  rule: Do not declare your own work "complete" without verification
-  action: State what was done + how to verify + known limitations
+chain: |
+  Hook → Skill → SubAgent
+  この順序をスキップしてはならない
+
+ssot: |
+  state.md = Single Source of Truth
+  playbook.active = 現在のタスク定義
+  コンテキストリセット後は state.md を再読
 ```
 
 ---
 
-## 4. Quality Bar
+## 3. コア契約（Core Contract）
 
-Every deliverable must be:
-
-| Criterion | Definition |
-|-----------|------------|
-| **Correct** | Aligned with repo constraints and task requirements |
-| **Complete** | Includes steps to apply/verify, not just ideas |
-| **Reproducible** | Commands, paths, expected outcomes, rollback notes |
-
----
-
-## 5. Working Protocol
-
-For non-trivial tasks, follow this sequence:
-
-```
-1. PLAN    - Brief plan (3-7 bullets max)
-2. EXECUTE - Produce concrete artifacts (diff, files, output)
-3. VERIFY  - Self-check against acceptance criteria
-4. REPORT  - What changed + how to validate + limitations
-```
-
-For trivial tasks (single file edit, simple question): skip to execution.
-
----
-
-## 6. Communication Rules
-
-```yaml
-be_direct:
-  - No long preambles or excessive caveats
-  - Answer first, then explain if needed
-
-handle_ambiguity:
-  - Make best-effort assumptions and proceed
-  - State assumptions explicitly
-  - Ask ONLY if proceeding would waste significant work or cause harm
-
-minimize_questions:
-  - One focused question is better than five
-  - Batch related questions together
-  - Never ask "Is this okay?" after every step
-```
-
----
-
-## 7. State Management
-
-This repository uses external state files as source of truth:
-
-```yaml
-primary_state: state.md
-  - Current focus, active task, session info
-  - Read this FIRST at session start
-
-task_state: plan/playbook-*.md
-  - Current task details, acceptance criteria
-  - Check playbook.active in state.md
-```
-
-**Rule**: Trust state files over chat history. After context reset, re-read state files.
-
----
-
-## 8. Git Workflow
-
-```yaml
-branch_rule:
-  - Never commit directly to main
-  - Create feature branch for any changes
-  - Branch naming: {type}/{description}
-    types: feat, fix, refactor, docs, chore
-
-commit_rule:
-  - Atomic commits (one logical change per commit)
-  - Descriptive messages
-  - Include Co-Authored-By for AI contributions
-```
-
----
-
-## 9. Prohibited Actions
-
-```
-- Editing CLAUDE.md without Change Control process
-- Declaring work "done" without verification evidence
-- Making changes outside the requested scope
-- Giving time estimates or promising future delivery
-- Proceeding when safety concerns exist
-- Ignoring explicit user constraints
-```
-
----
-
-## 10. Change Control
-
-**This file is FROZEN.** Changes require ALL of the following:
-
-1. **Rationale** recorded in `governance/PROMPT_CHANGELOG.md`
-2. **Version bump** (SemVer) and date update in this file
-3. **Passing lint** via `scripts/lint_prompts.py`
-4. **Review/approval** by maintainers
-
-If these conditions are not met, **DO NOT edit CLAUDE.md**.
-
-For procedures, tool-specific instructions, and frequently-changing content:
-- Use **RUNBOOK.md** instead
-- RUNBOOK.md can be updated without Change Control
-
----
-
-## 11. Core Contract
-
-以下のルールは admin モードでも回避不可の絶対ルール:
+以下は admin モードでも回避不可。
 
 ```yaml
 golden_path:
-  rule: タスク依頼を受けたら、Hook→Skill→SubAgent チェーン経由で playbook を作成
-  trigger: "作って/実装して/修正して/追加して" 等のタスク要求パターン
-  action: |
-    playbook=null の場合:
-      Skill(skill='playbook-init') を呼ぶ
-    直接 Edit/Write してはいけない
-  prohibited: |
-    ❌ Task(subagent_type='pm') を直接呼ぶ（Skill 経由必須）
-    ❌ Hook/Skill チェーンをスキップする
+  trigger: タスク依頼パターン（作って/実装して/修正して/追加して）
+  required_chain: |
+    1. Skill(skill='playbook-init') を呼ぶ
+    2. playbook-init が pm SubAgent に委譲
+    3. pm が understanding-check を実行
+    4. reviewer が playbook を検証
+  prohibited:
+    - Task(subagent_type='pm') の直接呼び出し
+    - Hook/Skill チェーンのスキップ
+    - understanding-check の省略
 
 playbook_gate:
-  rule: playbook 必須
-  block: state.md の playbook.active が null の場合、Edit/Write をブロック
-  bash: 変更系 Bash コマンド（cat >, tee, sed -i, git add/commit 等）も同様にブロック
+  condition: state.md の playbook.active == null
+  action: Edit/Write/Bash(変更系) をブロック
+  bypass: なし
+
+reward_fraud_prevention:
+  rule: 自分の作業を自分で「完了」と判定しない
+  required: critic SubAgent による独立検証
+  evidence: PASS 判定には実行可能な証拠が必要
 
 reviewer_gate:
-  rule: playbook は reviewer の PASS なしに確定しない
-  warn: reviewed: false の playbook には警告を表示
+  rule: playbook は reviewed: true でなければ確定しない
+  enforced_by: playbook-guard.sh
+
+file_protection:
+  hard_block:
+    - CLAUDE.md
+    - .claude/protected-files.txt に記載のファイル
+  soft_block:
+    - state.md の直接編集（Skill 経由推奨）
 ```
 
 ---
 
-## 12. Admin Mode Contract
-
-admin モードの権限境界:
+## 4. 状態モデル
 
 ```yaml
-admin_is_not_bypass:
-  rule: admin は「全てをバイパス」ではない
-  principle: コア契約は admin でも回避不可
+state_files:
+  state.md:
+    role: 現在状態の真実源
+    contains: focus, playbook.active, goal, config
+    rule: セッション開始時に必ず Read
 
-admin_cannot_bypass:
-  - Golden Path（pm 必須）
-  - Playbook Gate（playbook=null での Edit/Write/Bash 変更系）
-  - HARD_BLOCK ファイル保護（CLAUDE.md, protected-files.txt 等）
+  playbook:
+    location: plan/playbook-*.md
+    role: タスク定義と進捗
+    contains: phases, done_criteria, validations
 
-admin_can_relax:
-  - BLOCK レベルの保護（→ WARN に緩和）
-  - 必須ファイル Read チェック（init-guard）
+  repository_map:
+    location: docs/repository-map.yaml
+    role: ファイル構造のキャッシュ
+
+trust_hierarchy:
+  1: state.md（最優先）
+  2: playbook
+  3: チャット履歴（コンテキストリセットで消失）
+```
+
+---
+
+## 5. 実行プロトコル
+
+```yaml
+task_execution:
+  trivial: 直接実行（単一ファイル編集、質問回答）
+  non_trivial:
+    1: playbook 確認（なければ golden_path 発動）
+    2: phase の done_criteria 確認
+    3: 実行
+    4: critic による検証
+    5: 次 phase または完了
+
+output_requirements:
+  - 具体的成果物（diff, file, command）
+  - 検証手順
+  - 制限事項
+
+prohibited:
+  - 「後でやる」という約束
+  - 時間見積もり
+  - 検証なしの「完了」宣言
+  - スコープ外の変更
+  - 事実の捏造（知らなければ「知らない」と言う）
+
+git:
+  branch: main への直接コミット禁止
+  naming: {type}/{description}
+  commit: Co-Authored-By 必須
+```
+
+---
+
+## 6. 優先順位
+
+```yaml
+instruction_priority:
+  1: Claude 組み込み安全性
+  2: CLAUDE.md（このファイル）
+  3: タスク固有指示（issue, ticket）
+  4: その他 docs（RUNBOOK.md 等）
+
+conflict_resolution: |
+  競合時は上位を優先。
+  安全に実行できない場合のみ停止して確認。
+```
+
+---
+
+## 7. 変更管理
+
+```yaml
+this_file:
+  status: FROZEN
+  change_requires:
+    - governance/PROMPT_CHANGELOG.md に理由記録
+    - バージョン番号更新（SemVer）
+    - メンテナーレビュー
+
+mutable_files:
+  - RUNBOOK.md（手順書）
+  - docs/*（ドキュメント）
+  - .claude/skills/*（Skill 定義）
 ```
 
 ---
 
 ## References
 
-| File | Purpose |
-|------|---------|
-| `RUNBOOK.md` | Procedures, tools, examples (can change) |
-| `state.md` | Current state (source of truth) |
-| `governance/PROMPT_CHANGELOG.md` | Change history for this file |
+| ファイル | 役割 |
+|----------|------|
+| state.md | 現在状態（SSOT） |
+| RUNBOOK.md | 手順書（変更可能） |
+| docs/4qv-architecture.md | 保護アーキテクチャ詳細 |
+| docs/ARCHITECTURE.md | リポジトリ構造 |
 
 ---
 
@@ -256,6 +223,7 @@ admin_can_relax:
 
 | Version | Date | Summary |
 |---------|------|---------|
-| 1.2.0 | 2025-12-24 | Golden Path: Hook→Skill→SubAgent チェーン経由を明記、直接 Task(pm) 呼び出しを禁止 |
-| 1.1.0 | 2025-12-18 | Core Contract + Admin Mode Contract 追加（M079） |
-| 1.0.0 | 2025-12-18 | Initial frozen constitution. Extracted procedures to RUNBOOK.md. |
+| 2.0.0 | 2025-12-24 | 総編集: 設計思想追加、保護アーキテクチャ追加、MECE 化、LLM 向け最適化 |
+| 1.2.0 | 2025-12-24 | Golden Path: Hook→Skill→SubAgent チェーン経由を明記 |
+| 1.1.0 | 2025-12-18 | Core Contract + Admin Mode Contract 追加 |
+| 1.0.0 | 2025-12-18 | Initial frozen constitution |
