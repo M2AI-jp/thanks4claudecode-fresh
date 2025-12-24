@@ -2,9 +2,9 @@
 
 ```yaml
 Status: FROZEN
-Version: 1.1.0
+Version: 1.2.0
 Owner: Repo Maintainers
-Last Updated: 2025-12-18
+Last Updated: 2025-12-24
 ```
 
 > **This file is the immutable operating constitution for Claude in this repository.**
@@ -199,12 +199,15 @@ For procedures, tool-specific instructions, and frequently-changing content:
 
 ```yaml
 golden_path:
-  rule: タスク依頼を受けたら、返答を始める前に pm を呼ぶ
+  rule: タスク依頼を受けたら、Hook→Skill→SubAgent チェーン経由で playbook を作成
   trigger: "作って/実装して/修正して/追加して" 等のタスク要求パターン
   action: |
     playbook=null の場合:
-      Task(subagent_type='pm', prompt='playbook を作成')
+      Skill(skill='playbook-init') を呼ぶ
     直接 Edit/Write してはいけない
+  prohibited: |
+    ❌ Task(subagent_type='pm') を直接呼ぶ（Skill 経由必須）
+    ❌ Hook/Skill チェーンをスキップする
 
 playbook_gate:
   rule: playbook 必須
@@ -253,5 +256,6 @@ admin_can_relax:
 
 | Version | Date | Summary |
 |---------|------|---------|
+| 1.2.0 | 2025-12-24 | Golden Path: Hook→Skill→SubAgent チェーン経由を明記、直接 Task(pm) 呼び出しを禁止 |
 | 1.1.0 | 2025-12-18 | Core Contract + Admin Mode Contract 追加（M079） |
 | 1.0.0 | 2025-12-18 | Initial frozen constitution. Extracted procedures to RUNBOOK.md. |

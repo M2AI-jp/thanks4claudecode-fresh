@@ -545,15 +545,15 @@ exit 0
   .claude/skills/reward-guard/agents/critic.md
   .claude/skills/quality-assurance/agents/reviewer.md
 
-重要な制限事項:
-  - Claude Code の Task() は custom SubAgents を認識しない
-  - Task(subagent_type='pm') は動作しない（predefined types のみ）
-  - 利用可能な predefined types: general-purpose, Explore, Plan, etc.
+SubAgent の呼び出しルール:
+  - Task(subagent_type='pm') は動作するが、直接呼び出しは禁止
+  - 必ず Skill 経由で呼び出すこと（Hook→Skill→SubAgent チェーン）
+  - 利用可能な predefined types: general-purpose, Explore, Plan, pm, reviewer, critic, etc.
 
 呼び出し方法:
-  - Skill() ツール経由で Skills 内のロジックを呼び出す
+  - Skill() ツール経由で呼び出す（推奨）
   - または /skill-name コマンドで直接呼び出す
-  - SubAgents は Skill 内のプロンプトテンプレートとして機能
+  - ❌ Task(subagent_type='pm') を直接呼ぶのは禁止（Core Contract 違反）
 ```
 
 ### 6.2 SubAgent の利用パターン
