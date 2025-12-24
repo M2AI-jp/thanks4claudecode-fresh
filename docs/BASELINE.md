@@ -495,6 +495,13 @@ EOF
 commit: b3a0b6e
 テスト内容: 「ボタン作って」タスクの E2E 実行
 
+e2e_verification:
+  date: 2025-12-25
+  commit: dc92a38
+  test: フレームワーク E2E 検証（playbook-init → pm → reviewer → 実装 → critic → post-loop）
+  result: PASS
+  note: plan/active/ 汚染修正、create-pr-hook.sh パスバグ修正後の検証
+
 検証項目:
   hook_enforcement:
     playbook_gate: PASS

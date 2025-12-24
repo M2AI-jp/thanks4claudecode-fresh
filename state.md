@@ -17,8 +17,8 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-e2e-verification-timestamp.md
+branch: test/e2e-verification
 last_archived: plan/archive/playbook-understanding-check-enforcement.md
 review_pending: false
 ```
@@ -29,9 +29,11 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: null
-done_criteria: []
-note: null
+phase: p_final
+done_criteria:
+  - docs/BASELINE.md の検証済み状態セクション（セクション5）に E2E 検証完了タイムスタンプが追加されている
+  - タイムスタンプは ISO 8601 形式（YYYY-MM-DD）である
+note: p1完了、critic検証実行中
 ```
 
 ---
@@ -39,7 +41,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2025-12-25 00:07:30
+last_start: 2025-12-25 00:47:28
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
