@@ -19,7 +19,7 @@ current: thanks4claudecode
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-understanding-check-enforcement.md
+last_archived: plan/archive/playbook-e2e-verification-timestamp.md
 review_pending: false
 ```
 
@@ -39,7 +39,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2025-12-25 00:07:30
+last_start: 2025-12-25 00:47:28
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
