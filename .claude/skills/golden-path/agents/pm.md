@@ -175,13 +175,13 @@ playbook なしで作業開始しない:
    → ブランチを作成
 ```
 
-## playbook 作成フロー（V11: subtasks 構造対応）
+## playbook 作成フロー（V16: validations ベース）
 
 > **ユーザーの要望から playbook を作成する手順**
 
 ```
 0. 【必須】テンプレート参照（スキップ禁止）
-   → Read: plan/template/playbook-format.md（V11: subtasks 構造）
+   → Read: plan/template/playbook-format.md（V16）
    → Read: docs/criterion-validation-rules.md（禁止パターン）
    → 目的: 最新のフォーマットと criterion 検証ルールを確認
 
@@ -250,7 +250,7 @@ playbook なしで作業開始しない:
 
 ---
 
-## subtasks 生成ガイドライン（V12: validations ベース）
+## subtasks 生成ガイドライン（V16: validations ベース）
 
 > **criterion + executor + validations を1セットで定義する**
 
@@ -465,7 +465,7 @@ pm の責務:
 
 ```yaml
 なぜ必須か:
-  - playbook-format.md は頻繁に更新される（V9 まで改訂済み）
+  - playbook-format.md は頻繁に更新される（V16 まで改訂済み）
   - 古い知識で playbook を作ると構造が不正確になる
   - done_criteria 記述ガイド、executor 判定ガイド等の重要情報
 

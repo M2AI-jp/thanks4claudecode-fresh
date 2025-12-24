@@ -55,8 +55,8 @@
 
 | ID | パターン | ファイル | 対応状況 |
 |----|---------|---------|---------|
-| F1 | playbook フォーマットバージョン混在 | pm.md, critic.md, state/SKILL.md | ❌ 未対応 |
-| F2 | Core Contract と実装の版数不一致 | CLAUDE.md vs 実装 | ❌ 未対応 |
+| F1 | playbook フォーマットバージョン混在 | pm.md, critic.md, state/SKILL.md | ✅ V16 に統一 |
+| F2 | Core Contract と実装の版数不一致 | CLAUDE.md vs 実装 | ⚠️ 確認中 |
 
 ### 優先度: 中
 
@@ -65,11 +65,11 @@
 | A2 | reviewer の責務分散 | reviewer.md, pm.md, playbook-review-criteria.md | ❌ 未対応 |
 | A3 | critic の validations 検証方法混在 | critic.md, 4qv-architecture.md, pm.md | ❌ 未対応 |
 | B1 | 廃止用語の参照残存 | plan-management/SKILL.md | ✅ 修正済み |
-| B2 | 古い playbook フォーマットバージョン参照 | 複数ファイル | ❌ 未対応 |
-| C2 | understanding-check のタイミング曖昧 | understanding-check/SKILL.md, pm.md | ❌ 未対応 |
-| C3 | critic の判定基準「疑わしきは FAIL」具体性不足 | critic.md | ❌ 未対応 |
-| D1 | pm → reviewer の循環（最大リトライ未定義） | pm.md, playbook-review-criteria.md | ❌ 未対応 |
-| D2 | understanding-check → pm の潜在的循環 | pm.md | ❌ 未対応 |
+| B2 | 古い playbook フォーマットバージョン参照 | 複数ファイル | ✅ F1 で対応 |
+| C2 | understanding-check のタイミング曖昧 | understanding-check/SKILL.md, pm.md | ✅ 修正済み |
+| C3 | critic の判定基準「疑わしきは FAIL」具体性不足 | critic.md | ✅ 具体例追加 |
+| D1 | pm → reviewer の循環（最大リトライ未定義） | pm.md, playbook-review-criteria.md | ✅ 最大3回 |
+| D2 | understanding-check → pm の潜在的循環 | pm.md | ⚠️ 設計確認中 |
 | E1 | understanding-check の責務分散 | understanding-check/SKILL.md, pm.md | ❌ 未対応 |
 | E3 | reviewer と critic の責務重複 | reviewer.md, critic.md | ❌ 未対応 |
 
@@ -195,4 +195,5 @@
 
 | 日付 | 内容 |
 |------|------|
+| 2025-12-24 | F1, C3 修正。D1, C2 は前回コミット済み。 |
 | 2025-12-24 | 初版作成 |
