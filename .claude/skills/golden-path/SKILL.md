@@ -2,7 +2,7 @@
 
 > **Core Contract #1: Golden Path**
 >
-> タスク依頼 → pm → playbook 作成のワークフローを強制する
+> Hook → Skill → SubAgent チェーン経由で playbook を作成する
 
 ---
 
@@ -10,14 +10,23 @@
 
 ```yaml
 core_contract: "#1 Golden Path"
-rule: タスク依頼を受けたら、返答を始める前に pm を呼ぶ
+rule: タスク依頼を受けたら、Skill(playbook-init) 経由で playbook を作成
 trigger: "作って/実装して/修正して/追加して" 等のタスク要求パターン
+chain: Hook(prompt.sh) → Skill(playbook-init) → pm SubAgent
 ```
 
 このSkillは以下を担当:
 1. タスク開始フローの標準化
-2. pm SubAgent のオーケストレーション
+2. pm SubAgent のオーケストレーション（Skill 経由）
 3. playbook 作成の強制
+
+### 禁止事項
+
+```yaml
+prohibited:
+  - Task(subagent_type='pm') を直接呼ぶ
+  - Hook/Skill チェーンをスキップする
+```
 
 ---
 
@@ -45,13 +54,19 @@ golden-path/
 
 ## 使用方法
 
-### CLI から直接呼び出し
+### Skill 経由（推奨）
 ```
-/task-start
+Skill(skill='playbook-init')
 ```
 
-### SubAgent 経由
+### CLI から直接呼び出し
 ```
+/playbook-init
+```
+
+### ⚠️ 禁止パターン
+```yaml
+# これは NG - Skill 経由でなければならない
 Task(subagent_type='pm', prompt='playbook を作成')
 ```
 
