@@ -17,8 +17,8 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-mandatory-understanding-check.md
-branch: feat/mandatory-understanding-check
+active: plan/playbook-completion-definition.md
+branch: feat/completion-definition
 last_archived: plan/archive/playbook-orphan-file-analysis.md
 review_pending: false
 ```
@@ -31,10 +31,11 @@ review_pending: false
 milestone: null
 phase: p1
 done_criteria:
-  - prompt.sh が理解確認の強制メッセージを注入している
-  - pm.md が理解確認なしに playbook 作成を進めない構造的ルールを持つ
-  - understanding-check Skill のスキップ条件が「ユーザー明示要求のみ」に更新されている
-note: 全ユーザープロンプトに対して理解確認（5W1H分析）を必須化
+  - plan/design/completion-definition.md が存在し、完成判定チェックリストが含まれている
+  - アーキテクチャ図（ASCII）が含まれ、主要コンポーネントの関係が視覚化されている
+  - mission.md の success_criteria との対応表が存在する
+  - Self-Healing System の実装状況が Gap 分析されている
+note: リポジトリの完成定義を明確化しアーキテクチャ図とセットで記録
 ```
 
 ---
@@ -42,7 +43,7 @@ note: 全ユーザープロンプトに対して理解確認（5W1H分析）を�
 ## session
 
 ```yaml
-last_start: 2025-12-24 06:24:22
+last_start: 2025-12-24 15:50:08
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
