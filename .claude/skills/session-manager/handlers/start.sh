@@ -78,6 +78,64 @@ check_repository_map_drift() {
     fi
 }
 
+# ==============================================================================
+# restore_from_snapshot - compact 後の状態復元
+# snapshot.json が存在する場合、前回の作業状態を表示して復元
+# ==============================================================================
+restore_from_snapshot() {
+    local SNAPSHOT_FILE=".claude/.session-init/snapshot.json"
+    local SNAPSHOT_ARCHIVE_DIR=".claude/.session-init/archive"
+
+    # snapshot.json が存在しない場合は何もしない
+    [ ! -f "$SNAPSHOT_FILE" ] && return 0
+
+    # JSON パースを試行（破損している場合はスキップ）
+    if ! jq -e '.' "$SNAPSHOT_FILE" >/dev/null 2>&1; then
+        echo "[WARN] snapshot.json が破損しています。スキップします。"
+        rm -f "$SNAPSHOT_FILE" 2>/dev/null || true
+        return 0
+    fi
+
+    # snapshot から情報を抽出
+    local SNAP_FOCUS=$(jq -r '.focus // "unknown"' "$SNAPSHOT_FILE" 2>/dev/null)
+    local SNAP_PLAYBOOK=$(jq -r '.playbook // "null"' "$SNAPSHOT_FILE" 2>/dev/null)
+    local SNAP_PHASE=$(jq -r '.current_phase // "unknown"' "$SNAPSHOT_FILE" 2>/dev/null)
+    local SNAP_INTENTS=$(jq -r '.user_intents // ""' "$SNAPSHOT_FILE" 2>/dev/null)
+    local SNAP_TIMESTAMP=$(jq -r '.timestamp // ""' "$SNAPSHOT_FILE" 2>/dev/null)
+    local SNAP_BRANCH=$(jq -r '.branch // ""' "$SNAPSHOT_FILE" 2>/dev/null)
+
+    # 復元メッセージを表示
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  [COMPACT 復元] 前回の作業状態を復元しました"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "  📍 focus: $SNAP_FOCUS"
+    echo "  📋 playbook: $SNAP_PLAYBOOK"
+    echo "  🔄 phase: $SNAP_PHASE"
+    echo "  🌿 branch: $SNAP_BRANCH"
+    echo "  ⏰ snapshot 時刻: $SNAP_TIMESTAMP"
+    echo ""
+
+    # user_intents が存在する場合は表示
+    if [ -n "$SNAP_INTENTS" ] && [ "$SNAP_INTENTS" != "\"\"" ] && [ "$SNAP_INTENTS" != "" ]; then
+        echo "  📝 ユーザー意図（最新）:"
+        echo "$SNAP_INTENTS" | head -20 | sed 's/^/    /'
+        echo ""
+    fi
+
+    echo "  → この意図に沿って作業を継続してください"
+    echo ""
+
+    # snapshot.json を削除（二重復元防止）
+    # オプション: archive に保存する場合
+    # mkdir -p "$SNAPSHOT_ARCHIVE_DIR"
+    # mv "$SNAPSHOT_FILE" "$SNAPSHOT_ARCHIVE_DIR/snapshot-$(date +%Y%m%d-%H%M%S).json" 2>/dev/null || true
+    rm -f "$SNAPSHOT_FILE" 2>/dev/null || true
+
+    return 0
+}
+
 # === stdin から JSON を読み込み、trigger を検出 ===
 INPUT=$(cat)
 TRIGGER=$(echo "$INPUT" | jq -r '.trigger // "startup"' 2>/dev/null || echo "startup")
@@ -137,6 +195,9 @@ PLAYBOOK=$(awk '/## playbook/,/^---/' state.md | grep "^active:" | head -1 | sed
 
 # init-guard.sh 用に playbook パスを記録
 echo "$PLAYBOOK" > "$INIT_DIR/required_playbook"
+
+# === compact 後の状態復元（snapshot.json が存在する場合のみ） ===
+restore_from_snapshot
 
 # === repository-map.yaml 差分チェック ===
 check_repository_map_drift
