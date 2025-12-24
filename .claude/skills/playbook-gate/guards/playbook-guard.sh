@@ -53,9 +53,9 @@ fi
 # --------------------------------------------------
 # ブートストラップ例外: playbook ファイル自体の作成/編集は許可
 # /playbook-init や pm が新規 playbook を作成できるようにする
+# 注: plan/active/ は廃止済み（2025-12-25）、plan/ 直下のみ許可
 # --------------------------------------------------
-if [[ "$FILE_PATH" == *"plan/playbook-"*.md ]] || \
-   [[ "$FILE_PATH" == *"plan/active/playbook-"*.md ]]; then
+if [[ "$FILE_PATH" == *"plan/playbook-"*.md ]]; then
     exit 0
 fi
 
