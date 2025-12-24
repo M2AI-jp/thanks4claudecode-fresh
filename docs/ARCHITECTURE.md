@@ -583,6 +583,57 @@ Task(subagent_type='setup-guide')
   - 外部連携（codex-delegate）は専用ツールのみ
 ```
 
+### SubAgent ライフサイクル管理
+
+> **問題**: Task ツールで起動した SubAgent がバックグラウンドで残存する
+>
+> **解決**: SubagentStop Hook でクリーンアップ + 明示的な終了確認
+
+```yaml
+ライフサイクル:
+  1. Task(subagent_type='xxx') で起動
+  2. SubAgent が処理を実行
+  3. SubAgent が結果を返す
+  4. SubagentStop イベント発火 → クリーンアップ
+
+残存防止ルール:
+  - run_in_background=true は必要な場合のみ使用
+  - バックグラウンド実行後は TaskOutput で結果を回収
+  - 長時間タスクは timeout を設定
+  - /tasks で残存タスクを定期確認
+```
+
+#### SubagentStop Hook
+
+```
+.claude/hooks/subagent-stop.sh
+    │
+    └─→ SubAgent 終了時の後処理
+        - ログ記録
+        - リソースクリーンアップ
+```
+
+#### 設定（.claude/settings.json）
+
+```json
+{
+  "hooks": {
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/subagent-stop.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
 ---
 
 ## 8. Skills 一覧と内部構成
