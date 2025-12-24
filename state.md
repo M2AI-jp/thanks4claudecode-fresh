@@ -19,7 +19,7 @@ current: thanks4claudecode
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-feature-verification.md
+last_archived: plan/archive/playbook-understanding-check-enforcement.md
 review_pending: false
 ```
 
@@ -31,7 +31,7 @@ review_pending: false
 milestone: null
 phase: null
 done_criteria: []
-note: playbook-feature-verification 完了 - Self-Healing Layer 3 実装済み
+note: 3 playbooks 全完了 - Core Contract + Self-Healing L1/L3 実装済み
 ```
 
 ---
