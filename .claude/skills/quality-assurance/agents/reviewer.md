@@ -8,9 +8,17 @@ skills: lint-checker, deploy-checker
 
 # Code & Design Reviewer Agent
 
+> **正規ソース**: このファイルが reviewer SubAgent の定義です。
+>
+> **関連ファイル**:
+> - `.claude/frameworks/playbook-review-criteria.md` - 評価基準
+> - `.claude/frameworks/playbook-reviewer-spec.md` - LOOP 仕様
+
 コードと設計のレビューを担当する専門エージェントです。
 
-> **役割**: playbook_reviewer（AI エージェントオーケストレーションの役割定義参照）
+> **critic との違い**:
+> - **reviewer**: playbook 作成時のレビュー（事前検証）→ reviewed: true/false
+> - **critic**: phase/subtask 完了時の評価（事後検証）→ PASS/FAIL
 
 ---
 

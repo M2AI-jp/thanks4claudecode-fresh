@@ -126,17 +126,24 @@ meta:
 ## 行動原則
 
 ```yaml
-# ★★★ 理解確認は全プロンプトで必須 ★★★
-理解確認_絶対ルール:
-  発動条件: 全てのユーザープロンプト（例外なし）
+# ★★★ タスク依頼時は理解確認必須 ★★★
+# 正規ソース: .claude/skills/understanding-check/SKILL.md
+理解確認_ルール:
+  発動条件:
+    必須:
+      - タスク依頼パターン（作って/実装して/修正して/追加して/変更して）
+      - 新しい playbook を作成する前
+      - 複雑なタスクで要件が曖昧な場合
+    不要:
+      - 単純な質問（「〜とは？」「〜を教えて」）
+      - 調査依頼（「〜を調べて」「〜を確認して」）
+      - 既存タスクの継続（playbook に従った作業）
   内容:
     - 5W1H 分析を実施（What/Why/Who/When/Where/How）
     - リスク分析と対策を提示
     - 不明点があれば AskUserQuestion で確認
     - ユーザー承認なしに次のステップへ進まない
-  スキップ条件: ユーザーが明示的に「理解確認をスキップして」と要求した場合のみ
-  Phase 途中: スキップ不可（新しいプロンプトには必ず理解確認を実施）
-  参照: .claude/skills/understanding-check/SKILL.md
+  スキップ条件: ユーザーが明示的に「スキップして」「確認不要」等を要求した場合
 
 playbook なしで作業開始しない:
   - session=task なら playbook 必須
@@ -175,21 +182,20 @@ playbook なしで作業開始しない:
    → ブランチを作成
 ```
 
-## playbook 作成フロー（V11: subtasks 構造対応）
+## playbook 作成フロー（V16: validations ベース）
 
 > **ユーザーの要望から playbook を作成する手順**
 
 ```
 0. 【必須】テンプレート参照（スキップ禁止）
-   → Read: plan/template/playbook-format.md（V11: subtasks 構造）
+   → Read: plan/template/playbook-format.md（V16）
    → Read: docs/criterion-validation-rules.md（禁止パターン）
    → 目的: 最新のフォーマットと criterion 検証ルールを確認
 
 1. ユーザーの要望を確認
    → 「何を作りたいですか？」（1回だけ）
 
-1.5. 【絶対必須】理解確認の実施（スキップ厳禁）
-   → ★ 全プロンプトで必ず実施（Phase 途中でも例外なし）
+1.5. 【必須】理解確認の実施（タスク依頼時）
    → understanding-check Skill を参照して 5W1H 分析を実行
    → 不明点は AskUserQuestion で確認
    → リスク分析と対策を提示
@@ -250,9 +256,11 @@ playbook なしで作業開始しない:
 
 ---
 
-## subtasks 生成ガイドライン（V12: validations ベース）
+## subtasks 生成ガイドライン（V16: validations ベース）
 
 > **criterion + executor + validations を1セットで定義する**
+>
+> **正規ソース**: `plan/template/playbook-format.md` の「validations」セクション
 
 ### 構造
 
@@ -465,7 +473,7 @@ pm の責務:
 
 ```yaml
 なぜ必須か:
-  - playbook-format.md は頻繁に更新される（V9 まで改訂済み）
+  - playbook-format.md は頻繁に更新される（V16 まで改訂済み）
   - 古い知識で playbook を作ると構造が不正確になる
   - done_criteria 記述ガイド、executor 判定ガイド等の重要情報
 
@@ -562,7 +570,7 @@ pm の責務:
 ## 参照ファイル
 
 - plan/template/playbook-format.md - playbook テンプレート（V16: p_self_update 必須化）
-- .claude/frameworks/playbook-integrity-validation.md - playbook 整合性チェック基準（M082）
+- .claude/frameworks/playbook-review-criteria.md - playbook レビュー基準
 - docs/criterion-validation-rules.md - criterion 検証ルール（禁止パターン）
 - state.md - 現在の playbook、focus
 - CLAUDE.md - playbook ルール（POST_LOOP: アーカイブ実行を含む）

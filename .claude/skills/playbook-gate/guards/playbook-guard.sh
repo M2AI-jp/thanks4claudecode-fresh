@@ -101,8 +101,31 @@ EOF
 fi
 
 # playbook ファイルが存在するか確認
+# M-integrity: state.md に設定されているが実ファイルがない場合はブロック
 if [[ ! -f "$PLAYBOOK" ]]; then
-    exit 0
+    # 失敗を記録（学習ループ用）
+    if [[ -f ".claude/hooks/failure-logger.sh" ]]; then
+        echo '{"hook": "playbook-guard", "context": "playbook file not found", "action": "Edit/Write blocked"}' | bash .claude/hooks/failure-logger.sh 2>/dev/null || true
+    fi
+
+    cat >&2 << EOF
+========================================
+  ⛔ playbook ファイルが存在しません
+========================================
+
+  state.md に設定されている playbook:
+    $PLAYBOOK
+
+  このファイルが存在しません。
+  state.md の設定と実ファイルの整合性が取れていません。
+
+  対処法:
+    1. Skill(skill='playbook-init') で正しく playbook を作成
+    2. または state.md の playbook.active を null にリセット
+
+========================================
+EOF
+    exit 2
 fi
 
 # reviewed フラグを取得

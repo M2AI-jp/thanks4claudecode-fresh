@@ -35,11 +35,12 @@ prohibited:
 ```
 golden-path/
 ├── SKILL.md          ← このファイル
-├── workflow/
-│   ├── task-start.sh     ← タスク開始フロー
-│   └── playbook-init.sh  ← playbook 初期化
 └── agents/
-    └── pm.md             ← pm SubAgent
+    ├── pm.md             ← pm SubAgent（playbook 管理）
+    └── codex-delegate.md ← Codex 委譲 SubAgent
+
+playbook-init/        ← 別の Skill（エントリーポイント）
+└── SKILL.md          ← pm SubAgent への委譲を強制
 ```
 
 ---
@@ -77,5 +78,7 @@ Task(subagent_type='pm', prompt='playbook を作成')
 | ファイル | 役割 |
 |----------|------|
 | CLAUDE.md | Core Contract 定義 |
-| docs/4qv-architecture.md | アーキテクチャ設計書 |
+| .claude/skills/playbook-init/SKILL.md | エントリーポイント Skill |
+| .claude/skills/golden-path/agents/pm.md | pm SubAgent |
 | .claude/hooks/prompt.sh | State Injection（導火線） |
+| docs/4qv-architecture.md | アーキテクチャ設計書 |

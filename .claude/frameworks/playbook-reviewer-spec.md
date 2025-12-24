@@ -1,5 +1,7 @@
-# playbook_reviewer 仕様
+# reviewer SubAgent 仕様
 
+> **正規ソース: `.claude/skills/quality-assurance/agents/reviewer.md`**
+>
 > **報酬詐欺防止のための独立検証エージェント**
 > criteria がクリアされるまで LOOP する仕組みの核心部分
 
@@ -22,7 +24,7 @@
 └─────────────────────────────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────┐
-│  p_final: playbook_reviewer による独立検証              │
+│  p_final: reviewer による独立検証              │
 └─────────────────────────────────────────────────────────┘
                          ↓
                    ┌─────────┐
@@ -34,7 +36,7 @@
     ┌──────────────┐    ┌──────────────────────────┐
     │ reviewed:true │    │ FAIL した subtask を特定  │
     │ → アーカイブ  │    │ 親 Claude が再実行        │
-    └──────────────┘    │ → 再度 playbook_reviewer  │
+    └──────────────┘    │ → 再度 reviewer  │
                         └──────────────────────────┘
                                   ↑          │
                                   └──────────┘
@@ -126,7 +128,7 @@ failed_items:
     related_subtask: p2.3
     fix_hint: "空入力時のエラーハンドリングを追加"
 
-action: 親 Claude は p2.3 を再実行し、再度 playbook_reviewer を呼ぶ
+action: 親 Claude は p2.3 を再実行し、再度 reviewer を呼ぶ
 ```
 
 **重要**: FAIL 時は「レポート」ではなく、「再実行すべき subtask」を特定して返す。
@@ -181,8 +183,8 @@ action: 親 Claude は p2.3 を再実行し、再度 playbook_reviewer を呼ぶ
 ```yaml
 # playbook の p_final 最後に追加
 
-- [ ] **p_final.N**: playbook_reviewer による独立検証が PASS
-  - executor: playbook_reviewer
+- [ ] **p_final.N**: reviewer による独立検証が PASS
+  - executor: reviewer
   - coding: false
   - validations:
     - technical: "done_when の全項目を独立検証"

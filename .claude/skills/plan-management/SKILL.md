@@ -56,14 +56,14 @@ Phase 完了条件:
 ```yaml
 四つ組:
   - focus.current (state.md)
-  - layer.state (state.md)
+  - playbook.active (state.md)
   - playbook (plan/playbook-*.md)
   - branch (git)
 
 整合性ルール:
   - playbook.branch == git current branch
-  - focus.current == active playbook's layer
-  - layer.state reflects playbook progress
+  - focus.current == active workspace
+  - playbook.active reflects current task
 ```
 
 ## Session Start Checklist
