@@ -158,9 +158,10 @@ is_maintenance_allowed() {
 }
 
 # パスが playbook ファイルか判定（Bootstrap 例外）
+# 注: plan/active/ は廃止済み（2025-12-25）、plan/ 直下のみ許可
 is_playbook_file() {
     local path="$1"
-    [[ "$path" == *"plan/playbook-"*.md ]] || [[ "$path" == *"plan/active/playbook-"*.md ]]
+    [[ "$path" == *"plan/playbook-"*.md ]]
 }
 
 # パスが state.md か判定

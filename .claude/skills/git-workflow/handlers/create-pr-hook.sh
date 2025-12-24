@@ -19,7 +19,8 @@ set -euo pipefail
 # ============================================================
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 STATE_FILE="$REPO_ROOT/state.md"
-CREATE_PR_SCRIPT="$REPO_ROOT/.claude/hooks/create-pr.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CREATE_PR_SCRIPT="$SCRIPT_DIR/create-pr.sh"
 SEP="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # 色定義
@@ -116,7 +117,7 @@ if [ $PR_EXIT_CODE -eq 0 ]; then
     echo "$SEP"
     echo ""
 
-    MERGE_SCRIPT="$REPO_ROOT/.claude/hooks/merge-pr.sh"
+    MERGE_SCRIPT="$SCRIPT_DIR/merge-pr.sh"
     if [ -x "$MERGE_SCRIPT" ]; then
         "$MERGE_SCRIPT"
         MERGE_EXIT_CODE=$?

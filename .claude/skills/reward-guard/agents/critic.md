@@ -10,6 +10,10 @@ skills: state, lint-checker, test-runner
 
 done_criteria の達成状況と playbook 妥当性を批判的に評価する専門エージェントです。
 
+> **reviewer との違い**:
+> - **reviewer**: playbook 作成時のレビュー（事前検証）→ reviewed: true/false
+> - **critic**: phase/subtask 完了時の評価（事後検証）→ PASS/FAIL
+
 ## 責務
 
 1. **done_criteria の厳密な評価**
@@ -70,9 +74,11 @@ playbook リセットのトリガー:
   - 新しいセッションで動作確認
 ```
 
-## subtasks 検証ロジック（V12: validations ベース）
+## subtasks 検証ロジック（V16: validations ベース）
 
 > **各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する**
+>
+> **正規ソース**: `plan/template/playbook-format.md` の「validations」セクション
 
 ### 検証フロー
 
@@ -91,8 +97,16 @@ playbook リセットのトリガー:
 3. 判定ルール:
    → 1つでも FAIL の subtask があれば phase を FAIL にする
    → 全て PASS で phase を PASS
+   → 「疑わしきは FAIL」原則を適用
 
-4. executor: user の場合:
+4. 疑わしきは FAIL の具体例:
+   → 証拠が不十分（「動いているはず」は FAIL）
+   → 部分的成功（「一部のテストが通った」は FAIL）
+   → 副作用未確認（「他への影響は確認していない」は FAIL）
+   → エラー握り潰し（「警告が出たが動く」は FAIL）
+   → 目視のみ確認（コマンド実行可能なのにしていない = FAIL）
+
+5. executor: user の場合:
    → ユーザー確認が必要と報告（DEFERRED）
 ```
 
@@ -120,7 +134,7 @@ playbook リセットのトリガー:
 
 ---
 
-## 出力フォーマット（V12: validations ベース）
+## 出力フォーマット（V16: validations ベース）
 
 評価結果は以下の形式で出力してください：
 
@@ -254,7 +268,7 @@ Skills FAIL:
 - **.claude/skills/lint-checker/skill.md** - lint チェック手順
 - **.claude/skills/test-runner/skill.md** - テスト実行手順
 - state.md - 現在の goal.done_criteria
-- playbook - phase の subtasks（V12: criterion + executor + validations）
+- playbook - phase の subtasks（V16: criterion + executor + validations）
 
 ## 重要: 固定フレームワークの使用
 

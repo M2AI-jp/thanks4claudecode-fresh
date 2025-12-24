@@ -351,7 +351,8 @@ severity による判定:
   5. FAIL の場合:
      - reviewer: 問題点と修正案を提示
      - pm: playbook を修正
-     - reviewer を再呼び出し（ループ）
+     - reviewer を再呼び出し（最大3回まで）
+     - 3回 FAIL した場合: ユーザーに確認を求める
 
 構造的強制:
   - playbook-guard.sh が reviewed: false を検出すると警告を出力
