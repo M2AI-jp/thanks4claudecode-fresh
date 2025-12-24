@@ -214,8 +214,7 @@ mutable_files:
 |----------|------|
 | state.md | 現在状態（SSOT） |
 | RUNBOOK.md | 手順書（変更可能） |
-| docs/4qv-architecture.md | 保護アーキテクチャ詳細 |
-| docs/ARCHITECTURE.md | リポジトリ構造 |
+| docs/ARCHITECTURE.md | 保護アーキテクチャ詳細・リポジトリ構造 |
 
 ---
 

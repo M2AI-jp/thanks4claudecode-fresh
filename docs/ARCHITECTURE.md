@@ -1,360 +1,849 @@
-# ARCHITECTURE.md
+# architecture.md
 
-> **リポジトリの構造と各コンポーネントの関係を文書化**
-
----
-
-## 1. 概要
-
-このリポジトリは「Claude Code のための自律運用フレームワーク」を提供する。
-
-```
-主要な構成要素:
-├── Hooks: 32 スクリプト (22 registered in settings.json)
-├── SubAgents: 6 定義
-├── Skills: 5 定義
-├── Commands: 8 スラッシュコマンド
-└── 状態管理: state.md + playbook
-```
-
-### 設計思想
-
-- **三位一体**: Hooks（構造的強制）+ SubAgents（検証）+ CLAUDE.md（思考制御）
-- **Single Source of Truth**: state.md が現在状態の真実源
-- **報酬詐欺防止**: critic SubAgent による検証が必須
+> **ユーザー体験ベースの状態遷移マップ**
+>
+> Hook → Skill → SubAgent の動線と、全ての参照関係・情報移動を表現。
+> 修正作業時のナビゲーションマップとして機能する。
 
 ---
 
-## 2. エントリーポイント
-
-Claude Code がセッション開始時に読み込む順序:
+## 概要
 
 ```
-1. CLAUDE.md          - 行動ルール（Frozen Constitution）
-2. state.md           - 現在の状態（focus, playbook, goal）
-3. playbook (if any)  - 現在の作業計画（plan/playbook-*.md）
-4. RUNBOOK.md         - 運用手順
-5. docs/repository-map.yaml - 全ファイルマッピング
+4QV+ 導火線モデル:
+  Hook（トリガー）→ Skill（パッケージ）→ SubAgent（専門検証）
+
+Single Source of Truth:
+  state.md → playbook → 実行
 ```
 
 ---
 
-## 3. ディレクトリ構成
+## 0. Hook リファレンス（公式）
 
+> **参照: https://code.claude.com/docs/ja/hooks**
+
+### 利用可能な Hook イベント
+
+| イベント名 | 説明 | マッチャー |
+|-----------|------|----------|
+| **PreToolUse** | ツール実行前（パラメータ作成後、実行前） | `Write\|Edit` 等で絞り込み可 |
+| **PostToolUse** | ツール正常完了直後 | 同上 |
+| **UserPromptSubmit** | ユーザープロンプト送信時（Claude 処理前） | なし |
+| **Stop** | メイン Claude エージェント応答完了時 | なし |
+| **SubagentStop** | サブエージェント（Task）応答完了時 | なし |
+| **PreCompact** | コンパクト操作実行前 | `manual`/`auto` |
+| **SessionStart** | セッション開始/再開時 | `startup`/`resume`/`clear`/`compact` |
+| **SessionEnd** | セッション終了時 | なし |
+| **Notification** | Claude が通知を送信するとき | なし |
+
+### 入力パラメータ（stdin JSON）
+
+```json
+// 共通フィールド（全イベント）
+{
+  "session_id": "abc123",
+  "cwd": "/path/to/project",
+  "hook_event_name": "PreToolUse | PostToolUse | ...",
+  "transcript_path": "/Users/.../.claude/projects/.../xxxxx.jsonl"
+}
+
+// PreToolUse 固有
+{
+  "tool_name": "Write | Edit | Read | Bash | Task | ...",
+  "tool_input": { "file_path": "...", "content": "..." }
+}
+
+// PostToolUse 固有
+{
+  "tool_response": { "filePath": "...", "success": true }
+}
+
+// UserPromptSubmit 固有
+{
+  "prompt": "ユーザーが入力したテキスト"
+}
+
+// SessionStart 固有
+{
+  "source": "startup | resume | clear | compact"
+}
 ```
-/
-├── CLAUDE.md              # LLM の行動ルール（不変）
-├── RUNBOOK.md             # 手順書（変更可能）
-├── AGENTS.md              # コーディングルール
-├── README.md              # プロジェクト説明
-├── state.md               # 現在状態（SSOT）
-│
-├── .claude/               # Claude Code 拡張システム
-│   ├── settings.json      # Hook 登録・権限設定
-│   ├── mcp.json           # MCP サーバー設定
-│   ├── hooks/             # 31 Hook スクリプト
-│   ├── agents/            # 6 SubAgent 定義
-│   ├── skills/            # 5 Skill 定義
-│   ├── commands/          # 8 スラッシュコマンド
-│   ├── schema/            # state.md スキーマ定義
-│   ├── logs/              # 実行ログ
-│   └── tests/             # done_criteria テスト
-│
-├── plan/                  # 計画管理
-│   ├── playbook-*.md      # 進行中 playbook
-│   ├── archive/           # 完了済み playbook
-│   └── template/          # playbook テンプレート
-│
-├── docs/                  # ドキュメント (17 files)
-│   ├── repository-map.yaml
-│   ├── extension-system.md
-│   ├── hook-responsibilities.md
-│   ├── folder-management.md
-│   └── ... (他 13 files)
-│
-├── setup/                 # セットアップ関連
-├── tmp/                   # テンポラリ（.gitignore）
-└── .archive/              # アーカイブ済みファイル
+
+### Exit Code の意味
+
+| Exit Code | 動作 | 用途 |
+|-----------|------|------|
+| **0** | 成功・続行 | ツール実行を許可 |
+| **2** | ブロック | ツール実行をブロック、stderr を Claude に表示 |
+| **その他** | エラー（続行） | stderr をユーザーに表示、実行は続行 |
+
+### JSON 出力（高度な制御）
+
+```json
+{
+  "continue": true,
+  "systemMessage": "Claude に表示するメッセージ",
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "allow | deny | ask",
+    "updatedInput": { "field": "modified value" }
+  }
+}
+```
+
+### MCP ツールのマッチャー
+
+```json
+{
+  "matcher": "mcp__memory__.*",     // 全メモリ操作
+  "matcher": "mcp__.*__write.*"     // 全サーバーの書き込み
+}
 ```
 
 ---
 
-## 4. Hook システム
+## 1. SessionStart（セッション開始）
 
-### 4.1 登録済み Hooks (settings.json)
+### 発火条件
+
+**Hook イベント**: `SessionStart`
+
+| source | 説明 |
+|--------|------|
+| `startup` | 新規セッション開始 |
+| `resume` | 既存セッション再開 |
+| `clear` | `/clear` コマンド後 |
+| `compact` | コンパクト後の再開 |
+
+### Hook
+```
+.claude/hooks/session.sh
+    │
+    └─→ .claude/skills/session-manager/handlers/start.sh
+```
+
+### 状態遷移
+
+| Before | 処理 | After |
+|--------|------|-------|
+| 前セッションの状態不明 | state.md 読み込み | focus, playbook 把握 |
+| last_start 古い | タイムスタンプ更新 | last_start 現在時刻 |
+| 状態不整合の可能性 | DRIFT チェック実行 | 整合性確認済み |
+
+### 参照ファイル（読み取り）
+
+| ファイル | 取得データ | 用途 |
+|----------|-----------|------|
+| state.md | focus.current, playbook.active | 現在状態把握 |
+| plan/playbook-*.md | phases, done_criteria | 作業計画確認 |
+| docs/repository-map.yaml | ファイル構造 | 変更検出 |
+
+### 書き込み
+
+| ファイル | 書き込みデータ |
+|----------|---------------|
+| state.md | session.last_start |
+| .claude/logs/session.log | セッション開始ログ |
+
+### 関連 SubAgent
+
+| SubAgent | トリガー条件 | 参照ファイル |
+|----------|-------------|-------------|
+| setup-guide | focus.current == 'setup' | .claude/skills/session-manager/agents/setup-guide.md |
+
+---
+
+## 2. UserPromptSubmit（ユーザープロンプト送信）
+
+### 発火条件
+
+**Hook イベント**: `UserPromptSubmit`
+
+ユーザーがプロンプトを送信した時（Claude が処理する前）。
+プロンプトの検証やコンテキスト追加が可能。
+
+### Hook
+```
+.claude/hooks/prompt.sh
+    │
+    └─→ State Injection（systemMessage への情報注入）
+```
+
+### 状態遷移
+
+| Before | 処理 | After |
+|--------|------|-------|
+| プロンプト未処理 | State Injection | コンテキスト付加 |
+| playbook=null | playbook-init 提案表示 | ユーザーに案内表示 |
+| タスク依頼パターン検出 | understanding-check 必須通知 | 理解確認フロー開始 |
+
+### 参照ファイル（読み取り）
+
+| ファイル | 取得データ | 用途 |
+|----------|-----------|------|
+| state.md | playbook.active | playbook 存在確認 |
+| state.md | focus.current | 現在コンテキスト |
+
+### 書き込み
+なし（systemMessage への出力のみ）
+
+### タスク依頼パターン検出時のチェーン
+
+```
+prompt.sh
+    │ playbook=null + タスク依頼パターン
+    │
+    └─→ Skill(skill='playbook-init') を呼べと案内
+            │
+            ├─→ .claude/skills/playbook-init/SKILL.md
+            │       │
+            │       └─→ 参照: .claude/skills/understanding-check/SKILL.md
+            │
+            └─→ Task(subagent_type='pm')
+                    │
+                    ├─→ .claude/skills/golden-path/agents/pm.md
+                    │       │
+                    │       ├─→ 参照: plan/template/playbook-format.md
+                    │       ├─→ 参照: docs/criterion-validation-rules.md
+                    │       └─→ 参照: .claude/frameworks/playbook-review-criteria.md
+                    │
+                    └─→ Task(subagent_type='reviewer')
+                            │
+                            ├─→ .claude/skills/quality-assurance/agents/reviewer.md
+                            │       │
+                            │       ├─→ 参照: .claude/frameworks/playbook-review-criteria.md
+                            │       └─→ 参照: .claude/frameworks/playbook-reviewer-spec.md
+                            │
+                            └─→ 書き込み: playbook.reviewed = true
+```
+
+---
+
+## 3. PreToolUse:*（全ツール共通）
+
+### 発火条件
+
+**Hook イベント**: `PreToolUse`
+
+Claude がツール名と入力パラメータを決定した後、実際の実行前に発火。
+`tool_name` でツール種別を判定し、条件分岐が可能。
+
+```json
+// stdin で受け取る JSON
+{
+  "tool_name": "Edit | Write | Read | Bash | Task | ...",
+  "tool_input": { ... }
+}
+```
+
+### Hook
+```
+.claude/hooks/pre-tool.sh
+    │
+    ├─→ .claude/skills/session-manager/handlers/init-guard.sh
+    │       └─→ 必須ファイル Read 強制
+    │
+    └─→ .claude/skills/access-control/guards/main-branch.sh
+            └─→ main ブランチでの作業ブロック
+```
+
+### 状態遷移
+
+| Before | 処理 | After |
+|--------|------|-------|
+| 必須ファイル未読 | init-guard チェック | Read 強制 or BLOCK |
+| main ブランチ | main-branch チェック | focus 依存で許可/ブロック |
+
+### 参照ファイル（読み取り）
+
+| ファイル | 取得データ | 用途 |
+|----------|-----------|------|
+| state.md | focus.current | main 許可判定 |
+| .claude/session-state/* | 既読ファイル | init-guard 判定 |
+
+### main ブランチ許可ルール
+
+| focus 値 | main での Edit/Write |
+|----------|---------------------|
+| setup | 許可 |
+| product | 許可 |
+| plan-template | 許可 |
+| thanks4claudecode | ブロック（ブランチ必須） |
+| その他 | ブロック |
+
+---
+
+## 4. PreToolUse:Edit/Write（編集/書き込み前）
+
+### 発火条件
+
+**Hook イベント**: `PreToolUse`（マッチャー: `Edit|Write`）
+
+```json
+// stdin で受け取る JSON（Edit の場合）
+{
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "/path/to/file",
+    "old_string": "...",
+    "new_string": "..."
+  }
+}
+```
+
+ブロック時は `exit 2` + stderr にメッセージ。
+
+### Hook チェーン
+```
+.claude/hooks/pre-tool.sh
+    │
+    ├─→ .claude/skills/access-control/guards/protected-edit.sh
+    │       │
+    │       └─→ 参照: .claude/protected-files.txt
+    │
+    ├─→ .claude/skills/playbook-gate/guards/playbook-guard.sh
+    │       │
+    │       ├─→ playbook=null → BLOCK + playbook-init 案内
+    │       └─→ reviewed=false → BLOCK + reviewer 必須案内
+    │
+    ├─→ .claude/skills/playbook-gate/guards/depends-check.sh
+    │       │
+    │       └─→ 参照: plan/playbook-*.md（depends_on）
+    │
+    ├─→ .claude/skills/playbook-gate/guards/executor-guard.sh
+    │       │
+    │       └─→ 参照: plan/playbook-*.md（executor）
+    │
+    ├─→ .claude/skills/reward-guard/guards/critic-guard.sh
+    │       │
+    │       └─→ done 変更前に critic 必須
+    │
+    ├─→ .claude/skills/reward-guard/guards/subtask-guard.sh
+    │       │
+    │       ├─→ - [ ] → - [x] 変更時に 3点検証確認
+    │       └─→ 参照: plan/template/playbook-format.md（validations）
+    │
+    └─→ .claude/skills/reward-guard/guards/scope-guard.sh
+            │
+            └─→ done_criteria 変更検出
+```
+
+### 状態遷移
+
+| Before | 処理 | After |
+|--------|------|-------|
+| 保護ファイル編集試行 | protected-edit | BLOCK |
+| playbook=null | playbook-guard | BLOCK + 案内 |
+| reviewed=false | playbook-guard | BLOCK + reviewer 必要 |
+| 依存 Phase 未完了 | depends-check | BLOCK + 依存表示 |
+| executor 不一致 | executor-guard | WARN |
+| done 変更試行 | critic-guard | critic 必須通知 |
+| subtask 未検証で [x] | subtask-guard | BLOCK |
+| scope 変更試行 | scope-guard | WARN + 確認要求 |
+
+### 参照ファイル（読み取り）
+
+| ファイル | 取得データ | チェック内容 |
+|----------|-----------|-------------|
+| state.md | playbook.active | playbook 存在 |
+| plan/playbook-*.md | reviewed, phases, subtasks | 各種ガードチェック |
+| .claude/protected-files.txt | 保護リスト | 編集可否 |
+
+---
+
+## 5. PreToolUse:Bash（Bash 前）
+
+### 発火条件
+
+**Hook イベント**: `PreToolUse`（マッチャー: `Bash`）
+
+```json
+// stdin で受け取る JSON
+{
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "git status"
+  }
+}
+```
+
+### Hook チェーン
+```
+.claude/hooks/pre-tool.sh
+    │
+    ├─→ .claude/skills/access-control/guards/bash-check.sh
+    │       │
+    │       └─→ 破壊的コマンドの検出・警告
+    │
+    ├─→ .claude/skills/reward-guard/guards/coherence.sh
+    │       │
+    │       └─→ state.md と playbook の整合性チェック
+    │
+    └─→ .claude/skills/quality-assurance/checkers/lint.sh
+            │
+            └─→ git commit 前の静的解析
+```
+
+### 状態遷移
+
+| Before | 処理 | After |
+|--------|------|-------|
+| 破壊的コマンド | bash-check | WARN or BLOCK |
+| state/playbook 不整合 | coherence | WARN + 修正提案 |
+| git commit 試行 | lint | 静的解析実行 |
+
+### 参照ファイル（読み取り）
+
+| ファイル | 取得データ | チェック内容 |
+|----------|-----------|-------------|
+| state.md | playbook.active, goal | 整合性確認 |
+| plan/playbook-*.md | phases.status | 状態一致確認 |
+
+---
+
+## 6. PostToolUse:Edit（編集後）
+
+### 発火条件
+
+**Hook イベント**: `PostToolUse`（マッチャー: `Edit`）
+
+ツール正常完了直後に発火。成功時のみ実行される。
+`tool_response` でツール実行結果を取得可能。
+
+```json
+// stdin で受け取る JSON
+{
+  "tool_name": "Edit",
+  "tool_input": { "file_path": "...", ... },
+  "tool_response": { "filePath": "...", "success": true }
+}
+```
+
+### Hook チェーン
+```
+.claude/hooks/post-tool.sh
+    │
+    ├─→ .claude/skills/playbook-gate/workflow/archive-playbook.sh
+    │       │
+    │       ├─→ 全 Phase done → アーカイブ提案
+    │       └─→ 書き込み: plan/archive/playbook-*.md
+    │
+    ├─→ .claude/skills/playbook-gate/workflow/cleanup.sh
+    │       │
+    │       └─→ tmp/ クリーンアップ
+    │
+    └─→ .claude/skills/git-workflow/handlers/create-pr-hook.sh
+            │
+            └─→ playbook 完了時に PR 作成提案
+```
+
+### 状態遷移
+
+| Before | 処理 | After |
+|--------|------|-------|
+| 全 Phase done | archive-playbook | playbook アーカイブ |
+| tmp/ に一時ファイル | cleanup | 一時ファイル削除 |
+| playbook 完了 | create-pr-hook | PR 作成提案 |
+
+### 書き込み
+
+| ファイル | 書き込みデータ | 条件 |
+|----------|---------------|------|
+| plan/archive/playbook-*.md | アーカイブ済み playbook | 全 Phase done |
+| state.md | playbook.active = null, last_archived | アーカイブ時 |
+| tmp/ | ファイル削除 | playbook 完了時 |
+
+---
+
+## 7. SubAgent 呼び出し（Task ツール）
+
+### pm SubAgent
+
+```
+Task(subagent_type='pm')
+    │
+    ├─→ .claude/skills/golden-path/agents/pm.md
+    │
+    ├─→ 参照（読み取り）:
+    │   ├─→ plan/template/playbook-format.md（テンプレート）
+    │   ├─→ plan/template/planning-rules.md（計画ルール）
+    │   ├─→ docs/criterion-validation-rules.md（禁止パターン）
+    │   ├─→ docs/ai-orchestration.md（役割定義）
+    │   └─→ .claude/skills/understanding-check/SKILL.md（理解確認）
+    │
+    ├─→ 書き込み:
+    │   ├─→ plan/playbook-{name}.md（新規 playbook）
+    │   └─→ state.md（playbook.active 更新）
+    │
+    └─→ 呼び出し:
+        └─→ Task(subagent_type='reviewer')
+```
+
+### reviewer SubAgent
+
+```
+Task(subagent_type='reviewer')
+    │
+    ├─→ .claude/skills/quality-assurance/agents/reviewer.md
+    │
+    ├─→ 参照（読み取り）:
+    │   ├─→ .claude/frameworks/playbook-review-criteria.md（評価基準）
+    │   ├─→ .claude/frameworks/playbook-reviewer-spec.md（LOOP 仕様）
+    │   └─→ .claude/frameworks/done-criteria-validation.md（done_criteria 評価）
+    │
+    └─→ 書き込み:
+        └─→ plan/playbook-*.md（reviewed: true に更新）
+```
+
+### critic SubAgent
+
+```
+Task(subagent_type='critic')
+    │
+    ├─→ .claude/skills/reward-guard/agents/critic.md
+    │
+    ├─→ 参照（読み取り）:
+    │   ├─→ .claude/frameworks/done-criteria-validation.md（評価フレームワーク）
+    │   ├─→ docs/criterion-validation-rules.md（禁止パターン）
+    │   └─→ plan/playbook-*.md（subtasks, validations）
+    │
+    ├─→ 呼び出し:
+    │   ├─→ Skill: lint-checker（コード変更時）
+    │   └─→ Skill: test-runner（テスト変更時）
+    │
+    └─→ 出力:
+        └─→ CRITIQUE 結果（PASS/FAIL + 証拠）
+```
+
+### codex-delegate SubAgent
+
+```
+Task(subagent_type='codex-delegate')
+    │
+    ├─→ .claude/skills/golden-path/agents/codex-delegate.md
+    │
+    ├─→ MCP 呼び出し:
+    │   └─→ mcp__codex__codex（Codex CLI）
+    │
+    └─→ 出力:
+        └─→ コード実装結果（要約）
+```
+
+### health-checker SubAgent
+
+```
+Task(subagent_type='health-checker')
+    │
+    ├─→ .claude/skills/quality-assurance/agents/health-checker.md
+    │
+    ├─→ 参照（読み取り）:
+    │   ├─→ state.md（整合性チェック）
+    │   ├─→ plan/playbook-*.md（存在確認）
+    │   └─→ docs/repository-map.yaml（DRIFT 検出）
+    │
+    └─→ 出力:
+        └─→ 健全性レポート
+```
+
+### setup-guide SubAgent
+
+```
+Task(subagent_type='setup-guide')
+    │
+    ├─→ .claude/skills/session-manager/agents/setup-guide.md
+    │
+    ├─→ 参照（読み取り）:
+    │   └─→ plan/template/state-initial.md（初期状態テンプレート）
+    │
+    └─→ 書き込み:
+        ├─→ state.md（セットアップ状態）
+        └─→ CLAUDE.md（カスタマイズ）
+```
+
+### SubAgent ツール制限（報酬詐欺防止）
+
+> **参照: https://code.claude.com/docs/ja/sub-agents**
+>
+> `tools` フィールドを省略すると全ツール継承。明示的に制限することで責務を限定。
+
+| SubAgent | 許可ツール | 意図 |
+|----------|-----------|------|
+| **critic** | Read, Grep, Bash | 書き込み不可 → 自己完了防止 |
+| **reviewer** | Read, Grep, Glob, Bash | 検証専念（編集権限なし） |
+| **pm** | Read, Write, Edit, Grep, Glob, Bash | playbook 作成に書き込み必要 |
+| **health-checker** | Read, Grep, Glob, Bash | 読み取り専用の健全性チェック |
+| **setup-guide** | Read, Write, Edit, Bash, Grep, Glob | 初期設定に書き込み必要 |
+| **codex-delegate** | Bash, mcp__codex__codex, mcp__codex__codex-reply | Codex MCP 専用 |
 
 ```yaml
-PreToolUse:
-  "*":
-    - init-guard.sh        # 必須ファイル Read 強制
-    - check-main-branch.sh # main ブランチ作業ブロック
-
-  "Edit":
-    - check-protected-edit.sh # 保護ファイルブロック
-    - playbook-guard.sh    # playbook 存在チェック
-    - depends-check.sh     # phase 依存関係チェック
-    - critic-guard.sh      # done 変更ブロック
-    - scope-guard.sh       # done_criteria 変更検出
-    - executor-guard.sh    # executor 制御
-    - subtask-guard.sh     # subtask 3検証
-
-  "Write":
-    - check-protected-edit.sh
-    - playbook-guard.sh
-    - critic-guard.sh
-    - scope-guard.sh
-    - executor-guard.sh
-    - subtask-guard.sh
-
-  "Bash":
-    - pre-bash-check.sh    # コマンド事前チェック
-    - check-coherence.sh   # 整合性チェック
-    - lint-check.sh        # 静的解析
-
-PostToolUse:
-  "Task":
-    - log-subagent.sh      # SubAgent ログ記録
-
-  "Edit":
-    - archive-playbook.sh  # playbook アーカイブ提案
-    - cleanup-hook.sh      # tmp/ クリーンアップ
-    - create-pr-hook.sh    # PR 作成提案
-
-UserPromptSubmit:
-  - prompt-guard.sh        # プロンプト処理
-
-SessionStart:
-  - session-start.sh       # セッション初期化
-
-SessionEnd:
-  - session-end.sh         # セッション終了処理
-
-Stop:
-  - stop-summary.sh        # 停止時サマリー
-
-PreCompact:
-  - pre-compact.sh         # コンパクト前処理
-```
-
-### 4.2 未登録 Hooks（ユーティリティ）
-
-```
-audit-unused.sh          # 未使用ファイル検出
-check-integrity.sh       # リポジトリ整合性検証
-create-pr.sh             # PR 作成スクリプト
-failure-logger.sh        # 失敗パターン記録
-generate-repository-map.sh # repository-map.yaml 生成
-merge-pr.sh              # PR マージスクリプト
-role-resolver.sh         # 役割→executor 解決
-system-health-check.sh   # システム健全性チェック
-test-done-criteria.sh    # テスト実行
-test-hooks.sh            # Hook テスト
+設計原則:
+  - 検証系（critic, reviewer, health-checker）は書き込み権限を与えない
+  - 作成系（pm, setup-guide）は必要最小限の書き込み権限
+  - 外部連携（codex-delegate）は専用ツールのみ
 ```
 
 ---
 
-## 5. SubAgents
+## 8. Skills 一覧と内部構成
 
-| Agent | ファイル | 目的 |
-|-------|----------|------|
-| pm | pm.md | playbook 作成・管理（MANDATORY entry point） |
-| critic | critic.md | done_criteria 検証（PASS/FAIL 判定） |
-| reviewer | reviewer.md | コード/設計レビュー |
-| setup-guide | setup-guide.md | セットアップガイド |
-| codex-delegate | codex-delegate.md | Codex MCP 呼び出し |
-| health-checker | health-checker.md | システム健全性監視 |
-
-### 呼び出しパターン
-
+### session-manager/
 ```
-Task(subagent_type='pm', prompt='playbook を作成')
-Task(subagent_type='critic', prompt='done_criteria を検証')
-Task(subagent_type='reviewer', prompt='コードをレビュー')
+.claude/skills/session-manager/
+├── SKILL.md                    # Skill 定義
+├── agents/
+│   └── setup-guide.md          # setup-guide SubAgent
+└── handlers/
+    ├── init-guard.sh           # 必須ファイル Read 強制
+    └── start.sh                # セッション開始処理
+        └─→ source: .claude/lib/common.sh
+```
+
+### access-control/
+```
+.claude/skills/access-control/
+├── SKILL.md                    # Skill 定義
+└── guards/
+    ├── main-branch.sh          # main ブランチ作業ブロック
+    │   └─→ 参照: state.md（focus.current）
+    ├── protected-edit.sh       # 保護ファイルブロック
+    │   └─→ 参照: .claude/protected-files.txt
+    └── bash-check.sh           # 破壊的コマンド検出
+```
+
+### playbook-gate/
+```
+.claude/skills/playbook-gate/
+├── SKILL.md                    # Skill 定義
+├── guards/
+│   ├── playbook-guard.sh       # playbook 必須チェック
+│   │   └─→ 参照: state.md, plan/playbook-*.md
+│   ├── depends-check.sh        # Phase 依存チェック
+│   │   └─→ 参照: plan/playbook-*.md（depends_on）
+│   └── executor-guard.sh       # executor 制御
+│       └─→ 参照: plan/playbook-*.md（executor）
+└── workflow/
+    ├── archive-playbook.sh     # playbook アーカイブ
+    │   └─→ 書き込み: plan/archive/, state.md
+    └── cleanup.sh              # tmp/ クリーンアップ
+```
+
+### reward-guard/
+```
+.claude/skills/reward-guard/
+├── SKILL.md                    # Skill 定義
+├── agents/
+│   └── critic.md               # critic SubAgent
+│       └─→ 参照: .claude/frameworks/done-criteria-validation.md
+└── guards/
+    ├── critic-guard.sh         # done 変更前チェック
+    ├── subtask-guard.sh        # subtask 3検証
+    │   └─→ 参照: plan/template/playbook-format.md（validations）
+    ├── scope-guard.sh          # done_criteria 変更検出
+    └── coherence.sh            # 整合性チェック
+```
+
+### quality-assurance/
+```
+.claude/skills/quality-assurance/
+├── SKILL.md                    # Skill 定義
+├── agents/
+│   ├── reviewer.md             # reviewer SubAgent
+│   │   └─→ 参照: .claude/frameworks/playbook-review-criteria.md
+│   └── health-checker.md       # health-checker SubAgent
+└── checkers/
+    └── lint.sh                 # 静的解析
+```
+
+### golden-path/
+```
+.claude/skills/golden-path/
+├── SKILL.md                    # Skill 定義
+└── agents/
+    ├── pm.md                   # pm SubAgent（エントリーポイント）
+    │   ├─→ 参照: plan/template/playbook-format.md
+    │   ├─→ 参照: docs/criterion-validation-rules.md
+    │   └─→ 呼び出し: understanding-check, reviewer
+    └── codex-delegate.md       # codex-delegate SubAgent
+```
+
+### git-workflow/
+```
+.claude/skills/git-workflow/
+├── SKILL.md                    # Skill 定義
+└── handlers/
+    └── create-pr-hook.sh       # PR 作成提案
 ```
 
 ---
 
-## 6. Skills
+## 9. テンプレート・フレームワーク一覧
 
-| Skill | ディレクトリ | 目的 |
-|-------|-------------|------|
-| deploy-checker | deploy-checker/ | デプロイ準備検証 |
-| lint-checker | lint-checker/ | ESLint/型チェック |
-| test-runner | test-runner/ | テスト実行 |
-| post-loop | post-loop/ | playbook 完了後処理 |
+### plan/template/（playbook 作成時参照）
+
+| ファイル | 用途 | 参照元 |
+|----------|------|--------|
+| playbook-format.md | playbook テンプレート（V16） | pm, subtask-guard |
+| planning-rules.md | 計画ルール | pm |
+| playbook-examples.md | 具体例 | pm |
+| state-initial.md | 初期 state テンプレート | setup-guide |
+| vercel-nextjs-saas-structure.md | Next.js SaaS 構造 | pm（参考） |
+
+### .claude/frameworks/（検証時参照）
+
+| ファイル | 用途 | 参照元 |
+|----------|------|--------|
+| done-criteria-validation.md | done_criteria 評価基準 | critic（必須） |
+| playbook-review-criteria.md | playbook レビュー基準 | reviewer |
+| playbook-reviewer-spec.md | reviewer LOOP 仕様 | reviewer |
+
+### docs/（全般参照）
+
+| ファイル | 用途 | 参照元 |
+|----------|------|--------|
+| criterion-validation-rules.md | criterion 禁止パターン | pm, critic |
+| ai-orchestration.md | 役割定義（executor） | pm |
+| git-operations.md | git 操作ルール | pm |
+| folder-management.md | フォルダ管理 | cleanup |
+| current-definitions.md | 用語定義 | 全般 |
 
 ---
 
-## 7. Commands
+## 10. 情報フロー図
 
-| コマンド | ファイル | 目的 |
-|---------|----------|------|
-| /playbook-init | playbook-init.md | playbook 新規作成 |
-| /task-start | task-start.md | タスク開始（pm 経由） |
-| /crit | crit.md | done_criteria 検証 |
-| /test | test.md | テスト実行 |
-| /lint | lint.md | 整合性チェック |
-| /focus | focus.md | focus 切り替え |
-| /rollback | rollback.md | Git ロールバック |
-| /state-rollback | state-rollback.md | state.md 復元 |
-
----
-
-## 8. データフロー
-
-### 8.1 セッション開始
+### タスク開始から完了まで
 
 ```
-SessionStart
+ユーザー: 「〜を作って」
     │
-    ├─→ session-start.sh
-    │       ├─→ state.md 読み込み
-    │       ├─→ playbook 確認
-    │       ├─→ feature-catalog 読み込み
-    │       └─→ systemMessage 出力
+    ▼
+[UserPromptSubmit]
+    │ prompt.sh → playbook=null 検出
     │
-    └─→ Claude: [自認] 出力 → LOOP 開始
-```
-
-### 8.2 Edit/Write フロー
-
-```
-Edit/Write 試行
+    ▼
+Skill(skill='playbook-init')
     │
-    ├─→ init-guard.sh (必須 Read 確認)
-    ├─→ check-main-branch.sh (main ブロック)
-    ├─→ check-protected-edit.sh (保護ファイル)
-    ├─→ playbook-guard.sh (playbook 存在)
-    ├─→ depends-check.sh (依存関係)
-    ├─→ critic-guard.sh (done 変更)
-    ├─→ scope-guard.sh (scope 変更)
-    ├─→ executor-guard.sh (executor)
-    └─→ subtask-guard.sh (3検証)
-         │
-         └─→ 全て通過 → Edit/Write 実行
-                 │
-                 ├─→ archive-playbook.sh
-                 ├─→ cleanup-hook.sh
-                 └─→ create-pr-hook.sh
-```
-
-### 8.3 3層構造
-
-```
-playbook (タスク単位)
-├── meta: メタ情報（branch, created）
-├── goal.done_when: 達成条件
-└── phases[]: 作業単位
-    ├── p0: done
-    ├── p1: in_progress
-    └── p2: pending
-
-phase (作業単位)
-├── subtasks[]: チェックボックス形式
-│   ├── - [ ] subtask 1
-│   └── - [x] subtask 2 ✓
-├── validations: 3点検証（technical/consistency/completeness）
-└── executor: orchestrator|worker|reviewer
+    ▼
+pm SubAgent
+    ├─→ Read: plan/template/playbook-format.md
+    ├─→ Read: .claude/skills/understanding-check/SKILL.md
+    │       │
+    │       └─→ 5W1H 分析 → AskUserQuestion
+    │
+    ├─→ Write: plan/playbook-{name}.md
+    │
+    └─→ Task(subagent_type='reviewer')
+            │
+            ├─→ Read: .claude/frameworks/playbook-review-criteria.md
+            │
+            ├─→ PASS → Edit: playbook.reviewed = true
+            └─→ FAIL → pm に差し戻し（最大3回）
+    │
+    ▼
+[PreToolUse:Edit]
+    │ playbook-guard.sh → playbook 存在 + reviewed=true 確認
+    │
+    ▼
+実装作業（Edit/Write/Bash）
+    │
+    ▼
+Phase 完了判定
+    │
+    ├─→ subtask-guard.sh: validations 3点検証
+    │
+    └─→ Task(subagent_type='critic')
+            │
+            ├─→ Read: .claude/frameworks/done-criteria-validation.md
+            │
+            ├─→ PASS → Phase を done に更新
+            └─→ FAIL → 修正して再判定
+    │
+    ▼
+[PostToolUse:Edit]
+    │ 全 Phase done?
+    │
+    ├─→ YES: archive-playbook.sh
+    │       ├─→ Move: plan/playbook-*.md → plan/archive/
+    │       └─→ Edit: state.md（playbook.active = null）
+    │
+    └─→ NO: 次の Phase へ
 ```
 
 ---
 
-## 9. 重要ファイル
+## 11. SSOT（Single Source of Truth）
 
-### 9.1 Single Source of Truth
+### 信頼度階層
 
-| ファイル | 役割 |
-|----------|------|
-| state.md | 現在状態（focus, playbook, goal, config） |
-| plan/playbook-*.md | 進行中のタスク計画 |
-| .claude/settings.json | Hook 登録・権限 |
-| docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
+```
+1. state.md          ← 最優先（現在状態）
+2. playbook          ← タスク定義・進捗
+3. チャット履歴      ← コンテキストリセットで消失
+```
 
-### 9.2 設定ファイル
-
-| ファイル | 役割 |
-|----------|------|
-| .claude/settings.json | Hook 登録、権限設定 |
-| .claude/mcp.json | MCP サーバー設定（Codex） |
-| .claude/protected-files.txt | 保護対象ファイルリスト |
-
-### 9.3 テンプレート
-
-| ファイル | 役割 |
-|----------|------|
-| plan/template/playbook-format.md | playbook テンプレート |
-| plan/template/phase-definition.md | phase 定義テンプレート |
-
----
-
-## 10. admin モード
-
-`state.md` の `config.security: admin` 設定で全ガードをバイパス可能。
+### state.md 構造
 
 ```yaml
-# state.md
-## config
-security: admin  # 全ガードバイパス
+focus:
+  current: {focus値}      # 現在コンテキスト
+
+playbook:
+  active: {path}          # 現在の playbook（null = なし）
+  branch: {branch}        # 作業ブランチ
+  last_archived: {path}   # 最後にアーカイブした playbook
+
+goal:
+  milestone: {id}         # 現在のマイルストーン
+  phase: {id}            # 現在の Phase
+  done_criteria: []      # 完了条件
+
+session:
+  last_start: {timestamp}
+  last_end: {timestamp}
+
+config:
+  security: {mode}       # normal | admin
+  toolstack: {A|B|C}     # 使用ツール構成
+  roles:
+    orchestrator: claudecode
+    worker: codex | claudecode
+    reviewer: coderabbit | claudecode
 ```
 
-対応 Hook:
-- init-guard.sh
-- playbook-guard.sh (修正済み)
-
 ---
 
-## 11. 統計
+## 12. コア契約（回避不可）
 
-| カテゴリ | 数 | 備考 |
-|----------|-----|------|
-| Hooks (導火線) | 5 | 4QV+ アーキテクチャ |
-| SubAgents | 6 | Skills 内に配置 |
-| Skills | 16 | ユースケース単位パッケージ |
-| Commands | 7 | Entry Skill |
-| Docs | 15 | 2025-12-24 整理後 |
-| Milestones (achieved) | 26+ | |
-| Archived playbooks | 51+ | |
+### Golden Path（タスク開始）
 
----
+```yaml
+trigger: 作って/実装して/修正して/追加して
+required_chain:
+  1. Skill(skill='playbook-init')
+  2. playbook-init → pm SubAgent
+  3. pm → understanding-check
+  4. pm → reviewer
+prohibited:
+  - Task(subagent_type='pm') 直接呼び出し
+  - understanding-check スキップ
+  - reviewer スキップ
+```
 
-## 12. ドキュメント整理方針
+### Playbook Gate
 
-### アーカイブ済み（.archive/docs/）
+```yaml
+condition: playbook.active == null
+action: Edit/Write をブロック
+bypass: なし（admin モードでも無効）
+```
 
-| ファイル | 理由 | 日時 |
-|----------|------|------|
-| core-contract.md | CLAUDE.md と重複 | 2025-12-24 |
-| deprecated-references.md | 修正対応完了 | 2025-12-24 |
-| orchestration-contract.md | ai-orchestration.md と重複 | 2025-12-24 |
-| toolstack-patterns.md | ai-orchestration.md と重複 | 2025-12-24 |
+### Reward Fraud Prevention
 
-### 現在のドキュメント（15個）
-
-| ファイル | 役割 |
-|----------|------|
-| 4qv-architecture.md | 4QV+ 導火線モデル詳細設計 |
-| ARCHITECTURE.md | リポジトリ構造概要 |
-| admin-contract.md | admin モード権限定義 |
-| ai-orchestration.md | 役割ベース executor, Codex MCP 統合 |
-| archive-operation-rules.md | アーカイブ運用ルール |
-| artifact-management-rules.md | 成果物管理ルール |
-| criterion-validation-rules.md | done_criteria 検証ルール |
-| current-definitions.md | 用語・機能定義（最新） |
-| design-philosophy.md | 設計哲学 |
-| extension-system.md | Claude Code 拡張システム |
-| folder-management.md | フォルダ管理ルール |
-| git-operations.md | git 運用ルール |
-| hook-responsibilities.md | Hook 責任定義 |
-| repository-map.yaml | ファイルマップ（自動生成） |
-| repository-structure.md | repository-map 活用ガイド |
-| session-management.md | セッション管理 |
-
----
-
-## 13. 既知の問題
-
-1. ~~playbook-guard.sh が admin モード未対応~~: 修正済み（2025-12-18）
-2. **repository-map.yaml の description 切り詰め**: 一部の description が途中で切れている
+```yaml
+rule: 自分の作業を自分で「完了」と判定しない
+required: critic SubAgent による独立検証
+evidence: PASS 判定には実行可能な証拠が必要
+```
 
 ---
 
@@ -362,7 +851,7 @@ security: admin  # 全ガードバイパス
 
 | 日時 | 内容 |
 |------|------|
-| 2025-12-24 | docs 整理: 重複ファイル削除、統計値更新（Hooks: 32→5, Skills: 5→16） |
+| 2025-12-25 | 公式 Hook リファレンス追加（イベント一覧、入力 JSON、exit code） |
+| 2025-12-25 | 全面改訂: ユーザー体験ベースの状態遷移マップに変更 |
+| 2025-12-24 | docs 整理: 重複ファイル削除、統計値更新 |
 | 2025-12-18 | 初版作成（cleanup/architecture-audit） |
-| 2025-12-18 | playbook-guard.sh に admin モードチェック追加 |
-| 2025-12-18 | audit-unused.sh 作成、pm.md 修正、docs 整理（17→14） |

@@ -17,8 +17,8 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-docs-consolidation.md
+branch: refactor/docs-consolidation
 last_archived: plan/archive/playbook-e2e-verification-timestamp.md
 review_pending: false
 ```
@@ -28,9 +28,12 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
+milestone: docs-consolidation
+phase: p1
+done_criteria:
+  - ARCHITECTURE.md に SubAgent ツール制限表が追記されている
+  - ARCHITECTURE.md から参照されていない孤立ファイルが削除されている
+  - Codex によるレビューが完了している
 note: null
 ```
 
@@ -39,7 +42,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2025-12-25 00:47:28
+last_start: 2025-12-25 02:50:32
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```

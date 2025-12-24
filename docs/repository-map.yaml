@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-24 19:57:28"
+  generated: "2025-12-25 03:26:08"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 240
+  total_files: 214
 
 hooks:
   directory: .claude/hooks/
@@ -38,10 +38,10 @@ agents:
       description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
     - name: "reviewer"
       skill: "quality-assurance"
-      description: "役割"
+      description: "正規ソース"
     - name: "critic"
       skill: "reward-guard"
-      description: "各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する"
+      description: "reviewer との違い"
     - name: "setup-guide"
       skill: "session-manager"
       description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environm"
@@ -51,7 +51,7 @@ skills:
   invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
   usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
   auto_invoke: true
-  count: 16
+  count: 17
   files:
     - name: "access-control"
       description: "アクセス制御"
@@ -71,6 +71,8 @@ skills:
       description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitionin"
     - name: "playbook-gate"
       description: "Core Contract #2: Playbook Gate"
+    - name: "playbook-init"
+      description: "このSkillは pm SubAgent への委譲を強制する。自分で処理してはならない。"
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の自動処理"
     - name: "quality-assurance"
@@ -93,13 +95,13 @@ commands:
   usage: "即座に実行される CLI 機能。ユーザーの意図を明確に反映。"
   files:
     - name: "/crit"
-      description: "allowed-tools: Read, Grep, Bash"
+      description: "この処理は critic SubAgent に委譲される。直接 CRITIQUE を実行してはならない�"
     - name: "/focus"
       description: "allowed-tools: Read, Edit, Bash"
     - name: "/lint"
       description: "allowed-tools: Read, Bash"
     - name: "/playbook-init"
-      description: "このフローは pm SubAgent に委譲される。直接 playbook を作成してはならない�"
+      description: "正規ソース: `.claude/skills/playbook-init/SKILL.md`"
     - name: "/rollback"
       description: "allowed-tools: Read, Bash"
     - name: "/state-rollback"
@@ -109,46 +111,20 @@ commands:
 
 docs:
   directory: docs/
-  count: 20
+  count: 7
   files:
-    - name: "4qv-architecture.md"
-      description: "Hook（導火線）→ Skill（ユースケース単位のパッケージ）→ 必要な機能の�"
     - name: "ARCHITECTURE.md"
-      description: "リポジトリの構造と各コンポーネントの関係を文書化"
-    - name: "admin-contract.md"
-      description: "admin は「全てをバイパス」ではなく「運用上必要な最小操作を許可」する�"
+      description: "ユーザー体験ベースの状態遷移マップ"
     - name: "ai-orchestration.md"
       description: "役割ベース executor 抽象化 - playbook の再利用性向上"
     - name: "archive-operation-rules.md"
       description: "目的"
-    - name: "artifact-management-rules.md"
-      description: "目的"
-    - name: "core-contract.md"
-      description: "この契約は admin モードでも回避不可。Hooks により構造的に強制される。"
     - name: "criterion-validation-rules.md"
       description: "criterion（done_criteria の単位）の検証ルール"
-    - name: "current-definitions.md"
-      description: "> このファイルは「古い表記」を特定するための基準を定義する。"
-    - name: "deprecated-references.md"
-      description: "> このファイルは「古い表記」を含むファイルを記録する。"
-    - name: "design-philosophy.md"
-      description: "Claude Code ワークスペースにおける拡張システムの設計思想を定義"
-    - name: "extension-system.md"
-      description: "公式リファレンスに基づく発火タイミング・トリガー・連携の完全ガイド"
     - name: "folder-management.md"
       description: "全フォルダの役割、テンポラリ/永続区分、削除タイミングを定義"
     - name: "git-operations.md"
       description: "設計方針"
-    - name: "hook-responsibilities.md"
-      description: "各 Hook の単一責任を明示（SOLID 原則: Single Responsibility Principle）"
-    - name: "orchestration-contract.md"
-      description: "ツールスタック構成と役割分担のルールを定義する契約"
-    - name: "repository-structure.md"
-      description: "> repository-map.yaml を活用したリポジトリ構造の理解ガイド"
-    - name: "session-management.md"
-      description: "M023: セッション管理ガイド - Named Sessions と Plan Mode の活用"
-    - name: "toolstack-patterns.md"
-      description: "3 つのツールスタックパターンと設定ガイド"
 
 plan:
   directory: plan/
@@ -158,7 +134,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 31
+      count: 34
     template:
       description: "playbook テンプレート"
       count: 5
@@ -167,7 +143,7 @@ root:
   description: "ルートディレクトリの主要ファイル"
   files:
     - name: "CLAUDE.md"
-      description: "This file is the immutable operating constitution for Claude in this repository."
+      description: "```yaml"
     - name: "AGENTS.md"
       description: "このファイルは純粋なコーディングルール。"
     - name: "README.md"
@@ -400,6 +376,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-24 19:57:28"
+  - date: "2025-12-25 03:26:08"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
