@@ -17,9 +17,9 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-completion-definition.md
-branch: feat/completion-definition
-last_archived: plan/archive/playbook-orphan-file-analysis.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-context-continuity.md
 review_pending: false
 ```
 
@@ -29,13 +29,9 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p1
-done_criteria:
-  - plan/design/completion-definition.md が存在し、完成判定チェックリストが含まれている
-  - アーキテクチャ図（ASCII）が含まれ、主要コンポーネントの関係が視覚化されている
-  - mission.md の success_criteria との対応表が存在する
-  - Self-Healing System の実装状況が Gap 分析されている
-note: リポジトリの完成定義を明確化しアーキテクチャ図とセットで記録
+phase: null
+done_criteria: []
+note: playbook-context-continuity 完了 - Self-Healing Layer 1 実装済み
 ```
 
 ---
@@ -43,7 +39,7 @@ note: リポジトリの完成定義を明確化しアーキテクチャ図と�
 ## session
 
 ```yaml
-last_start: 2025-12-24 15:50:08
+last_start: 2025-12-24 16:23:14
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
