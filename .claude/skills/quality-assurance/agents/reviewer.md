@@ -8,9 +8,13 @@ skills: lint-checker, deploy-checker
 
 # Code & Design Reviewer Agent
 
-コードと設計のレビューを担当する専門エージェントです。
+> **正規ソース**: このファイルが reviewer SubAgent の定義です。
+>
+> **関連ファイル**:
+> - `.claude/frameworks/playbook-review-criteria.md` - 評価基準
+> - `.claude/frameworks/playbook-reviewer-spec.md` - LOOP 仕様
 
-> **役割**: playbook_reviewer（AI エージェントオーケストレーションの役割定義参照）
+コードと設計のレビューを担当する専門エージェントです。
 
 ---
 
