@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-24 18:42:05"
+  generated: "2025-12-24 19:57:28"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 239
+  total_files: 240
 
 hooks:
   directory: .claude/hooks/
@@ -99,7 +99,7 @@ commands:
     - name: "/lint"
       description: "allowed-tools: Read, Bash"
     - name: "/playbook-init"
-      description: "このフローは構造的に強制される。手順をスキップしてはならない。"
+      description: "このフローは pm SubAgent に委譲される。直接 playbook を作成してはならない�"
     - name: "/rollback"
       description: "allowed-tools: Read, Bash"
     - name: "/state-rollback"
@@ -158,7 +158,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 30
+      count: 31
     template:
       description: "playbook テンプレート"
       count: 5
@@ -400,6 +400,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-24 18:42:05"
+  - date: "2025-12-24 19:57:28"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
