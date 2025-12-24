@@ -17,9 +17,9 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-4qv-e2e-verification-v20.md
-branch: refactor/4qv-architecture-rebuild
-last_archived: plan/archive/playbook-4qv-e2e-verification-v19.md
+active: plan/playbook-mandatory-understanding-check.md
+branch: feat/mandatory-understanding-check
+last_archived: plan/archive/playbook-orphan-file-analysis.md
 review_pending: false
 ```
 
@@ -29,14 +29,12 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p0
+phase: p1
 done_criteria:
-  - Golden Path E2E: 自然言語タスク依頼 → Skill(playbook-init) → playbook 作成が動作
-  - Playbook Gate E2E: playbook=null で Edit がブロック → Skill 呼び出し誘導が動作
-  - Reward Guard E2E: done_when 未達成で完了ブロック → Skill(crit) 呼び出し誘導が動作
-  - Access Control E2E: HARD_BLOCK ファイル保護が動作
-  - 全テスト ALL GREEN
-note: 4QV+ E2E 動作検証 - Iteration 4
+  - prompt.sh が理解確認の強制メッセージを注入している
+  - pm.md が理解確認なしに playbook 作成を進めない構造的ルールを持つ
+  - understanding-check Skill のスキップ条件が「ユーザー明示要求のみ」に更新されている
+note: 全ユーザープロンプトに対して理解確認（5W1H分析）を必須化
 ```
 
 ---
