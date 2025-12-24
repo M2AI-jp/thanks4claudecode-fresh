@@ -556,29 +556,66 @@ SubAgent の呼び出しルール:
   - ❌ Task(subagent_type='pm') を直接呼ぶのは禁止（Core Contract 違反）
 ```
 
-### 6.2 SubAgent の利用パターン
+### 6.2 Entry Skill から SubAgent への委譲パターン（必須）
+
+> **Entry Skill は SubAgent に処理を委譲する。自分で手順を実行してはならない。**
 
 ```yaml
-パターン 1: Skill 経由（推奨）
-  # pm の機能を使う場合
-  Skill(skill='plan-management', args='create-playbook')
+パターン: Entry Skill → SubAgent 委譲
 
-  # critic の機能を使う場合
-  Skill(skill='crit')
+  # playbook 作成（/playbook-init）
+  Entry Skill が呼ばれる
+    ↓
+  Skill 内で Task(subagent_type='pm') を呼び出す
+    ↓
+  pm SubAgent が理解確認・playbook 作成・reviewer 検証を実行
 
-パターン 2: general-purpose Task で代替
-  # pm 相当の機能
-  Task(subagent_type='general-purpose',
-       prompt='playbook を作成してください。.claude/skills/golden-path/agents/pm.md を参照')
+  # done_criteria 検証（/crit）
+  Entry Skill が呼ばれる
+    ↓
+  Skill 内で Task(subagent_type='critic') を呼び出す
+    ↓
+  critic SubAgent が 3点検証・CRITIQUE を実行
 
-  # critic 相当の機能
-  Task(subagent_type='general-purpose',
-       prompt='done_when を検証してください。.claude/skills/reward-guard/agents/critic.md を参照')
+禁止パターン:
+  ❌ Entry Skill の手順を Claude が直接実行する
+  ❌ SubAgent をスキップして処理を完了する
+  ❌ Task(subagent_type='pm') を Skill 外から直接呼ぶ
 
-利点:
-  - SubAgent ファイルは Skill 内に論理的に配置されている
-  - プロンプトテンプレートとして再利用可能
-  - 将来的に Claude Code が custom SubAgents をサポートした場合に移行が容易
+Entry Skill と SubAgent のマッピング:
+  | Entry Skill | 委譲先 SubAgent |
+  |-------------|-----------------|
+  | /playbook-init | pm → reviewer |
+  | /crit | critic |
+  | /test | (Bash 直接実行) |
+  | /lint | (Bash 直接実行) |
+```
+
+### 6.3 委譲パターンの実装例
+
+```yaml
+# playbook-init.md の構造
+---
+description: pm SubAgent に委譲して playbook 作成を行う
+allowed-tools: Read, Bash, Task
+---
+
+# Step 0: 前提チェック（Skill 内で実行）
+# Step 1: pm SubAgent 呼び出し（必須）
+Task:
+  subagent_type: pm
+  prompt: |
+    ユーザーの要求: $ARGUMENTS
+    ブランチ: {現在のブランチ名}
+
+    以下を実行してください:
+    1. understanding-check（5W1H 分析 + ユーザー承認）
+    2. playbook 作成
+    3. reviewer 検証
+    4. state.md 更新
+
+禁止事項:
+  - pm SubAgent を呼ばずに自分で playbook を作成
 ```
 
 ---
