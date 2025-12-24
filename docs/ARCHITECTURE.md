@@ -305,48 +305,49 @@ security: admin  # 全ガードバイパス
 
 ## 11. 統計
 
-| カテゴリ | 数 |
-|----------|-----|
-| Hooks (total) | 32 |
-| Hooks (registered) | 22 |
-| Hooks (utility) | 10 |
-| SubAgents | 6 |
-| Skills | 5 |
-| Commands | 8 |
-| Docs | 14 |
-| Milestones (achieved) | 26 |
-| Archived playbooks | 51+ |
+| カテゴリ | 数 | 備考 |
+|----------|-----|------|
+| Hooks (導火線) | 5 | 4QV+ アーキテクチャ |
+| SubAgents | 6 | Skills 内に配置 |
+| Skills | 16 | ユースケース単位パッケージ |
+| Commands | 7 | Entry Skill |
+| Docs | 15 | 2025-12-24 整理後 |
+| Milestones (achieved) | 26+ | |
+| Archived playbooks | 51+ | |
 
 ---
 
 ## 12. ドキュメント整理方針
 
-### アーカイブ候補（.archive/docs/ に移動）
+### アーカイブ済み（.archive/docs/）
 
-| ファイル | 理由 |
+| ファイル | 理由 | 日時 |
+|----------|------|------|
+| core-contract.md | CLAUDE.md と重複 | 2025-12-24 |
+| deprecated-references.md | 修正対応完了 | 2025-12-24 |
+| orchestration-contract.md | ai-orchestration.md と重複 | 2025-12-24 |
+| toolstack-patterns.md | ai-orchestration.md と重複 | 2025-12-24 |
+
+### 現在のドキュメント（15個）
+
+| ファイル | 役割 |
 |----------|------|
-| fraud-investigation-report.md | M062 一回限りの調査レポート |
-| e2e-simulation-log.md | M062 テストログ |
-| e2e-simulation-scenarios.md | M062 テストシナリオ |
-| deprecated-references.md | 廃止参照リスト（対応完了後アーカイブ） |
-
-### 保持（必須）
-
-| ファイル | 理由 |
-|----------|------|
-| ARCHITECTURE.md | リポジトリ構造文書 |
-| ai-orchestration.md | 役割ベース実行 |
-| archive-operation-rules.md | アーカイブ運用 |
-| artifact-management-rules.md | 成果物管理 |
-| criterion-validation-rules.md | done_criteria 検証 |
-| current-definitions.md | 用語定義 |
-| extension-system.md | Hook ドキュメント |
-| folder-management.md | フォルダ管理 |
-| git-operations.md | git 運用 |
-| hook-responsibilities.md | Hook 責任 |
-| repository-map.yaml | 自動生成マップ |
+| 4qv-architecture.md | 4QV+ 導火線モデル詳細設計 |
+| ARCHITECTURE.md | リポジトリ構造概要 |
+| admin-contract.md | admin モード権限定義 |
+| ai-orchestration.md | 役割ベース executor, Codex MCP 統合 |
+| archive-operation-rules.md | アーカイブ運用ルール |
+| artifact-management-rules.md | 成果物管理ルール |
+| criterion-validation-rules.md | done_criteria 検証ルール |
+| current-definitions.md | 用語・機能定義（最新） |
+| design-philosophy.md | 設計哲学 |
+| extension-system.md | Claude Code 拡張システム |
+| folder-management.md | フォルダ管理ルール |
+| git-operations.md | git 運用ルール |
+| hook-responsibilities.md | Hook 責任定義 |
+| repository-map.yaml | ファイルマップ（自動生成） |
+| repository-structure.md | repository-map 活用ガイド |
 | session-management.md | セッション管理 |
-| toolstack-patterns.md | Toolstack パターン |
 
 ---
 
@@ -361,6 +362,7 @@ security: admin  # 全ガードバイパス
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-24 | docs 整理: 重複ファイル削除、統計値更新（Hooks: 32→5, Skills: 5→16） |
 | 2025-12-18 | 初版作成（cleanup/architecture-audit） |
 | 2025-12-18 | playbook-guard.sh に admin モードチェック追加 |
 | 2025-12-18 | audit-unused.sh 作成、pm.md 修正、docs 整理（17→14） |

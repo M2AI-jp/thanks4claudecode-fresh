@@ -1,4 +1,4 @@
-# 最新状態の定義 (2025-12-18)
+# 最新状態の定義 (2025-12-24)
 
 > このファイルは「古い表記」を特定するための基準を定義する。
 > ここに記載されていない表記は「古い」可能性がある。
@@ -51,40 +51,19 @@ check-main-branch.sh より：
 
 ## 3. 機能一覧
 
-### Hooks（30個）
+### Hooks（5個 - 導火線モデル）
 
-構造的強制を実現するシェルスクリプト。
+> **4QV+ アーキテクチャ**: Hook は「導火線」として Skills を呼び出す
 
 | Hook | トリガー | 責任 |
 |------|----------|------|
-| archive-playbook.sh | PostToolUse:Edit | playbook 完了時のアーカイブ提案 |
-| check-coherence.sh | PreToolUse:Bash | state/playbook 整合性チェック |
-| check-main-branch.sh | PreToolUse:* | main ブランチでの作業ブロック |
-| check-protected-edit.sh | PreToolUse:Edit | 保護ファイル編集ブロック |
-| cleanup-hook.sh | PostToolUse:Edit | tmp/ クリーンアップ |
-| create-pr-hook.sh | PostToolUse:Edit | PR 自動作成 |
-| create-pr.sh | utility | PR 作成ユーティリティ |
-| critic-guard.sh | PreToolUse:Edit | state: done 変更ブロック |
-| depends-check.sh | PreToolUse:Edit | Phase 依存チェック |
-| executor-guard.sh | PreToolUse:Edit | executor 強制 |
-| failure-logger.sh | utility | 失敗ログ記録 |
+| pre-tool.sh | PreToolUse:* | 全ツール使用前のガードチェック |
+| post-tool.sh | PostToolUse:* | ツール使用後の処理 |
+| session.sh | SessionStart/End | セッション管理 |
+| prompt.sh | UserPromptSubmit | State Injection |
 | generate-repository-map.sh | utility | マップ生成 |
-| init-guard.sh | PreToolUse:* | 必須ファイル Read 強制 |
-| lint-check.sh | PreToolUse:Bash | 静的解析チェック |
-| log-subagent.sh | PostToolUse:Task | SubAgent ログ記録 |
-| merge-pr.sh | utility | PR マージユーティリティ |
-| playbook-guard.sh | PreToolUse:Edit | playbook=null ブロック |
-| pre-bash-check.sh | PreToolUse:Bash | Bash 実行前チェック |
-| pre-compact.sh | PreCompact | compact 前スナップショット |
-| prompt-guard.sh | UserPromptSubmit | プロンプト検証 |
-| role-resolver.sh | utility | 役割解決 |
-| scope-guard.sh | PreToolUse:Edit | done_criteria 無断変更検出 |
-| session-end.sh | SessionEnd | セッション終了処理 |
-| session-start.sh | SessionStart | セッション開始処理 |
-| stop-summary.sh | Stop | 停止時サマリー |
-| subtask-guard.sh | PreToolUse:Edit | subtask 3検証 |
-| system-health-check.sh | utility | 健全性チェック |
-| test-hooks.sh | utility | Hook テスト |
+
+> 参照: docs/4qv-architecture.md（導火線モデル詳細）
 
 ### SubAgents（6個）
 
@@ -99,35 +78,46 @@ check-main-branch.sh より：
 | reviewer | コード/設計/playbook レビュー |
 | setup-guide | セットアッププロセスガイド |
 
-### Skills（8個）
+### Skills（16個）
 
-専門知識を提供するスキル定義。
+ユースケース単位のパッケージ。SubAgent を内包する場合あり。
 
-| Skill | 責任 |
-|-------|------|
-| context-management | コンテキスト管理（/compact 最適化） |
-| deploy-checker | デプロイ準備・検証 |
-| frontend-design | フロントエンド設計 |
-| lint-checker | コード品質チェック |
-| plan-management | 計画・playbook 管理 |
-| post-loop | playbook 完了後処理 |
-| state | state.md 管理 |
-| test-runner | テスト実行・検証 |
+| Skill | 責任 | SubAgents |
+|-------|------|-----------|
+| golden-path | タスク開始 → pm → playbook 作成 | pm, codex-delegate |
+| playbook-gate | playbook なしでの変更をブロック | - |
+| reward-guard | 報酬詐欺防止、done 検証 | critic |
+| access-control | 保護ファイル、ブランチ制御 | - |
+| session-manager | セッション開始〜終了 | setup-guide |
+| quality-assurance | レビュー、ヘルスチェック | reviewer, health-checker |
+| git-workflow | PR 作成・マージ | - |
+| understanding-check | 5W1H 理解確認 | - |
+| plan-management | 計画・playbook 管理 | - |
+| context-management | コンテキスト管理 | - |
+| deploy-checker | デプロイ準備・検証 | - |
+| frontend-design | フロントエンド設計 | - |
+| lint-checker | コード品質チェック | - |
+| post-loop | playbook 完了後処理 | - |
+| state | state.md 管理 | - |
+| test-runner | テスト実行・検証 | - |
 
-### Commands（8個）
+> 参照: docs/4qv-architecture.md（Skill 構造詳細）
 
-カスタムスラッシュコマンド。
+### Commands（7個）
 
-| Command | 責任 |
-|---------|------|
-| /crit | done_criteria の CRITIQUE |
-| /focus | focus.current 変更 |
-| /lint | state/playbook 整合性チェック |
-| /playbook-init | playbook 初期化 |
-| /rollback | Git ロールバック |
-| /state-rollback | state.md 復元 |
-| /task-start | タスク開始 |
-| /test | テスト実行 |
+カスタムスラッシュコマンド（Entry Skill）。
+
+| Command | 責任 | 委譲先 SubAgent |
+|---------|------|-----------------|
+| /playbook-init | playbook 初期化 | pm → reviewer |
+| /crit | done_criteria の CRITIQUE | critic |
+| /test | テスト実行 | (Bash 直接) |
+| /lint | state/playbook 整合性チェック | (Bash 直接) |
+| /focus | focus.current 変更 | (Edit 直接) |
+| /rollback | Git ロールバック | (git 直接) |
+| /state-rollback | state.md 復元 | (ファイル操作) |
+
+> 参照: docs/4qv-architecture.md（Entry Skill → SubAgent 委譲パターン）
 
 ---
 
