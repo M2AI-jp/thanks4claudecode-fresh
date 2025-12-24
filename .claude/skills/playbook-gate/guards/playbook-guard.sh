@@ -106,18 +106,42 @@ if [[ ! -f "$PLAYBOOK" ]]; then
 fi
 
 # reviewed フラグを取得
-REVIEWED=$(grep -E "^reviewed:" "$PLAYBOOK" 2>/dev/null | head -1 | sed 's/reviewed: *//' | sed 's/ *#.*//' | tr -d ' ')
+REVIEWED=$(grep -E "^\s*reviewed:" "$PLAYBOOK" 2>/dev/null | head -1 | sed 's/.*reviewed: *//' | sed 's/ *#.*//' | tr -d ' ')
 
-# reviewed: false の場合は警告（ブロックではない）
-if [[ "$REVIEWED" == "false" ]]; then
-    cat << 'EOF'
-{
-  "decision": "allow",
-  "systemMessage": "[playbook-guard] ⚠️ playbook 未レビュー\n\n実装開始前に reviewer による検証を推奨します:\n  Skill(skill='crit') または /crit\n\nレビュー完了後、playbook の reviewed: true に更新してください。"
-}
+# context セクションの存在確認
+HAS_CONTEXT=$(grep -E "^context:" "$PLAYBOOK" 2>/dev/null | head -1 || echo "")
+
+# reviewed: false または context セクションがない場合はブロック
+if [[ "$REVIEWED" == "false" ]] || [[ -z "$HAS_CONTEXT" ]]; then
+    # 失敗を記録（学習ループ用）
+    if [[ -f ".claude/hooks/failure-logger.sh" ]]; then
+        echo '{"hook": "playbook-guard", "context": "reviewed=false or no context", "action": "Edit/Write blocked"}' | bash .claude/hooks/failure-logger.sh 2>/dev/null || true
+    fi
+
+    cat >&2 << 'EOF'
+========================================
+  ⛔ playbook 未承認
+========================================
+
+  reviewed: false または context セクションがありません。
+  実装を開始する前に以下が必要です：
+
+  1. 理解確認（Step 1.5）:
+     - 5W1H 分析を実行
+     - AskUserQuestion でユーザー承認を取得
+     - context セクションに記録
+
+  2. Reviewer 検証（Step 6）:
+     - Task(subagent_type='reviewer') を呼び出し
+     - PASS 後に reviewed: true に更新
+
+  対処法:
+    Skill(skill='playbook-init') を再実行
+
+========================================
 EOF
-    exit 0
+    exit 2
 fi
 
-# playbook があり、reviewed: true（または未設定）ならパス
+# playbook があり、reviewed: true かつ context ありならパス
 exit 0

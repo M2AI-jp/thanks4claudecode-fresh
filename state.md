@@ -17,8 +17,8 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-golden-path-chain-docs.md
-branch: fix/golden-path-chain-docs
+active: null
+branch: null
 last_archived: plan/archive/playbook-understanding-check-enforcement.md
 review_pending: false
 ```
@@ -29,13 +29,9 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p1
-done_criteria:
-  - CLAUDE.md Section 11 に "Skill(playbook-init)" の記述がある
-  - golden-path/SKILL.md に "Task(subagent_type='pm'" の直接呼び出し記述がない
-  - 4qv-architecture.md の "Task(subagent_type='pm') は動作しない" という誤記述が修正されている
-  - governance/PROMPT_CHANGELOG.md に [1.2.0] エントリが存在する
-note: Golden Path ドキュメント修正 - Hook→Skill→SubAgent チェーン強制
+phase: null
+done_criteria: []
+note: null
 ```
 
 ---
@@ -43,7 +39,7 @@ note: Golden Path ドキュメント修正 - Hook→Skill→SubAgent チェー�
 ## session
 
 ```yaml
-last_start: 2025-12-24 16:34:45
+last_start: 2025-12-24 19:34:55
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
