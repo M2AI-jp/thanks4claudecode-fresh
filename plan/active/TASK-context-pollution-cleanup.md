@@ -56,7 +56,7 @@
 | ID | パターン | ファイル | 対応状況 |
 |----|---------|---------|---------|
 | F1 | playbook フォーマットバージョン混在 | pm.md, critic.md, state/SKILL.md | ✅ V16 に統一 |
-| F2 | Core Contract と実装の版数不一致 | CLAUDE.md vs 実装 | ⚠️ 確認中 |
+| F2 | Core Contract と実装の版数不一致 | CLAUDE.md vs 実装 | ✅ 問題なし（意図的なレイヤー分離） |
 
 ### 優先度: 中
 
@@ -69,7 +69,7 @@
 | C2 | understanding-check のタイミング曖昧 | understanding-check/SKILL.md, pm.md | ✅ 修正済み |
 | C3 | critic の判定基準「疑わしきは FAIL」具体性不足 | critic.md | ✅ 具体例追加 |
 | D1 | pm → reviewer の循環（最大リトライ未定義） | pm.md, playbook-review-criteria.md | ✅ 最大3回 |
-| D2 | understanding-check → pm の潜在的循環 | pm.md | ⚠️ 設計確認中 |
+| D2 | understanding-check → pm の潜在的循環 | pm.md | ✅ 問題なし（循環なし） |
 | E1 | understanding-check の責務分散 | understanding-check/SKILL.md, pm.md | ✅ pm.md を正規ソースと整合 |
 | E3 | reviewer と critic の責務重複 | reviewer.md, critic.md | ✅ 責務境界を明示 |
 
@@ -77,9 +77,9 @@
 
 | ID | パターン | ファイル | 対応状況 |
 |----|---------|---------|---------|
-| G1 | executor の名称と役割混在 | pm.md, ai-orchestration.md | ❌ 未対応 |
-| G2 | done_criteria の禁止パターン記載重複 | criterion-validation-rules.md, pm.md | ❌ 未対応 |
-| G3 | post-loop の責務曖昧 | post-loop/SKILL.md | ❌ 未対応 |
+| G1 | executor の名称と役割混在 | pm.md, ai-orchestration.md | ⚠️ 低優先度・影響大→保留 |
+| G2 | done_criteria の禁止パターン記載重複 | criterion-validation-rules.md, pm.md | ✅ 問題なし（適切なレイヤー分離） |
+| G3 | post-loop の責務曖昧 | post-loop/SKILL.md | ✅ 問題なし（責務明確） |
 
 ---
 
@@ -250,6 +250,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 2025-12-24 | 全19パターンの分析完了。G1 のみ保留、他は対応または問題なし確認。 |
 | 2025-12-24 | E1/E3 修正: pm.md の理解確認ルール整合、reviewer/critic の責務境界明示。 |
 | 2025-12-24 | A3 修正: validations の正規ソース参照を pm.md, critic.md に追加。 |
 | 2025-12-24 | A2 修正: reviewer 用語統一、正規ソース明示。「慎重に」の定義追加。 |
