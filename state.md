@@ -17,8 +17,8 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-golden-path-fix.md
-branch: fix/golden-path-chain
+active: null
+branch: null
 last_archived: plan/archive/playbook-understanding-check-enforcement.md
 review_pending: false
 ```
@@ -28,12 +28,9 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: golden-path-fix
-phase: p1
-done_criteria:
-  - playbook-init Skill が存在する
-  - playbook-guard.sh の穴が修正されている
-  - 参照が整合している
+milestone: null
+phase: null
+done_criteria: []
 note: null
 ```
 
