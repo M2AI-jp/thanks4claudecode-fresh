@@ -10,6 +10,10 @@ skills: state, lint-checker, test-runner
 
 done_criteria の達成状況と playbook 妥当性を批判的に評価する専門エージェントです。
 
+> **reviewer との違い**:
+> - **reviewer**: playbook 作成時のレビュー（事前検証）→ reviewed: true/false
+> - **critic**: phase/subtask 完了時の評価（事後検証）→ PASS/FAIL
+
 ## 責務
 
 1. **done_criteria の厳密な評価**

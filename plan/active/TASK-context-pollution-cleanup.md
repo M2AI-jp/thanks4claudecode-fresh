@@ -70,8 +70,8 @@
 | C3 | critic の判定基準「疑わしきは FAIL」具体性不足 | critic.md | ✅ 具体例追加 |
 | D1 | pm → reviewer の循環（最大リトライ未定義） | pm.md, playbook-review-criteria.md | ✅ 最大3回 |
 | D2 | understanding-check → pm の潜在的循環 | pm.md | ⚠️ 設計確認中 |
-| E1 | understanding-check の責務分散 | understanding-check/SKILL.md, pm.md | ❌ 未対応 |
-| E3 | reviewer と critic の責務重複 | reviewer.md, critic.md | ❌ 未対応 |
+| E1 | understanding-check の責務分散 | understanding-check/SKILL.md, pm.md | ✅ pm.md を正規ソースと整合 |
+| E3 | reviewer と critic の責務重複 | reviewer.md, critic.md | ✅ 責務境界を明示 |
 
 ### 優先度: 低
 
@@ -250,6 +250,7 @@
 
 | 日付 | 内容 |
 |------|------|
+| 2025-12-24 | E1/E3 修正: pm.md の理解確認ルール整合、reviewer/critic の責務境界明示。 |
 | 2025-12-24 | A3 修正: validations の正規ソース参照を pm.md, critic.md に追加。 |
 | 2025-12-24 | A2 修正: reviewer 用語統一、正規ソース明示。「慎重に」の定義追加。 |
 | 2025-12-24 | F1, C3 修正。D1, C2 は前回コミット済み。 |

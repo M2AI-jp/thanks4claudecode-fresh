@@ -16,6 +16,10 @@ skills: lint-checker, deploy-checker
 
 コードと設計のレビューを担当する専門エージェントです。
 
+> **critic との違い**:
+> - **reviewer**: playbook 作成時のレビュー（事前検証）→ reviewed: true/false
+> - **critic**: phase/subtask 完了時の評価（事後検証）→ PASS/FAIL
+
 ---
 
 ## 責務
