@@ -269,9 +269,6 @@ if gh pr merge "$PR_NUMBER" \
         echo ""
 
         # sed で in-place 編集
-        # focus.current を null に
-        sed -i '' 's/^current: .*/current: null/' "$STATE_FILE" 2>/dev/null || true
-
         # playbook.active を null に
         sed -i '' 's/^active: .*/active: null/' "$STATE_FILE" 2>/dev/null || true
 

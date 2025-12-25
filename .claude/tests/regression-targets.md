@@ -39,12 +39,11 @@
 
 ---
 
-## Commands（5件）
+## Commands（4件）
 
 | ファイル | 機能 | テスト方法 |
 |----------|------|-----------|
 | crit.md | /crit コマンド | コマンド実行 |
-| focus.md | /focus コマンド | コマンド実行 |
 | lint.md | /lint コマンド | コマンド実行 |
 | playbook-init.md | /playbook-init コマンド | コマンド実行 |
 | test.md | /test コマンド | コマンド実行 |

@@ -10,7 +10,7 @@ argument-hint: [test-name]
 
 ## 引数
 
-- `$1`: （オプション）特定のテスト名（例: t1-focus-guard）
+- `$1`: （オプション）特定のテスト名（例: t1-playbook-guard）
 
 ## 実行内容
 

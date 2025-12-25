@@ -20,7 +20,7 @@
 
 When starting a new session:
 
-1. **Read state.md** - Understand current focus and active task
+1. **Read state.md** - Understand active playbook and task
 2. **Check branch** - `git branch --show-current`
 3. **Check status** - `git status -sb`
 4. **Read active playbook** - If `playbook.active` is set in state.md
@@ -40,8 +40,8 @@ git status -sb
 ```yaml
 steps:
   1. Create branch: git checkout -b {type}/{description}
-  2. Update state.md focus if needed
-  3. Create playbook (optional for small tasks)
+  2. Create playbook
+  3. Update state.md playbook.active
   4. Begin work
 ```
 
@@ -50,8 +50,8 @@ steps:
 ```yaml
 checkpoints:
   - Commit frequently (atomic commits)
-  - Update state.md if focus changes
   - Mark subtasks as done: `- [ ]` → `- [x]`
+  - Update playbook status
 ```
 
 ### 3. Completing a Task
@@ -99,9 +99,9 @@ grep "filename" .claude/protected-files.txt
 
 ```bash
 # state.md fields to update:
-# - focus.current: What you're working on
 # - playbook.active: Current task file
-# - session.last_start: Timestamp
+# - playbook.branch: Associated branch
+# - session.last_start: Timestamp (auto-updated)
 ```
 
 ### Archive Completed Work
@@ -135,7 +135,7 @@ bash .claude/hooks/generate-repository-map.sh
 ```yaml
 検出対象:
   - hooks: .claude/hooks/*.sh
-  - agents: .claude/agents/*.md
+  - agents: .claude/skills/*/agents/*.md
   - skills: .claude/skills/*/
   - commands: .claude/commands/*.md
 

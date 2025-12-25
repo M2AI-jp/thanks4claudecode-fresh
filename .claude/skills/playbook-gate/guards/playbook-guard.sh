@@ -63,9 +63,6 @@ fi
 # playbook チェック
 # --------------------------------------------------
 
-# focus.current を取得
-FOCUS=$(grep -A6 "^## focus" "$STATE_FILE" | grep "^current:" | head -1 | sed 's/current: *//' | sed 's/ *#.*//' | tr -d ' ')
-
 # playbook セクションから active を取得
 PLAYBOOK=$(grep -A6 "^## playbook" "$STATE_FILE" | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//' | tr -d ' ')
 
@@ -93,7 +90,6 @@ if [[ -z "$PLAYBOOK" || "$PLAYBOOK" == "null" ]]; then
 
   現在の状態:
 EOF
-    echo "    focus: $FOCUS" >&2
     echo "    playbook: null" >&2
     echo "" >&2
     echo "========================================" >&2

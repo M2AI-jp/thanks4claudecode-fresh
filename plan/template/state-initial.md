@@ -19,15 +19,7 @@
 
 > **現在地を示す Single Source of Truth**
 >
-> LLM はセッション開始時に必ずこのファイルを読み、focus と playbook を確認すること。
-
----
-
-## focus
-
-```yaml
-current: setup  # setup | product | plan-template
-```
+> LLM はセッション開始時に必ずこのファイルを読み、playbook を確認すること。
 
 ---
 
@@ -35,7 +27,7 @@ current: setup  # setup | product | plan-template
 
 ```yaml
 active: setup/playbook-setup.md
-branch: null  # setup は main で実行可
+branch: null
 last_archived: null
 ```
 
@@ -47,8 +39,7 @@ last_archived: null
 milestone: setup
 phase: p0
 done_criteria:
-  - setup/playbook-setup.md Phase 0-8 を完了する
-  - focus.current が product に切り替わる
+  - setup/playbook-setup.md の全 Phase を完了する
 ```
 
 ---

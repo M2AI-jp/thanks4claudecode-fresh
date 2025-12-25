@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-25 15:11:40"
+  generated: "2025-12-25 16:01:29"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 216
+  total_files: 217
 
 hooks:
   directory: .claude/hooks/
@@ -45,7 +45,7 @@ agents:
       description: "reviewer との違い"
     - name: "setup-guide"
       skill: "session-manager"
-      description: "description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environm"
+      description: "description: AUTOMATICALLY guides setup process when playbook=setup/playbook-setup.md. Conducts hear"
 
 skills:
   directory: .claude/skills/
@@ -91,14 +91,12 @@ skills:
 
 commands:
   directory: .claude/commands/
-  count: 7
+  count: 6
   invocation: "ユーザーが /command で明示的に呼び出す（例: /test, /lint）"
   usage: "即座に実行される CLI 機能。ユーザーの意図を明確に反映。"
   files:
     - name: "/crit"
       description: "この処理は critic SubAgent に委譲される。直接 CRITIQUE を実行してはならない�"
-    - name: "/focus"
-      description: "allowed-tools: Read, Edit, Bash"
     - name: "/lint"
       description: "allowed-tools: Read, Bash"
     - name: "/playbook-init"
@@ -235,7 +233,7 @@ workflows:
       when: "SessionStart 発火時"
       input:
         - "ユーザーの最初のプロンプト"
-        - "state.md（focus, playbook, goal）"
+        - "state.md（playbook, goal）"
         - "playbook（active な場合）"
       process:
         hooks:
@@ -377,6 +375,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-25 15:11:40"
+  - date: "2025-12-25 16:01:29"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

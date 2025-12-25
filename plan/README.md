@@ -71,7 +71,7 @@ plan/
 
 | ファイル | 役割 |
 |---------|------|
-| state.md | 現在の状態（focus, playbook, goal） |
+| state.md | 現在の状態（playbook, goal） |
 | CLAUDE.md | LLM の振る舞いルール（INIT, LOOP） |
 | .archive/plan/ | 完了した playbook のアーカイブ |
 

@@ -99,7 +99,6 @@ playbook 完了:
 check-coherence.sh:
   - state.md と playbook の連動確認
   - branch と playbook の一致確認
-  - focus.current との整合性確認
   - YAML コードブロックを正しくパース
 ```
 

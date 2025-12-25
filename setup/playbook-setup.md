@@ -84,7 +84,6 @@ done_when:
   - プロジェクトがローカルで動作する
   - Vercel にデプロイ済み
   - .claude/skills/ に Skills が存在する（事前配置済み）
-  - focus.current が product に切り替わっている
 ```
 
 ---
@@ -1317,7 +1316,6 @@ done_criteria:
   - .claude/skills/lint-checker/ が存在する（事前配置済み）
   - .claude/skills/test-runner/ が存在する（事前配置済み）
   - .claude/skills/deploy-checker/ が存在する（事前配置済み）
-  - state.md の focus.current が product
 status: pending
 ```
 
@@ -1335,10 +1333,7 @@ status: pending
    ```
    ※ Skills は .claude/skills/ に事前配置されている。新規生成は不要。
 
-2. `state.md` を更新:
-   - `focus.current: product`
-
-3. 完了メッセージ:
+2. 完了メッセージ:
    ```
    おめでとうございます！
    開発環境のセットアップが完了しました。

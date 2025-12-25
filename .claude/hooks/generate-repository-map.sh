@@ -298,7 +298,7 @@ workflows:
       when: "SessionStart 発火時"
       input:
         - "ユーザーの最初のプロンプト"
-        - "state.md（focus, playbook, goal）"
+        - "state.md（playbook, goal）"
         - "playbook（active な場合）"
       process:
         hooks:

@@ -687,7 +687,7 @@ pm の責務:
 - plan/template/playbook-format.md - playbook テンプレート（V16: p_self_update 必須化）
 - .claude/frameworks/playbook-review-criteria.md - playbook レビュー基準
 - docs/criterion-validation-rules.md - criterion 検証ルール（禁止パターン）
-- state.md - 現在の playbook、focus
+- state.md - 現在の playbook
 - CLAUDE.md - playbook ルール（POST_LOOP: アーカイブ実行を含む）
 - .claude/agents/reviewer.md - 計画レビュー SubAgent（playbook レビューも担当）
 - docs/git-operations.md - git 操作 参照ドキュメント

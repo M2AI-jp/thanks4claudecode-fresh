@@ -2,23 +2,15 @@
 
 > **現在地を示す Single Source of Truth**
 >
-> LLM はセッション開始時に必ずこのファイルを読み、focus と playbook を確認すること。
-
----
-
-## focus
-
-```yaml
-current: thanks4claudecode
-```
+> LLM はセッション開始時に必ずこのファイルを読み、playbook を確認すること。
 
 ---
 
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-remove-focus.md
+branch: refactor/remove-focus-feature
 last_archived: plan/archive/playbook-drift-sync.md
 review_pending: false
 ```
@@ -39,7 +31,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2025-12-25 15:11:25
+last_start: 2025-12-25 15:58:13
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```

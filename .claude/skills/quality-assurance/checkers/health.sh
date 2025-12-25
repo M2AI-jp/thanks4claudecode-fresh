@@ -108,10 +108,6 @@ fi
 STATE_FILE="state.md"
 if [ -f "$STATE_FILE" ]; then
     # 必須セクションの存在チェック（個別に検証）
-    if ! grep -q "^## focus" "$STATE_FILE" 2>/dev/null; then
-        ISSUES="$ISSUES\n  - [WARN] state.md に必須セクションがありません: ## focus"
-        ISSUE_COUNT=$((ISSUE_COUNT + 1))
-    fi
     if ! grep -q "^## playbook" "$STATE_FILE" 2>/dev/null; then
         ISSUES="$ISSUES\n  - [WARN] state.md に必須セクションがありません: ## playbook"
         ISSUE_COUNT=$((ISSUE_COUNT + 1))

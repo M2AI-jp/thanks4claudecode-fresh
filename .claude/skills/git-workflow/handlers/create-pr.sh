@@ -75,8 +75,7 @@ if [ ! -f "$STATE_FILE" ]; then
     exit 1
 fi
 
-# focus と playbook パスを取得
-FOCUS=$(grep -A5 "## focus" "$STATE_FILE" 2>/dev/null | grep "current:" | sed 's/.*: *//' | sed 's/ *#.*//' || echo "")
+# playbook パスを取得
 PLAYBOOK_PATH=$(grep -A5 "## playbook" "$STATE_FILE" 2>/dev/null | grep "active:" | sed 's/.*: *//' | sed 's/ *#.*//' || echo "null")
 
 if [ "$PLAYBOOK_PATH" = "null" ] || [ -z "$PLAYBOOK_PATH" ]; then

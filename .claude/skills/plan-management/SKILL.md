@@ -51,18 +51,16 @@ Phase 完了条件:
   3. critic が PASS を返した
 ```
 
-## Four-Tuple Coherence
+## Three-Tuple Coherence
 
 ```yaml
-四つ組:
-  - focus.current (state.md)
+三つ組:
   - playbook.active (state.md)
   - playbook (plan/playbook-*.md)
   - branch (git)
 
 整合性ルール:
   - playbook.branch == git current branch
-  - focus.current == active workspace
   - playbook.active reflects current task
 ```
 
@@ -70,7 +68,7 @@ Phase 完了条件:
 
 ```yaml
 必須 Read:
-  1. state.md → focus.current 確認
+  1. state.md → playbook.active 確認
   2. playbook (if playbook.active is set)
   3. RUNBOOK.md (for procedures)
 
