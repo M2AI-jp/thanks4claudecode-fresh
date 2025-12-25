@@ -37,6 +37,8 @@ invoke_skill "access-control" "guards/main-branch.sh" || exit $?
 
 case "$TOOL_NAME" in
     Edit|Write)
+        # post-loop pending チェック（playbook 完了後の強制）
+        invoke_skill "post-loop" "guards/pending-guard.sh" || exit $?
         # 保護ファイルチェック
         invoke_skill "access-control" "guards/protected-edit.sh" || exit $?
         # playbook 必須チェック

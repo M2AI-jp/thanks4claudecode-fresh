@@ -190,7 +190,6 @@ $GOAL_SUMMARY
 - **Name**: $PLAYBOOK_NAME
 - **Phase**: $CURRENT_PHASE
 - **Path**: $PLAYBOOK_PATH
-- **Focus**: $FOCUS
 
 ## Done When (Playbook Goal)
 

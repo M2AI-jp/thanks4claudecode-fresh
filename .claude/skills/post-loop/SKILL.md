@@ -1,59 +1,47 @@
 ---
 name: post-loop
-description: playbook 完了後の自動コミット、マージ、次タスク導出を実行。
+description: playbook 完了後のブロック解除と次タスク導出を実行。
 ---
 
 # post-loop
 
-> **POST_LOOP - playbook 完了後の自動処理**
+> **POST_LOOP - playbook 完了後の後処理**
 
 ---
 
 ## トリガー
 
-playbook の全 Phase が done
+pending-guard.sh によるブロック（Edit/Write が BLOCK された時）
+
+```
+🚨 post-loop 未実行 - Edit/Write ブロック中
+  必須アクション:
+    Skill(skill='post-loop') を呼び出してください。
+```
+
+---
+
+## 前提条件
+
+archive-playbook.sh（PostToolUse:Edit フック）が以下を自動実行済み:
+- 自動コミット（最終 Phase 分）
+- Push & PR 作成
+- playbook アーカイブ（plan/archive/ へ移動）
+- state.md 更新（playbook.active = null）
+- PR マージ & main 同期
+- pending ファイル作成（`.claude/session-state/post-loop-pending`）
 
 ---
 
 ## 行動
 
 ```yaml
-0. 自動コミット（最終 Phase 分）:
-   - `git status --porcelain` で未コミット変更を確認
-   - 変更あり → `git add -A && git commit -m "feat: {playbook 名} 完了"`
-   - 変更なし → スキップ
+1. ブロック解除（必須・最初に実行）:
+   - handlers/complete.sh を実行
+   - pending ファイルを削除
+   - Edit/Write が再び使用可能になる
 
-1. 完了 playbook のアーカイブ:
-   - 以下を実行:
-     ```bash
-     mkdir -p plan/archive
-     mv plan/playbook-{name}.md plan/archive/
-     ```
-   - state.md の playbook.active を null に更新
-   - 注意: アーカイブ前に git add/commit を完了すること
-   - 参照: docs/archive-operation-rules.md
-
-2. GitHub PR 作成（★自動化済み）:
-   - Hook: create-pr-hook.sh（PostToolUse:Edit で自動発火、settings.json 登録済み）
-   - 本体: create-pr.sh（実際の PR 作成処理）
-   - PR タイトル: feat({playbook}/{phase}): {goal summary}
-   - PR 本文: done_when + done_criteria + completed phases
-   - 条件分岐:
-     - 成功: → PR マージへ進む
-     - PR 既存: スキップ
-     - 失敗: エラーログ出力、手動対応を促す
-
-3. GitHub PR マージ（★自動化済み）:
-   - スクリプト: .claude/hooks/merge-pr.sh
-   - コマンド: gh pr merge --merge --auto --delete-branch
-   - 条件分岐:
-     - 成功: ブランチ削除 → main 同期 → 次タスク導出へ
-     - Draft: エラー（gh pr ready で解除を促す）
-     - コンフリクト: エラー（手動解決を促す）
-     - 必須チェック未完了: --auto で待機
-     - 失敗: エラーログ出力、手動対応を促す
-
-4. /clear アナウンス:
+2. /clear アナウンス:
    - playbook 完了時にユーザーに以下を案内:
      ```
      [playbook 完了]
@@ -63,43 +51,82 @@ playbook の全 Phase が done
      /context で確認 → /clear で リセット可能です。
      ```
 
-5. 次タスクの導出（計画の連鎖）★pm 経由必須:
+3. 次タスクの導出（計画の連鎖）★pm 経由必須:
    - pm SubAgent を呼び出す
    - pm がユーザー要求を確認
    - pm が新 playbook を作成
 
-6. 残タスクあり:
+4. 残タスクあり:
    - ブランチ作成: `git checkout -b feat/{next-task}`
    - pm が playbook 作成: plan/playbook-{next-task}.md
    - pm が state.md 更新: playbook.active を更新
    - 即座に LOOP に入る
 
-7. 残タスクなし:
+5. 残タスクなし:
    - 「全タスク完了。次の指示を待ちます。」
 ```
 
 ---
 
-## git 自動操作
+## 実行方法
 
-```yaml
-Phase 完了: 自動コミット（critic PASS 後、LOOP 内で実行）
-playbook 完了:
-  - アーカイブ（POST_LOOP 行動 1: playbook.active = null 化）
-  - PR 自動作成（POST_LOOP 行動 2: create-pr-hook.sh → create-pr.sh）
-  - PR 自動マージ（POST_LOOP 行動 3: merge-pr.sh）
-新タスク: 自動ブランチ（POST_LOOP 行動 5 で実行）
+```bash
+# Step 1: complete.sh を実行（ブロック解除）
+bash .claude/skills/post-loop/handlers/complete.sh
+
+# Step 2: 次タスク導出（pm SubAgent 経由）
+# pending ステータスに応じて:
+#   success: 直接 pm 呼び出し
+#   partial: 手動確認後に pm 呼び出し
 ```
 
 ---
 
-## 整合性チェック
+## 自動化フロー（archive-playbook.sh 担当）
 
 ```yaml
-check-coherence.sh:
-  - state.md と playbook の連動確認
-  - branch と playbook の一致確認
-  - YAML コードブロックを正しくパース
+# PostToolUse:Edit で archive-playbook.sh が以下を自動実行:
+Phase 完了検出:
+  - playbook 解析（全 Phase が done か判定）
+
+自動コミット:
+  - git status --porcelain で未コミット変更を確認
+  - 変更あり → git add -A && git commit -m "feat: {playbook 名} 完了"
+
+自動プッシュ & PR 作成:
+  - git push origin {branch}
+  - create-pr.sh を実行
+
+自動アーカイブ:
+  - mkdir -p plan/archive && mv plan/playbook-*.md plan/archive/
+  - state.md の playbook.active を null に更新
+
+自動マージ & 同期:
+  - merge-pr.sh を実行
+  - git checkout main && git pull
+
+pending ファイル作成:
+  - .claude/session-state/post-loop-pending を作成
+  - ステータス（success/partial）を記録
+```
+
+---
+
+## pending ファイル
+
+```yaml
+location: .claude/session-state/post-loop-pending
+purpose: Edit/Write ブロック制御
+
+content_example:
+  status: success  # または partial
+  playbook: playbook-example.md
+  timestamp: 2025-12-25T10:00:00Z
+
+lifecycle:
+  created_by: archive-playbook.sh
+  detected_by: pending-guard.sh
+  deleted_by: complete.sh
 ```
 
 ---
@@ -109,4 +136,5 @@ check-coherence.sh:
 ```yaml
 - 「報告して待つ」パターン（残タスクがあるのに止まる）
 - ユーザーに「次は何をしますか？」と聞く
+- complete.sh を実行せずに次タスクに進む
 ```

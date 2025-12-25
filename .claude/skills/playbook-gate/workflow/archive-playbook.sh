@@ -1,24 +1,49 @@
 #!/bin/bash
-# archive-playbook.sh - playbook 完了時の自動アーカイブ提案
+# archive-playbook.sh - playbook 完了時の自動処理
 #
 # 発火条件: PostToolUse:Edit
-# 目的: playbook の全 Phase が done になったら plan/archive/ に移動を提案
+# 目的: playbook の全 Phase が done になったら自動でアーカイブ・PR 作成・マージを実行
 #
-# 設計思想（2025-12-09 改善）:
+# 設計思想（2025-12-25 改善）:
 #   - playbook 完了を自動検出
-#   - 移動は提案のみ（自動実行しない）★安全側設計
-#   - Claude が POST_LOOP で実行（CLAUDE.md 行動 0.5）
-#   - 現在進行中の playbook（state.md playbook.active）はアーカイブ対象外
+#   - 自動実行: コミット、push、PR 作成、アーカイブ、マージ
+#   - pending ファイルで post-loop Skill 呼び出しを強制
+#   - 失敗時は警告を出力して続行（部分的成功を許容）
 #
-# 実行経路:
-#   1. playbook を Edit → このスクリプト発火
-#   2. 全 Phase done を検出 → 「アーカイブ推奨」を出力
-#   3. Claude が POST_LOOP に入る
-#   4. POST_LOOP 行動 0.5 で mv 実行
+# 処理順序:
+#   1. 自動コミット（未コミット変更がある場合）
+#   2. push（PR 作成前に必要）
+#   3. PR 作成（create-pr.sh - playbook.active が必要）
+#   4. playbook アーカイブ（plan/archive/ へ移動）
+#   5. state.md 更新（playbook.active = null）
+#   6. アーカイブのコミット
+#   7. push（追加コミット）
+#   8. PR マージ（merge-pr.sh）
+#   9. main 同期
+#   10. pending ファイル作成
 #
 # 参照: docs/archive-operation-rules.md
 
 set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILLS_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+SESSION_STATE_DIR=".claude/session-state"
+PENDING_FILE="$SESSION_STATE_DIR/post-loop-pending"
+
+# 色定義
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+SEP="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# ステータス追跡
+OVERALL_STATUS="success"
+
+log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; OVERALL_STATUS="partial"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; OVERALL_STATUS="partial"; }
 
 # state.md が存在しない場合はスキップ
 if [ ! -f "state.md" ]; then
@@ -71,11 +96,8 @@ fi
 # ==============================================================================
 # V12: チェックボックス形式の完了判定
 # ==============================================================================
-# `- [x]` の数と `- [ ]` の数をカウントして完了率を確認
-# ==============================================================================
 CHECKED_COUNT=$(grep -c '\- \[x\]' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
 UNCHECKED_COUNT=$(grep -c '\- \[ \]' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
-# 空の場合は 0 に設定
 CHECKED_COUNT=${CHECKED_COUNT:-0}
 UNCHECKED_COUNT=${UNCHECKED_COUNT:-0}
 TOTAL_CHECKBOX=$((CHECKED_COUNT + UNCHECKED_COUNT))
@@ -83,29 +105,23 @@ TOTAL_CHECKBOX=$((CHECKED_COUNT + UNCHECKED_COUNT))
 if [ "$TOTAL_CHECKBOX" -gt 0 ]; then
     if [ "$UNCHECKED_COUNT" -gt 0 ]; then
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$SEP"
         echo "  ⚠️ 未完了の subtask があります（V12 形式）"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$SEP"
         echo "  完了: $CHECKED_COUNT / 未完了: $UNCHECKED_COUNT"
         echo ""
         echo "  全ての subtask を完了させてください:"
         echo "  - [ ] → - [x] に変更"
-        echo "  - validations を追加"
-        echo "  - validated タイムスタンプを追加"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        exit 0  # 未完了があれば提案しない
+        echo "$SEP"
+        exit 0  # 未完了があれば処理しない
     fi
 fi
 
-# M019: final_tasks チェック（存在する場合のみ）
-# playbook に final_tasks セクションがある場合、全て完了しているか確認
-# V12 形式: `- [x] **ft1**` でチェック
+# M019: final_tasks チェック
 if grep -q "^## final_tasks" "$FILE_PATH" 2>/dev/null; then
-    # V12 形式: チェックボックスでカウント
     TOTAL_FINAL_TASKS=$(grep -A 100 "^## final_tasks" "$FILE_PATH" | grep -c '\- \[.\] \*\*ft' 2>/dev/null || echo "0")
     DONE_FINAL_TASKS=$(grep -A 100 "^## final_tasks" "$FILE_PATH" | grep -c '\- \[x\] \*\*ft' 2>/dev/null || echo "0")
 
-    # V11 形式（フォールバック）: status: done でカウント
     if [ "$TOTAL_FINAL_TASKS" -eq 0 ]; then
         TOTAL_FINAL_TASKS=$(awk '/^final_tasks:/,/^[a-z_]+:/' "$FILE_PATH" | grep -c "^ *- " 2>/dev/null || echo "0")
         DONE_FINAL_TASKS=$(awk '/^final_tasks:/,/^[a-z_]+:/' "$FILE_PATH" | grep -c "status: done" 2>/dev/null || echo "0")
@@ -113,109 +129,260 @@ if grep -q "^## final_tasks" "$FILE_PATH" 2>/dev/null; then
 
     if [ "$TOTAL_FINAL_TASKS" -gt 0 ] && [ "$DONE_FINAL_TASKS" -lt "$TOTAL_FINAL_TASKS" ]; then
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$SEP"
         echo "  ⚠️ final_tasks が未完了です"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$SEP"
         echo "  完了: $DONE_FINAL_TASKS / $TOTAL_FINAL_TASKS"
         echo "  → final_tasks を全て完了してからアーカイブしてください"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$SEP"
         exit 0
     fi
 fi
 
-# ==============================================================================
 # M056: done_when 再検証（報酬詐欺防止）
-# ==============================================================================
-# playbook の goal.done_when を抽出し、p_final の validations が全て PASS か検証
-# 全 PASS でなければアーカイブをブロック
-
 DONE_WHEN_SECTION=$(sed -n '/^done_when:/,/^[a-z_]*:/p' "$FILE_PATH" 2>/dev/null | grep "^  - " | head -10)
-# M086 修正: grep -c 失敗時のフォールバックを修正（二重出力防止）
 DONE_WHEN_COUNT=$(echo "$DONE_WHEN_SECTION" | grep -c "^  - " 2>/dev/null) || DONE_WHEN_COUNT=0
 
 if [ "$DONE_WHEN_COUNT" -gt 0 ]; then
-    # p_final Phase の存在チェック
-    if ! grep -q "p_final" "$FILE_PATH" 2>/dev/null; then
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "  ⚠️ p_final（完了検証フェーズ）が存在しません"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "  done_when: $DONE_WHEN_COUNT 項目"
-        echo ""
-        echo "  playbook に p_final フェーズを追加してください。"
-        echo "  参照: plan/template/playbook-format.md"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        # 警告のみ（ブロックしない）- 既存 playbook との互換性のため
-    fi
-
     # p_final Phase の status チェック
-    P_FINAL_STATUS=$(grep -A 30 "p_final" "$FILE_PATH" 2>/dev/null | grep "^status:" | head -1 | sed 's/status: *//')
+    P_FINAL_STATUS=$(grep -A 30 "p_final" "$FILE_PATH" 2>/dev/null | grep "^\*\*status\*\*:" | head -1 | sed 's/\*\*status\*\*: *//')
     if [ -n "$P_FINAL_STATUS" ] && [ "$P_FINAL_STATUS" != "done" ]; then
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$SEP"
         echo "  ❌ p_final（完了検証）が未完了です"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$SEP"
         echo "  done_when の検証: status = $P_FINAL_STATUS"
-        echo ""
         echo "  p_final を完了させてからアーカイブしてください。"
-        echo "  → done_when の各項目が実際に満たされているか検証"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$SEP"
         exit 2  # done_when 未検証でブロック
     fi
 
-    # validations の PASS チェック（V15: validations ベース）
-    # p_final セクション内の subtask が全て [x]（完了）になっているか確認
+    # p_final の subtask 完了チェック
     P_FINAL_SECTION=$(grep -A 100 "p_final" "$FILE_PATH" 2>/dev/null | head -100)
     INCOMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[ \]' 2>/dev/null) || INCOMPLETE_SUBTASKS=0
-    COMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[x\]' 2>/dev/null) || COMPLETE_SUBTASKS=0
 
     if [ "$INCOMPLETE_SUBTASKS" -gt 0 ]; then
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "$SEP"
         echo "  ❌ p_final の subtasks が未完了です"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "  完了: $COMPLETE_SUBTASKS / 未完了: $INCOMPLETE_SUBTASKS"
-        echo ""
+        echo "$SEP"
         echo "  アーカイブをブロックします。"
-        echo "  → 全ての p_final subtasks を完了させてください。"
-        echo "  → validations（3点検証）が全て PASS である必要があります。"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        exit 2  # subtasks 未完了でブロック
+        echo "$SEP"
+        exit 2
     fi
 fi
 
-# 相対パスに変換
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-RELATIVE_PATH="${FILE_PATH#$PROJECT_DIR/}"
+# ==============================================================================
+# ここから自動処理開始
+# ==============================================================================
 
-# playbook 名を取得
 PLAYBOOK_NAME=$(basename "$FILE_PATH")
-
-# アーカイブ先を決定
 ARCHIVE_DIR="plan/archive"
-ARCHIVE_PATH="$ARCHIVE_DIR/$PLAYBOOK_NAME"
+CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 
-# 全 Phase が done の場合、post-loop Skill を呼び出すよう指示
-cat << EOF
+echo ""
+echo "$SEP"
+echo "  📦 Playbook 完了検出 → 自動処理開始"
+echo "$SEP"
+echo ""
+echo "  Playbook: $FILE_PATH"
+echo "  Status: 全 $TOTAL_PHASES Phase が done"
+echo "  Branch: $CURRENT_BRANCH"
+echo ""
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📦 Playbook 完了検出 → POST_LOOP 発動
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ==============================================================================
+# Step 1: 自動コミット
+# ==============================================================================
+echo "$SEP"
+echo "  Step 1: 自動コミット"
+echo "$SEP"
 
-  Playbook: $RELATIVE_PATH
-  Status: 全 $TOTAL_PHASES Phase が done
+if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+    log_info "未コミット変更を検出。コミットします..."
+    git add -A
+    git commit -m "feat(${PLAYBOOK_NAME%.md}): playbook 完了
 
-  ⚠️ 必須アクション:
-    Skill(skill='post-loop') を呼び出してください。
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-  post-loop が実行する処理:
-    1. 自動コミット（未コミット変更がある場合）
-    2. playbook のアーカイブ（plan/archive/ へ移動）
-    3. state.md の playbook.active を null に更新
-    4. PR 作成・マージ
-    5. 次タスクの導出
+Co-Authored-By: Claude <noreply@anthropic.com>" || log_warn "コミットに失敗しました"
+    log_info "コミット完了"
+else
+    log_info "未コミット変更なし。スキップ。"
+fi
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ==============================================================================
+# Step 2: Push（PR 作成前に必要）
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 2: Push"
+echo "$SEP"
+
+if [ "$CURRENT_BRANCH" != "main" ] && [ "$CURRENT_BRANCH" != "master" ]; then
+    if ! git rev-parse --abbrev-ref --symbolic-full-name '@{u}' &> /dev/null; then
+        git push -u origin "$CURRENT_BRANCH" 2>&1 || log_warn "push に失敗しました"
+    else
+        git push 2>&1 || log_warn "push に失敗しました"
+    fi
+    log_info "Push 完了"
+else
+    log_info "main ブランチのため push スキップ"
+fi
+
+# ==============================================================================
+# Step 3: PR 作成
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 3: PR 作成"
+echo "$SEP"
+
+CREATE_PR_SCRIPT="$SKILLS_DIR/git-workflow/handlers/create-pr.sh"
+if [ -x "$CREATE_PR_SCRIPT" ]; then
+    bash "$CREATE_PR_SCRIPT" || log_warn "PR 作成に失敗しました（既存の可能性あり）"
+else
+    log_warn "create-pr.sh が見つかりません: $CREATE_PR_SCRIPT"
+fi
+
+# ==============================================================================
+# Step 4: Playbook アーカイブ
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 4: Playbook アーカイブ"
+echo "$SEP"
+
+mkdir -p "$ARCHIVE_DIR"
+if mv "$FILE_PATH" "$ARCHIVE_DIR/" 2>/dev/null; then
+    log_info "アーカイブ完了: $ARCHIVE_DIR/$PLAYBOOK_NAME"
+else
+    log_error "アーカイブに失敗しました"
+fi
+
+# ==============================================================================
+# Step 5: state.md 更新
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 5: state.md 更新"
+echo "$SEP"
+
+STATE_FILE="state.md"
+if [ -f "$STATE_FILE" ]; then
+    # playbook.active を null に
+    sed -i '' 's/^active: .*/active: null/' "$STATE_FILE" 2>/dev/null || true
+    # playbook.branch を null に
+    sed -i '' 's/^branch: .*/branch: null/' "$STATE_FILE" 2>/dev/null || true
+    # last_archived を更新
+    sed -i '' "s|^last_archived: .*|last_archived: $ARCHIVE_DIR/$PLAYBOOK_NAME|" "$STATE_FILE" 2>/dev/null || true
+    log_info "state.md 更新完了"
+else
+    log_warn "state.md が見つかりません"
+fi
+
+# ==============================================================================
+# Step 6: アーカイブのコミット
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 6: アーカイブのコミット"
+echo "$SEP"
+
+if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+    git add -A
+    git commit -m "chore: archive ${PLAYBOOK_NAME%.md}
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>" || log_warn "アーカイブコミットに失敗しました"
+    log_info "アーカイブコミット完了"
+else
+    log_info "変更なし。スキップ。"
+fi
+
+# ==============================================================================
+# Step 7: Push（追加コミット）
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 7: Push（追加コミット）"
+echo "$SEP"
+
+if [ "$CURRENT_BRANCH" != "main" ] && [ "$CURRENT_BRANCH" != "master" ]; then
+    git push 2>&1 || log_warn "追加 push に失敗しました"
+    log_info "追加 Push 完了"
+fi
+
+# ==============================================================================
+# Step 8: PR マージ
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 8: PR マージ"
+echo "$SEP"
+
+MERGE_PR_SCRIPT="$SKILLS_DIR/git-workflow/handlers/merge-pr.sh"
+if [ -x "$MERGE_PR_SCRIPT" ]; then
+    bash "$MERGE_PR_SCRIPT" || log_warn "PR マージに失敗しました（手動で実行してください）"
+else
+    log_warn "merge-pr.sh が見つかりません: $MERGE_PR_SCRIPT"
+fi
+
+# ==============================================================================
+# Step 9: main 同期
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 9: main 同期"
+echo "$SEP"
+
+git fetch origin main 2>/dev/null || true
+CURRENT_AFTER=$(git branch --show-current 2>/dev/null || echo "")
+if [ "$CURRENT_AFTER" = "main" ] || [ "$CURRENT_AFTER" = "master" ]; then
+    git pull origin main 2>/dev/null || log_warn "main 同期に失敗しました"
+    log_info "main 同期完了"
+else
+    log_info "現在 $CURRENT_AFTER ブランチ。main 同期はマージ完了後に実行されます。"
+fi
+
+# ==============================================================================
+# Step 10: pending ファイル作成
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 10: pending ファイル作成"
+echo "$SEP"
+
+mkdir -p "$SESSION_STATE_DIR"
+cat > "$PENDING_FILE" << EOF
+{
+  "playbook": "$PLAYBOOK_NAME",
+  "archived_at": "$(date -Iseconds)",
+  "status": "$OVERALL_STATUS",
+  "branch": "$CURRENT_BRANCH"
+}
 EOF
+log_info "pending ファイル作成完了: $PENDING_FILE (status: $OVERALL_STATUS)"
+
+# ==============================================================================
+# 完了メッセージ
+# ==============================================================================
+echo ""
+echo "$SEP"
+if [ "$OVERALL_STATUS" = "success" ]; then
+    echo "  ✅ 自動処理完了（全ステップ成功）"
+else
+    echo "  ⚠️ 自動処理完了（一部警告あり）"
+fi
+echo "$SEP"
+echo ""
+echo "  次のアクション:"
+echo "    Skill(skill='post-loop') を呼び出してください。"
+echo ""
+echo "  post-loop が実行する処理:"
+echo "    1. pending ファイル削除"
+echo "    2. 次タスクの導出（pm SubAgent 経由）"
+echo ""
+echo "$SEP"
 
 exit 0
