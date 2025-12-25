@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-25 13:47:10"
+  generated: "2025-12-25 13:58:14"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 218
+  total_files: 214
 
 hooks:
   directory: .claude/hooks/
@@ -52,7 +52,7 @@ skills:
   invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
   usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
   auto_invoke: true
-  count: 18
+  count: 17
   files:
     - name: "access-control"
       description: "アクセス制御"
@@ -84,8 +84,6 @@ skills:
       description: "セッション管理"
     - name: "state"
       description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
-    - name: "test-dark-mode"
-      description: ""
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
     - name: "understanding-check"
@@ -137,7 +135,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 40
+      count: 39
     template:
       description: "playbook テンプレート"
       count: 5
@@ -379,6 +377,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-25 13:47:10"
+  - date: "2025-12-25 13:58:14"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
