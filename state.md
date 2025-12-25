@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-abort-playbook-skill.md
+last_archived: plan/archive/playbook-architecture-visualizer.md
 review_pending: false
 ```
 
@@ -20,13 +20,13 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: abort-playbook-skill
+milestone: null
 phase: p1
 done_criteria:
-  - abort-playbook Skill が存在し、playbook を plan/archive/ に移動できる
-  - health.sh に orphan playbook 検出機能が存在する
-  - health-checker.md に orphan 検出の説明が追加されている
-  - 既存の orphan playbook-fix-playbook-branch-check.md が abort 処理されている
+  - tmp/sample-website/index.html が存在し、ローカルサーバーで閲覧可能である
+  - SessionStart から PostToolUse までの主要フローがタイムライン形式で視覚化されている
+  - フロー遷移アニメーションが動作する
+  - 各コンポーネントクリックで詳細ポップアップが表示される
 note: null
 ```
 
@@ -35,7 +35,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2025-12-25 19:07:28
+last_start: 2025-12-25 19:25:03
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
