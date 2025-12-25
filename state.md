@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-post-loop-auto-fire.md
+branch: feat/post-loop-auto-fire
 last_archived: plan/archive/playbook-remove-focus.md
 review_pending: false
 ```
@@ -20,10 +20,13 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-note: null
+milestone: post-loop-auto-fire
+phase: p1
+done_criteria:
+  - archive-playbook.sh が playbook 完了時にアーカイブ/PR 作成/マージを自動実行する
+  - pre-tool.sh が post-loop-pending を検出し、post-loop 実行を強制する
+  - post-loop Skill が次タスク導出のみを担当し、pending を削除する
+note: playbook 完了時の post-loop 自動発火を実装
 ```
 
 ---
