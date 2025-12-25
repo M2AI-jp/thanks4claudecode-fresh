@@ -542,6 +542,8 @@ detect_drift_and_sync() {
     # hooks の比較
     local PREV_HOOKS=$(grep -A3 "^hooks:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
     local CURR_HOOKS=$(grep -A3 "^hooks:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_HOOKS=${PREV_HOOKS:-0}
+    CURR_HOOKS=${CURR_HOOKS:-0}
     if [[ "$PREV_HOOKS" != "$CURR_HOOKS" ]]; then
         DRIFT_DETECTED=true
         if [[ "$CURR_HOOKS" -gt "$PREV_HOOKS" ]]; then
@@ -555,6 +557,8 @@ detect_drift_and_sync() {
     # agents の比較
     local PREV_AGENTS=$(grep -A3 "^agents:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
     local CURR_AGENTS=$(grep -A3 "^agents:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_AGENTS=${PREV_AGENTS:-0}
+    CURR_AGENTS=${CURR_AGENTS:-0}
     if [[ "$PREV_AGENTS" != "$CURR_AGENTS" ]]; then
         DRIFT_DETECTED=true
         if [[ "$CURR_AGENTS" -gt "$PREV_AGENTS" ]]; then
@@ -568,6 +572,8 @@ detect_drift_and_sync() {
     # skills の比較
     local PREV_SKILLS=$(grep -A6 "^skills:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
     local CURR_SKILLS=$(grep -A6 "^skills:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_SKILLS=${PREV_SKILLS:-0}
+    CURR_SKILLS=${CURR_SKILLS:-0}
     if [[ "$PREV_SKILLS" != "$CURR_SKILLS" ]]; then
         DRIFT_DETECTED=true
         if [[ "$CURR_SKILLS" -gt "$PREV_SKILLS" ]]; then
@@ -581,6 +587,8 @@ detect_drift_and_sync() {
     # commands の比較
     local PREV_COMMANDS=$(grep -A5 "^commands:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
     local CURR_COMMANDS=$(grep -A5 "^commands:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_COMMANDS=${PREV_COMMANDS:-0}
+    CURR_COMMANDS=${CURR_COMMANDS:-0}
     if [[ "$PREV_COMMANDS" != "$CURR_COMMANDS" ]]; then
         DRIFT_DETECTED=true
         if [[ "$CURR_COMMANDS" -gt "$PREV_COMMANDS" ]]; then
