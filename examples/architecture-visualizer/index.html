@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4QV+ Architecture Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <h1>4QV+ Architecture Visualizer</h1>
+    <p class="subtitle">Hook → Skill → SubAgent の導火線モデル</p>
+  </header>
+
+  <main class="main-content">
+    <!-- SSOT Section -->
+    <section class="ssot-section">
+      <h2>Single Source of Truth</h2>
+      <div class="ssot-hierarchy">
+        <div class="ssot-item ssot-1" data-component="state-md">
+          <span class="ssot-rank">1</span>
+          <span class="ssot-name">state.md</span>
+          <span class="ssot-desc">最優先（現在状態）</span>
+        </div>
+        <div class="ssot-arrow">↓</div>
+        <div class="ssot-item ssot-2" data-component="playbook">
+          <span class="ssot-rank">2</span>
+          <span class="ssot-name">playbook</span>
+          <span class="ssot-desc">タスク定義・進捗</span>
+        </div>
+        <div class="ssot-arrow">↓</div>
+        <div class="ssot-item ssot-3" data-component="chat-history">
+          <span class="ssot-rank">3</span>
+          <span class="ssot-name">チャット履歴</span>
+          <span class="ssot-desc">コンテキストリセットで消失</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="startAnimation" class="btn btn-primary">
+        <span class="btn-icon">▶</span>
+        Start Animation
+      </button>
+      <button id="resetAnimation" class="btn btn-secondary">
+        <span class="btn-icon">↺</span>
+        Reset
+      </button>
+    </div>
+
+    <!-- Timeline Section -->
+    <section class="timeline-section">
+      <h2>Hook Event Timeline</h2>
+      <div class="timeline">
+        <!-- SessionStart -->
+        <div class="timeline-item" data-event="session-start">
+          <div class="timeline-node">
+            <div class="node-circle">1</div>
+            <div class="node-line"></div>
+          </div>
+          <div class="timeline-content">
+            <h3>SessionStart</h3>
+            <p>セッション開始/再開時</p>
+            <div class="event-tags">
+              <span class="tag tag-hook">Hook</span>
+              <span class="tag tag-file">session.sh</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- UserPromptSubmit -->
+        <div class="timeline-item" data-event="user-prompt-submit">
+          <div class="timeline-node">
+            <div class="node-circle">2</div>
+            <div class="node-line"></div>
+          </div>
+          <div class="timeline-content">
+            <h3>UserPromptSubmit</h3>
+            <p>ユーザープロンプト送信時</p>
+            <div class="event-tags">
+              <span class="tag tag-hook">Hook</span>
+              <span class="tag tag-file">prompt.sh</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PreToolUse -->
+        <div class="timeline-item" data-event="pre-tool-use">
+          <div class="timeline-node">
+            <div class="node-circle">3</div>
+            <div class="node-line"></div>
+          </div>
+          <div class="timeline-content">
+            <h3>PreToolUse</h3>
+            <p>ツール実行前（パラメータ作成後）</p>
+            <div class="event-tags">
+              <span class="tag tag-hook">Hook</span>
+              <span class="tag tag-file">pre-tool.sh</span>
+            </div>
+            <div class="guards-list">
+              <span class="guard" data-guard="protected-edit">protected-edit</span>
+              <span class="guard" data-guard="playbook-guard">playbook-guard</span>
+              <span class="guard" data-guard="subtask-guard">subtask-guard</span>
+              <span class="guard" data-guard="main-branch">main-branch</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PostToolUse -->
+        <div class="timeline-item" data-event="post-tool-use">
+          <div class="timeline-node">
+            <div class="node-circle">4</div>
+            <div class="node-line"></div>
+          </div>
+          <div class="timeline-content">
+            <h3>PostToolUse</h3>
+            <p>ツール正常完了直後</p>
+            <div class="event-tags">
+              <span class="tag tag-hook">Hook</span>
+              <span class="tag tag-file">post-tool.sh</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SubagentStop -->
+        <div class="timeline-item" data-event="subagent-stop">
+          <div class="timeline-node">
+            <div class="node-circle">5</div>
+            <div class="node-line"></div>
+          </div>
+          <div class="timeline-content">
+            <h3>SubagentStop</h3>
+            <p>サブエージェント応答完了時</p>
+            <div class="event-tags">
+              <span class="tag tag-hook">Hook</span>
+              <span class="tag tag-subagent">SubAgent</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stop -->
+        <div class="timeline-item" data-event="stop">
+          <div class="timeline-node">
+            <div class="node-circle">6</div>
+            <div class="node-line last"></div>
+          </div>
+          <div class="timeline-content">
+            <h3>Stop</h3>
+            <p>メイン Claude エージェント応答完了時</p>
+            <div class="event-tags">
+              <span class="tag tag-hook">Hook</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SubAgents Section -->
+    <section class="subagents-section">
+      <h2>SubAgents</h2>
+      <div class="subagents-grid">
+        <div class="subagent-card" data-subagent="pm">
+          <div class="subagent-icon">📋</div>
+          <h3>pm</h3>
+          <p>playbook 作成</p>
+          <div class="tools-list">
+            <span class="tool">Read</span>
+            <span class="tool">Write</span>
+            <span class="tool">Edit</span>
+          </div>
+        </div>
+
+        <div class="subagent-card" data-subagent="reviewer">
+          <div class="subagent-icon">🔍</div>
+          <h3>reviewer</h3>
+          <p>playbook 検証</p>
+          <div class="tools-list">
+            <span class="tool">Read</span>
+            <span class="tool">Grep</span>
+            <span class="tool">Glob</span>
+          </div>
+        </div>
+
+        <div class="subagent-card" data-subagent="critic">
+          <div class="subagent-icon">⚖️</div>
+          <h3>critic</h3>
+          <p>done_criteria 検証</p>
+          <div class="tools-list">
+            <span class="tool">Read</span>
+            <span class="tool">Grep</span>
+            <span class="tool">Bash</span>
+          </div>
+        </div>
+
+        <div class="subagent-card" data-subagent="health-checker">
+          <div class="subagent-icon">🏥</div>
+          <h3>health-checker</h3>
+          <p>健全性チェック</p>
+          <div class="tools-list">
+            <span class="tool">Read</span>
+            <span class="tool">Grep</span>
+            <span class="tool">Glob</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flow Chain Section -->
+    <section class="flow-section">
+      <h2>Golden Path Chain</h2>
+      <div class="flow-chain">
+        <div class="flow-item" data-flow="hook">
+          <div class="flow-box">Hook</div>
+          <div class="flow-label">トリガー</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item" data-flow="skill">
+          <div class="flow-box">Skill</div>
+          <div class="flow-label">パッケージ</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item" data-flow="subagent">
+          <div class="flow-box">SubAgent</div>
+          <div class="flow-label">専門検証</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal for detailed information -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <h2 id="modalTitle"></h2>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Claude Code Self-Governing Framework - 4QV+ Architecture</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
