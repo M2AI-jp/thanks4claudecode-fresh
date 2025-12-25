@@ -293,6 +293,12 @@ Claude は playbook 作成時に自動でブランチを切る。
 ```
 .claude/hooks/pre-tool.sh
     │
+    ├─→ .claude/skills/post-loop/guards/pending-guard.sh
+    │       │
+    │       ├─→ post-loop-pending ファイル存在 → BLOCK
+    │       ├─→ 許可リスト: state.md, session-state/（デッドロック防止）
+    │       └─→ Skill(skill='post-loop') 呼び出しを強制
+    │
     ├─→ .claude/skills/access-control/guards/protected-edit.sh
     │       │
     │       └─→ 参照: .claude/protected-files.txt
@@ -328,6 +334,7 @@ Claude は playbook 作成時に自動でブランチを切る。
 
 | Before | 処理 | After |
 |--------|------|-------|
+| post-loop-pending 存在 | pending-guard | BLOCK + post-loop 必須案内 |
 | 保護ファイル編集試行 | protected-edit | BLOCK |
 | playbook=null | playbook-guard | BLOCK + 案内 |
 | reviewed=false | playbook-guard | BLOCK + reviewer 必要 |
@@ -421,25 +428,36 @@ Claude は playbook 作成時に自動でブランチを切る。
     │
     ├─→ .claude/skills/playbook-gate/workflow/archive-playbook.sh
     │       │
-    │       ├─→ 全 Phase done → アーカイブ提案
-    │       └─→ 書き込み: plan/archive/playbook-*.md
-    │
-    ├─→ .claude/skills/playbook-gate/workflow/cleanup.sh
+    │       ├─→ 全 Phase done 検出
+    │       ├─→ 自動実行（10ステップ）:
+    │       │   1. 未コミット変更を自動コミット
+    │       │   2. Push（PR 作成前に必須）
+    │       │   3. PR 作成（create-pr.sh）
+    │       │   4. playbook アーカイブ（plan/archive/ へ移動）
+    │       │   5. state.md 更新（playbook.active = null）
+    │       │   6. アーカイブ変更をコミット
+    │       │   7. 追加コミットを Push
+    │       │   8. PR マージ（merge-pr.sh）
+    │       │   9. main 同期（checkout + pull）
+    │       │   10. pending ファイル作成（post-loop 強制用）
     │       │
-    │       └─→ tmp/ クリーンアップ
+    │       └─→ 書き込み:
+    │           ├─→ plan/archive/playbook-*.md
+    │           ├─→ state.md（playbook.active = null）
+    │           └─→ .claude/session-state/post-loop-pending
     │
-    └─→ .claude/skills/git-workflow/handlers/create-pr-hook.sh
+    └─→ .claude/skills/playbook-gate/workflow/cleanup.sh
             │
-            └─→ playbook 完了時に PR 作成提案
+            └─→ tmp/ クリーンアップ
 ```
 
 ### 状態遷移
 
 | Before | 処理 | After |
 |--------|------|-------|
-| 全 Phase done | archive-playbook | playbook アーカイブ |
+| 全 Phase done | archive-playbook（自動実行） | コミット→Push→PR→アーカイブ→マージ→main同期 |
 | tmp/ に一時ファイル | cleanup | 一時ファイル削除 |
-| playbook 完了 | create-pr-hook | PR 作成提案 |
+| 自動処理完了 | pending ファイル作成 | Edit/Write ブロック状態 |
 
 ### 書き込み
 
@@ -447,6 +465,7 @@ Claude は playbook 作成時に自動でブランチを切る。
 |----------|---------------|------|
 | plan/archive/playbook-*.md | アーカイブ済み playbook | 全 Phase done |
 | state.md | playbook.active = null, last_archived | アーカイブ時 |
+| .claude/session-state/post-loop-pending | status, playbook, timestamp | 自動処理完了時 |
 | tmp/ | ファイル削除 | playbook 完了時 |
 
 ---
@@ -720,6 +739,20 @@ Task(subagent_type='setup-guide')
     └── create-pr-hook.sh       # PR 作成提案
 ```
 
+### post-loop/
+```
+.claude/skills/post-loop/
+├── SKILL.md                    # Skill 定義
+├── guards/
+│   └── pending-guard.sh        # Edit/Write ブロック
+│       ├─→ 検出: .claude/session-state/post-loop-pending
+│       ├─→ 許可リスト: state.md, session-state/
+│       └─→ BLOCK + post-loop 呼び出し強制
+└── handlers/
+    └── complete.sh             # pending ファイル削除
+        └─→ Edit/Write ブロック解除
+```
+
 ---
 
 ## 9. テンプレート・フレームワーク一覧
@@ -807,11 +840,34 @@ Phase 完了判定
 [PostToolUse:Edit]
     │ 全 Phase done?
     │
-    ├─→ YES: archive-playbook.sh
-    │       ├─→ Move: plan/playbook-*.md → plan/archive/
-    │       └─→ Edit: state.md（playbook.active = null）
+    ├─→ YES: archive-playbook.sh（自動実行）
+    │       │
+    │       ├─→ Step 1-3: コミット → Push → PR 作成
+    │       ├─→ Step 4-7: アーカイブ → state.md 更新 → コミット → Push
+    │       ├─→ Step 8-9: PR マージ → main 同期
+    │       └─→ Step 10: pending ファイル作成
+    │           │
+    │           └─→ Edit/Write ブロック状態開始
     │
     └─→ NO: 次の Phase へ
+    │
+    ▼
+[PreToolUse:Edit/Write]（次の操作試行時）
+    │ pending-guard.sh
+    │
+    └─→ BLOCK: Skill(skill='post-loop') を呼べと案内
+    │
+    ▼
+Skill(skill='post-loop')
+    │
+    ├─→ handlers/complete.sh: pending ファイル削除
+    │       │
+    │       └─→ Edit/Write ブロック解除
+    │
+    └─→ 次タスク導出（pm SubAgent 経由）
+            │
+            ├─→ 残タスクあり: ブランチ作成 → playbook 作成 → LOOP 継続
+            └─→ 残タスクなし: 「全タスク完了。次の指示を待ちます。」
 ```
 
 ---
@@ -893,6 +949,7 @@ evidence: PASS 判定には実行可能な証拠が必要
 
 | 日時 | 内容 |
 |------|------|
+| 2025-12-25 | post-loop 自動発火: archive-playbook.sh 自動実行、pending-guard.sh 追加 |
 | 2025-12-25 | 公式 Hook リファレンス追加（イベント一覧、入力 JSON、exit code） |
 | 2025-12-25 | 全面改訂: ユーザー体験ベースの状態遷移マップに変更 |
 | 2025-12-24 | docs 整理: 重複ファイル削除、統計値更新 |

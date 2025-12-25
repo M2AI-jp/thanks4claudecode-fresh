@@ -34,7 +34,7 @@ note: playbook 完了時の post-loop 自動発火を実装
 ## session
 
 ```yaml
-last_start: 2025-12-25 15:58:13
+last_start: 2025-12-25 16:30:56
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```

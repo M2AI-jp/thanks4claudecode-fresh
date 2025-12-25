@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-25 16:01:29"
+  generated: "2025-12-25 16:35:32"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 217
+  total_files: 220
 
 hooks:
   directory: .claude/hooks/
@@ -75,7 +75,7 @@ skills:
     - name: "playbook-init"
       description: "このSkillは pm SubAgent への委譲を強制する。自分で処理してはならない。"
     - name: "post-loop"
-      description: "POST_LOOP - playbook 完了後の自動処理"
+      description: "POST_LOOP - playbook 完了後の後処理"
     - name: "quality-assurance"
       description: "品質保証"
     - name: "reward-guard"
@@ -133,7 +133,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 40
+      count: 41
     template:
       description: "playbook テンプレート"
       count: 5
@@ -375,6 +375,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-25 16:01:29"
+  - date: "2025-12-25 16:35:32"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
