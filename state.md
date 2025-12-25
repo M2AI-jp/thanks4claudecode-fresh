@@ -17,9 +17,9 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: plan/playbook-drift-sync.md
-branch: feat/architecture-drift-sync
-last_archived: plan/archive/playbook-understanding-check-askuser.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-drift-sync.md
 review_pending: false
 ```
 
