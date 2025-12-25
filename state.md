@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-post-loop-auto-fire.md
-branch: feat/post-loop-auto-fire
-last_archived: plan/archive/playbook-remove-focus.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-post-loop-auto-fire.md
 review_pending: false
 ```
 
