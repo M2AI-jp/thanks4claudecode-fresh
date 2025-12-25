@@ -79,6 +79,52 @@ check_repository_map_drift() {
 }
 
 # ==============================================================================
+# ARCHITECTURE.md 同期チェック関数
+# architecture-sync.yaml が存在する場合、ARCHITECTURE_SYNC_REQUIRED メッセージを出力
+# ==============================================================================
+check_architecture_sync() {
+    local SYNC_FILE=".claude/.session-init/architecture-sync.yaml"
+
+    # architecture-sync.yaml が存在しない場合はスキップ
+    [ ! -f "$SYNC_FILE" ] && return 0
+
+    # YAML パースを試行（破損している場合はスキップ）
+    if ! grep -q "drift_detected: true" "$SYNC_FILE" 2>/dev/null; then
+        return 0
+    fi
+
+    # 変更内容を抽出（affected_sections の前まで）
+    local CHANGES=$(sed -n '/^changes:/,/^affected_sections:/p' "$SYNC_FILE" | grep "^  - " | sed 's/^  - "//' | sed 's/"$//' | head -10)
+
+    # 影響セクションを抽出
+    local SECTIONS=$(grep -A100 "^affected_sections:" "$SYNC_FILE" | grep "^  - " | sed 's/^  - "//' | sed 's/"$//' | head -20)
+
+    # ARCHITECTURE_SYNC_REQUIRED メッセージを出力
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  ⚠️ ARCHITECTURE_SYNC_REQUIRED"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "  repository-map.yaml が変更されました。"
+    echo "  docs/ARCHITECTURE.md の更新が必要です。"
+    echo ""
+    echo "  【変更内容】"
+    while IFS= read -r change; do
+        [ -z "$change" ] && continue
+        echo "    - $change"
+    done <<< "$CHANGES"
+    echo ""
+    echo "  【影響セクション】"
+    while IFS= read -r section; do
+        [ -z "$section" ] && continue
+        echo "    - $section"
+    done <<< "$SECTIONS"
+    echo ""
+    echo "  → docs/ARCHITECTURE.md を更新してください"
+    echo ""
+}
+
+# ==============================================================================
 # restore_from_snapshot - compact 後の状態復元
 # snapshot.json が存在する場合、前回の作業状態を表示して復元
 # ==============================================================================
@@ -280,3 +326,6 @@ verify_hooks
 
 # === repository-map.yaml 差分チェック ===
 check_repository_map_drift
+
+# === ARCHITECTURE.md 同期チェック ===
+check_architecture_sync
