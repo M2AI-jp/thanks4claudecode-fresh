@@ -28,7 +28,51 @@ done_criteria の達成状況と playbook 妥当性を批判的に評価する�
    - 実際に動かして検証したか
    - エッジケースを考慮したか
 
-## 評価フレームワーク
+## 評価フレームワーク（4QV+ 統合）
+
+> **M088: 4QV+ 導火線モデルに従った検証を必ず実行すること**
+>
+> 参照: `docs/ARCHITECTURE.md` Section 4（4QV+ 導火線モデル）
+
+### 4QV+ 検証ステップ（subtask 評価に適用）
+
+```yaml
+Q1_形式検証:
+  対象: criterion と validations の構造
+  確認項目:
+    - criterion が状態形式で書かれているか
+    - validations の 3 点（technical/consistency/completeness）が定義されているか
+  判定: 形式正しい → 評価続行、形式不正 → FAIL
+
+Q2_内容検証:
+  対象: validations.technical の実行結果
+  確認項目:
+    - 技術的検証を実際に実行したか
+    - 結果が criterion を満たすか
+  判定: コマンド実行結果で判定
+
+Q3_整合性検証:
+  対象: validations.consistency
+  確認項目:
+    - 他コンポーネントと矛盾しないか
+    - state.md、playbook との整合性
+  判定: 整合性あり → PASS、矛盾あり → FAIL
+
+Q4_完全性検証:
+  対象: validations.completeness
+  確認項目:
+    - 必要な変更が全て完了しているか
+    - 漏れがないか
+  判定: 完全 → PASS、漏れあり → FAIL
+
+Plus_批判的思考:
+  姿勢: 自分の成果物を敵対的に評価する
+  確認項目:
+    - 報酬詐欺の可能性はないか
+    - 「完了したふり」になっていないか
+    - ユーザーが「これ違う」と言う前に自分で気づけるか
+  判定: 問題なし → PASS、懸念あり → FAIL
+```
 
 ### 1. 証拠ベースの判定
 
@@ -184,6 +228,79 @@ playbook 自体の妥当性:
 総合判定 FAIL の条件:
   - 1つでも validations に FAIL がある
   - criterion に対応する証拠が提示できない
+```
+
+---
+
+## manual 検証の強制確認（M088）
+
+> **validation_types: manual を含む項目は、user 確認なしで PASS にできない。**
+>
+> 参照: `plan/template/playbook-format.md` の「validation_types」セクション
+
+### manual 検証の判定フロー
+
+```yaml
+1. validations から manual タイプを検出:
+   - "manual -" プレフィックスがある項目
+   - "ブラウザで", "目視で", "ユーザーが" などのキーワード
+   - executor: user の subtask
+
+2. manual 項目がある場合:
+   a. automated 項目を先に評価
+   b. automated が FAIL なら即 subtask FAIL
+   c. automated が PASS なら manual 評価に進む
+
+3. manual 項目の評価:
+   a. 自動判定しない（DEFERRED として返す）
+   b. AskUserQuestion で確認を要求:
+      - question: "以下の手動確認項目を検証してください"
+      - options: PASS / FAIL / 確認待ち
+   c. user が PASS を選択するまで subtask を PASS にしない
+
+4. hybrid 項目（automated + manual）:
+   a. automated 部分のみ自動評価
+   b. manual 部分は上記 3. のフローに従う
+```
+
+### AskUserQuestion による確認の例
+
+```yaml
+manual 確認が必要な場合の出力:
+
+[CRITIQUE]
+
+subtasks 達成状況:
+  - p1.1: DEFERRED（manual 確認待ち）
+    criterion: "ブラウザで正常に表示される"
+    validations:
+      technical: PASS - curl でHTTP 200 確認
+      consistency: PASS - 他ページと整合
+      completeness: DEFERRED - manual 確認必要
+
+【user 確認が必要です】
+以下を確認してください:
+  - ブラウザでページを開く
+  - レイアウトが正しく表示されるか
+  - アニメーションが正常に動作するか
+
+確認後、以下を選択してください:
+  - PASS: 表示が正常
+  - FAIL: 問題あり（詳細を記載）
+```
+
+### 禁止事項
+
+```yaml
+禁止:
+  - manual 項目を automated として扱う
+  - user 確認なしで manual を PASS にする
+  - "確認済み" と自分で判定する（user が確認すべき）
+
+必須:
+  - manual 項目は必ず AskUserQuestion で確認
+  - user の PASS 選択を得るまで DEFERRED を維持
+  - user が FAIL を選択した場合は subtask を FAIL にする
 ```
 
 ## 評価時の質問リスト

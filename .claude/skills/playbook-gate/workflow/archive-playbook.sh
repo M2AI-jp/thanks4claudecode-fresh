@@ -30,6 +30,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 SESSION_STATE_DIR=".claude/session-state"
 PENDING_FILE="$SESSION_STATE_DIR/post-loop-pending"
+BG_TASKS_FILE="$SESSION_STATE_DIR/background-tasks.json"
 
 # 色定義
 RED='\033[0;31m'
@@ -44,6 +45,63 @@ OVERALL_STATUS="success"
 log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; OVERALL_STATUS="partial"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; OVERALL_STATUS="partial"; }
+
+# ==============================================================================
+# M088: バックグラウンドタスクのクリーンアップ（Phase 完了時）
+# ==============================================================================
+cleanup_background_tasks_for_phase() {
+    local phase="$1"
+
+    if [[ ! -f "$BG_TASKS_FILE" ]]; then
+        return 0
+    fi
+
+    # jq がない場合はスキップ
+    if ! command -v jq &> /dev/null; then
+        return 0
+    fi
+
+    # 該当 phase のタスク数を確認
+    PHASE_TASK_COUNT=$(jq --arg phase "$phase" '[.tasks[] | select(.phase == $phase)] | length' "$BG_TASKS_FILE" 2>/dev/null || echo "0")
+    if [[ "$PHASE_TASK_COUNT" -eq 0 ]]; then
+        log_info "バックグラウンドタスク: phase '$phase' に関連するタスクなし"
+        return 0
+    fi
+
+    log_info "バックグラウンドタスク: phase '$phase' のタスクをクリーンアップ中..."
+
+    # 保護リストを取得
+    PROTECTED=$(jq -r '.metadata.protected_commands[]?' "$BG_TASKS_FILE" 2>/dev/null || echo "")
+
+    # 該当 phase のタスクを終了
+    jq -r --arg phase "$phase" '.tasks[] | select(.phase == $phase) | "\(.pid)|\(.command)"' "$BG_TASKS_FILE" 2>/dev/null | while IFS='|' read -r pid command; do
+        # 保護リストチェック
+        IS_PROTECTED=false
+        for protected_cmd in $PROTECTED; do
+            if [[ "$command" == *"$protected_cmd"* ]]; then
+                IS_PROTECTED=true
+                break
+            fi
+        done
+
+        if [[ "$IS_PROTECTED" == true ]]; then
+            log_info "  [SKIP] PID $pid: $command (protected)"
+            continue
+        fi
+
+        # プロセスが存在するか確認
+        if kill -0 "$pid" 2>/dev/null; then
+            log_info "  [STOP] PID $pid: $command"
+            kill "$pid" 2>/dev/null || true
+        fi
+    done
+
+    # 該当 phase のタスクをリストから削除
+    jq --arg phase "$phase" 'del(.tasks[] | select(.phase == $phase)) | .metadata.updated_at = now | .metadata.updated_at |= tostring' "$BG_TASKS_FILE" > "$BG_TASKS_FILE.tmp" 2>/dev/null && \
+        mv "$BG_TASKS_FILE.tmp" "$BG_TASKS_FILE"
+
+    log_info "バックグラウンドタスク クリーンアップ完了"
+}
 
 # state.md が存在しない場合はスキップ
 if [ ! -f "state.md" ]; then
@@ -243,6 +301,17 @@ if [ -x "$CREATE_PR_SCRIPT" ]; then
 else
     log_warn "create-pr.sh が見つかりません: $CREATE_PR_SCRIPT"
 fi
+
+# ==============================================================================
+# Step 3.5: バックグラウンドタスク クリーンアップ（M088）
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 3.5: バックグラウンドタスク クリーンアップ"
+echo "$SEP"
+
+# playbook 完了時は全 phase のタスクをクリーンアップ
+cleanup_background_tasks_for_phase "all"
 
 # ==============================================================================
 # Step 4: Playbook アーカイブ

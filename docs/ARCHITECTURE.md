@@ -496,10 +496,19 @@ Task(subagent_type='pm')
 
 ### reviewer SubAgent
 
+> **M088: 4QV+ 検証必須** - playbook 作成時の事前検証
+
 ```
 Task(subagent_type='reviewer')
     │
     ├─→ .claude/skills/quality-assurance/agents/reviewer.md
+    │
+    ├─→ 4QV+ 検証ステップ（必須）:
+    │   ├─→ Q1: 形式検証（playbook 構造）
+    │   ├─→ Q2: 内容検証（criterion 検証可能性）
+    │   ├─→ Q3: 整合性検証（state.md との整合）
+    │   ├─→ Q4: 完全性検証（漏れ検出）
+    │   └─→ +: 批判的思考（報酬詐欺可能性）
     │
     ├─→ 参照（読み取り）:
     │   ├─→ .claude/frameworks/playbook-review-criteria.md（評価基準）
@@ -512,10 +521,24 @@ Task(subagent_type='reviewer')
 
 ### critic SubAgent
 
+> **M088: 4QV+ 検証必須** - phase/subtask 完了時の事後検証
+
 ```
 Task(subagent_type='critic')
     │
     ├─→ .claude/skills/reward-guard/agents/critic.md
+    │
+    ├─→ 4QV+ 検証ステップ（必須）:
+    │   ├─→ Q1: 形式検証（validations 構造）
+    │   ├─→ Q2: 内容検証（technical 実行結果）
+    │   ├─→ Q3: 整合性検証（consistency）
+    │   ├─→ Q4: 完全性検証（completeness）
+    │   └─→ +: 批判的思考（自己成果物を敵対的に評価）
+    │
+    ├─→ validation_types 判定:
+    │   ├─→ automated: 自動で PASS/FAIL
+    │   ├─→ manual: user 確認を強制
+    │   └─→ hybrid: 自動検証 + user 確認
     │
     ├─→ 参照（読み取り）:
     │   ├─→ .claude/frameworks/done-criteria-validation.md（評価フレームワーク）

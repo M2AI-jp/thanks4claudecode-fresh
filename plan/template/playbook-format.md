@@ -160,6 +160,76 @@ done_when:
 
 ---
 
+## validation_types（M088: 検証タイプ分類）
+
+> **自動検証と手動検証を明確に区別し、形骸化を防止する。**
+
+### 検証タイプ定義
+
+```yaml
+validation_types:
+  automated:
+    description: "自動実行可能な検証"
+    examples:
+      - "test -f {path} でファイル存在確認"
+      - "curl でHTTPステータス確認"
+      - "grep で文字列検索"
+      - "npm test で自動テスト実行"
+    判定: "コマンド実行結果で自動判定"
+    critic扱い: "自動で PASS/FAIL 判定"
+
+  manual:
+    description: "人間の確認が必要な検証"
+    examples:
+      - "ブラウザで表示確認"
+      - "アニメーション動作確認"
+      - "UX 評価"
+      - "デザインの妥当性確認"
+    判定: "user 確認なしで PASS 不可"
+    critic扱い: "DEFERRED → user 確認後に PASS/FAIL"
+
+  hybrid:
+    description: "自動 + 人間確認"
+    examples:
+      - "スクリーンショット撮影 + 人間確認"
+      - "E2E テスト + 目視確認"
+      - "パフォーマンス測定 + 妥当性判断"
+    判定: "自動検証 PASS + user 確認"
+    critic扱い: "自動検証 PASS 後に user 確認を要求"
+```
+
+### validations への適用
+
+```markdown
+- [ ] **p1.1**: ブラウザで正常に表示される
+  - executor: claudecode
+  - validations:
+    - technical: "automated - curl でHTTP 200 を確認"
+    - consistency: "automated - 他ページと整合性確認"
+    - completeness: "manual - ブラウザでレイアウト確認（user 確認必須）"
+```
+
+### critic の判定ルール
+
+```yaml
+automated のみ:
+  → 全て PASS なら subtask PASS
+  → 1つでも FAIL なら subtask FAIL
+
+manual 含む:
+  → automated 項目は通常通り判定
+  → manual 項目は DEFERRED として返す
+  → AskUserQuestion でユーザー確認を強制
+  → user 確認後に最終判定
+
+hybrid:
+  → automated 部分を先に判定
+  → automated PASS なら manual 部分の確認を要求
+  → automated FAIL なら即 subtask FAIL
+```
+
+---
+
 ## Phase 記述ルール（V12）
 
 ### Phase 必須項目

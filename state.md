@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-fix-architecture-issues.md
+branch: fix/architecture-issues
 last_archived: plan/archive/playbook-architecture-visualizer.md
 review_pending: false
 ```
@@ -23,11 +23,10 @@ review_pending: false
 milestone: null
 phase: p1
 done_criteria:
-  - tmp/sample-website/index.html が存在し、ローカルサーバーで閲覧可能である
-  - SessionStart から PostToolUse までの主要フローがタイムライン形式で視覚化されている
-  - フロー遷移アニメーションが動作する
-  - 各コンポーネントクリックで詳細ポップアップが表示される
-note: null
+  - toolstack: B で playbook 作成時、コーディングタスクに executor: worker が割り当てられ、実行時に codex-delegate SubAgent が自動呼び出しされる
+  - run_in_background=true で起動したタスクが Phase 完了時・セッション終了時に自動クリーンアップされる
+  - 3種類のレビュアー（reviewer, critic, user/coderabbit）全てが4QV+検証を実行する仕組みが存在する
+note: アーキテクチャ総合テストで発見した3つの問題を修正
 ```
 
 ---
@@ -35,7 +34,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2025-12-25 19:25:03
+last_start: 2025-12-25 20:27:30
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```

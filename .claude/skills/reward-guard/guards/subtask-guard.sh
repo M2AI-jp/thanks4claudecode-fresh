@@ -199,6 +199,29 @@ EOF
     exit 2
 fi
 
-# validations がある場合は許可（公式 Hook 仕様: exit 0 のみで十分）
-# M085: 不要な JSON 出力を削除（公式仕様では stdout への JSON は意味を持たない）
+# ==============================================================================
+# M088: reviewer SubAgent 発動を構造的に強制
+# ==============================================================================
+# subtask 完了時に 4QV+ レビューを確実に実行するため、reviewer 呼び出しを指示
+# validations がある場合でも、reviewer による検証を推奨する systemMessage を出力
+# ==============================================================================
+
+# subtask ID を抽出
+SUBTASK_ID=$(echo "$NEW_STRING" | grep -oE 'p[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+
+# validations がある場合は許可しつつ、reviewer 発動を促す
+cat << EOF
+{
+  "continue": true,
+  "decision": "allow",
+  "reason": "subtask $SUBTASK_ID の validations が記入されています",
+  "hookSpecificOutput": {
+    "action": "recommend_reviewer",
+    "subtask_id": "$SUBTASK_ID",
+    "message": "4QV+ レビューの実行を推奨します"
+  },
+  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  ✅ subtask $SUBTASK_ID の validations を確認\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  【4QV+ レビュー推奨】\\n  より確実な検証のため、Phase 完了前に以下を実行してください:\\n\\n    Skill(skill='crit') または /crit\\n\\n  critic SubAgent が 4QV+ フレームワークに従って検証します。\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+EOF
+
 exit 0

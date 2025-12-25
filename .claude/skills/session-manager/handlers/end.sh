@@ -5,6 +5,7 @@
 # - 未コミット変更の検出
 # - state-plan-git-branch 四つ組の整合性チェック
 # - critic 呼び出しのリマインド
+# - バックグラウンドタスクのクリーンアップ（M088）
 #
 # 自動更新機能:
 #   - state.md の session_tracking.last_end を自動更新
@@ -12,6 +13,72 @@
 #   - LLM の行動に依存しない
 
 set -e
+
+# ==============================================================================
+# M088: バックグラウンドタスクのクリーンアップ
+# ==============================================================================
+BG_TASKS_FILE=".claude/session-state/background-tasks.json"
+
+cleanup_background_tasks() {
+    if [[ ! -f "$BG_TASKS_FILE" ]]; then
+        return 0
+    fi
+
+    # jq がない場合はスキップ
+    if ! command -v jq &> /dev/null; then
+        return 0
+    fi
+
+    # タスク数を確認
+    TASK_COUNT=$(jq '.tasks | length' "$BG_TASKS_FILE" 2>/dev/null || echo "0")
+    if [[ "$TASK_COUNT" -eq 0 ]]; then
+        return 0
+    fi
+
+    echo ""
+    echo -e "${BOLD}--- バックグラウンドタスク クリーンアップ ---${NC}"
+
+    # 保護リストを取得
+    PROTECTED=$(jq -r '.metadata.protected_commands[]?' "$BG_TASKS_FILE" 2>/dev/null || echo "")
+
+    # 各タスクを終了
+    CLEANED=0
+    PROTECTED_COUNT=0
+    jq -r '.tasks[] | "\(.pid)|\(.command)"' "$BG_TASKS_FILE" 2>/dev/null | while IFS='|' read -r pid command; do
+        # 保護リストチェック
+        IS_PROTECTED=false
+        for protected_cmd in $PROTECTED; do
+            if [[ "$command" == *"$protected_cmd"* ]]; then
+                IS_PROTECTED=true
+                break
+            fi
+        done
+
+        if [[ "$IS_PROTECTED" == true ]]; then
+            echo -e "  ${YELLOW}[SKIP]${NC} PID $pid: $command (protected)"
+            continue
+        fi
+
+        # プロセスが存在するか確認
+        if kill -0 "$pid" 2>/dev/null; then
+            echo -e "  ${GREEN}[STOP]${NC} PID $pid: $command"
+            kill "$pid" 2>/dev/null || true
+            CLEANED=$((CLEANED + 1))
+        else
+            echo -e "  ${YELLOW}[GONE]${NC} PID $pid: already terminated"
+        fi
+    done
+
+    # タスクリストをクリア
+    jq '.tasks = [] | .metadata.updated_at = now | .metadata.updated_at |= tostring' "$BG_TASKS_FILE" > "$BG_TASKS_FILE.tmp" 2>/dev/null && \
+        mv "$BG_TASKS_FILE.tmp" "$BG_TASKS_FILE"
+
+    echo -e "  ${GREEN}[OK]${NC} クリーンアップ完了"
+    echo ""
+}
+
+# セッション終了時にバックグラウンドタスクをクリーンアップ
+cleanup_background_tasks
 
 # === state.md の session_tracking を自動更新 ===
 if [ -f "state.md" ]; then
