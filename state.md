@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-remove-focus.md
-branch: refactor/remove-focus-feature
-last_archived: plan/archive/playbook-drift-sync.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-remove-focus.md
 review_pending: false
 ```
 
