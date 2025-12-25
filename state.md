@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-abort-playbook-skill.md
-branch: feat/abort-playbook-skill
-last_archived: plan/archive/playbook-post-loop-auto-fire.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-abort-playbook-skill.md
 review_pending: false
 ```
 
