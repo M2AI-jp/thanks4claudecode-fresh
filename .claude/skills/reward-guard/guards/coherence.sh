@@ -26,11 +26,6 @@ if [ ! -f "state.md" ]; then
     exit 2
 fi
 
-# focus.current を state-schema.sh から取得
-CURRENT=$(get_focus_current)
-echo -e "  Focus: ${GREEN}$CURRENT${NC}"
-echo ""
-
 # ========================================
 # Active Playbooks チェック
 # ========================================

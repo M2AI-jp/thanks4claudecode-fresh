@@ -91,11 +91,7 @@ if [ ! -f "state.md" ]; then
     exit 0  # SessionEnd はブロックしない
 fi
 
-# focus.current を取得
-CURRENT=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*current: *//' | sed 's/ *#.*//')
-echo -e "  Focus: ${GREEN}$CURRENT${NC}"
-
-# playbook を取得（M082 修正: 新フォーマット対応）
+# playbook を取得
 PLAYBOOK=$(awk '/## playbook/,/^---/' state.md | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//')
 echo -e "  Playbook: ${GREEN}${PLAYBOOK:-null}${NC}"
 

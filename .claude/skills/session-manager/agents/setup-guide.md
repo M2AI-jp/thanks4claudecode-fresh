@@ -1,18 +1,18 @@
 ---
 name: setup-guide
-description: AUTOMATICALLY guides setup process when focus.current=setup. Conducts hearing, environment setup, and Skills generation. Does not ask unnecessary questions.
+description: AUTOMATICALLY guides setup process when playbook=setup/playbook-setup.md. Conducts hearing, environment setup, and Skills generation. Does not ask unnecessary questions.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
 ---
 
 # Setup Guide Agent
 
-focus.current = setup のときに自動発火し、セットアッププロセスを主導するエージェントです。
+playbook が setup/playbook-setup.md のときに発火し、セットアッププロセスを主導するエージェントです。
 
 ## トリガー条件
 
-- focus.current = setup
-- state.md の layer.setup.state が pending または in_progress
+- playbook.active = setup/playbook-setup.md
+- セットアップ Phase が pending または in_progress
 
 ## 責務
 
@@ -60,7 +60,7 @@ NO と言う:
   - プロジェクトがローカルで動作
   - Vercel にデプロイ済み
   - .claude/skills/ に Skills が生成されている  # ← 必須
-  - focus.current が product に切り替わっている
+  - setup playbook が完了している
 ```
 
 ## Skills 生成テンプレート

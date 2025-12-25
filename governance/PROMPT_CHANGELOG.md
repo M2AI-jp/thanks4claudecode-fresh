@@ -11,6 +11,35 @@
 
 ---
 
+## [2.0.1] - 2025-12-25
+
+### Changed
+- Section 4 (状態モデル): state.md の contains から focus を削除
+  - 旧: `contains: focus, playbook.active, goal, config`
+  - 新: `contains: playbook.active, goal, config`
+
+### Removed
+- focus 機能全体を削除（state.md セクション、判定ロジック、/focus コマンド）
+
+### Rationale
+focus 機能は main ブランチでの作業許可/禁止を制御する目的で設計されたが、以下の理由で不要と判断：
+1. main ブランチでの作業禁止は常に適用すべきルール
+2. Claude は playbook 作成時に自動でブランチを切る
+3. ユーザーが手動で focus を切り替える必要がない
+4. 機能の複雑さに対して得られる価値が低い
+
+### Risk Assessment
+- focus に依存していたロジックは全て削除済み
+- main ブランチブロックは常時有効に変更（より安全な方向）
+- 33 ファイルを修正、全て検証済み
+
+### Verification
+1. `grep -r "focus" .claude/` で機能的な focus 参照がないことを確認
+2. main ブランチで Edit/Write がブロックされることを確認
+3. playbook 作成時に自動ブランチ作成が動作することを確認
+
+---
+
 ## [2.0.0] - 2025-12-24
 
 ### Added

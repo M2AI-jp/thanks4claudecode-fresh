@@ -12,7 +12,6 @@
 # --------------------------------------------------
 # セクション名定義
 # --------------------------------------------------
-SECTION_FOCUS="## focus"
 SECTION_PLAYBOOK="## playbook"
 SECTION_GOAL="## goal"
 SECTION_SESSION="## session"
@@ -21,7 +20,6 @@ SECTION_CONFIG="## config"
 # --------------------------------------------------
 # フィールド名定義
 # --------------------------------------------------
-FIELD_CURRENT="current:"
 FIELD_ACTIVE="active:"
 FIELD_BRANCH="branch:"
 FIELD_MILESTONE="milestone:"
@@ -40,11 +38,6 @@ PLAYBOOK_DIR="plan"
 # --------------------------------------------------
 # Getter 関数
 # --------------------------------------------------
-
-# focus.current を取得
-get_focus_current() {
-    grep -A5 "$SECTION_FOCUS" "$STATE_FILE" | grep "$FIELD_CURRENT" | head -1 | sed "s/$FIELD_CURRENT *//" | sed 's/ *#.*//' | tr -d ' '
-}
 
 # playbook.active を取得
 get_playbook_active() {
@@ -84,7 +77,6 @@ get_session_last_start() {
 validate_state_structure() {
     local missing=""
 
-    grep -q "$SECTION_FOCUS" "$STATE_FILE" || missing+="focus "
     grep -q "$SECTION_PLAYBOOK" "$STATE_FILE" || missing+="playbook "
     grep -q "$SECTION_GOAL" "$STATE_FILE" || missing+="goal "
     grep -q "$SECTION_CONFIG" "$STATE_FILE" || missing+="config "
@@ -114,6 +106,6 @@ validate_playbook_milestone_consistency() {
 # ==============================================================================
 # 使用例:
 #   source .claude/schema/state-schema.sh
-#   FOCUS=$(get_focus_current)
 #   PLAYBOOK=$(get_playbook_active)
+#   BRANCH=$(get_playbook_branch)
 # ==============================================================================

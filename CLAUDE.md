@@ -1,9 +1,9 @@
 # CLAUDE.md
 
 ```yaml
-version: 2.0.0
+version: 2.0.1
 status: FROZEN
-updated: 2025-12-24
+updated: 2025-12-25
 ```
 
 ---
@@ -122,7 +122,7 @@ file_protection:
 state_files:
   state.md:
     role: 現在状態の真実源
-    contains: focus, playbook.active, goal, config
+    contains: playbook.active, goal, config
     rule: セッション開始時に必ず Read
 
   playbook:
@@ -222,6 +222,7 @@ mutable_files:
 
 | Version | Date | Summary |
 |---------|------|---------|
+| 2.0.1 | 2025-12-25 | focus 機能削除: state.md から focus セクション削除、main ブランチブロック常時有効化 |
 | 2.0.0 | 2025-12-24 | 総編集: 設計思想追加、保護アーキテクチャ追加、MECE 化、LLM 向け最適化 |
 | 1.2.0 | 2025-12-24 | Golden Path: Hook→Skill→SubAgent チェーン経由を明記 |
 | 1.1.0 | 2025-12-18 | Core Contract + Admin Mode Contract 追加 |

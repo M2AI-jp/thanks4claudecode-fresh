@@ -16,8 +16,8 @@ bash .claude/hooks/check-coherence.sh
 ## チェック項目
 
 1. state.md と playbook の整合性
-2. focus.current の有効性（setup | product | plan-template）
-3. staged ファイルと focus の矛盾検出
+2. playbook.active が存在するか
+3. playbook.branch と現在のブランチの一致
 
 ---
 

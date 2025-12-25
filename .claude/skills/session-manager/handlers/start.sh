@@ -35,7 +35,7 @@ check_repository_map_drift() {
 
     # 実際のファイル数をカウント
     local ACTUAL_HOOKS=$(find .claude/hooks -maxdepth 1 -name "*.sh" -type f 2>/dev/null | wc -l | tr -d ' ')
-    local ACTUAL_AGENTS=$(find .claude/agents -maxdepth 1 -name "*.md" -type f ! -name "CLAUDE.md" 2>/dev/null | wc -l | tr -d ' ')
+    local ACTUAL_AGENTS=$(find .claude/skills/*/agents -maxdepth 1 -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
     local ACTUAL_SKILLS=$(find .claude/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
     local ACTUAL_COMMANDS=$(find .claude/commands -maxdepth 1 -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
 
@@ -143,7 +143,6 @@ restore_from_snapshot() {
     fi
 
     # snapshot から情報を抽出
-    local SNAP_FOCUS=$(jq -r '.focus // "unknown"' "$SNAPSHOT_FILE" 2>/dev/null)
     local SNAP_PLAYBOOK=$(jq -r '.playbook // "null"' "$SNAPSHOT_FILE" 2>/dev/null)
     local SNAP_PHASE=$(jq -r '.current_phase // "unknown"' "$SNAPSHOT_FILE" 2>/dev/null)
     local SNAP_INTENTS=$(jq -r '.user_intents // ""' "$SNAPSHOT_FILE" 2>/dev/null)
@@ -156,7 +155,6 @@ restore_from_snapshot() {
     echo "  [COMPACT 復元] 前回の作業状態を復元しました"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
-    echo "  📍 focus: $SNAP_FOCUS"
     echo "  📋 playbook: $SNAP_PLAYBOOK"
     echo "  🔄 phase: $SNAP_PHASE"
     echo "  🌿 branch: $SNAP_BRANCH"
@@ -306,7 +304,7 @@ touch "$INIT_DIR/pending"
 # === state.md から情報抽出 ===
 [ ! -f "state.md" ] && echo "[WARN] state.md not found" && exit 0
 
-FOCUS=$(grep -A5 "## focus" state.md | grep "current:" | sed 's/.*: *//' | sed 's/ *#.*//')
+# playbook 情報は state.md から直接取得
 PHASE=$(grep -A5 "## goal" state.md | grep "phase:" | head -1 | sed 's/.*: *//' | sed 's/ *#.*//')
 CRITERIA=$(awk '/## goal/,/^## [^g]/' state.md | grep -A20 "done_criteria:" | grep "^  -" | head -6)
 BRANCH=$(git branch --show-current 2>/dev/null || echo "")

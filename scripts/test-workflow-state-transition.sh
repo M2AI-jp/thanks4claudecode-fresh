@@ -78,12 +78,6 @@ section "シナリオ 1: INIT (playbook=null)"
 cat > "$TEMP_DIR/state.md" << 'EOF'
 # state.md
 
-## focus
-
-```yaml
-current: product
-```
-
 ## playbook
 
 ```yaml
@@ -163,12 +157,6 @@ EOF
 # state.md を更新（注: grep -A3 で両方取得できるよう順序に注意）
 cat > "$TEMP_DIR/state.md" << EOF
 # state.md
-
-## focus
-
-\`\`\`yaml
-current: product
-\`\`\`
 
 ## playbook
 
@@ -343,12 +331,6 @@ section "シナリオ 6: 状態遷移の整合性"
 cat > "$TEMP_DIR/state.md" << 'EOF'
 # state.md
 
-## focus
-
-```yaml
-current: product
-```
-
 ## playbook
 
 ```yaml
@@ -388,12 +370,6 @@ EOF
 
 cat > "$TEMP_DIR/state.md" << EOF
 # state.md
-
-## focus
-
-\`\`\`yaml
-current: product
-\`\`\`
 
 ## playbook
 

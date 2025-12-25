@@ -61,12 +61,7 @@ if [[ ! -f "$STATE_FILE" ]]; then
     exit 0
 fi
 
-# focus.current を取得（pipefail 対策: || true）
-FOCUS=$(grep -A6 "^## focus" "$STATE_FILE" 2>/dev/null | grep "^current:" | head -1 | sed 's/current: *//' | sed 's/ *#.*//' | tr -d ' ' || true)
-
-# playbook から active を取得（M085 修正: 正しい state.md フォーマットに対応）
-# 旧フォーマット: ## active_playbooks + ${FOCUS}: path
-# 新フォーマット: ## playbook + active: path
+# playbook から active を取得
 PLAYBOOK_PATH=$(grep -A8 "^## playbook" "$STATE_FILE" 2>/dev/null | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//' | tr -d ' ' || true)
 
 # playbook が null または空ならスキップ

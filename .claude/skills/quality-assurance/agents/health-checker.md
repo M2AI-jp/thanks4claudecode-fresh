@@ -12,8 +12,8 @@ model: opus
 ## 責務
 
 1. **state.md 整合性チェック**
-   - focus.current と layer.*.state の整合性
-   - active_playbooks が実在するか
+   - playbook.active が実在するか
+   - playbook.branch と現在のブランチが一致するか
    - forbidden 遷移が発生していないか
 
 2. **playbook 整合性チェック**
@@ -34,9 +34,8 @@ model: opus
 
 ```yaml
 state_md:
-  - focus.current が有効な値か（setup | product | plan-template）
   - playbook.active が存在するファイルか
-  - active_playbooks のファイルが存在するか
+  - playbook.branch が現在のブランチと一致するか
   - goal.done_criteria が定義されているか
 
 playbook:

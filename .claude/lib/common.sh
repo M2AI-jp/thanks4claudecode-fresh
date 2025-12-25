@@ -37,29 +37,19 @@ FILE_DEPS="$WORKSPACE_ROOT/.claude/file-dependencies.yaml"
 # state.md からの値取得関数
 # ------------------------------------------------------------------------------
 
-# focus.current を取得（plan-template | workspace | setup | product）
-get_focus() {
-    if [ -f "$STATE_MD" ]; then
-        grep -A5 "^## focus" "$STATE_MD" | grep "current:" | head -1 | sed 's/.*current:[[:space:]]*//' | sed 's/[[:space:]]*#.*//'
-    else
-        echo "workspace"
-    fi
-}
-
 # security.mode を取得（strict | trusted | developer | admin）
 get_security_mode() {
     if [ -f "$STATE_MD" ]; then
-        grep -A3 "^## security" "$STATE_MD" | grep "mode:" | head -1 | sed 's/.*mode:[[:space:]]*//' | sed 's/[[:space:]]*#.*//'
+        grep -A3 "^## config" "$STATE_MD" | grep "security:" | head -1 | sed 's/.*security:[[:space:]]*//' | sed 's/[[:space:]]*#.*//'
     else
         echo "strict"
     fi
 }
 
-# active_playbooks から現在の focus に対応する playbook を取得
+# playbook.active を取得
 get_playbook() {
-    local focus="${1:-$(get_focus)}"
     if [ -f "$STATE_MD" ]; then
-        grep -A10 "^## active_playbooks" "$STATE_MD" | grep "^${focus}:" | sed 's/.*:[[:space:]]*//' | sed 's/[[:space:]]*#.*//'
+        grep -A5 "^## playbook" "$STATE_MD" | grep "active:" | head -1 | sed 's/.*active:[[:space:]]*//' | sed 's/[[:space:]]*#.*//'
     else
         echo "null"
     fi

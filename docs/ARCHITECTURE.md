@@ -127,7 +127,7 @@ Single Source of Truth:
 
 | Before | 処理 | After |
 |--------|------|-------|
-| 前セッションの状態不明 | state.md 読み込み | focus, playbook 把握 |
+| 前セッションの状態不明 | state.md 読み込み | playbook 把握 |
 | last_start 古い | タイムスタンプ更新 | last_start 現在時刻 |
 | 状態不整合の可能性 | DRIFT チェック実行 | 整合性確認済み |
 
@@ -135,7 +135,7 @@ Single Source of Truth:
 
 | ファイル | 取得データ | 用途 |
 |----------|-----------|------|
-| state.md | focus.current, playbook.active | 現在状態把握 |
+| state.md | playbook.active | 現在状態把握 |
 | plan/playbook-*.md | phases, done_criteria | 作業計画確認 |
 | docs/repository-map.yaml | ファイル構造 | 変更検出 |
 
@@ -150,7 +150,7 @@ Single Source of Truth:
 
 | SubAgent | トリガー条件 | 参照ファイル |
 |----------|-------------|-------------|
-| setup-guide | focus.current == 'setup' | .claude/skills/session-manager/agents/setup-guide.md |
+| setup-guide | playbook.active == 'setup/playbook-setup.md' | .claude/skills/session-manager/agents/setup-guide.md |
 
 ---
 
@@ -183,7 +183,7 @@ Single Source of Truth:
 | ファイル | 取得データ | 用途 |
 |----------|-----------|------|
 | state.md | playbook.active | playbook 存在確認 |
-| state.md | focus.current | 現在コンテキスト |
+| state.md | playbook.active | 現在 playbook |
 
 ### 書き込み
 なし（systemMessage への出力のみ）
@@ -253,24 +253,19 @@ Claude がツール名と入力パラメータを決定した後、実際の実�
 | Before | 処理 | After |
 |--------|------|-------|
 | 必須ファイル未読 | init-guard チェック | Read 強制 or BLOCK |
-| main ブランチ | main-branch チェック | focus 依存で許可/ブロック |
+| main ブランチ | main-branch チェック | 常にブロック |
 
 ### 参照ファイル（読み取り）
 
 | ファイル | 取得データ | 用途 |
 |----------|-----------|------|
-| state.md | focus.current | main 許可判定 |
+| state.md | playbook.active | playbook 確認 |
 | .claude/session-state/* | 既読ファイル | init-guard 判定 |
 
-### main ブランチ許可ルール
+### main ブランチルール
 
-| focus 値 | main での Edit/Write |
-|----------|---------------------|
-| setup | 許可 |
-| product | 許可 |
-| plan-template | 許可 |
-| thanks4claudecode | ブロック（ブランチ必須） |
-| その他 | ブロック |
+main/master ブランチでの Edit/Write は常にブロックされる。
+Claude は playbook 作成時に自動でブランチを切る。
 
 ---
 
@@ -655,8 +650,7 @@ Task(subagent_type='setup-guide')
 .claude/skills/access-control/
 ├── SKILL.md                    # Skill 定義
 └── guards/
-    ├── main-branch.sh          # main ブランチ作業ブロック
-    │   └─→ 参照: state.md（focus.current）
+    ├── main-branch.sh          # main ブランチ作業ブロック（常時有効）
     ├── protected-edit.sh       # 保護ファイルブロック
     │   └─→ 参照: .claude/protected-files.txt
     └── bash-check.sh           # 破壊的コマンド検出
@@ -835,9 +829,6 @@ Phase 完了判定
 ### state.md 構造
 
 ```yaml
-focus:
-  current: {focus値}      # 現在コンテキスト
-
 playbook:
   active: {path}          # 現在の playbook（null = なし）
   branch: {branch}        # 作業ブランチ

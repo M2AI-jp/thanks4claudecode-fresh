@@ -85,12 +85,6 @@ echo "Test 1: playbook-guard.sh (playbook=null)"
 cat > "$TEMP_DIR/state.md" << 'EOF'
 # state.md
 
-## focus
-
-```yaml
-current: product
-```
-
 ## playbook
 
 ```yaml
@@ -140,12 +134,6 @@ EOF
 
 cat > "$TEMP_DIR/state.md" << EOF
 # state.md
-
-## focus
-
-\`\`\`yaml
-current: product
-\`\`\`
 
 ## playbook
 
@@ -240,12 +228,6 @@ echo "Test 5: contract.sh (playbook=null)"
 if [ -f "$SCRIPT_DIR/contract.sh" ]; then
     cat > "$TEMP_DIR/state.md" << 'EOF'
 # state.md
-
-## focus
-
-```yaml
-current: product
-```
 
 ## playbook
 

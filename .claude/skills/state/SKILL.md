@@ -1,6 +1,6 @@
 ---
 name: state
-description: このワークスペースの state.md 管理、playbook 運用の専門知識。state.md の更新、focus の切り替え、done_criteria の判定、CRITIQUE の実行時に使用する。
+description: このワークスペースの state.md 管理、playbook 運用の専門知識。state.md の更新、done_criteria の判定、CRITIQUE の実行時に使用する。
 ---
 
 # Workspace Management Skill
@@ -11,13 +11,10 @@ description: このワークスペースの state.md 管理、playbook 運用の
 
 ```yaml
 # 必須セクション
-focus:
-  current: <focus-value>    # setup | product | plan-template
-
 playbook:
   active: <playbook-path>   # 現在の playbook パス
   branch: <branch-name>     # playbook に紐づくブランチ
-  review_pending: false     # true: レビュー未完了（stop.py がセッション終了をブロック）
+  review_pending: false     # true: レビュー未完了
 
 goal:
   milestone: <milestone-id> # 現在のマイルストーン
@@ -35,17 +32,12 @@ config:
   toolstack: A              # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
 ```
 
-## focus の有効値と編集権限
+## main ブランチ保護
 
-| focus.current | 用途 | main での Edit/Write |
-|---------------|------|---------------------|
-| setup | 新規ユーザーのセットアップ | 許可 |
-| product | 新規ユーザーのプロダクト開発 | 許可 |
-| plan-template | テンプレート編集 | 許可 |
-| thanks4claudecode | ワークスペース作業 | ブロック（ブランチ必須）|
-| workspace | 一般的なワークスペース作業 | ブロック（ブランチ必須）|
+main/master ブランチでは Edit/Write が常にブロックされる。
+playbook 作成時に Claude が自動でブランチを切るため、ユーザーの手動操作は不要。
 
-**常に編集可能**: state.md, README.md
+**例外（常に編集可能）**: state.md
 
 ## CRITIQUE の実行方法
 

@@ -45,7 +45,6 @@ if [ -f "$INTENT_FILE" ]; then
 fi
 
 # state.md から情報取得
-FOCUS=""
 PLAYBOOK_PATH=""
 CURRENT_PHASE=""
 PHASE_GOAL=""
@@ -54,7 +53,6 @@ SELF_COMPLETE=""
 BRANCH=""
 
 if [ -f "$STATE_FILE" ]; then
-    FOCUS=$(grep -A5 "## focus" "$STATE_FILE" 2>/dev/null | grep "current:" | head -1 | sed 's/.*current: *//' | sed 's/ *#.*//')
     PLAYBOOK_PATH=$(grep -A5 "## playbook" "$STATE_FILE" 2>/dev/null | grep "active:" | head -1 | sed 's/.*active: *//' | sed 's/ *#.*//')
     SELF_COMPLETE=$(grep "self_complete:" "$STATE_FILE" 2>/dev/null | head -1 | sed 's/.*self_complete: *//' | sed 's/ *#.*//')
 fi
@@ -88,7 +86,6 @@ cat > "$SNAPSHOT_FILE" << EOF
 {
   "timestamp": "$TIMESTAMP",
   "trigger": "$TRIGGER",
-  "focus": "$FOCUS",
   "playbook": "$PLAYBOOK_PATH",
   "current_phase": "$CURRENT_PHASE",
   "phase_goal": "$PHASE_GOAL",
@@ -111,7 +108,6 @@ ADDITIONAL_CONTEXT="## 📦 Compact 前の状態スナップショット（自�
 $USER_INTENTS
 
 ### 現在の作業状態
-- **focus**: $FOCUS
 - **branch**: $BRANCH
 - **playbook**: $PLAYBOOK_PATH
 - **current_phase**: $CURRENT_PHASE

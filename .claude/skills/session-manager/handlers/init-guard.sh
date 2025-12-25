@@ -39,13 +39,8 @@ if [[ "$SECURITY_MODE" == "admin" ]]; then
 fi
 
 # --------------------------------------------------
-# 必須ファイルの定義（focus 別に分岐）
+# 必須ファイルの定義
 # --------------------------------------------------
-# focus を state-schema.sh から取得
-FOCUS=""
-if [[ -f "state.md" ]]; then
-    FOCUS=$(get_focus_current)
-fi
 
 # 必須ファイル: state.md
 REQUIRED_FILES=(
