@@ -195,23 +195,25 @@ PLAYBOOK_NAME=$(basename "$FILE_PATH")
 ARCHIVE_DIR="plan/archive"
 ARCHIVE_PATH="$ARCHIVE_DIR/$PLAYBOOK_NAME"
 
-# 全 Phase が done の場合、アーカイブを提案
+# 全 Phase が done の場合、post-loop Skill を呼び出すよう指示
 cat << EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📦 Playbook 完了検出
+  📦 Playbook 完了検出 → POST_LOOP 発動
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Playbook: $RELATIVE_PATH
   Status: 全 $TOTAL_PHASES Phase が done
 
-  アーカイブを推奨します:
-    mkdir -p $ARCHIVE_DIR
-    mv $RELATIVE_PATH $ARCHIVE_PATH
+  ⚠️ 必須アクション:
+    Skill(skill='post-loop') を呼び出してください。
 
-  アーカイブ後:
-    1. state.md の playbook.active を null に更新
-    2. 新しい playbook を作成（必要に応じて）
+  post-loop が実行する処理:
+    1. 自動コミット（未コミット変更がある場合）
+    2. playbook のアーカイブ（plan/archive/ へ移動）
+    3. state.md の playbook.active を null に更新
+    4. PR 作成・マージ
+    5. 次タスクの導出
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF

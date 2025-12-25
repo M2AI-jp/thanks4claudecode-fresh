@@ -488,6 +488,156 @@ SPEC_HEADER
 }
 
 # ==============================================================================
+# DRIFT 検出と ARCHITECTURE.md 同期チェック
+# ==============================================================================
+
+# コンポーネント種別から影響する ARCHITECTURE.md セクションを取得
+get_affected_sections() {
+    local component_type="$1"
+    case "$component_type" in
+        hooks)
+            echo "0. Hook リファレンス|1. SessionStart|2. UserPromptSubmit|3. PreToolUse:*|4. PreToolUse:Edit/Write|5. PreToolUse:Bash|6. PostToolUse:Edit"
+            ;;
+        agents)
+            echo "7. SubAgent 呼び出し"
+            ;;
+        skills)
+            echo "8. Skills 一覧と内部構成"
+            ;;
+        commands)
+            echo "8. Skills 一覧と内部構成"
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
+}
+
+# DRIFT を検出して architecture-sync.yaml に書き出す
+detect_drift_and_sync() {
+    local REPO_MAP="$PROJECT_ROOT/docs/repository-map.yaml"
+    local SYNC_FILE="$PROJECT_ROOT/.claude/.session-init/architecture-sync.yaml"
+    local BACKUP_DIR="$PROJECT_ROOT/.claude/.session-init"
+    local PREV_MAP="$BACKUP_DIR/repository-map.prev.yaml"
+
+    # ディレクトリ確保
+    mkdir -p "$BACKUP_DIR"
+
+    # 前回の repository-map.yaml が存在しない場合はバックアップのみ
+    if [[ ! -f "$PREV_MAP" ]]; then
+        if [[ -f "$REPO_MAP" ]]; then
+            cp "$REPO_MAP" "$PREV_MAP"
+        fi
+        return 0
+    fi
+
+    # 現在のファイルが存在しない場合はスキップ
+    [[ ! -f "$REPO_MAP" ]] && return 0
+
+    # 差分検出（hooks, agents, skills, commands のカウントを比較）
+    local DRIFT_DETECTED=false
+    local CHANGES=()
+    local AFFECTED_SECTIONS=()
+
+    # hooks の比較
+    local PREV_HOOKS=$(grep -A3 "^hooks:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    local CURR_HOOKS=$(grep -A3 "^hooks:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_HOOKS=${PREV_HOOKS:-0}
+    CURR_HOOKS=${CURR_HOOKS:-0}
+    if [[ "$PREV_HOOKS" != "$CURR_HOOKS" ]]; then
+        DRIFT_DETECTED=true
+        if [[ "$CURR_HOOKS" -gt "$PREV_HOOKS" ]]; then
+            CHANGES+=("hooks: +$((CURR_HOOKS - PREV_HOOKS)) 追加")
+        else
+            CHANGES+=("hooks: -$((PREV_HOOKS - CURR_HOOKS)) 削除")
+        fi
+        AFFECTED_SECTIONS+=("$(get_affected_sections hooks)")
+    fi
+
+    # agents の比較
+    local PREV_AGENTS=$(grep -A3 "^agents:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    local CURR_AGENTS=$(grep -A3 "^agents:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_AGENTS=${PREV_AGENTS:-0}
+    CURR_AGENTS=${CURR_AGENTS:-0}
+    if [[ "$PREV_AGENTS" != "$CURR_AGENTS" ]]; then
+        DRIFT_DETECTED=true
+        if [[ "$CURR_AGENTS" -gt "$PREV_AGENTS" ]]; then
+            CHANGES+=("agents: +$((CURR_AGENTS - PREV_AGENTS)) 追加")
+        else
+            CHANGES+=("agents: -$((PREV_AGENTS - CURR_AGENTS)) 削除")
+        fi
+        AFFECTED_SECTIONS+=("$(get_affected_sections agents)")
+    fi
+
+    # skills の比較
+    local PREV_SKILLS=$(grep -A6 "^skills:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    local CURR_SKILLS=$(grep -A6 "^skills:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_SKILLS=${PREV_SKILLS:-0}
+    CURR_SKILLS=${CURR_SKILLS:-0}
+    if [[ "$PREV_SKILLS" != "$CURR_SKILLS" ]]; then
+        DRIFT_DETECTED=true
+        if [[ "$CURR_SKILLS" -gt "$PREV_SKILLS" ]]; then
+            CHANGES+=("skills: +$((CURR_SKILLS - PREV_SKILLS)) 追加")
+        else
+            CHANGES+=("skills: -$((PREV_SKILLS - CURR_SKILLS)) 削除")
+        fi
+        AFFECTED_SECTIONS+=("$(get_affected_sections skills)")
+    fi
+
+    # commands の比較
+    local PREV_COMMANDS=$(grep -A5 "^commands:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    local CURR_COMMANDS=$(grep -A5 "^commands:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_COMMANDS=${PREV_COMMANDS:-0}
+    CURR_COMMANDS=${CURR_COMMANDS:-0}
+    if [[ "$PREV_COMMANDS" != "$CURR_COMMANDS" ]]; then
+        DRIFT_DETECTED=true
+        if [[ "$CURR_COMMANDS" -gt "$PREV_COMMANDS" ]]; then
+            CHANGES+=("commands: +$((CURR_COMMANDS - PREV_COMMANDS)) 追加")
+        else
+            CHANGES+=("commands: -$((PREV_COMMANDS - CURR_COMMANDS)) 削除")
+        fi
+        AFFECTED_SECTIONS+=("$(get_affected_sections commands)")
+    fi
+
+    # DRIFT が検出された場合、architecture-sync.yaml を作成
+    if [[ "$DRIFT_DETECTED" == true ]]; then
+        local TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+        # 影響セクションを重複排除して配列化
+        local UNIQUE_SECTIONS=$(printf '%s\n' "${AFFECTED_SECTIONS[@]}" | tr '|' '\n' | sort -u | grep -v '^$')
+
+        cat > "$SYNC_FILE" << EOF
+# ARCHITECTURE.md 同期チェック
+# 生成: $TIMESTAMP
+#
+# このファイルは repository-map.yaml の変更を検出した際に自動生成されます。
+# start.sh がこのファイルを読み込み、ARCHITECTURE_SYNC_REQUIRED メッセージを出力します。
+
+drift_detected: true
+timestamp: "$TIMESTAMP"
+changes:
+EOF
+        for change in "${CHANGES[@]}"; do
+            echo "  - \"$change\"" >> "$SYNC_FILE"
+        done
+
+        echo "affected_sections:" >> "$SYNC_FILE"
+        while IFS= read -r section; do
+            [[ -z "$section" ]] && continue
+            echo "  - \"$section\"" >> "$SYNC_FILE"
+        done <<< "$UNIQUE_SECTIONS"
+
+        echo "action: \"docs/ARCHITECTURE.md を更新してください\"" >> "$SYNC_FILE"
+    else
+        # DRIFT がなければ sync ファイルを削除
+        rm -f "$SYNC_FILE" 2>/dev/null || true
+    fi
+
+    # 現在の repository-map.yaml をバックアップ
+    cp "$REPO_MAP" "$PREV_MAP"
+}
+
+# ==============================================================================
 # メイン処理
 # ==============================================================================
 
@@ -798,3 +948,6 @@ mv "$TEMP_FILE" "$OUTPUT_FILE"
 echo "Repository map generated: $OUTPUT_FILE"
 echo "  Total files: $TOTAL_FILES"
 echo "  Hooks: $HOOKS_COUNT | Agents: $AGENTS_COUNT | Skills: $SKILLS_COUNT"
+
+# DRIFT 検出と ARCHITECTURE.md 同期チェック
+detect_drift_and_sync

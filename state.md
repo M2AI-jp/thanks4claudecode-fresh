@@ -19,7 +19,7 @@ current: thanks4claudecode
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-docs-consolidation.md
+last_archived: plan/archive/playbook-drift-sync.md
 review_pending: false
 ```
 
@@ -39,7 +39,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2025-12-25 02:50:32
+last_start: 2025-12-25 15:11:25
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
