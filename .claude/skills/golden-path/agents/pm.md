@@ -145,6 +145,121 @@ meta:
     - ユーザー承認なしに次のステップへ進まない
   スキップ条件: ユーザーが明示的に「スキップして」「確認不要」等を要求した場合
 
+## Structured Question Output（AskUserQuestion 連携）
+
+> **pm が理解確認結果をメイン Claude に返す際、構造化された選択肢データを含める**
+> **正規ソース**: `.claude/skills/understanding-check/SKILL.md` の「Structured Output Format」
+
+### 目的
+
+- ユーザーが選択肢から回答できるようにする（テキスト入力不要）
+- メイン Claude が AskUserQuestion ツールで選択肢を提示
+- 経験が浅いユーザーでも簡単に回答できる
+
+### 出力フォーマット
+
+```yaml
+understanding_check:
+  summary: "{5W1H の要約}"
+
+  questions:
+    # 不明点確認（yes_no タイプ）
+    - id: q1
+      text: "{確認したい質問}"
+      type: yes_no
+      options:
+        - label: "はい"
+          description: "{はいを選んだ場合の意味}"
+        - label: "いいえ"
+          description: "{いいえを選んだ場合の意味}"
+
+    # 実装方針選択（single_choice タイプ）
+    - id: q2
+      text: "{選択してほしい項目}"
+      type: single_choice
+      options:
+        - label: "{選択肢1}"
+          description: "{選択肢1の説明}"
+        - label: "{選択肢2}"
+          description: "{選択肢2の説明}"
+
+    # 全体承認（approval タイプ）
+    - id: q3
+      text: "この理解で進めてよいですか？"
+      type: approval
+      options:
+        - label: "はい、進めてください"
+          description: "この内容で playbook を作成します"
+        - label: "修正が必要"
+          description: "修正点を入力してください"
+```
+
+### メイン Claude への連携フロー
+
+```
+1. pm が understanding_check を YAML 形式で出力に含める
+2. メイン Claude が questions 配列を AskUserQuestion に変換:
+
+   AskUserQuestion({
+     questions: [
+       {
+         question: "{text}",
+         header: "{短いラベル（12文字以内）}",
+         options: [{label, description}, ...],
+         multiSelect: false
+       },
+       ...
+     ]
+   })
+
+3. ユーザーが選択肢から回答
+4. メイン Claude が回答を pm に渡して playbook 作成を継続
+```
+
+### 使用例
+
+```yaml
+# 理解確認の出力末尾に追加
+understanding_check:
+  summary: "ログイン画面にダークモード切り替えボタンを追加する"
+
+  questions:
+    - id: q1
+      text: "ダークモードの設定を永続化しますか？"
+      type: yes_no
+      options:
+        - label: "はい、localStorage に保存"
+          description: "ブラウザを閉じても設定が保持されます"
+        - label: "いいえ、セッション中のみ"
+          description: "ページをリロードすると初期状態に戻ります"
+
+    - id: q2
+      text: "スタイルの実装方法を選んでください"
+      type: single_choice
+      options:
+        - label: "CSS 変数（推奨）"
+          description: "モダンで保守しやすい方式"
+        - label: "Tailwind dark mode"
+          description: "Tailwind CSS の dark: プレフィックス"
+
+    - id: q3
+      text: "この理解で playbook を作成してよいですか？"
+      type: approval
+      options:
+        - label: "はい、進めてください"
+          description: "この内容で playbook を作成します"
+        - label: "修正が必要"
+          description: "修正点を入力してください"
+```
+
+### 選択肢タイプ
+
+| タイプ | 用途 | 選択肢数 |
+|--------|------|----------|
+| `yes_no` | 不明点の確認（機能の要否など） | 2 |
+| `single_choice` | 実装方針の選択（技術選定など） | 2-4 |
+| `approval` | 全体の承認確認 | 2（承認/修正要求） |
+
 playbook なしで作業開始しない:
   - session=task なら playbook 必須
   - /playbook-init を実行して作成

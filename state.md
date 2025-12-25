@@ -17,8 +17,8 @@ current: thanks4claudecode
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-understanding-check-askuser.md
+branch: feat/understanding-check-askuser
 last_archived: plan/archive/playbook-docs-consolidation.md
 review_pending: false
 ```
@@ -28,10 +28,13 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-note: null
+milestone: understanding-check-askuser
+phase: p1
+done_criteria:
+  - SKILL.md に選択肢フォーマット定義が存在する
+  - pm.md に構造化された選択肢データを返す仕様が記載されている
+  - AskUserQuestion で選択肢を提示するフローがドキュメント化されている
+note: pm SubAgent の理解確認結果を選択肢形式でユーザーに提示する
 ```
 
 ---
