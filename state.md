@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-post-loop-auto-fire.md
+last_archived: plan/archive/playbook-abort-playbook-skill.md
 review_pending: false
 ```
 
@@ -20,13 +20,14 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: post-loop-auto-fire
+milestone: abort-playbook-skill
 phase: p1
 done_criteria:
-  - archive-playbook.sh が playbook 完了時にアーカイブ/PR 作成/マージを自動実行する
-  - pre-tool.sh が post-loop-pending を検出し、post-loop 実行を強制する
-  - post-loop Skill が次タスク導出のみを担当し、pending を削除する
-note: playbook 完了時の post-loop 自動発火を実装
+  - abort-playbook Skill が存在し、playbook を plan/archive/ に移動できる
+  - health.sh に orphan playbook 検出機能が存在する
+  - health-checker.md に orphan 検出の説明が追加されている
+  - 既存の orphan playbook-fix-playbook-branch-check.md が abort 処理されている
+note: null
 ```
 
 ---
@@ -34,7 +35,7 @@ note: playbook 完了時の post-loop 自動発火を実装
 ## session
 
 ```yaml
-last_start: 2025-12-25 16:30:56
+last_start: 2025-12-25 19:07:28
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```

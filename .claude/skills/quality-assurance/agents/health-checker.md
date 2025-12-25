@@ -30,6 +30,10 @@ model: opus
    - 必須ファイルの存在確認
    - 参照ファイルの実在確認
 
+5. **orphan playbook 検出**
+   - plan/ に playbook-*.md があるが state.md の playbook.active と一致しない場合を検出
+   - 中断・放棄された playbook をクリーンアップするため abort-playbook Skill の実行を提案
+
 ## チェック項目
 
 ```yaml
@@ -53,6 +57,11 @@ files:
   - CLAUDE.md が存在するか
   - state.md が存在するか
   - plan/playbook-*.md が存在するか（アクティブなタスクがある場合）
+
+orphan:
+  - plan/ に playbook-*.md があるか（archive/ 以外）
+  - state.md の playbook.active が null または別ファイルの場合 = orphan
+  - orphan があれば abort-playbook Skill の実行を提案
 ```
 
 ## 出力フォーマット
@@ -99,6 +108,7 @@ WARNING:
   - 未コミット変更
   - 未 push コミット
   - playbook/branch 不一致
+  - orphan playbook の存在
 
 INFO:
   - 正常な状態確認

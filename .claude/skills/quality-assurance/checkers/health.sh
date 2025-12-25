@@ -143,7 +143,60 @@ else
 fi
 
 # ==============================================================================
-# 6. 結果出力
+# 6. orphan playbook 検出
+# ==============================================================================
+
+check_orphan_playbooks() {
+    local plan_dir="plan"
+    local state_file="state.md"
+
+    # plan ディレクトリが存在しない場合はスキップ
+    if [ ! -d "$plan_dir" ]; then
+        return
+    fi
+
+    # state.md から playbook.active を取得
+    local active_playbook=""
+    if [ -f "$state_file" ]; then
+        active_playbook=$(grep -A5 "^## playbook" "$state_file" 2>/dev/null | grep "^active:" | head -1 | sed 's/active: *//' | tr -d ' \r' || echo "")
+    fi
+
+    # plan/ 内の playbook-*.md を検索（archive は除外）
+    for playbook in "$plan_dir"/playbook-*.md; do
+        # ファイルが存在しない場合（glob がマッチしなかった）
+        if [ ! -f "$playbook" ]; then
+            continue
+        fi
+
+        # archive 内のファイルは除外
+        if [[ "$playbook" == *"/archive/"* ]]; then
+            continue
+        fi
+
+        local playbook_path="$playbook"
+
+        # orphan 判定:
+        # 1. playbook.active が null または空
+        # 2. playbook.active が別のファイルを指している
+        if [ -z "$active_playbook" ] || [ "$active_playbook" = "null" ]; then
+            # active が null なのに playbook ファイルがある = orphan
+            ISSUES="$ISSUES\n  - [WARN] orphan playbook を検出: $playbook_path"
+            ISSUES="$ISSUES\n          → Skill(skill='abort-playbook') で処理してください"
+            ISSUE_COUNT=$((ISSUE_COUNT + 1))
+        elif [ "$active_playbook" != "$playbook_path" ]; then
+            # active が別のファイルを指している = orphan
+            ISSUES="$ISSUES\n  - [WARN] orphan playbook を検出: $playbook_path (active=$active_playbook)"
+            ISSUES="$ISSUES\n          → Skill(skill='abort-playbook') で処理してください"
+            ISSUE_COUNT=$((ISSUE_COUNT + 1))
+        fi
+    done
+}
+
+# orphan チェック実行
+check_orphan_playbooks
+
+# ==============================================================================
+# 7. 結果出力
 # ==============================================================================
 
 if [ $ISSUE_COUNT -gt 0 ]; then
