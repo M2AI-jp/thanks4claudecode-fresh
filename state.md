@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-architecture-visualizer.md
-branch: feat/architecture-visualizer
-last_archived: plan/archive/playbook-abort-playbook-skill.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-architecture-visualizer.md
 review_pending: false
 ```
 
