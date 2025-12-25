@@ -51,9 +51,15 @@ if [ "$TOOL_NAME" = "Edit" ] || [ "$TOOL_NAME" = "Write" ]; then
     fi
 fi
 
-# Bash の場合、許可された git コマンドはスキップ
+# Bash の場合、許可されたコマンドはスキップ
 if [ "$TOOL_NAME" = "Bash" ]; then
     COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
+
+    # session-state/ 操作は許可（post-loop 完了処理用）
+    if [[ "$COMMAND" == *"session-state"* ]] || \
+       [[ "$COMMAND" == *"complete.sh"* ]]; then
+        exit 0
+    fi
 
     # git 操作は基本的に許可（main での作業禁止は Edit/Write が対象）
     # ブランチ操作: checkout, switch, branch
