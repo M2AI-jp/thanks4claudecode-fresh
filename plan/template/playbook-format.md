@@ -283,6 +283,83 @@ depends_on: [p1, p2]  # 依存 Phase が未完了なら実行不可
 
 ---
 
+## 自動リトライ機構（M086）
+
+> **critic FAIL 時に自動的にリトライする仕組み。max_iterations まで自動ループ。**
+
+### 動作フロー
+
+```
+codex 実装
+     ↓
+critic SubAgent（CRITIQUE 実行）
+     ↓
+┌────────────────────────────────────┐
+│ 判定: PASS / FAIL                  │
+└────────────┬───────────────────────┘
+             │
+    ┌────────┴────────┐
+    │ PASS            │ FAIL
+    ↓                 ↓
+Phase 完了      エラー情報を保存
+                     ↓
+              iteration_count++
+                     ↓
+              ┌──────────────────┐
+              │ count < max?     │
+              └────────┬─────────┘
+                       │
+              ┌────────┴────────┐
+              │ YES             │ NO
+              ↓                 ↓
+        codex に再委譲     AskUserQuestion
+        (エラー注入)       (人間確認)
+```
+
+### 関連ファイル
+
+| ファイル | 役割 |
+|----------|------|
+| `.claude/session-state/last-fail-reason` | FAIL 理由を保存 |
+| `.claude/session-state/iteration-count` | リトライ回数を記録 |
+| `.claude/skills/reward-guard/guards/critic-guard.sh` | FAIL 時に保存 |
+| `.claude/skills/playbook-gate/guards/executor-guard.sh` | エラー注入 |
+| `.claude/skills/reward-guard/agents/critic.md` | FAIL 時のインクリメント |
+
+### last-fail-reason 形式
+
+```yaml
+phase_id: p1
+subtask_id: p1.2  # optional
+reason: |
+  技術的検証が失敗:
+  - expected: ファイルが存在する
+  - actual: ファイルが見つからない
+timestamp: 2026-01-01T12:00:00Z
+```
+
+### iteration-count 形式
+
+```yaml
+phase_id: p1
+count: 3
+timestamp: 2026-01-01T12:00:00Z
+```
+
+### max_iterations 到達時
+
+```yaml
+動作:
+  1. executor-guard.sh が max_iterations 到達を検出
+  2. AskUserQuestion 呼び出し指示を出力
+  3. 選択肢を提示:
+     - リトライ継続（iteration_count をリセット）
+     - 中止（Phase を FAIL として記録）
+     - 手動対応（ユーザーが修正）
+```
+
+---
+
 ## validations パターン集
 
 > **V12: criterion ごとに validations（3点検証）を紐付け。以下のパターンを参照。**
@@ -431,13 +508,28 @@ executor の種類:
     config:
       instruction: "具体的な操作手順"
 
-キーワード判定:
-  - "レビュー" "品質チェック" → coderabbit
-  - "登録" "サインアップ" "契約" → user
-  - "API キー" "シークレット" → user
-  - "選んでください" → user
-  - 本格的なコード実装 → codex
-  - それ以外 → claudecode
+executor 判定方式（M086）:
+  # 新方式: LLM ベース判定（推奨）
+  llm_based:
+    description: executor-resolver SubAgent による判定
+    invocation: |
+      Task(subagent_type='executor-resolver',
+           prompt='各 subtask の criterion を分析し、適切な executor を判定')
+    利点:
+      - タスク性質の深い分析
+      - 複雑さ・テスト必要性の考慮
+      - 判定根拠の明示
+      - 代替案の提示
+
+  # 旧方式: キーワード判定（deprecated）
+  keyword_based: "[DEPRECATED]"
+    # 以下は参考のみ。新規 playbook では executor-resolver を使用
+    - "レビュー" "品質チェック" → coderabbit
+    - "登録" "サインアップ" "契約" → user
+    - "API キー" "シークレット" → user
+    - "選んでください" → user
+    - 本格的なコード実装 → codex
+    - それ以外 → claudecode
 
 Phase 記述例:
   - id: p1

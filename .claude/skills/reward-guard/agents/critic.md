@@ -328,6 +328,66 @@ CRITIQUE 実行時、以下を自問してください：
 - 証拠なしに PASS と言わない。
 - 質問しない。判定を実行する。
 
+---
+
+## 自動リトライ機構（FAIL 時の処理）
+
+> **総合判定が FAIL の場合、以下の処理を必ず実行すること。**
+
+### FAIL 時の処理フロー
+
+```yaml
+1. FAIL 理由を session-state に保存:
+   Bash: |
+     mkdir -p .claude/session-state
+     cat > .claude/session-state/last-fail-reason << 'EOF'
+     phase_id: {現在の Phase ID}
+     subtask_id: {FAIL した subtask ID}  # optional
+     reason: |
+       {FAIL の詳細理由を記載}
+       - 不足している証拠: ...
+       - 修正が必要な項目: ...
+     timestamp: {ISO8601 形式}
+     EOF
+
+2. iteration-count をインクリメント:
+   Bash: |
+     mkdir -p .claude/session-state
+     count_file=".claude/session-state/iteration-count"
+     if [ -f "$count_file" ]; then
+       current=$(grep "^count:" "$count_file" | sed 's/count: *//')
+       new_count=$((current + 1))
+     else
+       new_count=1
+     fi
+     cat > "$count_file" << EOF
+     phase_id: {現在の Phase ID}
+     count: $new_count
+     timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+     EOF
+
+3. CRITIQUE 出力の末尾に以下を追記:
+   ---
+   [AUTO-RETRY INFO]
+   FAIL 情報を .claude/session-state/last-fail-reason に保存しました。
+   iteration: {現在のカウント} / max_iterations
+   次回の codex 実行時にこの情報が自動的に注入されます。
+   ---
+```
+
+### PASS 時の処理フロー
+
+```yaml
+1. iteration-count をリセット:
+   Bash: rm -f .claude/session-state/iteration-count
+
+2. last-fail-reason をクリア:
+   Bash: rm -f .claude/session-state/last-fail-reason
+
+3. state.md に self_complete: true を追加:
+   → 既存の処理通り
+```
+
 ## Skills 連携（必須）
 
 > **コード変更を含む Phase の評価時、以下の Skills を呼び出すこと。**

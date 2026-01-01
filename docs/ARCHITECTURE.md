@@ -857,7 +857,26 @@ Phase 完了判定
             ├─→ Read: .claude/frameworks/done-criteria-validation.md
             │
             ├─→ PASS → Phase を done に更新
-            └─→ FAIL → 修正して再判定
+            │         iteration-count リセット
+            │         last-fail-reason 削除
+            │
+            └─→ FAIL → 【自動リトライ機構（M086）】
+                      │
+                      ├─→ last-fail-reason に保存
+                      ├─→ iteration-count++
+                      │
+                      └─→ count < max_iterations?
+                              │
+                              ├─→ YES: codex に再委譲（エラー注入）
+                              │         executor-guard.sh が
+                              │         last-fail-reason を読み込み
+                              │         プロンプトに注入
+                              │
+                              └─→ NO: AskUserQuestion
+                                       選択肢:
+                                       - リトライ継続
+                                       - 中止
+                                       - 手動対応
     │
     ▼
 [PostToolUse:Edit]

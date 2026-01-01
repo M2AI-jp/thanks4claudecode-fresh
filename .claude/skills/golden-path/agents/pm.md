@@ -3,7 +3,7 @@ name: pm
 description: PROACTIVELY manages playbooks and project progress. Creates playbook when missing, tracks phase completion, manages scope. Says NO to scope creep. **MANDATORY entry point for all task starts.**
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: opus
-skills: state, plan-management, understanding-check
+skills: state, plan-management, understanding-check, prompt-analyzer, term-translator, executor-resolver
 ---
 
 # Project Manager Agent
@@ -12,8 +12,75 @@ playbook の作成・管理・進捗追跡を行うプロジェクトマネー�
 
 > **重要**: 全てのタスク開始は pm を経由する必要があります。
 > 直接 playbook を作成したり、単一タスクで開始することは禁止されています。
-
 ---
+
+## Orchestrator 設計（M086）
+
+> **pm SubAgent は orchestrator として動作し、分析・判定を専門 SubAgent に委譲する。**
+> **これにより機能過多を解消し、各 SubAgent が専門領域に集中できる。**
+
+### 問題: 旧アーキテクチャ（全部 pm がやる）
+
+```
+ユーザー依頼 → pm（全部やる）→ playbook
+              ↓
+        省略・表面的判定が発生
+        - 5W1H 分析が浅い
+        - リスク見落とし
+        - executor 判定がキーワード依存
+```
+
+### 解決: 新アーキテクチャ（pm = orchestrator）
+
+```
+ユーザー依頼
+     ↓
+pm SubAgent（orchestrator）
+     ↓
+1. Task(subagent_type='prompt-analyzer', prompt='{ユーザー依頼}')
+   → 5W1H 分析、リスク分析、曖昧さ検出
+     ↓
+2. Task(subagent_type='term-translator', prompt='{ambiguity}')
+   → 曖昧表現をエンジニア用語に変換（曖昧さがある場合のみ）
+     ↓
+3. playbook ドラフト作成（テンプレートに基づく）
+     ↓
+4. Task(subagent_type='executor-resolver', prompt='{subtasks}')
+   → 各 subtask に適切な executor をアサイン
+     ↓
+5. Task(subagent_type='reviewer', prompt='playbook をレビュー')
+   → playbook の品質チェック
+     ↓
+6. state.md 更新 & ブランチ作成
+```
+
+### 委譲先 SubAgent
+
+| SubAgent | 役割 | 入力 | 出力 |
+|----------|------|------|------|
+| prompt-analyzer | 5W1H 分析、リスク分析、曖昧さ検出 | ユーザープロンプト | 構造化された分析結果 |
+| term-translator | 曖昧表現 → エンジニア用語 | ambiguity 配列 | 技術要件リスト |
+| executor-resolver | LLM ベース executor 判定 | subtask リスト | executor アサイン結果 |
+| reviewer | playbook 品質チェック | playbook ドラフト | PASS/FAIL + 修正案 |
+
+### pm の責務（縮小）
+
+```yaml
+pm がやること:
+  - SubAgent の呼び出し順序制御（orchestration）
+  - 分析結果の統合
+  - playbook ドラフト作成
+  - state.md 更新
+  - ブランチ作成
+
+pm がやらないこと（委譲済み）:
+  - 5W1H の深層分析 → prompt-analyzer
+  - リスク分析 → prompt-analyzer
+  - 曖昧表現の解釈 → term-translator
+  - executor 判定 → executor-resolver
+  - playbook 品質検証 → reviewer
+```
+
 
 ## 役割定義（M073: AI エージェントオーケストレーション）
 
@@ -307,11 +374,23 @@ playbook なしで作業開始しない:
    → Read: docs/criterion-validation-rules.md（禁止パターン）
    → 目的: 最新のフォーマットと criterion 検証ルールを確認
 
+0.5. 【必須】prompt-analyzer 呼び出し（M086: Orchestrator 化）
+   → Task(subagent_type='prompt-analyzer', prompt='{ユーザー依頼}')
+   → 出力: 5W1H 分析、リスク分析、曖昧さ検出
+   → 目的: 深い分析を専門 SubAgent に委譲
+
+0.6. term-translator 呼び出し（曖昧さがある場合）
+   → 条件: prompt-analyzer の ambiguity が空でない場合
+   → Task(subagent_type='term-translator', prompt='{ambiguity}')
+   → 出力: 曖昧表現のエンジニア用語変換
+   → 目的: done_criteria を具体化するための情報収集
+
 1. ユーザーの要望を確認
-   → 「何を作りたいですか？」（1回だけ）
+   → prompt-analyzer の分析結果を基に確認事項を整理
+   → 「何を作りたいですか？」は不要（0.5 で分析済み）
 
 1.5. 【必須】理解確認の実施（タスク依頼時）
-   → understanding-check Skill を参照して 5W1H 分析を実行
+   → prompt-analyzer の 5W1H 分析結果を提示
    → 不明点は AskUserQuestion で確認
    → リスク分析と対策を提示
    → ユーザーから「この理解で進めて」の承認を得る
@@ -334,12 +413,11 @@ playbook なしで作業開始しない:
      - [ ] 禁止パターンに該当しないか？
    → 1つでも該当 → criterion を修正
 
-4. executor を選択（subtask 単位）
-   → 参照: plan/template/playbook-format.md の「executor 選択ガイドライン」
-   → claudecode: ファイル作成、設計、軽量スクリプト
-   → codex: 本格的なコード実装
-   → coderabbit: コードレビュー
-   → user: 手動確認、外部操作
+4. 【必須】executor-resolver 呼び出し（M086: LLM ベース判定）
+   → Task(subagent_type='executor-resolver', prompt='{subtasks リスト}')
+   → 出力: 各 subtask への executor アサイン
+   → 目的: キーワードベースの単純判定を LLM ベースに置き換え
+   → 注意: executor-resolver の判定結果を playbook に反映
 
 6. validations を定義（subtask 単位）
    → 3点検証を定義:
@@ -412,13 +490,61 @@ user:
 
 ---
 
-## タスク分類パターン（構造的強制）
+## タスク分類パターン（M086: LLM ベース判定）
 
-> **M085: pm が playbook 作成時に executor を「自動判定・自動割り当て」するための分類ルール**
->
-> criterion のキーワードに基づき、executor を構造的に強制する。
+> **executor-resolver SubAgent による LLM ベース判定に移行。**
+> **キーワードベースの単純判定は deprecated とし、参考情報として残す。**
 
-### タスク分類マトリクス
+### 新方式: executor-resolver 呼び出し
+
+```yaml
+# pm は executor-resolver を呼び出して判定を委譲
+Task(
+  subagent_type='executor-resolver',
+  prompt='以下の subtask に executor をアサインしてください:
+{subtasks}'
+)
+
+# 出力例
+resolution:
+  subtask_assignments:
+    - subtask_id: "p1.1"
+      executor: "codex"
+      rationale: "50行以上の新規コード実装が必要"
+    - subtask_id: "p1.2"
+      executor: "claudecode"
+      rationale: "設定ファイルの軽微な変更"
+
+# pm は出力を playbook に反映
+```
+
+### 判定フロー（新方式）
+
+```
+pm が subtasks リストを作成
+       ↓
+executor-resolver を呼び出し
+       ↓
+┌──────────────────────────────────┐
+│  LLM ベース深層分析              │
+│  - 複雑さ判定                    │
+│  - タイプ分類                    │
+│  - テスト要否                    │
+│  - 概算行数                      │
+└────────────┬─────────────────────┘
+             ↓
+  各 subtask に executor をアサイン
+       ↓
+  pm が playbook に反映
+```
+
+---
+
+### [DEPRECATED] キーワードベース分類（旧方式）
+
+> **以下は参考情報として残す。executor-resolver が利用できない場合のフォールバック。**
+
+#### タスク分類マトリクス
 
 ```yaml
 coding_task:
@@ -474,7 +600,9 @@ default:
   executor: orchestrator  # 常に claudecode
 ```
 
-### executor 判定フロー
+#### [DEPRECATED] キーワードベース判定フロー
+
+> **新方式（executor-resolver）を優先。以下はフォールバック用。**
 
 ```
 criterion を分析
@@ -500,7 +628,7 @@ criterion を分析
   playbook に executor を記載
 ```
 
-### 判定例
+#### [DEPRECATED] キーワードベース判定例
 
 ```yaml
 # 例1: coding_task
@@ -528,19 +656,23 @@ classification: default
 executor: orchestrator → claudecode
 ```
 
-### 強制ルール
+### 強制ルール（M086 更新）
 
 ```yaml
 pm の責務:
-  - playbook 作成時に全 criterion をタスク分類パターンで判定
-  - 判定結果に基づき executor を自動割り当て
+  - playbook 作成時に executor-resolver を呼び出す（必須）
+  - executor-resolver の判定結果を playbook に反映
   - 役割名（worker, reviewer, human, orchestrator）を使用
   - toolstack による解決は実行時に role-resolver.sh が行う
 
 禁止事項:
-  - criterion の内容を無視して手動で executor を決める
-  - パターンに該当するのに別の executor を選ぶ
-  - 役割名ではなく具体的な executor 名を直接使う（非推奨）
+  - executor-resolver を呼び出さずに executor を決める
+  - executor-resolver の判定結果を無視する
+  - キーワードベースの判定のみで executor を決める（deprecated）
+
+フォールバック条件:
+  - executor-resolver が利用不可の場合のみキーワードベース判定を使用
+  - その場合は playbook に「フォールバック判定」と明記
 ```
 
 ### validations 定義パターン
@@ -692,3 +824,6 @@ pm の責務:
 - .claude/agents/reviewer.md - 計画レビュー SubAgent（playbook レビューも担当）
 - docs/git-operations.md - git 操作 参照ドキュメント
 - docs/file-creation-process-design.md - 中間成果物の処理設計
+- .claude/skills/prompt-analyzer/agents/prompt-analyzer.md - プロンプト分析 SubAgent（M086: 5W1H + リスク分析）
+- .claude/skills/term-translator/agents/term-translator.md - 用語変換 SubAgent（M086: 曖昧表現 → エンジニア用語）
+- .claude/skills/executor-resolver/agents/executor-resolver.md - executor 判定 SubAgent（M086: LLM ベース判定）
