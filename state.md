@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-orchestration-evidence.md
-branch: feat/multi-language-orchestration-demo
-last_archived: plan/archive/playbook-orchestration-practice.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-orchestration-evidence.md
 review_pending: false
 ```
 
