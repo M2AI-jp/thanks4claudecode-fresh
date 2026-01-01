@@ -21,10 +21,9 @@
 
 set -euo pipefail
 
-# エンコーディング設定（sed/grep の互換性のため LC_ALL=C を使用）
-# 注: 日本語文字が含まれるファイルの description は正しく抽出されない可能性あり
-export LC_ALL=C
-export LANG=C
+# エンコーディング設定（UTF-8 を維持してマルチバイト文字を正しく処理）
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
 
 # ==============================================================================
 # 設定
@@ -76,9 +75,9 @@ extract_description() {
             ;;
     esac
 
-    # マルチバイト対応で文字数を制限（awk で UTF-8 対応切り詰め）
+    # マルチバイト対応で文字数を制限（perl で UTF-8 対応切り詰め）
     # 特殊文字をエスケープし、改行を削除
-    echo "$desc" | tr -d '\n' | awk -v max="$MAX_CHARS" '{print substr($0, 1, max)}' | sed 's/"/\\"/g'
+    echo "$desc" | tr -d '\n' | perl -CSD -pe "s/^(.{0,$MAX_CHARS}).*\$/\$1/" | sed 's/"/\\"/g'
 }
 
 # settings.json から Hook のトリガー情報を取得

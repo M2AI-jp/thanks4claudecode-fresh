@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-01 19:00:57"
+  generated: "2026-01-01 19:33:30"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 250
+  total_files: 251
 
 hooks:
   directory: .claude/hooks/
@@ -42,7 +42,7 @@ agents:
       description: "設計意図"
     - name: "health-checker"
       skill: "quality-assurance"
-      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
+      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、ファイル存在確認などを行う。"
     - name: "reviewer"
       skill: "quality-assurance"
       description: "正規ソース"
@@ -68,7 +68,7 @@ skills:
     - name: "access-control"
       description: "アクセス制御"
     - name: "context-management"
-      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
+      description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外部ファイルに記録。"
     - name: "deploy-checker"
       description: "デプロイ準備・検証専門スキル"
     - name: "executor-resolver"
@@ -90,7 +90,7 @@ skills:
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の後処理"
     - name: "prompt-analyzer"
-      description: "description: ユーザープロンプトの深層分析を行う専門Skill。5W1H抽出、リスク"
+      description: "description: ユーザープロンプトの深層分析を行う専門Skill。5W1H抽出、リスク分析、曖昧さ検出を実施し、pm SubAgentに構造化データを返す。"
     - name: "quality-assurance"
       description: "品質保証"
     - name: "reward-guard"
@@ -98,13 +98,13 @@ skills:
     - name: "session-manager"
       description: "セッション管理"
     - name: "state"
-      description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
+      description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state.md の更新、done_criteria の判定、CRITIQUE の実行時に使用"
     - name: "term-translator"
-      description: "description: ユーザープロンプト内の曖昧な表現をエンジニア用語に変換する"
+      description: "description: ユーザープロンプト内の曖昧な表現をエンジニア用語に変換する専門Skill。prompt-analyzer の ambiguity セクションを受け取り、技術的に明確な表現に変"
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
     - name: "understanding-check"
-      description: "description: タスク依頼時の理解確認システム（5W1H）。playbook 作成前にユー�"
+      description: "description: タスク依頼時の理解確認システム（5W1H）。playbook 作成前にユーザーの意図を確認し、リスク分析と不明点の洗い出しを行う。pm SubAgent から呼び出される。"
 
 commands:
   directory: .claude/commands/
@@ -113,7 +113,7 @@ commands:
   usage: "即座に実行される CLI 機能。ユーザーの意図を明確に反映。"
   files:
     - name: "/crit"
-      description: "この処理は critic SubAgent に委譲される。直接 CRITIQUE を実行してはならない�"
+      description: "この処理は critic SubAgent に委譲される。直接 CRITIQUE を実行してはならない。"
     - name: "/lint"
       description: "allowed-tools: Read, Bash"
     - name: "/playbook-init"
@@ -129,10 +129,10 @@ docs:
   directory: docs/
   count: 7
   files:
-    - name: "ARCHITECTURE.md"
-      description: "ユーザー体験ベースの状態遷移マップ"
     - name: "ai-orchestration.md"
       description: "役割ベース executor 抽象化 - playbook の再利用性向上"
+    - name: "ARCHITECTURE.md"
+      description: "ユーザー体験ベースの状態遷移マップ"
     - name: "archive-operation-rules.md"
       description: "目的"
     - name: "criterion-validation-rules.md"
@@ -150,7 +150,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 47
+      count: 48
     template:
       description: "playbook テンプレート"
       count: 5
@@ -399,6 +399,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-01 19:00:57"
+  - date: "2026-01-01 19:33:30"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
