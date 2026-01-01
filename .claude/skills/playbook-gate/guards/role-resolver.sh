@@ -31,18 +31,17 @@ else
     read -r ROLE || ROLE=""
 fi
 
-# 空の場合は何も出力しない
-if [[ -z "$ROLE" ]]; then
-    exit 0
-fi
+RESOLVED_OUTPUT=""
+RESOLUTION_DONE=false
 
 # ==============================================================================
 # 既存の executor 名はそのまま返す（互換性）
 # ==============================================================================
 case "$ROLE" in
     claudecode|codex|coderabbit|user)
-        echo "$ROLE"
-        exit 0
+        RESOLVED_OUTPUT="$ROLE"
+        RESOLUTION_DONE=true
+        # success return removed: defer to single exit at end after output.
         ;;
 esac
 
@@ -133,18 +132,33 @@ get_default_executor() {
 # 解決実行（優先順位順）
 # ==============================================================================
 # 1. playbook.meta.roles（override）
-RESOLVED=$(get_role_from_playbook "$ROLE" || echo "")
-if [[ -n "$RESOLVED" ]]; then
-    echo "$RESOLVED"
-    exit 0
+if [[ -n "$ROLE" && "$RESOLUTION_DONE" == false ]]; then
+    RESOLVED=$(get_role_from_playbook "$ROLE" || echo "")
+    if [[ -n "$RESOLVED" ]]; then
+        RESOLVED_OUTPUT="$RESOLVED"
+        RESOLUTION_DONE=true
+        # success return removed: defer to single exit at end after output.
+    fi
 fi
 
 # 2. state.md config.roles
-RESOLVED=$(get_role_from_state "$ROLE" || echo "")
-if [[ -n "$RESOLVED" ]]; then
-    echo "$RESOLVED"
-    exit 0
+if [[ -n "$ROLE" && "$RESOLUTION_DONE" == false ]]; then
+    RESOLVED=$(get_role_from_state "$ROLE" || echo "")
+    if [[ -n "$RESOLVED" ]]; then
+        RESOLVED_OUTPUT="$RESOLVED"
+        RESOLUTION_DONE=true
+        # success return removed: defer to single exit at end after output.
+    fi
 fi
 
 # 3. デフォルト（toolstack に応じる）
-get_default_executor "$ROLE"
+if [[ -n "$ROLE" && "$RESOLUTION_DONE" == false ]]; then
+    RESOLVED_OUTPUT=$(get_default_executor "$ROLE")
+    RESOLUTION_DONE=true
+fi
+
+if [[ -n "$RESOLVED_OUTPUT" ]]; then
+    echo "$RESOLVED_OUTPUT"
+fi
+
+exit 0

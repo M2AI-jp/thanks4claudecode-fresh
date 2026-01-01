@@ -55,70 +55,70 @@ fi
 
 # 編集対象ファイルを取得
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
+SKIP_REASON=""
 if [[ -z "$FILE_PATH" ]]; then
-    exit 0
-fi
+    SKIP_REASON="missing file_path" # success return removed: consolidated skip exit below
+else
+    # 相対パスに変換
+    PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+    RELATIVE_PATH="${FILE_PATH#$PROJECT_DIR/}"
 
-# 相対パスに変換
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-RELATIVE_PATH="${FILE_PATH#$PROJECT_DIR/}"
+    if [[ ! -f "$STATE_FILE" ]]; then
+        SKIP_REASON="state.md missing" # success return removed: consolidated skip exit below
+    else
+        # playbook から active を取得
+        PLAYBOOK_PATH=$(grep -A8 "^## playbook" "$STATE_FILE" 2>/dev/null | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//' | tr -d ' ' || true)
 
-# state.md が存在しない場合はパス
-if [[ ! -f "$STATE_FILE" ]]; then
-    exit 0
-fi
+        if [[ -z "$PLAYBOOK_PATH" || "$PLAYBOOK_PATH" == "null" ]]; then
+            SKIP_REASON="playbook not set" # success return removed: consolidated skip exit below
+        elif [[ ! -f "$PLAYBOOK_PATH" ]]; then
+            SKIP_REASON="playbook file missing" # success return removed: consolidated skip exit below
+        else
+            # playbook から in_progress の Phase を探す
+            # 形式: status: in_progress または **status**: in_progress
+            IN_PROGRESS_LINE=$(grep -n -E "(status:|\\*\\*status\\*\\*:).*in_progress" "$PLAYBOOK_PATH" 2>/dev/null | head -1 || echo "")
+            if [[ -z "$IN_PROGRESS_LINE" ]]; then
+                SKIP_REASON="no in_progress phase" # success return removed: consolidated skip exit below
+            else
+                # その Phase の executor を取得（status: in_progress の前の行を遡る）
+                LINE_NUM=$(echo "$IN_PROGRESS_LINE" | cut -d: -f1)
 
-# playbook から active を取得
-PLAYBOOK_PATH=$(grep -A8 "^## playbook" "$STATE_FILE" 2>/dev/null | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//' | tr -d ' ' || true)
+                # executor を探す（status 行より前の近い行を探す）
+                EXECUTOR=""
+                for i in $(seq "$LINE_NUM" -1 1); do
+                    LINE=$(sed -n "${i}p" "$PLAYBOOK_PATH")
+                    # M085 修正: "- executor:" 形式にも対応（YAML リストアイテム）
+                    if [[ "$LINE" =~ ^[[:space:]]*-?[[:space:]]*executor:[[:space:]]*(.+)$ ]]; then
+                        EXECUTOR=$(echo "${BASH_REMATCH[1]}" | tr -d ' ')
+                        break
+                    fi
+                    # id: に到達したら止める（Phase の境界）
+                    if [[ "$LINE" =~ ^[[:space:]]*-[[:space:]]*id: ]]; then
+                        break
+                    fi
+                done
 
-# playbook が null または空ならスキップ
-if [[ -z "$PLAYBOOK_PATH" || "$PLAYBOOK_PATH" == "null" ]]; then
-    exit 0
-fi
+                # ==============================================================
+                # role-resolver.sh で役割名を具体的な executor に解決
+                # ==============================================================
+                SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+                if [[ -x "$SCRIPT_DIR/role-resolver.sh" && -n "$EXECUTOR" ]]; then
+                    RESOLVED_EXECUTOR=$(TOOLSTACK="$TOOLSTACK" bash "$SCRIPT_DIR/role-resolver.sh" "$EXECUTOR" 2>/dev/null || echo "$EXECUTOR")
+                    if [[ -n "$RESOLVED_EXECUTOR" ]]; then
+                        EXECUTOR="$RESOLVED_EXECUTOR"
+                    fi
+                fi
 
-# playbook ファイルが存在しない場合はスキップ
-if [[ ! -f "$PLAYBOOK_PATH" ]]; then
-    exit 0
-fi
-
-# playbook から in_progress の Phase を探す
-# 形式: status: in_progress または **status**: in_progress
-IN_PROGRESS_LINE=$(grep -n -E "(status:|\\*\\*status\\*\\*:).*in_progress" "$PLAYBOOK_PATH" 2>/dev/null | head -1 || echo "")
-if [[ -z "$IN_PROGRESS_LINE" ]]; then
-    exit 0
-fi
-
-# その Phase の executor を取得（status: in_progress の前の行を遡る）
-LINE_NUM=$(echo "$IN_PROGRESS_LINE" | cut -d: -f1)
-
-# executor を探す（status 行より前の近い行を探す）
-EXECUTOR=""
-for i in $(seq "$LINE_NUM" -1 1); do
-    LINE=$(sed -n "${i}p" "$PLAYBOOK_PATH")
-    # M085 修正: "- executor:" 形式にも対応（YAML リストアイテム）
-    if [[ "$LINE" =~ ^[[:space:]]*-?[[:space:]]*executor:[[:space:]]*(.+)$ ]]; then
-        EXECUTOR=$(echo "${BASH_REMATCH[1]}" | tr -d ' ')
-        break
+                if [[ -z "$EXECUTOR" || "$EXECUTOR" == "claudecode" ]]; then
+                    SKIP_REASON="executor not enforced" # success return removed: consolidated skip exit below
+                fi
+            fi
+        fi
     fi
-    # id: に到達したら止める（Phase の境界）
-    if [[ "$LINE" =~ ^[[:space:]]*-[[:space:]]*id: ]]; then
-        break
-    fi
-done
-
-# ==============================================================
-# role-resolver.sh で役割名を具体的な executor に解決
-# ==============================================================
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -x "$SCRIPT_DIR/role-resolver.sh" && -n "$EXECUTOR" ]]; then
-    RESOLVED_EXECUTOR=$(TOOLSTACK="$TOOLSTACK" bash "$SCRIPT_DIR/role-resolver.sh" "$EXECUTOR" 2>/dev/null || echo "$EXECUTOR")
-    if [[ -n "$RESOLVED_EXECUTOR" ]]; then
-        EXECUTOR="$RESOLVED_EXECUTOR"
-    fi
 fi
 
-# executor が空または claudecode ならスキップ
-if [[ -z "$EXECUTOR" || "$EXECUTOR" == "claudecode" ]]; then
+if [[ -n "$SKIP_REASON" ]]; then
+    # success return consolidated: multiple skip paths return here to reduce redundant exits.
     exit 0
 fi
 
@@ -208,20 +208,21 @@ if [[ "$RELATIVE_PATH" == src/* ]] || [[ "$RELATIVE_PATH" == app/* ]] || \
     IS_CODE_FILE=true
 fi
 
-# コードファイルでない場合はスキップ（ドキュメント等は許可）
+# コードファイルでない場合は処理を進めない（許可）
 if [[ "$IS_CODE_FILE" == false ]]; then
-    exit 0
-fi
-
-# executor 別のメッセージ
-case "$EXECUTOR" in
-    codex)
-        # =============================================================
-        # M088: codex-delegate SubAgent への自動委譲を構造的に強制
-        # =============================================================
-        # exit 2 でブロックするが、JSON 形式で具体的な呼び出し方法を提示
-        # Claude はこのメッセージを見て Task ツールで codex-delegate を呼び出す
-        cat << EOF
+    : # success return removed: non-code edits skip enforcement by falling through to final success exit.
+else
+    # executor 別のメッセージ
+    case "$EXECUTOR" in
+        codex)
+            # =============================================================
+            # M088: codex-delegate SubAgent への自動委譲を構造的に強制
+            # =============================================================
+            # exit 2 でブロックするが、JSON 形式で具体的な呼び出し方法を提示
+            # Claude はこのメッセージを見て Task ツールで codex-delegate を呼び出す
+            #
+            # V17: フォールバック検出とユーザー確認フローを追加
+            cat << EOF
 {
   "continue": false,
   "decision": "block",
@@ -230,16 +231,21 @@ case "$EXECUTOR" in
     "action": "delegate_to_subagent",
     "target_subagent": "codex-delegate",
     "executor": "codex",
-    "file_path": "$RELATIVE_PATH"
+    "file_path": "$RELATIVE_PATH",
+    "fallback_policy": {
+      "on_mcp_timeout": "CLI 直接実行 (codex exec) に切り替え",
+      "on_cli_failure": "AskUserQuestion でユーザーに確認"
+    }
   },
-  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  🔄 executor: codex - codex-delegate SubAgent に自動委譲\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  この subtask は Codex が担当です。\\n  以下の Task ツールを使って codex-delegate SubAgent に委譲してください:\\n\\n  Task(\\n    subagent_type='codex-delegate',\\n    prompt='【ここに実装内容を説明】'\\n  )\\n\\n  対象ファイル: $RELATIVE_PATH\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  🔄 executor: codex - codex-delegate SubAgent に自動委譲\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  この subtask は Codex が担当です。\\n\\n  【1. 推奨: codex-delegate SubAgent】\\n  Task(subagent_type='codex-delegate', prompt='...')\\n\\n  【2. MCP タイムアウト時: CLI フォールバック】\\n  Bash: codex exec '...'\\n\\n  【3. CLI 失敗時: ユーザー確認】\\n  AskUserQuestion を使用して以下を確認:\\n    - 再試行する\\n    - claudecode で代行（executor 変更必須）\\n    - 中止\\n\\n  対象ファイル: $RELATIVE_PATH\\n\\n  参照: docs/executor-fallback-policy.md\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 EOF
-        exit 2
-        ;;
+            exit 2
+            ;;
 
-    coderabbit)
-        cat >&2 << 'EOF'
+        coderabbit)
+            # V17: フォールバック検出とユーザー確認フローを追加
+            cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ⛔ executor: coderabbit - Reviewer SubAgent を呼び出してください
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -247,17 +253,22 @@ EOF
   この Phase は CodeRabbit によるレビューです。
   Claude Code が直接コードを編集することは許可されていません。
 
-  正しい手順（crit Skill）:
+  【1. 推奨: crit Skill】
     Skill(skill='crit') または /crit
 
-  代替手順（CodeRabbit CLI）:
+  【2. 代替: CodeRabbit CLI】
     Bash: coderabbit review
+
+  【3. CLI 失敗時: ユーザー確認】
+    AskUserQuestion を使用して以下を確認:
+      - 再試行する
+      - reviewer SubAgent で代行
+      - 中止
 
   レビュー後の対応:
     指摘事項は別の Phase（executor: worker）で対応
 
-  playbook の executor を変更したい場合:
-    Skill(skill='plan-management') または /plan-management
+  参照: docs/executor-fallback-policy.md
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
@@ -265,11 +276,12 @@ EOF
         echo "  現在の executor: $EXECUTOR" >&2
         echo "" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-        exit 2
-        ;;
+            exit 2
+            ;;
 
-    user)
-        cat >&2 << 'EOF'
+        user)
+            # V17: AskUserQuestion による確認フローを強調
+            cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ⛔ executor: user - ユーザー作業の Phase です
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -283,13 +295,18 @@ EOF
     - 支払い情報の入力
     - 手動での確認作業
 
-  正しい手順:
+  【必須: AskUserQuestion で確認】
     1. ユーザーに作業内容を説明
-    2. ユーザーが作業を完了するのを待つ
-    3. done_criteria をチェックリストで確認
+    2. AskUserQuestion で完了確認:
+       - 作業完了（次に進む）
+       - まだ作業中
+       - 作業を中止
+    3. 完了確認後に done_criteria をチェック
 
-  playbook の executor を変更したい場合:
-    pm エージェントに依頼してください。
+  executor を変更したい場合:
+    AskUserQuestion で確認後、playbook を更新
+
+  参照: docs/executor-fallback-policy.md
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
@@ -297,16 +314,19 @@ EOF
         echo "  現在の executor: $EXECUTOR" >&2
         echo "" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-        exit 2
-        ;;
+            exit 2
+            ;;
 
-    *)
-        # 未知の executor は警告のみ
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "  ⚠️ 未知の executor: $EXECUTOR"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        exit 0
-        ;;
-esac
+        *)
+            # 未知の executor は警告のみ
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "  ⚠️ 未知の executor: $EXECUTOR"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            # success return removed: fall through to final success exit after warning.
+            ;;
+    esac
+fi
+
+exit 0

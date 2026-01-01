@@ -30,8 +30,9 @@ TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // {}')
 
 # playbook ファイルへの編集のみチェック
 FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty')
+PROCESS_SUBTASK=true
 if [[ "$FILE_PATH" != *"playbook-"* ]]; then
-    exit 0
+    PROCESS_SUBTASK=false # success return removed: non-playbook edits fall through to final success exit.
 fi
 
 # old_string / new_string を取得
@@ -45,10 +46,16 @@ NEW_STRING=$(echo "$TOOL_INPUT" | jq -r '.new_string // empty')
 # validations は不要。変更を許可する。
 # 判定: old_string に "final_tasks" または "**ft" が含まれていれば final_tasks
 # ==============================================================================
-if [[ "$OLD_STRING" == *"final_tasks"* ]] || [[ "$OLD_STRING" == *"**ft"* ]] || [[ "$OLD_STRING" == *"- id: ft"* ]]; then
-    # final_tasks の変更 → 許可（bypass）
-    exit 0
+if [[ "$PROCESS_SUBTASK" == true ]]; then
+    if [[ "$OLD_STRING" == *"final_tasks"* ]] || [[ "$OLD_STRING" == *"**ft"* ]] || [[ "$OLD_STRING" == *"- id: ft"* ]]; then
+        # final_tasks の変更 → 許可（bypass）
+        PROCESS_SUBTASK=false # success return removed: bypass falls through to final success exit.
+    fi
 fi
+
+if [[ "$PROCESS_SUBTASK" == false ]]; then
+    : # success return removed: skip by wrapping remaining logic and falling through to final success exit.
+else
 
 # ==============================================================================
 # V12: チェックボックス形式 `- [ ]` → `- [x]` の変更を検出
@@ -135,27 +142,24 @@ if [[ "$PHASE_STATUS_CHANGE" == "true" ]]; then
     fi
 
     # Phase status 変更自体は許可（subtask チェックが通った場合）
-    exit 0
-fi
-
-# チェックボックス/status 変更がない場合はパス
-if [[ "$CHECKBOX_CHANGE" == "false" ]]; then
-    exit 0
-fi
-
-# ==============================================================================
-# validations チェック
-# ==============================================================================
-# V12 形式: - [x] の後に validations ブロックがあるか
-# V11 形式: status: done の後に validations があるか
-# ==============================================================================
-# validations の存在と内容をチェック
-# - validations: がない → ブロック
-# - validations: はあるが technical/consistency/completeness が null → ブロック
-# ==============================================================================
-if [[ "$NEW_STRING" != *"validations:"* ]]; then
-    # validations がない場合はブロック
-    cat >&2 << 'EOF'
+    # success return removed: phase-status path falls through to final success exit.
+elif [[ "$CHECKBOX_CHANGE" == "false" ]]; then
+    # チェックボックス/status 変更がない場合はパス
+    : # success return removed: no-checkbox path falls through to final success exit.
+else
+    # ==============================================================================
+    # validations チェック
+    # ==============================================================================
+    # V12 形式: - [x] の後に validations ブロックがあるか
+    # V11 形式: status: done の後に validations があるか
+    # ==============================================================================
+    # validations の存在と内容をチェック
+    # - validations: がない → ブロック
+    # - validations: はあるが technical/consistency/completeness が null → ブロック
+    # ==============================================================================
+    if [[ "$NEW_STRING" != *"validations:"* ]]; then
+        # validations がない場合はブロック
+        cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ⛔ subtask 完了には validations が必須です
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -173,14 +177,14 @@ if [[ "$NEW_STRING" != *"validations:"* ]]; then
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
-    exit 2
-fi
+        exit 2
+    fi
 
-# validations があっても値が null の場合はブロック
-if [[ "$NEW_STRING" == *"technical: null"* ]] || \
-   [[ "$NEW_STRING" == *"consistency: null"* ]] || \
-   [[ "$NEW_STRING" == *"completeness: null"* ]]; then
-    cat >&2 << 'EOF'
+    # validations があっても値が null の場合はブロック
+    if [[ "$NEW_STRING" == *"technical: null"* ]] || \
+       [[ "$NEW_STRING" == *"consistency: null"* ]] || \
+       [[ "$NEW_STRING" == *"completeness: null"* ]]; then
+        cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ⛔ validations の値が null です
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -196,21 +200,21 @@ if [[ "$NEW_STRING" == *"technical: null"* ]] || \
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
-    exit 2
-fi
+        exit 2
+    fi
 
-# ==============================================================================
-# M088: reviewer SubAgent 発動を構造的に強制
-# ==============================================================================
-# subtask 完了時に 4QV+ レビューを確実に実行するため、reviewer 呼び出しを指示
-# validations がある場合でも、reviewer による検証を推奨する systemMessage を出力
-# ==============================================================================
+    # ==============================================================================
+    # M088: reviewer SubAgent 発動を構造的に強制
+    # ==============================================================================
+    # subtask 完了時に 4QV+ レビューを確実に実行するため、reviewer 呼び出しを指示
+    # validations がある場合でも、reviewer による検証を推奨する systemMessage を出力
+    # ==============================================================================
 
-# subtask ID を抽出
-SUBTASK_ID=$(echo "$NEW_STRING" | grep -oE 'p[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+    # subtask ID を抽出
+    SUBTASK_ID=$(echo "$NEW_STRING" | grep -oE 'p[0-9]+\.[0-9]+' | head -1 || echo "unknown")
 
-# validations がある場合は許可しつつ、reviewer 発動を促す
-cat << EOF
+    # validations がある場合は許可しつつ、reviewer 発動を促す
+    cat << EOF
 {
   "continue": true,
   "decision": "allow",
@@ -223,5 +227,6 @@ cat << EOF
   "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  ✅ subtask $SUBTASK_ID の validations を確認\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  【4QV+ レビュー推奨】\\n  より確実な検証のため、Phase 完了前に以下を実行してください:\\n\\n    Skill(skill='crit') または /crit\\n\\n  critic SubAgent が 4QV+ フレームワークに従って検証します。\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 EOF
-
+fi
+fi
 exit 0

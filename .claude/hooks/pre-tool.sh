@@ -57,10 +57,16 @@ case "$TOOL_NAME" in
     Bash)
         # Bash 契約チェック
         invoke_skill "access-control" "guards/bash-check.sh" || exit $?
+        # executor チェック（V17: Bash 追加）
+        invoke_skill "playbook-gate" "guards/bash-executor-guard.sh" || exit $?
         # 整合性チェック
         invoke_skill "reward-guard" "guards/coherence.sh" || exit $?
         # Lint チェック（git commit 前など）
         invoke_skill "quality-assurance" "checkers/lint.sh" || exit $?
+        ;;
+    Task)
+        # V17: Task ツールの executor チェック
+        invoke_skill "playbook-gate" "guards/task-executor-guard.sh" || exit $?
         ;;
 esac
 

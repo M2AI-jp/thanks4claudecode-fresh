@@ -25,6 +25,50 @@ roles:  # オプション: 役割の override（state.md のデフォルトを�
 
 ---
 
+## executor_enforcement（V17 新規）
+
+> **M090: executor 強制を構造的に保証するための設定**
+>
+> executor 違反を防止し、Codex/CodeRabbit が実際に作業することを保証する。
+
+```yaml
+executor_enforcement:
+  enabled: true  # executor-guard による強制チェック
+
+  # 監視対象ツール（全て監視必須）
+  monitored_tools:
+    - Edit
+    - Write
+    - Task      # V17: SubAgent 呼び出しも監視
+    - Bash      # V17: 変更系コマンドも監視
+
+  # フォールバックポリシー（executor 失敗時の対応）
+  fallback_policy:
+    codex_timeout:
+      threshold: 120s
+      action: ask_user          # ユーザー確認必須
+      options: [retry, fallback_to_cli, abort]
+    codex_error:
+      action: ask_user
+      options: [retry, fallback_to_claudecode, abort]
+    coderabbit_error:
+      action: ask_user
+      options: [retry, fallback_to_reviewer_subagent, abort]
+
+  # 実行証跡の記録（誰が実行したかの証拠）
+  execution_evidence:
+    required: true
+    fields:
+      - executed_by: codex | claudecode | coderabbit | user
+      - execution_log: ツール呼び出しログまたは CLI 出力
+      - session_id: MCP セッション ID（codex の場合）
+```
+
+> **重要**: `executor_enforcement.enabled: true` の場合、executor 違反は BLOCK される。
+> フォールバック時はユーザー確認が必須。無言での代行は不可。
+
+---
+
 ## goal
 
 ```yaml
@@ -128,11 +172,34 @@ done_when:
 | executor | 実行者（claudecode / codex / coderabbit / user） |
 | validations | 3 点検証（technical / consistency / completeness） |
 
-### 完了時の追加フィールド
+### 完了時の追加フィールド（V17 拡張）
 
-| フィールド | 説明 |
-|-----------|------|
-| validated | 検証完了日時（ISO 8601 形式） |
+| フィールド | 説明 | 必須 |
+|-----------|------|------|
+| validated | 検証完了日時（ISO 8601 形式） | 必須 |
+| executed_by | 実際に実行したツール（codex/claudecode/coderabbit/user） | V17 新規: executor と異なる場合は警告 |
+| execution_log | 実行証跡（MCP session ID / CLI 出力 / ログ参照） | V17 新規: executor: codex の場合必須 |
+
+### V17: 証拠形式の強制
+
+```yaml
+evidence_format:
+  # 許可される証拠形式
+  allowed_types:
+    command_output: "PASS - npm test: 24/24 passed (exit 0)"
+    file_reference: "PASS - ファイル src/auth.ts:42-56 に実装あり"
+    log_reference: "PASS - MCP session abc123 で Codex 実行"
+    screenshot: "PASS - スクリーンショット tmp/screen-001.png"
+    user_confirmation: "PASS - ユーザーが AskUserQuestion で確認"
+
+  # 禁止される証拠形式（critic-guard でブロック）
+  forbidden_patterns:
+    - "PASS"                    # 証拠なし
+    - "PASS - 確認しました"      # 曖昧
+    - "PASS - 動作確認済み"      # 何を確認したか不明
+    - "PASS - 実装しました"      # アクションであり状態でない
+    - "PASS - 問題なし"          # 何が問題ないか不明
+```
 
 ### 旧形式との比較
 
@@ -1078,6 +1145,7 @@ status 更新:
 
 | 日時 | 内容 |
 |------|------|
+| 2026-01-01 | V17: M090 executor 構造的強制。executor_enforcement セクション追加（監視対象ツール拡張、フォールバックポリシー、実行証跡）。証拠形式強制（evidence_format）追加。完了フィールドに executed_by / execution_log 追加。 |
 | 2025-12-23 | V16: M088 Phase done 前提条件を追加。subtask-guard.sh で Phase status 変更を構造的にブロック。 |
 | 2025-12-22 | V15: test_command を廃止。validations（3点検証）ベースに完全移行。 |
 | 2025-12-17 | V14: final_tasks を V12 チェックボックス形式に統一。archive-playbook.sh と整合。 |

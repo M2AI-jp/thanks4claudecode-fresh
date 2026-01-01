@@ -125,7 +125,7 @@ if [ $ERRORS -gt 0 ]; then
     exit 2
 elif [ $WARNINGS -gt 0 ]; then
     echo -e "${YELLOW}[WARN]${NC} $WARNINGS warning(s)"
-    exit 0
+    # success return removed: warning path falls through to final success exit.
 else
     echo -e "${GREEN}[PASS]${NC} Coherence check passed"
 fi

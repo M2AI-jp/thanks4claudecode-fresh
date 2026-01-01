@@ -28,6 +28,11 @@ GOOD_EVIDENCE=(
     "PASS - grep 'function' src/app.ts: 5 matches found"
     "PASS - ls -la output: 3 files exist"
     "PASS - curl http://localhost:3000: status 200"
+    "PASS - git diff shows 0 changes"
+    "PASS - TypeScript: 0 errors"
+    "PASS - coverage: 85%"
+    "PASS - eslint: 0 warnings"
+    "PASS - dist/ has 12 files"
 )
 
 # 悪い証拠パターン（FAIL が期待される）
@@ -37,6 +42,11 @@ BAD_EVIDENCE=(
     "PASS - 動作確認しました"
     "PASS - OK"
     "PASS - テスト完了"
+    "PASS - done"
+    "PASS - completed"
+    "PASS - works"
+    "PASS - looks good"
+    "PASS - success"
 )
 
 # 部分的な証拠（要検討）
@@ -51,7 +61,7 @@ for evidence in "${GOOD_EVIDENCE[@]}"; do
     TOTAL=$((TOTAL + 1))
     # 実際の critic 検証ロジックがあればここで呼び出す
     # 現時点では、コマンド/数値を含む証拠を良い証拠と判定
-    if echo "$evidence" | grep -qE '(exit [0-9]+|[0-9]+/[0-9]+|[0-9]+ (passed|matches|files)|status [0-9]+)'; then
+    if echo "$evidence" | grep -qE '(exit [0-9]+|[0-9]+/[0-9]+|[0-9]+ (passed|matches|files|errors|warnings|changes)|status [0-9]+|coverage: [0-9]+%)'; then
         PASSED=$((PASSED + 1))
         echo -e "  ${GREEN}✓${NC} Good evidence detected: ${evidence:0:50}..."
     else
@@ -64,7 +74,7 @@ echo "Testing bad evidence patterns (should FAIL):"
 for evidence in "${BAD_EVIDENCE[@]}"; do
     TOTAL=$((TOTAL + 1))
     # 悪い証拠は数値/コマンド出力を含まない
-    if echo "$evidence" | grep -qE '(exit [0-9]+|[0-9]+/[0-9]+|[0-9]+ (passed|matches|files)|status [0-9]+)'; then
+    if echo "$evidence" | grep -qE '(exit [0-9]+|[0-9]+/[0-9]+|[0-9]+ (passed|matches|files|errors|warnings|changes)|status [0-9]+|coverage: [0-9]+%)'; then
         echo -e "  ${RED}✗${NC} Bad evidence incorrectly passed: $evidence"
     else
         PASSED=$((PASSED + 1))

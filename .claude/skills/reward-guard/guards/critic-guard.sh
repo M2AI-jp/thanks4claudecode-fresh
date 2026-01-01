@@ -18,6 +18,20 @@ set -uo pipefail
 
 STATE_FILE="${STATE_FILE:-state.md}"
 
+# Evidence format rules
+GOOD_EVIDENCE_EXAMPLES=(
+    "PASS - specific details about what was verified"
+    "PASS - command output shows X"
+    "PASS - file contains Y"
+)
+
+BAD_EVIDENCE_EXAMPLES=(
+    "done"
+    "completed"
+    "PASS"
+    "PASS - "
+)
+
 # stdin から JSON を読み込む
 INPUT=$(cat)
 
@@ -33,12 +47,118 @@ EOF
     exit 2
 fi
 
-# tool_input から情報を取得
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
+# tool_input から情報を取得（互換性のため top-level もサポート）
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // ""')
 # Edit の場合は new_string、Write の場合は content
-NEW_STRING=$(echo "$INPUT" | jq -r '.tool_input.new_string // .tool_input.content // ""')
+NEW_STRING=$(echo "$INPUT" | jq -r '.tool_input.new_string // .tool_input.content // .new_string // .content // ""')
 
-# state.md 以外は対象外
+trim_value() {
+    local value="$1"
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+    printf '%s' "$value"
+}
+
+strip_quotes() {
+    local value="$1"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    printf '%s' "$value"
+}
+
+is_valid_evidence() {
+    local raw_value="$1"
+    local trimmed
+    trimmed=$(trim_value "$raw_value")
+
+    if [[ -z "$trimmed" ]]; then
+        return 1
+    fi
+
+    local lower_value
+    lower_value=$(echo "$trimmed" | tr '[:upper:]' '[:lower:]')
+    if [[ "$lower_value" == "done" || "$lower_value" == "completed" || "$trimmed" == "PASS" ]]; then
+        return 1
+    fi
+
+    if [[ "$trimmed" != PASS\ -\ * ]]; then
+        return 1
+    fi
+
+    local details
+    details=$(trim_value "${trimmed#PASS - }")
+    if [[ -z "$details" ]]; then
+        return 1
+    fi
+
+    local details_lower
+    details_lower=$(echo "$details" | tr '[:upper:]' '[:lower:]')
+    if [[ "$details_lower" == "done" || "$details_lower" == "completed" ]]; then
+        return 1
+    fi
+
+    return 0
+}
+
+check_playbook_validation_evidence() {
+    local content="$1"
+    local invalid_lines=""
+    local line value
+
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^[[:space:]]*-?[[:space:]]*(technical|consistency|completeness): ]]; then
+            value=$(echo "$line" | sed -E 's/^[[:space:]]*-?[[:space:]]*(technical|consistency|completeness):[[:space:]]*//')
+            value=$(strip_quotes "$value")
+            value=$(trim_value "$value")
+            if ! is_valid_evidence "$value"; then
+                invalid_lines+=$'\n'"  - $line"
+            fi
+        fi
+    done <<< "$content"
+
+    if [[ -n "$invalid_lines" ]]; then
+        cat >&2 << EOF
+========================================
+  ⛔ validations の証拠形式が不正です
+========================================
+
+  validations は "PASS - " に続く具体的な証拠が必須です。
+
+  良い例:
+    - ${GOOD_EVIDENCE_EXAMPLES[0]}
+    - ${GOOD_EVIDENCE_EXAMPLES[1]}
+    - ${GOOD_EVIDENCE_EXAMPLES[2]}
+
+  悪い例:
+    - ${BAD_EVIDENCE_EXAMPLES[0]}
+    - ${BAD_EVIDENCE_EXAMPLES[1]}
+    - ${BAD_EVIDENCE_EXAMPLES[2]}
+    - ${BAD_EVIDENCE_EXAMPLES[3]}
+
+  不正な validations:
+$invalid_lines
+
+========================================
+EOF
+        return 2
+    fi
+
+    return 0
+}
+
+# playbook 形式の validations 証拠チェック
+IS_PLAYBOOK=false
+if [[ "$FILE_PATH" == */plan/playbook-*.md ]] || [[ "$FILE_PATH" == plan/playbook-*.md ]]; then
+    IS_PLAYBOOK=true
+fi
+
+if [[ "$IS_PLAYBOOK" == "true" ]]; then
+    check_playbook_validation_evidence "$NEW_STRING" || exit 2
+fi
+
+# state.md 以外で playbook でもなければ対象外
 if [[ "$FILE_PATH" != *"state.md" ]]; then
     exit 0
 fi

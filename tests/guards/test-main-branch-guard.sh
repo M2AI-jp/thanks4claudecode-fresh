@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-GUARD_SCRIPT="$ROOT_DIR/.claude/skills/playbook-gate/guards/main-branch-guard.sh"
+GUARD_SCRIPT="$ROOT_DIR/.claude/skills/access-control/guards/main-branch.sh"
 
 TOTAL=0
 PASSED=0

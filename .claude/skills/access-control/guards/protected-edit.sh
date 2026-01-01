@@ -54,23 +54,26 @@ fi
 
 # tool_input.file_path を取得
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
+ALLOW=false
 
 if [ -z "$FILE_PATH" ]; then
-    exit 0
+    ALLOW=true # success return removed: consolidated allow exit at end
 fi
 
 # 絶対パスを相対パスに変換
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-RELATIVE_PATH="${FILE_PATH#$PROJECT_DIR/}"
+if [ "$ALLOW" = false ]; then
+    PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+    RELATIVE_PATH="${FILE_PATH#$PROJECT_DIR/}"
 
-# 保護ファイルリストが存在しない場合は通過
-if [ ! -f "$PROTECTED_LIST" ]; then
-    exit 0
+    # 保護ファイルリストが存在しない場合は通過
+    if [ ! -f "$PROTECTED_LIST" ]; then
+        ALLOW=true # success return removed: consolidated allow exit at end
+    fi
 fi
 
 # security.mode を state.md から取得（デフォルト: strict）
 SECURITY_MODE="strict"
-if [ -f "$STATE_FILE" ]; then
+if [ "$ALLOW" = false ] && [ -f "$STATE_FILE" ]; then
     # ## security セクションから mode: を探す（コードブロック内を考慮）
     MODE_LINE=$(grep -A 10 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | head -1 || echo "")
     if [ -n "$MODE_LINE" ]; then
@@ -83,18 +86,20 @@ fi
 # HARD_BLOCK を先にチェック（developer モードでも保護）
 # --------------------------------------------------
 IS_HARD_BLOCK=false
-while IFS= read -r line || [ -n "$line" ]; do
-    [[ "$line" =~ ^#.*$ ]] && continue
-    [[ -z "$line" ]] && continue
-    if [[ "$line" =~ ^HARD_BLOCK:(.+)$ ]]; then
-        PROTECTED_PATH="${BASH_REMATCH[1]}"
-        # shellcheck disable=SC2053  # Intentional glob matching for wildcard patterns
-        if [[ "$RELATIVE_PATH" == "$PROTECTED_PATH" ]] || [[ "$RELATIVE_PATH" == $PROTECTED_PATH ]]; then
-            IS_HARD_BLOCK=true
-            break
+if [ "$ALLOW" = false ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+        [[ "$line" =~ ^#.*$ ]] && continue
+        [[ -z "$line" ]] && continue
+        if [[ "$line" =~ ^HARD_BLOCK:(.+)$ ]]; then
+            PROTECTED_PATH="${BASH_REMATCH[1]}"
+            # shellcheck disable=SC2053  # Intentional glob matching for wildcard patterns
+            if [[ "$RELATIVE_PATH" == "$PROTECTED_PATH" ]] || [[ "$RELATIVE_PATH" == $PROTECTED_PATH ]]; then
+                IS_HARD_BLOCK=true
+                break
+            fi
         fi
-    fi
-done < "$PROTECTED_LIST"
+    done < "$PROTECTED_LIST"
+fi
 
 # HARD_BLOCK の処理（M079: admin でも回避不可）
 if [ "$IS_HARD_BLOCK" = true ]; then
@@ -121,7 +126,7 @@ if [ "$IS_HARD_BLOCK" = true ]; then
 fi
 
 # developer モード: HARD_BLOCK 以外は無効化（非推奨）
-if [ "$SECURITY_MODE" = "developer" ]; then
+if [ "$ALLOW" = false ] && [ "$SECURITY_MODE" = "developer" ]; then
     echo ""
     echo "========================================"
     echo -e "${YELLOW}[DEVELOPER]${NC} 保護緩和モード（非推奨）"
@@ -135,10 +140,11 @@ if [ "$SECURITY_MODE" = "developer" ]; then
     echo ""
     echo "========================================"
     echo ""
-    exit 0
+    ALLOW=true # success return removed: consolidated allow exit at end
 fi
 
 # 保護ファイルリストをチェック
+if [ "$ALLOW" = false ]; then
 while IFS= read -r line || [ -n "$line" ]; do
     # コメント行と空行をスキップ
     [[ "$line" =~ ^#.*$ ]] && continue
@@ -188,7 +194,8 @@ while IFS= read -r line || [ -n "$line" ]; do
         elif [ "$LEVEL" = "BLOCK" ]; then
             # admin モード: 全て通過
             if [ "$SECURITY_MODE" = "admin" ]; then
-                exit 0
+                ALLOW=true # success return removed: consolidated allow exit at end
+                break
             elif [ "$SECURITY_MODE" = "trusted" ]; then
                 # trusted モード: WARN として通過
                 echo ""
@@ -204,7 +211,8 @@ while IFS= read -r line || [ -n "$line" ]; do
                 echo ""
                 echo "========================================"
                 echo ""
-                exit 0
+                ALLOW=true # success return removed: consolidated allow exit at end
+                break
             else
                 # strict モード: ブロック
                 echo "" >&2
@@ -239,10 +247,12 @@ while IFS= read -r line || [ -n "$line" ]; do
             echo ""
             echo "========================================"
             echo ""
-            exit 0
+            ALLOW=true # success return removed: consolidated allow exit at end
+            break
         fi
     fi
 done < "$PROTECTED_LIST"
+fi
 
 # 保護対象でない場合は通過
 exit 0
