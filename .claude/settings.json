@@ -79,6 +79,18 @@
           }
         ]
       }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/skills/session-manager/handlers/compact.sh",
+            "timeout": 5000
+          }
+        ]
+      }
     ]
   }
 }

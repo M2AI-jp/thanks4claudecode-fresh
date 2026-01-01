@@ -21,9 +21,16 @@ STATE_FILE="${STATE_FILE:-state.md}"
 # stdin から JSON を読み込む
 INPUT=$(cat)
 
-# jq がない場合はスキップ
+# jq がない場合はブロック（Fail-closed）
 if ! command -v jq &> /dev/null; then
-    exit 0
+    cat >&2 << 'EOF'
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⛔ jq 未インストール - セキュリティチェック不可
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+jq はセキュリティガードに必須です。
+Install: brew install jq
+EOF
+    exit 2
 fi
 
 # tool_input から情報を取得

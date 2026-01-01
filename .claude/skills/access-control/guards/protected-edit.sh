@@ -40,10 +40,16 @@ STATE_FILE="state.md"
 # stdin から JSON を読み込む
 INPUT=$(cat)
 
-# jq がない場合は警告して通過（jq 必須）
+# jq がない場合はブロック（Fail-closed）
 if ! command -v jq &> /dev/null; then
-    echo -e "${YELLOW}[WARN]${NC} jq not found, skipping protection check" >&2
-    exit 0
+    cat >&2 << 'EOF'
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⛔ jq 未インストール - セキュリティチェック不可
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+jq はセキュリティガードに必須です。
+Install: brew install jq
+EOF
+    exit 2
 fi
 
 # tool_input.file_path を取得
