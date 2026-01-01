@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-typescript-calculator.md
+last_archived: plan/archive/playbook-fix-coderabbit-auto-delegate.md
 review_pending: false
 ```
 
@@ -20,17 +20,19 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: typescript-calculator
+milestone: null
 phase: p_final
 done_criteria:
-  - .tmp/calculator/package.json が存在する
-  - .tmp/calculator/src/calculator.ts に add, subtract, multiply, divide 関数が存在する
-  - npm test が exit 0 で終了する（13 tests passed 確認済み）
-  - divide(1, 0) がエラーを throw するテストが PASS する
-status: ALL PASS - 全 done_criteria 検証完了
+  - executor-guard.sh の coderabbit case が hookSpecificOutput JSON 形式で出力する
+  - quality-assurance SKILL.md に coderabbit-delegate SubAgent が記載されている
+  - state.md の note が最新情報に更新されている
+status: in_progress
 note: |
-  executor 役割ベース指定の検証タスク完了。
-  発見: coderabbit-delegate SubAgent が未実装（codex は自動化済み）
+  coderabbit 自動委譲機能の修正完了。p_final 検証中。
+  - p1 完了: executor-guard.sh に hookSpecificOutput JSON 追加
+  - p2 完了: SKILL.md に coderabbit-delegate SubAgent 追加
+  - p3 完了: state.md 更新
+  playbook: plan/playbook-fix-coderabbit-auto-delegate.md
 ```
 
 ---
@@ -38,7 +40,7 @@ note: |
 ## session
 
 ```yaml
-last_start: 2026-01-01 20:50:43
+last_start: 2026-01-01 22:47:24
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

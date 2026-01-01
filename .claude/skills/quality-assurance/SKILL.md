@@ -27,7 +27,8 @@ quality-assurance/
 │   └── health.sh             ← システムヘルスチェック
 └── agents/
     ├── reviewer.md           ← reviewer SubAgent（コードレビュー）
-    └── health-checker.md     ← health-checker SubAgent（システム監視）
+    ├── health-checker.md     ← health-checker SubAgent（システム監視）
+    └── coderabbit-delegate.md ← coderabbit-delegate SubAgent（外部レビュー）
 ```
 
 ---
@@ -74,6 +75,22 @@ output:
   - status: healthy/warning/critical
   - issues: 検出された問題
   - recommendations: 推奨アクション
+```
+
+### coderabbit-delegate SubAgent
+
+```yaml
+role: CodeRabbit CLI によるコードレビュー
+location: .claude/skills/quality-assurance/agents/coderabbit-delegate.md
+invocation: Task(subagent_type='coderabbit-delegate', prompt='src/api/ の変更をレビュー')
+output:
+  - summary: レビュー概要（5行以内）
+  - findings: 指摘事項（severity, file, line, issue, suggestion）
+  - recommendations: 推奨アクション
+  - status: approved/needs_changes/rejected
+note: |
+  executor-guard.sh が executor: coderabbit を検出すると自動委譲される。
+  toolstack C でのみ使用可能。
 ```
 
 ---
