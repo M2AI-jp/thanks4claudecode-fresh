@@ -42,6 +42,9 @@ out/
 tmp/
 tmp/*
 !tmp/README.md
+!tmp/process.py
+!tmp/run.sh
+!tmp/transform.ts
 
 # Coverage
 coverage/

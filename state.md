@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-tmp-demo-gitignore.md
+branch: feat/multi-language-orchestration-demo
 last_archived: plan/archive/playbook-fix-empty-input-test.md
 review_pending: false
 ```
@@ -20,8 +20,8 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: fix-completeness-100-issues
-phase: completed
+milestone: null
+phase: null
 done_criteria:
   - playbook の全 phase/subtask が done になっている
   - qa.sh の skip を FAIL 扱いに変更し、証跡ログ保存
