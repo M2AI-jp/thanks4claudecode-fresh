@@ -48,3 +48,26 @@ setup() {
     result=$(bash "$RUN_SH" '{"input":"hello"}' 2>/dev/null)
     echo "$result" | jq -e '.python_output.added_fields.uppercase_input == "HELLO"'
 }
+
+# エラーケース
+
+@test "run.sh with empty input fails gracefully" {
+    # 空入力時は Python でエラー終了
+    run bash "$RUN_SH" '' 2>/dev/null
+    # 終了コードが非ゼロであることを確認
+    [ "$status" -ne 0 ]
+}
+
+@test "run.sh with invalid JSON fails gracefully" {
+    # 不正な JSON は Python でエラー
+    run bash "$RUN_SH" 'not-json' 2>/dev/null
+    # 終了コードが非ゼロであることを確認
+    [ "$status" -ne 0 ]
+}
+
+@test "run.sh with missing input field fails gracefully" {
+    # input フィールドがない場合は TypeScript でエラー
+    run bash "$RUN_SH" '{"other":"field"}' 2>/dev/null
+    # 終了コードが非ゼロであることを確認
+    [ "$status" -ne 0 ]
+}

@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-orchestration-completeness-100.md
+last_archived: plan/archive/playbook-fix-empty-input-test.md
 review_pending: false
 ```
 
@@ -21,7 +21,7 @@ review_pending: false
 
 ```yaml
 milestone: fix-completeness-100-issues
-phase: p1
+phase: completed
 done_criteria:
   - playbook の全 phase/subtask が done になっている
   - qa.sh の skip を FAIL 扱いに変更し、証跡ログ保存
@@ -29,9 +29,10 @@ done_criteria:
   - bats にエラーケース追加
   - ts-node が devDependencies に追加され、README に前提条件追記
   - timestamp 整合性修正
-status: in_progress
+status: completed
 note: |
-  orchestration-completeness-100 の残課題6件を修正
+  orchestration-completeness-100 の残課題6件を修正完了
+  commit: 9ff7d2e
   prior_work:
     - playbook: plan/archive/playbook-orchestration-completeness-100.md
     - codex_agentId: a06e567 (transform.ts)

@@ -11,13 +11,22 @@ agentId: a06e567
 delegated_via: Task(subagent_type='codex-delegate')
 playbook: plan/archive/playbook-orchestration-practice.md
 phase: p2.1
-timestamp: 2026-01-01
+timestamp: 2026-01-01T14:40:13Z
+session: 1bff6309-2fff-4eef-8463-077a17addbde
 ```
+
+### subagent.log 引用
+
+```
+[2026-01-01T14:40:13Z] SubAgent stopped: a06e567 (session: 1bff6309-2fff-4eef-8463-077a17addbde)
+```
+
+Source: `.claude/logs/subagent.log:417`
 
 ## Generated File
 
 - **File**: `tmp/transform.ts`
-- **Lines**: 102 lines
+- **Lines**: 101 lines
 - **Features**:
   - `PythonInput` interface (Python 出力の型定義)
   - `TypeScriptOutput` interface (変換結果の型定義)
