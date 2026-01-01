@@ -459,3 +459,121 @@ Skills FAIL:
    - 計画との整合性
    - 報酬詐欺の検出
    - 証拠の品質
+
+---
+
+## validation_type 対応（M089）
+
+> **validations の validation_type に応じて判定方法を切り替える**
+
+### validation_type 別判定
+
+```yaml
+判定ロジック:
+  automated:
+    入力: command, expected
+    処理:
+      1. Bash(command) を実行
+      2. 出力を expected と比較
+      3. 一致 → PASS、不一致 → FAIL
+    出力:
+      status: PASS | FAIL
+      evidence: "{コマンド出力}"
+      timestamp: "{実行日時}"
+
+  manual:
+    入力: user_prompt
+    処理:
+      1. AskUserQuestion 発行指示を出力
+      2. PENDING を返す
+      3. ユーザー回答後に再呼び出し
+    出力:
+      status: PENDING | PASS | FAIL
+      evidence: "{ユーザー回答}"
+      pending_action:
+        type: user_confirmation
+        prompt: "{user_prompt}"
+
+  hybrid:
+    入力: command, expected, user_prompt
+    処理:
+      1. automated 部分を先に実行
+      2. automated FAIL → 即 FAIL
+      3. automated PASS → manual 確認を要求
+    出力:
+      status: PASS | FAIL | PENDING
+      evidence:
+        automated: "{コマンド出力}"
+        manual: "{ユーザー回答 or 'pending'}"
+```
+
+### 証拠記録
+
+```yaml
+必須フィールド:
+  - validation_type: automated | manual | hybrid
+  - status: PASS | FAIL | PENDING
+  - evidence: "{検証結果}"
+  - timestamp: "{ISO 8601 形式}"
+
+automated の場合:
+  - command: "{実行したコマンド}"
+  - expected: "{期待値}"
+  - actual: "{実際の出力}"
+
+manual の場合:
+  - user_prompt: "{ユーザーへの質問}"
+  - user_response: "{ユーザーの回答}"
+
+記録形式:
+  subtask_result:
+    id: "p1.1"
+    status: PASS | FAIL | PENDING
+    validations:
+      technical:
+        validation_type: automated
+        command: "test -f README.md"
+        expected: "exit 0"
+        actual: "exit 0"
+        status: PASS
+        timestamp: "2026-01-01T12:00:00Z"
+      consistency:
+        validation_type: manual
+        user_prompt: "他のドキュメントと整合していますか？"
+        user_response: "はい"
+        status: PASS
+        timestamp: "2026-01-01T12:01:00Z"
+      completeness:
+        validation_type: hybrid
+        command: "grep -c '##' README.md"
+        expected: ">= 3"
+        actual: "5"
+        user_prompt: "必要なセクションが全て含まれていますか？"
+        user_response: "はい"
+        status: PASS
+        timestamp: "2026-01-01T12:02:00Z"
+```
+
+### subtask-guard 連携
+
+```yaml
+subtask-guard が確認する項目:
+  1. [x] への変更時:
+     - 全 validations に status が記録されているか
+     - PENDING が残っていないか
+     - evidence が空でないか
+
+  2. 証拠の妥当性:
+     - automated: command 出力が expected と整合するか
+     - manual: user_response が存在するか
+     - hybrid: 両方が揃っているか
+
+  3. timestamp の存在:
+     - 全項目に timestamp があるか
+     - WARN レベル（ブロックはしない）
+
+ブロック条件:
+  - status が FAIL または PENDING なのに [x] に変更しようとした
+  - evidence が空なのに PASS を主張した
+  - validation_type が未指定
+```

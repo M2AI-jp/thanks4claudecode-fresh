@@ -432,3 +432,89 @@ translation:
 | .claude/skills/prompt-analyzer/agents/prompt-analyzer.md | 前段の分析エージェント |
 | .claude/skills/golden-path/agents/pm.md | pm SubAgent（呼び出し元） |
 | plan/template/playbook-format.md | playbook テンプレート |
+
+---
+
+## テスト・検証系
+
+> **AI 駆動開発の失敗の根本原因を解消する変換ルール**
+
+```yaml
+"テスト":
+  default: "unit/integration/e2e のうち適切なレベルで自動テストを実行"
+  context:
+    unit: "単体テスト - 関数/クラス単位でモックを使用"
+    integration: "結合テスト - モジュール間の連携確認"
+    e2e: "E2E テスト - ユーザーシナリオ全体の動作確認"
+  coverage_target: "正常系100% + 異常系主要パス + 境界値"
+  anti_patterns:
+    - "空のテストファイルは「テスト通過」とみなさない"
+    - "console.log だけのテストは不可"
+    - "it.skip / describe.skip は「テスト通過」とみなさない"
+  rationale: |
+    「テストが通る」の意味を明確化。空のテストは不可。
+    テストの網羅性（正常系/異常系/境界値）を必須とする。
+
+"検証":
+  default: "automated（自動テスト）+ manual（目視確認）の組み合わせ"
+  types:
+    automated: "コマンド実行で自動判定（npm test, curl, grep 等）"
+    static_analysis: "ESLint, TypeScript 型チェック"
+    peer_review: "他者によるコードレビュー"
+    manual: "人間による動作確認（executor: user 必須）"
+  validator: "self（実装者）/ peer（他者）/ user（ユーザー）"
+  evidence_required:
+    - "検証コマンド"
+    - "実行結果"
+    - "タイムスタンプ"
+  anti_patterns:
+    - "「検証した」という自己申告のみは不可"
+    - "証拠なしの PASS 判定は不可"
+    - "「動いていると思う」は検証ではない"
+  rationale: |
+    「検証済み」の意味を明確化。証拠なしの検証は不可。
+    自動検証と手動検証を明確に区別する。
+
+"テストが通る":
+  default: "全テストケースが exit 0 で終了し、アサーションが全て PASS"
+  preconditions:
+    - "テストケースが 1 つ以上存在する"
+    - "テストケースに有効なアサーションがある"
+    - "skip されているテストがない（またはその理由がドキュメント化されている）"
+  evidence:
+    - "テストコマンド（npm test, pytest 等）"
+    - "実行結果（PASS 数、FAIL 数、SKIP 数）"
+    - "カバレッジレポート（オプション）"
+  rationale: "空のテストや skip されたテストでの「通過」を防止"
+
+"検証済み":
+  default: "検証タイプ + 検証者 + 検証証拠が記録されている状態"
+  required_fields:
+    - "validation_type: automated | manual | hybrid"
+    - "validator: self | peer | user"
+    - "evidence: 実行コマンドと結果"
+    - "timestamp: 検証日時"
+  rationale: "曖昧な「検証済み」を排除し、再検証可能な状態を保証"
+```
+
+### テスト・検証の変換例
+
+```yaml
+入力: "テストを書いて"
+変換後:
+  - "単体テスト: 関数/クラス単位で、モックを使用してテスト"
+  - "カバレッジ: 正常系100% + 異常系主要パス + 境界値"
+  - "禁止: 空のテスト、console.log のみのテスト、skip されたテスト"
+
+入力: "動作確認して"
+変換後:
+  - "検証タイプ: automated（コマンド実行）または manual（目視確認）を選択"
+  - "証拠: 実行コマンド + 結果 + タイムスタンプを記録"
+  - "executor: manual の場合は user を指定"
+
+入力: "テストが通ることを確認"
+変換後:
+  - "確認項目: テストケースが 1 つ以上存在、有効なアサーションがある、skip がない"
+  - "コマンド: npm test を実行し exit 0 を確認"
+  - "証拠: PASS 数、FAIL 数、SKIP 数を記録"
+```

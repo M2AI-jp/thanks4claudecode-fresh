@@ -827,3 +827,105 @@ pm の責務:
 - .claude/skills/prompt-analyzer/agents/prompt-analyzer.md - プロンプト分析 SubAgent（M086: 5W1H + リスク分析）
 - .claude/skills/term-translator/agents/term-translator.md - 用語変換 SubAgent（M086: 曖昧表現 → エンジニア用語）
 - .claude/skills/executor-resolver/agents/executor-resolver.md - executor 判定 SubAgent（M086: LLM ベース判定）
+
+---
+
+## SubAgent 間データフロー定義
+
+> **各 SubAgent の出力が次の SubAgent の入力として使用される明示的なフロー**
+
+### データフロー図
+
+```
+ユーザープロンプト
+       ↓
+┌──────────────────────────────────────────────────────┐
+│  Step 1: prompt-analyzer                              │
+│  入力: ユーザープロンプト（raw text）                 │
+│  出力: analysis（5w1h, risks, ambiguity, summary）    │
+└──────────────────────────────────────────────────────┘
+       ↓ analysis.ambiguity
+┌──────────────────────────────────────────────────────┐
+│  Step 2: term-translator（曖昧さがある場合）         │
+│  入力: analysis.ambiguity                             │
+│  出力: translation（original_terms, technical_reqs）  │
+└──────────────────────────────────────────────────────┘
+       ↓ analysis + translation
+┌──────────────────────────────────────────────────────┐
+│  Step 3: understanding-check                          │
+│  入力:                                                │
+│    - analysis.5w1h（prompt-analyzer から）           │
+│    - translation.original_terms（term-translator から）│
+│    - translation.technical_requirements               │
+│  出力: understanding_check（summary, questions）      │
+│  ★ ユーザーに技術用語で確認 ★                       │
+└──────────────────────────────────────────────────────┘
+       ↓ ユーザー承認
+┌──────────────────────────────────────────────────────┐
+│  Step 4: playbook 作成                                │
+│  入力:                                                │
+│    - analysis（永続化用）                            │
+│    - translation（永続化用）                         │
+│    - understanding_check.approved_answers             │
+│  出力: playbook（context セクションに全データ保存）   │
+└──────────────────────────────────────────────────────┘
+```
+
+### 呼び出し例（pm 内部実装）
+
+```yaml
+# Step 1: prompt-analyzer 呼び出し
+analysis = Task(
+  subagent_type='prompt-analyzer',
+  prompt='{ユーザー依頼}'
+)
+
+# Step 2: term-translator 呼び出し（曖昧さがある場合）
+if analysis.ambiguity is not empty:
+  translation = Task(
+    subagent_type='term-translator',
+    prompt='{analysis.ambiguity}'
+  )
+else:
+  translation = null
+
+# Step 3: understanding-check 実行
+# ★ translation を含めて understanding-check に渡す ★
+understanding_check_input:
+  5w1h: analysis.5w1h
+  risks: analysis.risks
+  translated_requirements: translation.original_terms
+  technical_requirements: translation.technical_requirements
+
+# ユーザーに確認（技術用語で）
+# → AskUserQuestion で選択肢を提示
+
+# Step 4: playbook 作成
+# ★ context セクションに全データを永続化 ★
+playbook.context:
+  5w1h: analysis.5w1h
+  analysis_result:
+    source: prompt-analyzer
+    data: analysis
+  translated_requirements:
+    source: term-translator
+    data: translation
+  user_approved_understanding:
+    source: understanding-check
+    approved_at: '{timestamp}'
+    summary: '{ユーザーが承認した内容}'
+```
+
+### データフロー断絶防止チェック
+
+```yaml
+必須確認:
+  - prompt-analyzer の出力が term-translator の入力に渡されているか
+  - term-translator の出力が understanding-check の入力に渡されているか
+  - understanding-check の結果が playbook.context に保存されているか
+
+禁止パターン:
+  - SubAgent を呼び出したが出力を無視する
+  - 前段の分析結果なしに playbook を作成する
+  - ユーザー確認時に技術用語を使わない（曖昧な表現のまま確認）
+```

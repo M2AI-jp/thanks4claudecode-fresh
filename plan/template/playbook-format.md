@@ -1186,3 +1186,283 @@ status 更新:
 | 2025-12-01 | V3: タイプ別分類を削除。純粋なフォーマット定義に。 |
 | 2025-12-01 | V2: タイプ別最小構造に再設計。 |
 | 2025-12-01 | V1: 初版。 |
+
+---
+
+## context セクション（M089: SubAgent データ永続化）
+
+> **compact 後もユーザー意図を復元可能にするための永続化フィールド**
+
+### context セクション定義
+
+```yaml
+## context
+
+```yaml
+5w1h:
+  who: "{誰が / 誰に影響}"
+  what: "{何を / 具体的なタスク}"
+  when: "{いつまでに / タイミング}"
+  where: "{どこに / 実装場所・影響範囲}"
+  why: "{なぜ / 目的・課題}"
+  how: "{どのように / 技術・手法}"
+
+analysis_result:
+  source: prompt-analyzer
+  timestamp: "{分析日時}"
+  data:
+    5w1h: "{prompt-analyzer の 5W1H 分析結果}"
+    risks:
+      technical: ["{技術リスク}"]
+      scope: ["{スコープリスク}"]
+      dependency: ["{依存リスク}"]
+    ambiguity: ["{検出された曖昧表現}"]
+    summary:
+      confidence: high|medium|low
+      ready_for_playbook: true|false
+      blocking_issues: ["{ブロッキング問題}"]
+
+translated_requirements:
+  source: term-translator
+  timestamp: "{変換日時}"
+  data:
+    original_terms:
+      - original: "{元の表現}"
+        translated: "{変換後の技術用語}"
+        rationale: "{変換理由}"
+        alternatives: ["{代替候補}"]
+    technical_requirements:
+      - requirement: "{技術要件}"
+        derived_from: "{元の表現}"
+        implementation_hint: "{実装ヒント}"
+    codebase_context:
+      relevant_files: ["{関連ファイル}"]
+      existing_patterns: ["{既存パターン}"]
+      conventions: ["{コーディング規約}"]
+
+user_approved_understanding:
+  source: understanding-check
+  approved_at: "{ユーザー承認日時}"
+  summary: "{ユーザーが承認した理解の要約}"
+  approved_items:
+    - question_id: "{質問ID}"
+      question: "{質問内容}"
+      answer: "{ユーザーの回答}"
+  technical_requirements_confirmed:
+    - original: "{元の表現}"
+      confirmed_translation: "{ユーザーが承認した技術要件}"
+```
+```
+
+### pm の書き込み責務
+
+```yaml
+playbook 作成時の必須アクション:
+  1. prompt-analyzer 呼び出し後:
+     - analysis_result.source = "prompt-analyzer"
+     - analysis_result.timestamp = 現在日時
+     - analysis_result.data = prompt-analyzer の出力全体
+
+  2. term-translator 呼び出し後（曖昧さがある場合）:
+     - translated_requirements.source = "term-translator"
+     - translated_requirements.timestamp = 現在日時
+     - translated_requirements.data = term-translator の出力全体
+
+  3. understanding-check 完了後:
+     - user_approved_understanding.source = "understanding-check"
+     - user_approved_understanding.approved_at = ユーザー承認日時
+     - user_approved_understanding.summary = 承認された理解の要約
+     - user_approved_understanding.approved_items = 質問と回答のリスト
+
+禁止パターン:
+  - context セクションを空のまま playbook を作成
+  - SubAgent を呼び出したが結果を context に保存しない
+  - ユーザー承認なしに user_approved_understanding を記載
+```
+
+### compact 後の復元
+
+```yaml
+セッション開始時:
+  1. state.md から playbook.active を取得
+  2. playbook の context セクションを読み込む
+  3. 以下の情報を復元:
+     - ユーザーの元の意図（analysis_result）
+     - 技術要件の変換結果（translated_requirements）
+     - ユーザーが承認した理解（user_approved_understanding）
+  4. 復元した情報を元に作業を継続
+
+復元時の優先順位:
+  1. user_approved_understanding（最優先: ユーザーが承認した内容）
+  2. translated_requirements（技術要件）
+  3. analysis_result（元の分析結果）
+```
+
+---
+
+## validations 実行フロー（M089: 自動化）
+
+> **subtask 完了判定を自動化し、報酬詐欺を防止する**
+
+### validation_type の定義
+
+```yaml
+validations:
+  technical:
+    validation_type: automated | manual | hybrid
+    command: "{実行コマンド（automated の場合）}"
+    expected: "{期待結果}"
+    evidence: "{実行結果}"
+    timestamp: "{検証日時}"
+
+  consistency:
+    validation_type: automated | manual | hybrid
+    command: "{実行コマンド（automated の場合）}"
+    expected: "{期待結果}"
+    evidence: "{実行結果}"
+    timestamp: "{検証日時}"
+
+  completeness:
+    validation_type: automated | manual | hybrid
+    command: "{実行コマンド（automated の場合）}"
+    expected: "{期待結果}"
+    evidence: "{実行結果}"
+    timestamp: "{検証日時}"
+```
+
+### validation_type 別の処理
+
+```yaml
+automated:
+  description: "コマンド実行で自動判定"
+  処理フロー:
+    1. command を実行
+    2. 出力と expected を比較
+    3. 一致 → PASS、不一致 → FAIL
+    4. evidence に実行結果を記録
+  critic の扱い:
+    - 自動で PASS/FAIL 判定
+    - 人間の介入不要
+  例:
+    command: "test -f README.md && echo PASS"
+    expected: "PASS"
+
+manual:
+  description: "人間の確認が必要"
+  処理フロー:
+    1. AskUserQuestion で確認を要求
+    2. ユーザーの回答を待機
+    3. 回答に基づき PASS/FAIL を記録
+  critic の扱い:
+    - DEFERRED を返す
+    - ユーザー確認後に最終判定
+  例:
+    command: null
+    expected: "ユーザーがブラウザで表示を確認"
+    user_prompt: "ブラウザで正常に表示されていますか？"
+
+hybrid:
+  description: "自動 + 人間確認"
+  処理フロー:
+    1. automated 部分を先に実行
+    2. automated PASS なら manual 部分の確認を要求
+    3. automated FAIL なら即 FAIL（manual 不要）
+  critic の扱い:
+    - automated PASS → PENDING（manual 待ち）
+    - automated FAIL → FAIL
+    - manual 完了 → 最終判定
+  例:
+    command: "curl -s -o /dev/null -w '%{http_code}' localhost:3000"
+    expected: "200"
+    user_prompt: "レイアウトが正しく表示されていますか？"
+```
+
+### 証拠記録フォーマット
+
+```yaml
+# subtask 完了時の必須記録
+- [x] **p1.1**: README.md が存在する
+  - executor: claudecode
+  - validations:
+    - technical:
+        validation_type: automated
+        command: "test -f README.md && echo PASS"
+        expected: "PASS"
+        evidence: "PASS"
+        timestamp: "2026-01-01T12:00:00Z"
+    - consistency:
+        validation_type: automated
+        command: "grep -c '## ' README.md"
+        expected: ">= 3"
+        evidence: "5"
+        timestamp: "2026-01-01T12:00:00Z"
+    - completeness:
+        validation_type: automated
+        command: "grep -E 'Installation|Usage|License' README.md | wc -l"
+        expected: "3"
+        evidence: "3"
+        timestamp: "2026-01-01T12:00:00Z"
+  - validated: 2026-01-01T12:00:00Z
+```
+
+### subtask-guard との連携
+
+```yaml
+subtask-guard の検証項目:
+  1. validation_type の存在確認:
+     - 全 validations に validation_type があるか
+     - 未指定の場合は警告
+
+  2. 証拠の存在確認:
+     - automated: command + expected + evidence が揃っているか
+     - manual: evidence（ユーザー回答）があるか
+     - hybrid: 両方が揃っているか
+
+  3. timestamp の確認:
+     - 全 validations に timestamp があるか
+     - 未指定の場合は警告（ブロックはしない）
+
+ブロック条件:
+  - validation_type が未指定で [x] に変更しようとした
+  - automated なのに command が未指定
+  - evidence が空なのに [x] に変更しようとした
+```
+
+### critic との連携
+
+```yaml
+critic の判定ルール:
+  automated のみ:
+    - 全 command を実行
+    - 全て期待結果と一致 → PASS
+    - 1つでも不一致 → FAIL + 詳細
+
+  manual 含む:
+    - automated を先に判定
+    - automated 全 PASS → PENDING（manual 待ち）
+    - AskUserQuestion 発行指示を返す
+    - ユーザー回答後に再判定
+
+  hybrid:
+    - automated 部分を先に判定
+    - automated FAIL → 即 FAIL（manual 不要）
+    - automated PASS → manual 確認を要求
+
+出力フォーマット:
+  critique:
+    subtask_id: "p1.1"
+    status: PASS | FAIL | PENDING
+    validations:
+      technical:
+        status: PASS | FAIL
+        evidence: "{実行結果}"
+      consistency:
+        status: PASS | FAIL
+        evidence: "{実行結果}"
+      completeness:
+        status: PASS | FAIL | PENDING
+        evidence: "{実行結果 or 'user confirmation required'}"
+    pending_actions:
+      - type: user_confirmation
+        prompt: "{ユーザーへの質問}"
+```
