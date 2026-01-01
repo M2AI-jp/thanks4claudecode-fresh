@@ -101,6 +101,17 @@ Single Source of Truth:
 }
 ```
 
+### 現在のタイムアウト設定（.claude/settings.json）
+
+| Hook イベント | タイムアウト | 備考 |
+|--------------|-------------|------|
+| PreToolUse | 15,000ms | V17 で 10s → 15s に調整 |
+| PostToolUse | 10,000ms | |
+| SessionStart | 5,000ms | |
+| UserPromptSubmit | 5,000ms | V17 で 3s → 5s に調整 |
+| SubagentStop | 5,000ms | |
+| PreCompact | 5,000ms | |
+
 ---
 
 ## 1. SessionStart（セッション開始）
@@ -241,11 +252,29 @@ Claude がツール名と入力パラメータを決定した後、実際の実�
 ```
 .claude/hooks/pre-tool.sh
     │
+    ├─→ ログ初期化（.claude/logs/ 作成）
+    │
     ├─→ .claude/skills/session-manager/handlers/init-guard.sh
     │       └─→ 必須ファイル Read 強制
     │
-    └─→ .claude/skills/access-control/guards/main-branch.sh
-            └─→ main ブランチでの作業ブロック
+    ├─→ .claude/skills/access-control/guards/main-branch.sh
+    │       └─→ main ブランチでの作業ブロック
+    │
+    └─→ 終了時: 実行時間ログ出力
+            └─→ .claude/logs/hook-timing.log
+```
+
+### ログ出力（V17 新規）
+
+| ログファイル | 内容 | 出力タイミング |
+|-------------|------|---------------|
+| `.claude/logs/hook-timing.log` | Hook 実行時間 | 毎回の pre-tool.sh 終了時 |
+| `.claude/logs/block-reasons.log` | BLOCK 理由 | ガードが exit 2 を返した時 |
+
+```
+ログ形式:
+[2026-01-01 12:34:56] pre-tool.sh tool=Edit elapsed=123ms
+[2026-01-01 12:34:56] BLOCK by playbook-gate/playbook-guard.sh (exit: 2) tool=Edit
 ```
 
 ### 状態遷移
@@ -707,8 +736,11 @@ Task(subagent_type='setup-guide')
 │   │   └─→ 参照: state.md, plan/playbook-*.md
 │   ├── depends-check.sh        # Phase 依存チェック
 │   │   └─→ 参照: plan/playbook-*.md（depends_on）
-│   └── executor-guard.sh       # executor 制御
-│       └─→ 参照: plan/playbook-*.md（executor）
+│   ├── executor-guard.sh       # executor 制御（V17 強化）
+│   │   ├─→ 参照: plan/playbook-*.md（executor）
+│   │   └─→ 参照: docs/executor-fallback-policy.md
+│   └── role-resolver.sh        # 役割解決（toolstack → roles）
+│       └─→ 参照: state.md（config.toolstack, config.roles）
 └── workflow/
     ├── archive-playbook.sh     # playbook アーカイブ
     │   └─→ 書き込み: plan/archive/, state.md
@@ -784,7 +816,7 @@ Task(subagent_type='setup-guide')
 
 | ファイル | 用途 | 参照元 |
 |----------|------|--------|
-| playbook-format.md | playbook テンプレート（V16） | pm, subtask-guard |
+| playbook-format.md | playbook テンプレート（V17） | pm, subtask-guard |
 | planning-rules.md | 計画ルール | pm |
 | playbook-examples.md | 具体例 | pm |
 | state-initial.md | 初期 state テンプレート | setup-guide |
@@ -806,7 +838,49 @@ Task(subagent_type='setup-guide')
 | ai-orchestration.md | 役割定義（executor） | pm |
 | git-operations.md | git 操作ルール | pm |
 | folder-management.md | フォルダ管理 | cleanup |
-| current-definitions.md | 用語定義 | 全般 |
+| executor-fallback-policy.md | executor フォールバック手順（V17 新規） | executor-guard, playbook |
+
+---
+
+## 9.5. Commands 一覧（.claude/commands/）
+
+> **スラッシュコマンドで呼び出し可能なユーザー向け機能**
+
+| コマンド | ファイル | 用途 |
+|----------|----------|------|
+| `/playbook-init` | playbook-init.md | playbook 作成（pm SubAgent に委譲） |
+| `/crit` | crit.md | done_criteria の CRITIQUE（critic SubAgent に委譲） |
+| `/review` | review.md | playbook + コードレビュー自動ループ（V17 新規） |
+| `/init` | init.md | セッション完全初期化（V17 新規） |
+| `/lint` | lint.md | 静的解析実行 |
+| `/test` | test.md | テスト実行 |
+| `/rollback` | rollback.md | Git ロールバック |
+| `/state-rollback` | state-rollback.md | state.md ロールバック |
+
+---
+
+## 9.6. Rules 一覧（.claude/rules/）
+
+> **ナレッジ一元化ディレクトリ（V17 新規）**
+>
+> CLAUDE.md から分離した詳細ルール。/init で読み込まれる。
+
+| ファイル | 内容 |
+|----------|------|
+| README.md | ディレクトリ説明、読み込み順序 |
+| coding.md | コーディング規約、命名規則、TypeScript 設定 |
+| testing.md | テスト規約、TDD フロー、カバレッジ基準 |
+| operations.md | 運用規約、Git ワークフロー、デプロイ手順 |
+
+### 読み込み順序
+
+```yaml
+order:
+  1: CLAUDE.md（憲法）
+  2: state.md（現在状態）
+  3: .claude/rules/*.md（詳細ルール）
+  4: playbook（タスク定義）
+```
 
 ---
 
@@ -972,6 +1046,7 @@ evidence: PASS 判定には実行可能な証拠が必要
 
 | 日時 | 内容 |
 |------|------|
+| 2026-01-01 | V17: Hook ログ機能追加、Commands/Rules セクション追加、executor-fallback-policy.md 追加 |
 | 2025-12-25 | post-loop 自動発火: archive-playbook.sh 自動実行、pending-guard.sh 追加 |
 | 2025-12-25 | 公式 Hook リファレンス追加（イベント一覧、入力 JSON、exit code） |
 | 2025-12-25 | 全面改訂: ユーザー体験ベースの状態遷移マップに変更 |
