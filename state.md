@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-orchestration-practice.md
+branch: feat/multi-language-orchestration-demo
 last_archived: plan/archive/playbook-verify-subagent-data-flow.md
 review_pending: false
 ```
@@ -23,12 +23,13 @@ review_pending: false
 milestone: null
 phase: p1
 done_criteria:
-  - ARCHITECTURE.md に coderabbit-delegate SubAgent が記載されている
-  - E2E テスト A/B/C/D が全て成功する
+  - tmp/run.sh を実行すると Python -> TypeScript の順で処理が行われ最終結果が出力される
+  - codex executor で TypeScript 実装が行われた証跡がある
+  - CodeRabbit によるコードレビューが完了している
 status: in_progress
 note: |
-  ARCHITECTURE.md 最新化 + coderabbit 統合テスト
-  playbook: plan/playbook-verify-subagent-data-flow.md
+  複数言語オーケストレーション練習
+  playbook: plan/playbook-orchestration-practice.md
 ```
 
 ---
@@ -36,7 +37,7 @@ note: |
 ## session
 
 ```yaml
-last_start: 2026-01-01 22:47:24
+last_start: 2026-01-01 23:28:43
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
