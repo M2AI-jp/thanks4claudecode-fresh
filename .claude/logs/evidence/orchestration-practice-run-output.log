@@ -1,0 +1,30 @@
+=== Multi-Language Pipeline ===
+Input: {"input":"hello"}
+
+[Step 1] Running Python processor...
+[Step 1] Python completed.
+
+[Step 2] Running TypeScript transformer...
+[Step 2] TypeScript completed.
+
+=== Final Result ===
+{
+  "python_output": {
+    "original": {
+      "input": "hello"
+    },
+    "processed_by": "python",
+    "timestamp": "2026-01-02T00:40:44.803820",
+    "added_fields": {
+      "uppercase_input": "HELLO",
+      "step": 1
+    }
+  },
+  "processed_by": "typescript",
+  "timestamp": "2026-01-01T15:40:46.101Z",
+  "added_fields": {
+    "step": 2,
+    "reversed_input": "olleh",
+    "input_length": 5
+  }
+}

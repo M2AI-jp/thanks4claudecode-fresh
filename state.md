@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-fix-orchestration-evidence.md
+branch: feat/multi-language-orchestration-demo
 last_archived: plan/archive/playbook-orchestration-practice.md
 review_pending: false
 ```
@@ -23,13 +23,19 @@ review_pending: false
 milestone: null
 phase: p1
 done_criteria:
-  - tmp/run.sh を実行すると Python -> TypeScript の順で処理が行われ最終結果が出力される
-  - codex executor で TypeScript 実装が行われた証跡がある
-  - CodeRabbit によるコードレビューが完了している
+  - .claude/logs/critic-results.log に orchestration-practice の PASS 記録が存在する
+  - .claude/logs/evidence/orchestration-practice-run-output.log に run.sh の実行結果が保存されている
+  - state.md の goal.done_criteria が playbook の done_when を参照している
 status: in_progress
 note: |
-  複数言語オーケストレーション練習
-  playbook: plan/playbook-orchestration-practice.md
+  orchestration-practice 証跡修正タスク
+  前回 playbook: plan/archive/playbook-orchestration-practice.md
+  前回 critic_result: PASS (2026-01-02T00:00:00Z, agentId: a8720a3)
+  前回 evidence:
+    - coderabbit_log: ~/.coderabbit/logs/2026-01-01T14-47-52-887Z-coderabbit-cli-c4deb3b1-bf3c-4d47-a50d-8783f52d1188.log
+    - coderabbit_review: ~/.coderabbit/reviews/522bcf9e/10a17f98/reviews/1767279031937/
+    - codex_agent: a06e567 (subagent.log line 417)
+    - run_output: bash tmp/run.sh '{"input":"hello"}' → Python→TypeScript パイプライン成功
 ```
 
 ---
