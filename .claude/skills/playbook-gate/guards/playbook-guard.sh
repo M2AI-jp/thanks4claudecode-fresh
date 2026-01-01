@@ -63,6 +63,34 @@ fi
 # 注: plan/active/ は廃止済み（2025-12-25）、plan/ 直下のみ許可
 # --------------------------------------------------
 if [[ "$FILE_PATH" == *"plan/playbook-"*.md ]]; then
+    # M090: Orphan playbook 検出（根本治療）
+    # 新規 playbook 作成時に、plan/ に他の playbook が残っていれば警告
+    TARGET_PLAYBOOK=$(basename "$FILE_PATH")
+    OTHER_PLAYBOOKS=$(find plan -maxdepth 1 -name "playbook-*.md" ! -name "$TARGET_PLAYBOOK" 2>/dev/null | head -5)
+
+    if [[ -n "$OTHER_PLAYBOOKS" ]]; then
+        cat >&2 << EOF
+========================================
+  ⚠️ Orphan playbook 検出
+========================================
+
+  新規 playbook を作成しようとしていますが、
+  plan/ に他の playbook が残っています:
+
+$(echo "$OTHER_PLAYBOOKS" | sed 's/^/    /')
+
+  これらは以下のいずれかを実行してください:
+    1. abort-playbook で明示的に中断:
+       Skill(skill='abort-playbook', args='<path>')
+
+    2. または完了させてからアーカイブ:
+       全 Phase を done にして archive-playbook を発火
+
+  → 作成は許可しますが、orphan を放置しないでください。
+
+========================================
+EOF
+    fi
     exit 0
 fi
 
@@ -135,7 +163,7 @@ fi
 REVIEWED=$(grep -E "^\s*reviewed:" "$PLAYBOOK" 2>/dev/null | head -1 | sed 's/.*reviewed: *//' | sed 's/ *#.*//' | tr -d ' ')
 
 # context セクションの存在確認
-HAS_CONTEXT=$(grep -E "^context:" "$PLAYBOOK" 2>/dev/null | head -1 || echo "")
+HAS_CONTEXT=$(grep -E "^## context" "$PLAYBOOK" 2>/dev/null | head -1 || echo "")
 
 # reviewed: false または context セクションがない場合はブロック
 if [[ "$REVIEWED" == "false" ]] || [[ -z "$HAS_CONTEXT" ]]; then

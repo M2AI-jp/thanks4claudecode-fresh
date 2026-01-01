@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-facade-audit.md
-branch: feat/facade-audit
+active: plan/playbook-auto-retry.md
+branch: feat/auto-retry
 last_archived: plan/archive/playbook-architecture-visualizer.md
 review_pending: false
 ```
@@ -23,12 +23,13 @@ review_pending: false
 milestone: null
 phase: p1
 done_criteria:
-  - 全 20 ガードスクリプトが実際に機能することを E2E テストで確認
-  - test-runner が実行可能なテストスイートを持つ
-  - critic が「証拠なし PASS」を拒否できる
-  - 新規 playbook で実際のテスト駆動開発が機能する
-  - CodeRabbit レビューで「見かけ実装」ゼロ判定
-note: 「見かけだけの実装」を徹底検証し、実用に耐える品質に引き上げる
+  - critic-guard.sh が FAIL 時に .claude/session-state/last-fail-reason にエラー内容を保存する
+  - executor-guard.sh が保存されたエラーを読み込み、codex プロンプトに注入する仕組みが存在する
+  - iteration_count が .claude/session-state/iteration-count に記録される
+  - max_iterations 到達時に AskUserQuestion が呼ばれる仕組みが存在する
+  - playbook-format.md に max_iterations の自動リトライ動作が明記されている
+  - ARCHITECTURE.md に自動リトライフローが追記されている
+note: critic FAIL 時に自動リトライする機構を実装する（max_iterations まで）
 ```
 
 ---
@@ -36,7 +37,7 @@ note: 「見かけだけの実装」を徹底検証し、実用に耐える品�
 ## session
 
 ```yaml
-last_start: 2026-01-01 12:40:33
+last_start: 2026-01-01 18:09:39
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
