@@ -563,8 +563,35 @@ Task(subagent_type='codex-delegate')
     ├─→ MCP 呼び出し:
     │   └─→ mcp__codex__codex（Codex CLI）
     │
+    ├─→ 自動委譲トリガー:
+    │   └─→ executor-guard.sh が executor: codex/worker を検出
+    │       → hookSpecificOutput JSON を出力
+    │       → Claude が Task(subagent_type='codex-delegate') を呼び出し
+    │
     └─→ 出力:
         └─→ コード実装結果（要約）
+```
+
+### coderabbit-delegate SubAgent
+
+```
+Task(subagent_type='coderabbit-delegate')
+    │
+    ├─→ .claude/skills/quality-assurance/agents/coderabbit-delegate.md
+    │
+    ├─→ CLI 呼び出し:
+    │   └─→ coderabbit review --plain [options]
+    │
+    ├─→ 自動委譲トリガー:
+    │   └─→ executor-guard.sh が executor: coderabbit/reviewer を検出
+    │       → hookSpecificOutput JSON を出力
+    │       → Claude が Task(subagent_type='coderabbit-delegate') を呼び出し
+    │
+    └─→ 出力:
+        ├─→ summary: レビュー概要（5行以内）
+        ├─→ findings: 指摘事項（severity, file, line, issue, suggestion）
+        ├─→ recommendations: 推奨アクション
+        └─→ status: approved/needs_changes/rejected
 ```
 
 ### health-checker SubAgent
@@ -612,6 +639,7 @@ Task(subagent_type='setup-guide')
 | **health-checker** | Read, Grep, Glob, Bash | 読み取り専用の健全性チェック |
 | **setup-guide** | Read, Write, Edit, Bash, Grep, Glob | 初期設定に書き込み必要 |
 | **codex-delegate** | Bash, mcp__codex__codex, mcp__codex__codex-reply | Codex MCP 専用 |
+| **coderabbit-delegate** | Bash | CodeRabbit CLI 専用（レビューのみ） |
 
 ```yaml
 設計原則:
@@ -737,7 +765,9 @@ Task(subagent_type='setup-guide')
 ├── agents/
 │   ├── reviewer.md             # reviewer SubAgent
 │   │   └─→ 参照: .claude/frameworks/playbook-review-criteria.md
-│   └── health-checker.md       # health-checker SubAgent
+│   ├── health-checker.md       # health-checker SubAgent
+│   └── coderabbit-delegate.md  # coderabbit-delegate SubAgent（外部レビュー）
+│       └─→ CLI: coderabbit review --plain
 └── checkers/
     └── lint.sh                 # 静的解析
 ```
