@@ -105,7 +105,7 @@ AI駆動開発の失敗パターン:
           ↓
   term-translator → translated: "AES-256暗号化 + アクセス制御"
           ↓
-  understanding-check → ★ここで元の曖昧表現を使っている★
+  understanding-check → ★translated_requirements を受け取る欄がない★
           ↓
   ユーザーに提示: "セキュアに認証機能を実装しますか？"
                      ^^^^^^ 変換結果が反映されていない！
@@ -114,25 +114,30 @@ AI駆動開発の失敗パターン:
   - ユーザーは曖昧な表現で承認してしまう
   - 技術要件が確定しないまま playbook が作成される
   - 後工程で「思っていたのと違う」が発生
+
+補足:
+  - understanding-check のテンプレートに translated_requirements が存在しない
+  - pm から understanding-check への入力項目に term-translator 出力が定義されていない
 ```
 
 ### Issue 4: validations（3点検証）が機能していない
 
 ```yaml
-問題1: 観点と検証方法の混在
-  technical: "bash -n でシンタックスエラーがない" → 良い（実行可能）
-  consistency: "他の関数と処理方式が整合している" → どうやって確認？主観？
+問題1: 実行可能な検証形式が強制されていない
+  technical: "bash -n でシンタックスエラーがない" → 自動検証として有効
+  consistency: "他の関数と処理方式が整合している" → 主観、検証手段が曖昧
+  completeness: "必要な変更が全て完了している" → 証拠が不明確
+  備考: validation_types（automated/manual/hybrid）のルールはテンプレにあるが、subtask での明示は必須ではない
 
-問題2: subtask 完了判定のタイミングが不明
-  - 誰が validations を実行するか定義されていない
-  - critic SubAgent が実行？Claude が自己判定？
-  - 自己判定なら報酬詐欺の温床
+問題2: subtask 完了判定は記述ベースで通る
+  - subtask-guard は validations の存在を要求するが、実行/証拠提示は要求しない
+  - critic 実行は推奨であり、必須トリガーがない
 
-問題3: 検証結果のログがない
-  - PASS/FAIL の記録がない
-  - 証拠が残らない
+問題3: 検証ログが再検証可能な形で残らない
+  - "PASS - ..." の自由記述のみで、実行コマンドや出力が残らない
+  - validated タイムスタンプは推奨止まり
 
-現状: subtask を [x] にする → 誰が判定したか不明
+現状: subtask を [x] にする → validations の記述があれば通る（実行証拠は不要）
 ```
 
 ### Issue 5: reviewer の判定基準が曖昧
@@ -164,6 +169,7 @@ compact 後に失われるもの:
 
 結果:
   - compact 後に "ユーザーの意図" が失われる
+  - playbook-format.md に context セクションがなく、保存先がテンプレで規定されていない
   - playbook の context セクションにこれらが保存されていない
 ```
 
@@ -176,16 +182,16 @@ compact 後に失われるもの:
   「関数は定義したが、引数を渡していない」状態
 
 具体的問題:
-  1. 変数の受け渡しがない:
-     - SubAgent 間のデータフローが定義されていない
-     - prompt-analyzer の出力を term-translator が受け取る仕組みがない
+  1. データフローの分断が残っている:
+     - prompt-analyzer → term-translator は定義済みだが、term-translator 出力を understanding-check が受け取る仕様がない
+     - 上流の分析結果が playbook/context に永続化されない
 
   2. 状態の永続化がない:
      - 分析結果が playbook に保存されない
      - compact で消える情報がある
 
-  3. 検証が主観的:
-     - "正しく動作する" の定義がない
+  3. 検証が記述ベース:
+     - validations の存在は強制されるが、実行/証拠が必須ではない
      - PASS/FAIL の判定基準が曖昧
 
   4. テスト概念の欠如:
@@ -205,7 +211,7 @@ done_when:
   - understanding-check が term-translator の出力を参照して技術用語でユーザーに確認している
   - playbook の context セクションに analysis_result, translated_requirements, user_approved_understanding が永続化される仕組みがある
   - prompt-analyzer にテスト戦略（test_strategy）の分析項目が追加されている
-  - validations の実行フローが定義され、subtask 完了判定が自動化されている
+  - validations の実行/証拠記録フローが定義され、subtask 完了判定が自動化されている
   - reviewer の判定基準が具体化され、各 Q の PASS/FAIL がログに記録される
 ```
 
@@ -221,21 +227,21 @@ done_when:
 
 #### subtasks
 
-- [ ] **p1.1**: term-translator に「テスト」の変換ルールが追加されている
-  - executor: claudecode
+- [x] **p1.1**: term-translator に「テスト」の変換ルールが追加されている
+  - executor: codex
   - validations:
     - technical: "grep -A20 'テスト:' .claude/skills/term-translator/agents/term-translator.md で変換ルール確認"
     - consistency: "unit/integration/e2e の区別が明記されている"
     - completeness: "正常系/異常系/境界値、カバレッジ目標が含まれている"
 
-- [ ] **p1.2**: term-translator に「検証」の変換ルールが追加されている
-  - executor: claudecode
+- [x] **p1.2**: term-translator に「検証」の変換ルールが追加されている
+  - executor: codex
   - validations:
     - technical: "grep -A20 '検証:' .claude/skills/term-translator/agents/term-translator.md で変換ルール確認"
     - consistency: "自動テスト/静的解析/レビュー/手動の区別が明記されている"
     - completeness: "検証者（self/peer/user）と検証基準が含まれている"
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -248,21 +254,21 @@ done_when:
 
 #### subtasks
 
-- [ ] **p2.1**: understanding-check が term-translator の出力を必須参照するよう修正されている
-  - executor: claudecode
+- [x] **p2.1**: understanding-check が term-translator の出力を必須参照するよう修正されている
+  - executor: codex
   - validations:
     - technical: "grep 'translated_requirements' .claude/skills/understanding-check/SKILL.md で参照確認"
     - consistency: "pm.md のフローと整合している"
     - completeness: "出力テンプレートに技術要件が含まれている"
 
-- [ ] **p2.2**: pm.md のフローが understanding-check に変換結果を渡すよう修正されている
-  - executor: claudecode
+- [x] **p2.2**: pm.md のフローが understanding-check に変換結果を渡すよう修正されている
+  - executor: codex
   - validations:
     - technical: "grep -A10 'understanding-check' .claude/skills/golden-path/agents/pm.md でフロー確認"
     - consistency: "prompt-analyzer → term-translator → understanding-check の順序が明示"
     - completeness: "各 SubAgent の出力が次の SubAgent の入力として定義されている"
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -275,28 +281,28 @@ done_when:
 
 #### subtasks
 
-- [ ] **p3.1**: playbook-format.md の context セクションに analysis_result, translated_requirements, user_approved_understanding フィールドが追加されている
-  - executor: claudecode
+- [x] **p3.1**: playbook-format.md の context セクションに analysis_result, translated_requirements, user_approved_understanding フィールドが追加されている
+  - executor: codex
   - validations:
     - technical: "grep -E 'analysis_result|translated_requirements|user_approved_understanding' plan/template/playbook-format.md で存在確認"
     - consistency: "他の context フィールド（5w1h 等）と同じ形式"
     - completeness: "3つ全てのフィールドが定義されている"
 
-- [ ] **p3.2**: pm.md が playbook 作成時にこれらのフィールドを書き込むよう修正されている
-  - executor: claudecode
+- [x] **p3.2**: pm.md が playbook 作成時にこれらのフィールドを書き込むよう修正されている
+  - executor: codex
   - validations:
     - technical: "grep -A5 'context セクション' .claude/skills/golden-path/agents/pm.md で書き込み指示確認"
     - consistency: "playbook-format.md のテンプレートと整合"
     - completeness: "3つ全てのフィールドの書き込みが指示されている"
 
-- [ ] **p3.3**: context-management の must_keep にこれらのフィールドが追加されている
-  - executor: claudecode
+- [x] **p3.3**: context-management の must_keep にこれらのフィールドが追加されている
+  - executor: codex
   - validations:
     - technical: "grep -A10 'must_keep' .claude/skills/context-management/SKILL.md で保護対象確認"
     - consistency: "既存の must_keep 項目と同じ形式"
     - completeness: "analysis_result, translated_requirements, user_approved_understanding が含まれている"
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -309,42 +315,42 @@ done_when:
 
 #### subtasks
 
-- [ ] **p4.1**: prompt-analyzer に test_strategy 分析項目が追加されている
-  - executor: claudecode
+- [x] **p4.1**: prompt-analyzer に test_strategy 分析項目が追加されている
+  - executor: codex
   - validations:
     - technical: "grep -A20 'test_strategy' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md で存在確認"
     - consistency: "既存の分析項目（5w1h, risks, ambiguity）と同じ形式"
     - completeness: "test_types, coverage_target, edge_cases が含まれている"
 
-- [ ] **p4.2**: prompt-analyzer に preconditions 分析項目が追加されている
-  - executor: claudecode
+- [x] **p4.2**: prompt-analyzer に preconditions 分析項目が追加されている
+  - executor: codex
   - validations:
     - technical: "grep -A15 'preconditions' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md で存在確認"
     - consistency: "既存の分析項目と同じ形式"
     - completeness: "existing_code, dependencies, constraints が含まれている"
 
-- [ ] **p4.3**: prompt-analyzer に success_criteria 分析項目が追加されている
-  - executor: claudecode
+- [x] **p4.3**: prompt-analyzer に success_criteria 分析項目が追加されている
+  - executor: codex
   - validations:
     - technical: "grep -A15 'success_criteria' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md で存在確認"
     - consistency: "既存の分析項目と同じ形式"
     - completeness: "functional, non_functional, breaking_changes が含まれている"
 
-- [ ] **p4.4**: prompt-analyzer に reverse_dependencies 分析項目が追加されている
-  - executor: claudecode
+- [x] **p4.4**: prompt-analyzer に reverse_dependencies 分析項目が追加されている
+  - executor: codex
   - validations:
     - technical: "grep -A10 'reverse_dependencies' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md で存在確認"
     - consistency: "既存の分析項目と同じ形式"
     - completeness: "affected_components が含まれている"
 
-- [ ] **p4.5**: prompt-analyzer の出力フォーマットに全ての新規項目が追加されている
-  - executor: claudecode
+- [x] **p4.5**: prompt-analyzer の出力フォーマットに全ての新規項目が追加されている
+  - executor: codex
   - validations:
     - technical: "grep -E 'test_strategy|preconditions|success_criteria|reverse_dependencies' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md | wc -l >= 4"
     - consistency: "analysis セクション内に全項目がある"
     - completeness: "出力フォーマットに全項目が定義されている"
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -357,21 +363,21 @@ done_when:
 
 #### subtasks
 
-- [ ] **p5.1**: playbook-format.md の validations 形式が実行可能な形式に強化されている
-  - executor: claudecode
+- [x] **p5.1**: playbook-format.md の validations に validation_type と証拠記録の形式が追加されている
+  - executor: codex
   - validations:
-    - technical: "grep -A30 'validations' plan/template/playbook-format.md で形式確認"
-    - consistency: "command + expected の形式が定義されている"
-    - completeness: "technical, consistency, completeness 各項目に実行可能な検証が示されている"
+    - technical: "grep -A40 'validations' plan/template/playbook-format.md で形式確認"
+    - consistency: "automated/manual/hybrid の指定方法と evidence/command の記載ルールが明記されている"
+    - completeness: "technical/consistency/completeness の全項目で機械可読な検証が示されている"
 
-- [ ] **p5.2**: subtask 完了判定フローが critic.md または新規ファイルに定義されている
-  - executor: claudecode
+- [x] **p5.2**: subtask-guard と critic で validations 実行/証拠記録を強制するフローが定義されている
+  - executor: codex
   - validations:
-    - technical: "grep -E 'subtask.*完了|validation.*実行' .claude/skills/reward-guard/agents/critic.md で存在確認"
-    - consistency: "validations の 3 項目を順に実行するフローがある"
-    - completeness: "PASS/FAIL の記録方法が定義されている"
+    - technical: "grep -E 'validation_type|evidence|command' .claude/skills/reward-guard/guards/subtask-guard.sh .claude/skills/reward-guard/agents/critic.md で確認"
+    - consistency: "automated は command/expected の実行結果を記録し、manual は DEFERRED 扱いになる"
+    - completeness: "PASS/FAIL と証拠がログに残る"
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -384,21 +390,21 @@ done_when:
 
 #### subtasks
 
-- [ ] **p6.1**: reviewer.md の 4QV+ 各項目に具体的なチェックコマンド/基準が追加されている
-  - executor: claudecode
+- [x] **p6.1**: reviewer.md の 4QV+ 各項目に具体的なチェックコマンド/基準が追加されている
+  - executor: codex
   - validations:
     - technical: "grep -A10 'Q1_形式検証' .claude/skills/quality-assurance/agents/reviewer.md で具体的基準確認"
     - consistency: "Q1-Q4 と Plus 全てに実行可能な基準がある"
     - completeness: "各項目の PASS 条件が明示されている"
 
-- [ ] **p6.2**: reviewer の出力に各 Q の PASS/FAIL ログが含まれるよう修正されている
-  - executor: claudecode
+- [x] **p6.2**: reviewer の出力に各 Q の PASS/FAIL ログが含まれるよう修正されている
+  - executor: codex
   - validations:
     - technical: "grep -A20 '出力フォーマット' .claude/skills/quality-assurance/agents/reviewer.md でログ形式確認"
     - consistency: "既存の出力形式を拡張する形"
     - completeness: "Q1-Q4 + Plus 全ての判定結果が出力される"
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -411,50 +417,50 @@ done_when:
 
 #### subtasks
 
-- [ ] **p_final.1**: term-translator に「テスト」「検証」変換ルールが存在する
-  - executor: claudecode
+- [x] **p_final.1**: term-translator に「テスト」「検証」変換ルールが存在する
+  - executor: codex
   - validations:
     - technical: "grep -c 'テスト:' .claude/skills/term-translator/agents/term-translator.md >= 1"
     - consistency: "変換ルール辞書の形式に従っている"
     - completeness: "テストと検証の両方が定義されている"
 
-- [ ] **p_final.2**: understanding-check が変換結果を参照している
-  - executor: claudecode
+- [x] **p_final.2**: understanding-check が変換結果を参照している
+  - executor: codex
   - validations:
     - technical: "grep 'translated_requirements' .claude/skills/understanding-check/SKILL.md で存在確認"
     - consistency: "pm.md のフローと連携している"
     - completeness: "ユーザーへの確認時に技術用語が使われる"
 
-- [ ] **p_final.3**: playbook context に永続化フィールドが追加されている
-  - executor: claudecode
+- [x] **p_final.3**: playbook context に永続化フィールドが追加されている
+  - executor: codex
   - validations:
     - technical: "grep -c 'analysis_result\|translated_requirements\|user_approved_understanding' plan/template/playbook-format.md >= 3"
     - consistency: "context-management の must_keep に含まれている"
     - completeness: "3つ全てが定義されている"
 
-- [ ] **p_final.4**: prompt-analyzer に test_strategy が追加されている
-  - executor: claudecode
+- [x] **p_final.4**: prompt-analyzer に test_strategy が追加されている
+  - executor: codex
   - validations:
     - technical: "grep 'test_strategy' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md で存在確認"
     - consistency: "出力フォーマットに含まれている"
     - completeness: "test_types, coverage_target, edge_cases がある"
 
-- [ ] **p_final.5**: validations 実行フローが定義されている
-  - executor: claudecode
+- [x] **p_final.5**: validations 実行フローが定義されている
+  - executor: codex
   - validations:
-    - technical: "grep 'command.*expected' plan/template/playbook-format.md で形式確認"
-    - consistency: "critic.md で実行フローが参照されている"
-    - completeness: "PASS/FAIL 記録方法がある"
+    - technical: "grep -E 'validation_type|evidence|command' plan/template/playbook-format.md で形式確認"
+    - consistency: "subtask-guard/critic が validation_type を扱う"
+    - completeness: "PASS/FAIL と証拠の記録方法がある"
 
-- [ ] **p_final.6**: reviewer の判定基準が具体化されている
-  - executor: claudecode
+- [x] **p_final.6**: reviewer の判定基準が具体化されている
+  - executor: codex
   - validations:
     - technical: "grep -c 'PASS.*条件' .claude/skills/quality-assurance/agents/reviewer.md >= 5"
     - consistency: "4QV+ 全項目に基準がある"
     - completeness: "出力に各 Q の判定結果が含まれる"
 
-- [ ] **p_final.7**: SubAgent 間データフローの end-to-end 検証
-  - executor: claudecode
+- [x] **p_final.7**: SubAgent 間データフローの end-to-end 検証
+  - executor: codex
   - validations:
     - technical: |
         シミュレーション実行:
@@ -466,21 +472,21 @@ done_when:
     - consistency: "各 SubAgent の出力が次の SubAgent の入力として正しく参照されている"
     - completeness: "全ての修正が連携して動作し、データフロー断絶が解消されている"
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
 
 ## final_tasks
 
-- [ ] **ft1**: 変更を全てコミットする
+- [x] **ft1**: 変更を全てコミットする
   - command: `git add -A && git status`
   - status: pending
 
-- [ ] **ft2**: repository-map.yaml を更新する
+- [x] **ft2**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
   - status: pending
 
-- [ ] **ft3**: tmp/ ディレクトリをクリーンアップする
+- [x] **ft3**: tmp/ ディレクトリをクリーンアップする
   - command: `rm -rf tmp/* 2>/dev/null || true`
   - status: pending

@@ -17,6 +17,9 @@ triggers:
 
 ```yaml
 must_keep:
+  - analysis_result: prompt-analyzer の分析結果全体
+  - translated_requirements: term-translator の変換結果全体
+  - user_approved_understanding: ユーザーが承認した理解内容
   - done_criteria: 現在の Phase の完了条件
   - current_phase: 作業中の Phase 情報
   - playbook_path: アクティブな playbook のパス

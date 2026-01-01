@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-01 19:00:57"
+  generated: "2026-01-01 20:26:59"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 250
+  total_files: 251
 
 hooks:
   directory: .claude/hooks/
@@ -104,7 +104,7 @@ skills:
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
     - name: "understanding-check"
-      description: "description: タスク依頼時の理解確認システム（5W1H）。playbook 作成前にユー�"
+      description: "term-translator の出力を参照し、技術用語でユーザーに確認する"
 
 commands:
   directory: .claude/commands/
@@ -150,7 +150,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 47
+      count: 48
     template:
       description: "playbook テンプレート"
       count: 5
@@ -399,6 +399,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-01 19:00:57"
+  - date: "2026-01-01 20:26:59"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

@@ -276,3 +276,80 @@ pm_flow:
 
 この理解で playbook を作成してよろしいですか？
 ```
+
+---
+
+## translated_requirements（term-translator 連携）
+
+> **term-translator の出力を参照し、技術用語でユーザーに確認する**
+
+### 入力
+
+pm SubAgent から以下の情報を受け取る:
+
+```yaml
+translated_requirements:
+  source: term-translator
+  original_terms:
+    - original: "{元の表現}"
+      translated: "{変換後の技術用語}"
+      alternatives: ["{代替候補}"]
+  technical_requirements:
+    - requirement: "{技術要件}"
+      implementation_hint: "{実装ヒント}"
+```
+
+### ユーザー確認での使用
+
+```markdown
+## 理解確認結果
+
+### 5W1H 分析
+
+| 項目 | 内容 |
+|------|------|
+| What | {具体的に何を作るか} |
+| Why | {なぜ必要か、解決する課題} |
+| ... | ... |
+
+### 技術要件（term-translator による変換結果）
+
+| 元の表現 | 技術要件 |
+|----------|----------|
+| {original_1} | {translated_1} |
+| {original_2} | {translated_2} |
+
+### 確認事項
+
+上記の技術要件で進めてよろしいですか？
+
+- [ ] 「セキュアに」→「AES-256 暗号化 + アクセス制御」で合意
+- [ ] 「高速に」→「レスポンスタイム 200ms 以下」で合意
+```
+
+### Structured Output Format の拡張
+
+```yaml
+understanding_check:
+  summary: "{5W1H の要約}"
+  
+  translated_requirements:
+    - original: "{元の表現}"
+      translated: "{変換後の技術用語}"
+      confirmed: false  # ユーザー確認待ち
+
+  questions:
+    # 技術要件確認（single_choice タイプ）
+    - id: tr1
+      text: "「{original}」の要件は {translated} でよいですか？"
+      type: single_choice
+      options:
+        - label: "{translated}（推奨）"
+          description: "{term-translator の rationale}"
+        - label: "{alternative_1}"
+          description: "{代替案の説明}"
+        - label: "カスタム"
+          description: "具体的な要件を入力"
+
+    # 既存の質問...
+```

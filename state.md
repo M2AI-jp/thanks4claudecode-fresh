@@ -12,7 +12,7 @@
 active: plan/playbook-subagent-data-flow.md
 branch: fix/subagent-data-flow
 last_archived: plan/archive/playbook-auto-retry.md
-review_pending: true
+review_pending: false
 ```
 
 ---
@@ -37,7 +37,7 @@ note: SubAgent 間のデータフロー断絶を修正し、プログラミン�
 ## session
 
 ```yaml
-last_start: 2026-01-01 20:01:31
+last_start: 2026-01-01 20:13:55
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```

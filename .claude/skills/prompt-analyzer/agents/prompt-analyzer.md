@@ -402,3 +402,239 @@ analysis:
 | .claude/skills/understanding-check/SKILL.md | 理解確認フレームワーク |
 | .claude/skills/golden-path/agents/pm.md | pm SubAgent（呼び出し元） |
 | plan/template/playbook-format.md | playbook テンプレート |
+
+---
+
+## 拡張分析項目（M089: データフロー断絶修正）
+
+> **Issue 1 で指摘された全ての致命的不足を解消する分析項目**
+
+### test_strategy（テスト戦略）
+
+```yaml
+test_strategy:
+  description: |
+    プロンプトからテスト要件を抽出し、テスト戦略を策定する。
+    「テストする」「検証する」等の表現から具体的なテストレベルと
+    カバレッジ目標を導出する。
+
+  抽出ルール:
+    テストレベル判定:
+      unit:
+        キーワード: "関数", "メソッド", "クラス", "モジュール", "単体"
+        適用: 個別コンポーネントの動作確認
+      integration:
+        キーワード: "連携", "統合", "API", "接続", "呼び出し"
+        適用: コンポーネント間の連携確認
+      e2e:
+        キーワード: "シナリオ", "ユーザー", "フロー", "動作確認"
+        適用: ユーザー視点での全体動作確認
+
+    カバレッジ目標:
+      minimal: "正常系のみ（POC、プロトタイプ向け）"
+      standard: "正常系 + 主要異常系（通常開発）"
+      comprehensive: "正常系100% + 異常系主要パス + 境界値（重要機能）"
+
+    エッジケース検出:
+      - 境界値（0, 1, MAX, MIN）
+      - 空入力、null、undefined
+      - 型不正（文字列 ↔ 数値）
+      - 権限境界（認証、認可）
+      - 並行処理（競合状態）
+
+  出力フォーマット:
+    test_strategy:
+      test_types: [unit | integration | e2e]
+      coverage_target: "minimal | standard | comprehensive"
+      edge_cases:
+        - "{検出されたエッジケース1}"
+        - "{検出されたエッジケース2}"
+      rationale: "{テスト戦略の根拠}"
+```
+
+### preconditions（前提条件）
+
+```yaml
+preconditions:
+  description: |
+    タスク実行前に存在すべき状態、依存関係、制約を分析する。
+    「何が既に存在するか」を明確化することで、前提条件の
+    不足による手戻りを防止する。
+
+  抽出ルール:
+    existing_code:
+      調査対象:
+        - 対象ディレクトリの既存ファイル
+        - 類似機能の既存実装
+        - 参照されているモジュール
+      判定: "新規作成 | 既存修正 | リファクタリング"
+
+    dependencies:
+      調査対象:
+        - package.json（npm パッケージ）
+        - import 文（内部モジュール）
+        - 外部サービス（API、DB）
+      判定: "インストール済み | 追加必要 | 互換性確認必要"
+
+    constraints:
+      調査対象:
+        - 技術スタック（言語、フレームワーク）
+        - コーディング規約
+        - パフォーマンス要件
+        - セキュリティ要件
+      判定: "制約あり | 制約なし"
+
+  出力フォーマット:
+    preconditions:
+      existing_code:
+        status: "新規作成 | 既存修正 | リファクタリング"
+        files: ["{既存ファイルパス}"]
+        patterns: ["{検出されたパターン}"]
+      dependencies:
+        installed: ["{インストール済み依存}"]
+        required: ["{追加必要な依存}"]
+        external: ["{外部サービス}"]
+      constraints:
+        technical: ["{技術的制約}"]
+        security: ["{セキュリティ制約}"]
+        performance: ["{パフォーマンス制約}"]
+```
+
+### success_criteria（成功基準）
+
+```yaml
+success_criteria:
+  description: |
+    タスクの成功を判定するための具体的な基準を抽出する。
+    「何が動けば成功か」を機能要件・非機能要件に分けて明確化し、
+    破壊的変更の有無も判定する。
+
+  抽出ルール:
+    functional:
+      - 明示的な機能要件（「〜ができる」「〜が動作する」）
+      - 暗黙的な機能要件（類似機能から推定）
+      - ユースケース（正常系、異常系）
+
+    non_functional:
+      - パフォーマンス（レスポンスタイム、スループット）
+      - セキュリティ（認証、暗号化、監査）
+      - 可用性（稼働率、フォールバック）
+      - 保守性（テスト、ドキュメント）
+
+    breaking_changes:
+      判定基準:
+        - 既存 API の変更（引数、戻り値、URL）
+        - 既存データ構造の変更（スキーマ、フォーマット）
+        - 依存関係の変更（バージョン、削除）
+      出力: true | false
+
+  出力フォーマット:
+    success_criteria:
+      functional:
+        - "{機能要件1}"
+        - "{機能要件2}"
+      non_functional:
+        performance: "{パフォーマンス要件}"
+        security: "{セキュリティ要件}"
+        availability: "{可用性要件}"
+        maintainability: "{保守性要件}"
+      breaking_changes: true | false
+      breaking_change_details: ["{破壊的変更の詳細}"]
+```
+
+### reverse_dependencies（逆依存関係）
+
+```yaml
+reverse_dependencies:
+  description: |
+    「これが依存するもの」だけでなく「これに依存するもの」を分析する。
+    変更が波及する範囲を特定し、影響範囲を明確化する。
+
+  分析手順:
+    1. 対象ファイル/モジュールを特定
+    2. リポジトリ全体で import/require を検索
+    3. 参照元を逆依存として列挙
+    4. 影響度を評価
+
+  調査コマンド例:
+    - grep -r "import.*{module}" --include="*.ts"
+    - grep -r "require.*{module}" --include="*.js"
+    - grep -r "from.*{path}" --include="*.tsx"
+
+  出力フォーマット:
+    reverse_dependencies:
+      affected_components:
+        - component: "{コンポーネント名}"
+          file: "{ファイルパス}"
+          impact: "high | medium | low"
+          reason: "{影響理由}"
+      total_affected: "{影響を受けるコンポーネント数}"
+      risk_level: "high | medium | low"
+```
+
+### 拡張出力フォーマット
+
+```yaml
+analysis:
+  5w1h:
+    who: "{誰が / 誰に影響}"
+    what: "{何を / 具体的なタスク}"
+    when: "{いつまでに / タイミング}"
+    where: "{どこに / 実装場所・影響範囲}"
+    why: "{なぜ / 目的・課題}"
+    how: "{どのように / 技術・手法}"
+    missing: ["{不足している項目}"]
+
+  # 既存項目
+  risks:
+    technical: [...]
+    scope: [...]
+    dependency: [...]
+
+  ambiguity: [...]
+
+  # 拡張項目（M089 追加）
+  test_strategy:
+    test_types: [unit | integration | e2e]
+    coverage_target: "minimal | standard | comprehensive"
+    edge_cases: ["{エッジケース}"]
+    rationale: "{根拠}"
+
+  preconditions:
+    existing_code:
+      status: "新規作成 | 既存修正 | リファクタリング"
+      files: ["{ファイル}"]
+      patterns: ["{パターン}"]
+    dependencies:
+      installed: ["{インストール済み}"]
+      required: ["{追加必要}"]
+      external: ["{外部サービス}"]
+    constraints:
+      technical: ["{技術的制約}"]
+      security: ["{セキュリティ制約}"]
+      performance: ["{パフォーマンス制約}"]
+
+  success_criteria:
+    functional: ["{機能要件}"]
+    non_functional:
+      performance: "{パフォーマンス}"
+      security: "{セキュリティ}"
+      availability: "{可用性}"
+      maintainability: "{保守性}"
+    breaking_changes: true | false
+    breaking_change_details: ["{詳細}"]
+
+  reverse_dependencies:
+    affected_components:
+      - component: "{名前}"
+        file: "{パス}"
+        impact: "high | medium | low"
+        reason: "{理由}"
+    total_affected: "{数}"
+    risk_level: "high | medium | low"
+
+  summary:
+    confidence: high | medium | low
+    ready_for_playbook: true | false
+    blocking_issues: ["{ブロッキング問題}"]
+```
