@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-verify-subagent-data-flow.md
-branch: feat/update-architecture-and-e2e-test
-last_archived: plan/archive/playbook-fix-coderabbit-auto-delegate.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-verify-subagent-data-flow.md
 review_pending: false
 ```
 
