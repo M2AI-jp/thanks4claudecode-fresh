@@ -25,6 +25,43 @@ roles:  # オプション: 役割の override（state.md のデフォルトを�
 
 ---
 
+## executor_enforcement
+
+```yaml
+executor_enforcement:
+  enabled: true
+
+  monitored_tools:
+    - Edit
+    - Write
+    - Task
+    - Bash
+
+  fallback_policy:
+    codex_timeout:
+      threshold: 120s
+      action: ask_user
+      options: [retry, fallback_to_cli, abort]
+    codex_error:
+      action: ask_user
+      options: [retry, fallback_to_claudecode, abort]
+    coderabbit_error:
+      action: ask_user
+      options: [retry, fallback_to_reviewer_subagent, abort]
+
+  execution_evidence:
+    required: true
+    fields:
+      - executed_by: codex | claudecode | coderabbit | user
+      - execution_log: ツール呼び出しログまたは CLI 出力
+      - session_id: MCP セッション ID（codex の場合）
+```
+
+> **V17 新規**: executor 強制とフォールバックポリシー。
+> 詳細: docs/executor-fallback-policy.md
+
+---
+
 ## goal
 
 ```yaml
