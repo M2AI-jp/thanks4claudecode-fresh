@@ -197,14 +197,18 @@ user_approved_understanding:
 
 ## final_tasks
 
-- [ ] **ft1**: repository-map.yaml を更新する
+- [x] **ft1**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
-  - status: pending
+  - status: done
+  - executed: 2026-01-02T08:53:00Z
 
-- [ ] **ft2**: tmp/ 内の一時ファイルを削除する
-  - command: `find tmp/ -type f ! -name 'README.md' ! -name 'run.sh' ! -name 'process.py' ! -name 'transform.ts' -delete 2>/dev/null || true`
-  - status: pending
+- [x] **ft2**: tmp/ 内の一時ファイルを削除する
+  - command: 不要（対象ファイルなし）
+  - status: done
+  - executed: 2026-01-02T08:53:00Z
 
-- [ ] **ft3**: 変更を全てコミットする
-  - command: `git add -A && git status`
-  - status: pending
+- [x] **ft3**: 変更を全てコミットする
+  - command: `git commit -m "fix: restore demo files and add prerequisites"`
+  - commit: 2f5e452
+  - status: done
+  - executed: 2026-01-02T08:53:00Z
