@@ -11,7 +11,7 @@ project: subagent-data-flow
 branch: fix/subagent-data-flow
 created: 2026-01-01
 issue: null
-reviewed: false
+reviewed: true
 roles:
   worker: claudecode
 ```
@@ -301,9 +301,9 @@ done_when:
 
 ---
 
-### p4: prompt-analyzer にテスト戦略追加
+### p4: prompt-analyzer の分析項目拡充
 
-**goal**: テスト計画を初期段階で設計する
+**goal**: Issue 1 で指摘した全ての致命的不足を解消する
 
 **depends_on**: [p1]
 
@@ -316,12 +316,33 @@ done_when:
     - consistency: "既存の分析項目（5w1h, risks, ambiguity）と同じ形式"
     - completeness: "test_types, coverage_target, edge_cases が含まれている"
 
-- [ ] **p4.2**: prompt-analyzer の出力フォーマットに test_strategy が追加されている
+- [ ] **p4.2**: prompt-analyzer に preconditions 分析項目が追加されている
   - executor: claudecode
   - validations:
-    - technical: "grep -B5 -A15 '出力フォーマット' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md で確認"
-    - consistency: "analysis セクション内に test_strategy がある"
-    - completeness: "test_types, coverage_target, edge_cases が出力される"
+    - technical: "grep -A15 'preconditions' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md で存在確認"
+    - consistency: "既存の分析項目と同じ形式"
+    - completeness: "existing_code, dependencies, constraints が含まれている"
+
+- [ ] **p4.3**: prompt-analyzer に success_criteria 分析項目が追加されている
+  - executor: claudecode
+  - validations:
+    - technical: "grep -A15 'success_criteria' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md で存在確認"
+    - consistency: "既存の分析項目と同じ形式"
+    - completeness: "functional, non_functional, breaking_changes が含まれている"
+
+- [ ] **p4.4**: prompt-analyzer に reverse_dependencies 分析項目が追加されている
+  - executor: claudecode
+  - validations:
+    - technical: "grep -A10 'reverse_dependencies' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md で存在確認"
+    - consistency: "既存の分析項目と同じ形式"
+    - completeness: "affected_components が含まれている"
+
+- [ ] **p4.5**: prompt-analyzer の出力フォーマットに全ての新規項目が追加されている
+  - executor: claudecode
+  - validations:
+    - technical: "grep -E 'test_strategy|preconditions|success_criteria|reverse_dependencies' .claude/skills/prompt-analyzer/agents/prompt-analyzer.md | wc -l >= 4"
+    - consistency: "analysis セクション内に全項目がある"
+    - completeness: "出力フォーマットに全項目が定義されている"
 
 **status**: pending
 **max_iterations**: 5
@@ -432,6 +453,19 @@ done_when:
     - consistency: "4QV+ 全項目に基準がある"
     - completeness: "出力に各 Q の判定結果が含まれる"
 
+- [ ] **p_final.7**: SubAgent 間データフローの end-to-end 検証
+  - executor: claudecode
+  - validations:
+    - technical: |
+        シミュレーション実行:
+        1. prompt-analyzer が test_strategy, preconditions, success_criteria, reverse_dependencies を出力
+        2. term-translator が「テスト」「検証」を技術用語に変換
+        3. understanding-check が translated_requirements を参照してユーザー確認
+        4. pm が playbook 作成時に context セクションに永続化
+        5. reviewer が各 Q の PASS/FAIL をログに記録
+    - consistency: "各 SubAgent の出力が次の SubAgent の入力として正しく参照されている"
+    - completeness: "全ての修正が連携して動作し、データフロー断絶が解消されている"
+
 **status**: pending
 **max_iterations**: 3
 
@@ -445,4 +479,8 @@ done_when:
 
 - [ ] **ft2**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
+  - status: pending
+
+- [ ] **ft3**: tmp/ ディレクトリをクリーンアップする
+  - command: `rm -rf tmp/* 2>/dev/null || true`
   - status: pending
