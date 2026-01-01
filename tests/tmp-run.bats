@@ -51,10 +51,11 @@ setup() {
 
 # エラーケース
 
-@test "run.sh with empty input uses default" {
-    # 空入力時はデフォルト値が使用される
-    result=$(bash "$RUN_SH" '' 2>/dev/null)
-    echo "$result" | jq -e '.python_output.original.input == "default"'
+@test "run.sh with empty input fails gracefully" {
+    # 空入力時は Python でエラー終了
+    run bash "$RUN_SH" '' 2>/dev/null
+    # 終了コードが非ゼロであることを確認
+    [ "$status" -ne 0 ]
 }
 
 @test "run.sh with invalid JSON fails gracefully" {
@@ -64,9 +65,9 @@ setup() {
     [ "$status" -ne 0 ]
 }
 
-@test "run.sh with missing input field still works" {
-    # input フィールドがなくても動作する（Python側で処理）
-    result=$(bash "$RUN_SH" '{"other":"field"}' 2>/dev/null)
-    # 何らかの出力があることを確認
-    [ -n "$result" ]
+@test "run.sh with missing input field fails gracefully" {
+    # input フィールドがない場合は TypeScript でエラー
+    run bash "$RUN_SH" '{"other":"field"}' 2>/dev/null
+    # 終了コードが非ゼロであることを確認
+    [ "$status" -ne 0 ]
 }
