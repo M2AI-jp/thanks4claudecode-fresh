@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-facade-audit.md
-branch: feat/facade-audit
-last_archived: plan/archive/playbook-architecture-visualizer.md
+active: plan/playbook-ops-improvement.md
+branch: feat/ops-improvement
+last_archived: plan/playbook-facade-audit-v2.md
 review_pending: false
 ```
 
@@ -23,12 +23,13 @@ review_pending: false
 milestone: null
 phase: p1
 done_criteria:
-  - 全 20 ガードスクリプトが実際に機能することを E2E テストで確認
-  - test-runner が実行可能なテストスイートを持つ
-  - critic が「証拠なし PASS」を拒否できる
-  - 新規 playbook で実際のテスト駆動開発が機能する
-  - CodeRabbit レビューで「見かけ実装」ゼロ判定
-note: 「見かけだけの実装」を徹底検証し、実用に耐える品質に引き上げる
+  - settings.json に PreToolUse/UserPromptSubmit のタイムアウト設定が存在し、現状値から調整済みである
+  - Hook 実行時間と BLOCK 理由がログ出力される仕組みが存在する
+  - docs/executor-fallback-policy.md に Codex フォールバック手順が定義されている
+  - .claude/commands/review.md が存在し、playbook + コードレビューループを実行できる
+  - .claude/rules/ に仕様・テスト・運用規約が配置されている
+  - .claude/commands/init.md が存在し、完全初期化が実行できる
+note: Codex 考察に基づく 4 つの改善アクション（Hook 強化、フォールバック、レビューループ、ナレッジ一元化）を実装
 ```
 
 ---
