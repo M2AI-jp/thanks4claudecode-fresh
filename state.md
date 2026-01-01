@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-completeness-100-issues.md
-branch: feat/multi-language-orchestration-demo
+active: null
+branch: null
 last_archived: plan/archive/playbook-orchestration-completeness-100.md
 review_pending: false
 ```
