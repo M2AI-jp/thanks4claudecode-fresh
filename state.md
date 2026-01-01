@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-coderabbit-auto-delegate.md
-branch: fix/coderabbit-auto-delegation
-last_archived: plan/archive/playbook-typescript-calculator.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-coderabbit-auto-delegate.md
 review_pending: false
 ```
 
