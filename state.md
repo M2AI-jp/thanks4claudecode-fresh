@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-typescript-calculator.md
+branch: feat/typescript-calculator
 last_archived: plan/archive/playbook-verify-subagent-data-flow.md
 review_pending: false
 ```
@@ -20,17 +20,15 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: verify-subagent-data-flow
-phase: p_final
+milestone: typescript-calculator
+phase: p1
 done_criteria:
-  - term-translator に「テスト」「検証」の変換ルールが存在し、内容が適切である
-  - understanding-check が translated_requirements を参照している
-  - playbook-format.md と context-management に永続化フィールドが定義されている
-  - prompt-analyzer に test_strategy, preconditions, success_criteria, reverse_dependencies が追加されている
-  - validations に validation_type と証拠記録形式が定義されている
-  - reviewer に 4QV+ の具体的判定基準と PASS/FAIL ログ形式が定義されている
-status: ALL PASS - 全 done_criteria を検証完了
-note: playbook-subagent-data-flow.md の修正内容を網羅的に検証完了
+  - tmp/calculator/package.json が存在する
+  - tmp/calculator/src/calculator.ts に add, subtract, multiply, divide 関数が存在する
+  - npm test が exit 0 で終了する
+  - divide(1, 0) がエラーを throw するテストが PASS する
+status: pending
+note: executor 役割ベース指定の検証タスク
 ```
 
 ---
