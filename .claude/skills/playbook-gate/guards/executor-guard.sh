@@ -282,32 +282,22 @@ EOF
         ;;
 
     coderabbit)
-        cat >&2 << 'EOF'
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🔄 executor: coderabbit - coderabbit-delegate SubAgent に自動委譲
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  この Phase は CodeRabbit によるレビューです。
-  以下の Task ツールを使って coderabbit-delegate SubAgent に委譲してください:
-
-  正しい手順（推奨）:
-    Task(
-      subagent_type='coderabbit-delegate',
-      prompt='【レビュー対象を説明】'
-    )
-
-  代替手順（CodeRabbit CLI 直接実行）:
-    Bash: coderabbit review --plain --type uncommitted
-
-  レビュー後の対応:
-    指摘事項は別の Phase（executor: worker）で対応
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # coderabbit も codex と同じ hookSpecificOutput 形式で stdout に出力
+        cat << EOF
+{
+  "continue": false,
+  "decision": "block",
+  "reason": "executor: coderabbit - coderabbit-delegate SubAgent への委譲が必要です",
+  "hookSpecificOutput": {
+    "action": "delegate_to_subagent",
+    "target_subagent": "coderabbit-delegate",
+    "executor": "coderabbit",
+    "file_path": "$RELATIVE_PATH",
+    "review_type": "uncommitted"
+  },
+  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  🔄 executor: coderabbit - coderabbit-delegate SubAgent に自動委譲\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  この Phase は CodeRabbit によるレビューです。\\n  以下の Task ツールを使って coderabbit-delegate SubAgent に委譲してください:\\n\\n  Task(\\n    subagent_type='coderabbit-delegate',\\n    prompt='【レビュー対象を説明】'\\n  )\\n\\n  対象ファイル: $RELATIVE_PATH\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
 EOF
-        echo "  対象ファイル: $RELATIVE_PATH" >&2
-        echo "  現在の executor: $EXECUTOR" >&2
-        echo "" >&2
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
         exit 2
         ;;
 
