@@ -284,23 +284,23 @@ EOF
     coderabbit)
         cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ⛔ executor: coderabbit - Reviewer SubAgent を呼び出してください
+  🔄 executor: coderabbit - coderabbit-delegate SubAgent に自動委譲
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   この Phase は CodeRabbit によるレビューです。
-  Claude Code が直接コードを編集することは許可されていません。
+  以下の Task ツールを使って coderabbit-delegate SubAgent に委譲してください:
 
-  正しい手順（crit Skill）:
-    Skill(skill='crit') または /crit
+  正しい手順（推奨）:
+    Task(
+      subagent_type='coderabbit-delegate',
+      prompt='【レビュー対象を説明】'
+    )
 
-  代替手順（CodeRabbit CLI）:
-    Bash: coderabbit review
+  代替手順（CodeRabbit CLI 直接実行）:
+    Bash: coderabbit review --plain --type uncommitted
 
   レビュー後の対応:
     指摘事項は別の Phase（executor: worker）で対応
-
-  playbook の executor を変更したい場合:
-    Skill(skill='plan-management') または /plan-management
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
