@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-empty-input-test.md
-branch: feat/multi-language-orchestration-demo
-last_archived: plan/archive/playbook-fix-completeness-100-issues.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-empty-input-test.md
 review_pending: false
 ```
 
