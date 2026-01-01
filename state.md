@@ -9,10 +9,10 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-restore-demo-files.md
+branch: fix/restore-demo-files
 last_archived: plan/archive/playbook-tmp-demo-gitignore.md
-review_pending: false
+review_pending: true
 ```
 
 ---
@@ -21,21 +21,16 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: null
+phase: p1
 done_criteria:
-  - playbook の全 phase/subtask が done になっている
-  - qa.sh の skip を FAIL 扱いに変更し、証跡ログ保存
-  - evidence の行数修正 + subagent.log 引用追加
-  - bats にエラーケース追加
-  - ts-node が devDependencies に追加され、README に前提条件追記
-  - timestamp 整合性修正
-status: completed
+  - tmp/README.md に前提条件が追記されている（jq, ts-node, bats, shellcheck, ruff, eslint）
+  - evidence/ に証跡補足ログが存在する（8→11 tests の経緯を説明）
+  - scripts/qa.sh が PASS する
+  - 新しい QA 証跡が evidence/ に記録されている
+status: in_progress
 note: |
-  orchestration-completeness-100 の残課題6件を修正完了
-  commit: 9ff7d2e
-  prior_work:
-    - playbook: plan/archive/playbook-orchestration-completeness-100.md
-    - codex_agentId: a06e567 (transform.ts)
+  デモファイル復元と証跡整合性修正
+  背景: tmp/ ファイル消失 → git checkout で復元済み → 証跡整合性修正
 ```
 
 ---
@@ -43,7 +38,7 @@ note: |
 ## session
 
 ```yaml
-last_start: 2026-01-02 06:57:20
+last_start: 2026-01-02 08:36:39
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
