@@ -598,6 +598,78 @@ Task(subagent_type='setup-guide')
         └─→ CLAUDE.md（カスタマイズ）
 ```
 
+### prompt-analyzer SubAgent
+
+> **M086: pm から分離された専門分析エージェント**
+
+```
+Task(subagent_type='prompt-analyzer')
+    │
+    ├─→ .claude/skills/prompt-analyzer/agents/prompt-analyzer.md
+    │
+    ├─→ 入力:
+    │   └─→ ユーザープロンプト（タスク依頼）
+    │
+    ├─→ 処理:
+    │   ├─→ 5W1H 分析（Who/What/When/Where/Why/How）
+    │   ├─→ リスク分析（technical/scope/dependency）
+    │   └─→ 曖昧さ検出（ambiguity）
+    │
+    └─→ 出力:
+        └─→ 構造化された分析結果（YAML）
+            - ready_for_playbook: true/false
+            - blocking_issues: 解決すべき問題
+```
+
+### term-translator SubAgent
+
+> **M086: 曖昧表現をエンジニア用語に変換**
+
+```
+Task(subagent_type='term-translator')
+    │
+    ├─→ .claude/skills/term-translator/agents/term-translator.md
+    │
+    ├─→ 入力:
+    │   └─→ prompt-analyzer の ambiguity 出力
+    │
+    ├─→ 処理:
+    │   ├─→ 曖昧な形容詞/副詞を具体的数値・基準に変換
+    │   ├─→ コードベース文脈分析（既存パターン参照）
+    │   └─→ 代替候補（alternatives）の提示
+    │
+    └─→ 出力:
+        └─→ 技術要件リスト（YAML）
+            - original_terms: 変換結果
+            - technical_requirements: 実装タスク
+            - codebase_context: 既存パターン
+```
+
+### executor-resolver SubAgent
+
+> **M086: LLM ベース executor 判定**
+
+```
+Task(subagent_type='executor-resolver')
+    │
+    ├─→ .claude/skills/executor-resolver/agents/executor-resolver.md
+    │
+    ├─→ 入力:
+    │   └─→ subtask リスト
+    │
+    ├─→ 処理:
+    │   ├─→ 複雑さ判定（high/medium/low）
+    │   ├─→ タイプ分類（coding/documentation/configuration/review/manual）
+    │   ├─→ テスト要否判定
+    │   └─→ 概算行数推定
+    │
+    └─→ 出力:
+        └─→ executor アサイン結果（YAML）
+            - executor_decision: 推奨 executor
+            - subtask_assignments: 各 subtask への割り当て
+            - alternatives: 代替案
+```
+
 ### SubAgent ツール制限（報酬詐欺防止）
 
 > **参照: https://code.claude.com/docs/ja/sub-agents**
@@ -612,6 +684,9 @@ Task(subagent_type='setup-guide')
 | **health-checker** | Read, Grep, Glob, Bash | 読み取り専用の健全性チェック |
 | **setup-guide** | Read, Write, Edit, Bash, Grep, Glob | 初期設定に書き込み必要 |
 | **codex-delegate** | Bash, mcp__codex__codex, mcp__codex__codex-reply | Codex MCP 専用 |
+| **prompt-analyzer** | Read, Grep, Glob | 分析専用（読み取りのみ） |
+| **term-translator** | Read, Grep, Glob | 変換専用（読み取りのみ） |
+| **executor-resolver** | Read, Grep, Glob | 判定専用（読み取りのみ） |
 
 ```yaml
 設計原則:
@@ -776,6 +851,134 @@ Task(subagent_type='setup-guide')
         └─→ Edit/Write ブロック解除
 ```
 
+### abort-playbook/
+```
+.claude/skills/abort-playbook/
+├── SKILL.md                    # Skill 定義
+└── abort.sh                    # 中断処理スクリプト
+    └─→ playbook を plan/archive/ へ移動（status: aborted）
+    └─→ state.md 更新（playbook.active = null）
+```
+
+### context-management/
+```
+.claude/skills/context-management/
+└── SKILL.md                    # Skill 定義
+    ├─→ /compact 最適化ガイドライン
+    ├─→ 優先保持情報（done_criteria, current_phase 等）
+    └─→ 削除候補（completed_phases, file_contents 等）
+```
+
+### deploy-checker/
+```
+.claude/skills/deploy-checker/
+└── SKILL.md                    # Skill 定義
+    ├─→ 環境変数チェック（.env.example vs .env.local）
+    ├─→ ビルドチェック（pnpm build）
+    ├─→ セキュリティチェック（API キー、秘密情報）
+    └─→ デプロイ先チェック（Vercel）
+```
+
+### executor-resolver/
+```
+.claude/skills/executor-resolver/
+├── SKILL.md                    # Skill 定義
+└── agents/
+    └── executor-resolver.md    # executor-resolver SubAgent（M086）
+        ├─→ 複雑さ判定（high/medium/low）
+        ├─→ タイプ分類（coding/documentation/configuration/review/manual）
+        └─→ executor アサイン結果（claudecode/codex/coderabbit/user）
+```
+
+### frontend-design/
+```
+.claude/skills/frontend-design/
+└── SKILL.md                    # Skill 定義
+    ├─→ AI 臭を避けるデザイン指針
+    ├─→ タイポグラフィ・カラー・モーション設計
+    └─→ トーン選択（minimalist/bold/playful/technical/editorial）
+```
+
+### lint-checker/
+```
+.claude/skills/lint-checker/
+└── SKILL.md                    # Skill 定義
+    ├─→ ESLint ルール違反チェック
+    ├─→ TypeScript エラーチェック
+    ├─→ コーディング規約確認
+    └─→ ベストプラクティス検証
+```
+
+### plan-management/
+```
+.claude/skills/plan-management/
+└── SKILL.md                    # Skill 定義
+    ├─→ 計画階層（roadmap → milestones → playbooks → phases）
+    ├─→ Phase 遷移ルール（pending → designing → implementing → done）
+    └─→ 禁止遷移（設計スキップ、critic なしの done）
+```
+
+### playbook-init/
+```
+.claude/skills/playbook-init/
+└── SKILL.md                    # Skill 定義
+    ├─→ Hook → Skill → SubAgent チェーンのエントリーポイント
+    ├─→ pm SubAgent への委譲を強制
+    └─→ 前提チェック（既存 playbook、git 状態、ブランチ）
+```
+
+### prompt-analyzer/
+```
+.claude/skills/prompt-analyzer/
+├── SKILL.md                    # Skill 定義
+└── agents/
+    └── prompt-analyzer.md      # prompt-analyzer SubAgent（M086）
+        ├─→ 5W1H 分析（Who/What/When/Where/Why/How）
+        ├─→ リスク分析（technical/scope/dependency）
+        └─→ 曖昧さ検出（ambiguity）
+```
+
+### state/
+```
+.claude/skills/state/
+└── SKILL.md                    # Skill 定義
+    ├─→ state.md 構造定義（playbook, goal, session, config）
+    ├─→ main ブランチ保護ルール
+    └─→ CRITIQUE 実行方法
+```
+
+### term-translator/
+```
+.claude/skills/term-translator/
+├── SKILL.md                    # Skill 定義
+└── agents/
+    └── term-translator.md      # term-translator SubAgent（M086）
+        ├─→ 曖昧表現をエンジニア用語に変換
+        ├−→ コードベース文脈分析
+        └─→ 代替候補（alternatives）の提示
+```
+
+### test-runner/
+```
+.claude/skills/test-runner/
+├── SKILL.md                    # Skill 定義
+└── scripts/
+    ├─→ Unit Tests（pnpm test）
+    ├─→ E2E Tests（pnpm test:e2e）
+    ├─→ Type Checks（pnpm tsc --noEmit）
+    └─→ Build Test（pnpm build）
+```
+
+### understanding-check/
+```
+.claude/skills/understanding-check/
+└── SKILL.md                    # Skill 定義
+    ├─→ 5W1H Framework（What/Why/Who/When/Where/How）
+    ├─→ タスク理解確認（playbook 作成前）
+    ├─→ リスク特定・対策提案
+    └─→ 不明点の明確化
+```
+
 ---
 
 ## 9. テンプレート・フレームワーク一覧
@@ -825,15 +1028,41 @@ Task(subagent_type='setup-guide')
 Skill(skill='playbook-init')
     │
     ▼
-pm SubAgent
-    ├─→ Read: plan/template/playbook-format.md
-    ├─→ Read: .claude/skills/understanding-check/SKILL.md
+pm SubAgent（M086: Orchestrator として委譲チェーンを管理）
+    │
+    ├─→ Step 0: Task(subagent_type='prompt-analyzer')
     │       │
-    │       └─→ 5W1H 分析 → AskUserQuestion
+    │       ├─→ 5W1H 分析（Who/What/When/Where/Why/How）
+    │       ├─→ リスク分析（technical/scope/dependency）
+    │       └─→ 曖昧さ検出（ambiguity）
+    │       │
+    │       └─→ 出力: 構造化分析結果（ready_for_playbook: true/false）
     │
-    ├─→ Write: plan/playbook-{name}.md
+    ├─→ Step 0.5: Task(subagent_type='term-translator')
+    │       │
+    │       ├─→ 曖昧表現をエンジニア用語に変換
+    │       ├─→ コードベース文脈分析
+    │       └─→ 代替候補の提示
+    │       │
+    │       └─→ 出力: 技術要件リスト（technical_requirements）
     │
-    └─→ Task(subagent_type='reviewer')
+    ├─→ Step 1: understanding-check
+    │       │
+    │       └─→ 分析結果を基にユーザー確認 → AskUserQuestion
+    │
+    ├─→ Step 2: playbook 作成
+    │       │
+    │       └─→ Write: plan/playbook-{name}.md
+    │
+    ├─→ Step 2.5: Task(subagent_type='executor-resolver')
+    │       │
+    │       ├─→ 複雑さ判定（high/medium/low）
+    │       ├─→ タイプ分類（coding/documentation/review/manual）
+    │       └─→ subtask ごとの executor アサイン
+    │       │
+    │       └─→ 出力: executor 割り当て（claudecode/codex/coderabbit/user）
+    │
+    └─→ Step 3: Task(subagent_type='reviewer')
             │
             ├─→ Read: .claude/frameworks/playbook-review-criteria.md
             │
