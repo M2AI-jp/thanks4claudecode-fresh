@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-architecture-issues.md
-branch: fix/architecture-issues
+active: plan/playbook-facade-audit.md
+branch: feat/facade-audit
 last_archived: plan/archive/playbook-architecture-visualizer.md
 review_pending: false
 ```
@@ -23,10 +23,12 @@ review_pending: false
 milestone: null
 phase: p1
 done_criteria:
-  - toolstack: B で playbook 作成時、コーディングタスクに executor: worker が割り当てられ、実行時に codex-delegate SubAgent が自動呼び出しされる
-  - run_in_background=true で起動したタスクが Phase 完了時・セッション終了時に自動クリーンアップされる
-  - 3種類のレビュアー（reviewer, critic, user/coderabbit）全てが4QV+検証を実行する仕組みが存在する
-note: アーキテクチャ総合テストで発見した3つの問題を修正
+  - 全 20 ガードスクリプトが実際に機能することを E2E テストで確認
+  - test-runner が実行可能なテストスイートを持つ
+  - critic が「証拠なし PASS」を拒否できる
+  - 新規 playbook で実際のテスト駆動開発が機能する
+  - CodeRabbit レビューで「見かけ実装」ゼロ判定
+note: 「見かけだけの実装」を徹底検証し、実用に耐える品質に引き上げる
 ```
 
 ---
@@ -34,7 +36,7 @@ note: アーキテクチャ総合テストで発見した3つの問題を修正
 ## session
 
 ```yaml
-last_start: 2025-12-25 20:27:30
+last_start: 2026-01-01 12:40:33
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
@@ -45,11 +47,11 @@ last_clear: 2025-12-24 03:20:00
 
 ```yaml
 security: admin
-toolstack: B  # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
+toolstack: C  # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
 roles:
   orchestrator: claudecode  # 監督・調整・設計（常に claudecode）
   worker: codex             # 実装担当（A: claudecode, B/C: codex）
-  reviewer: claudecode      # レビュー担当（A/B: claudecode, C: coderabbit）
+  reviewer: coderabbit      # レビュー担当（A/B: claudecode, C: coderabbit）
   human: user               # 人間の介入（常に user）
 ```
 
