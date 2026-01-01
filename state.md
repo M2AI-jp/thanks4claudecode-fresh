@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-verify-subagent-data-flow.md
-branch: verify/subagent-data-flow
-last_archived: plan/archive/playbook-subagent-data-flow.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-verify-subagent-data-flow.md
 review_pending: false
 ```
 
