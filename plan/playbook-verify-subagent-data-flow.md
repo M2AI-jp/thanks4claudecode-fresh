@@ -329,12 +329,15 @@ done_when:
 
 - [x] **ft1**: 変更を全てコミットする
   - command: `git add -A && git status`
-  - status: pending
+  - status: done
+  - validated: 2026-01-01T21:12:00Z
 
-- [ ] **ft2**: repository-map.yaml を更新する
+- [x] **ft2**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
-  - status: pending
+  - status: done
+  - validated: 2026-01-01T21:11:00Z
 
-- [ ] **ft3**: tmp/ ディレクトリをクリーンアップする
+- [x] **ft3**: tmp/ ディレクトリをクリーンアップする
   - command: `rm -rf tmp/* 2>/dev/null || true`
-  - status: pending
+  - status: done
+  - validated: 2026-01-01T21:11:00Z
