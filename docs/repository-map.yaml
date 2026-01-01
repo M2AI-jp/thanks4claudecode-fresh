@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2025-12-25 20:37:06"
+  generated: "2026-01-01 19:00:57"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 232
+  total_files: 250
 
 hooks:
   directory: .claude/hooks/
@@ -26,14 +26,20 @@ hooks:
 agents:
   directory: .claude/skills/*/agents/
   note: "4QV+ アーキテクチャ: SubAgents は各 Skill 内に配置"
-  count: 6
+  count: 9
   files:
+    - name: "executor-resolver"
+      skill: "executor-resolver"
+      description: "設計意図"
     - name: "codex-delegate"
       skill: "golden-path"
       description: "Codex MCP をラップし、コンテキスト膨張を防止する SubAgent"
     - name: "pm"
       skill: "golden-path"
       description: "重要"
+    - name: "prompt-analyzer"
+      skill: "prompt-analyzer"
+      description: "設計意図"
     - name: "health-checker"
       skill: "quality-assurance"
       description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
@@ -46,13 +52,16 @@ agents:
     - name: "setup-guide"
       skill: "session-manager"
       description: "description: AUTOMATICALLY guides setup process when playbook=setup/playbook-setup.md. Conducts hear"
+    - name: "term-translator"
+      skill: "term-translator"
+      description: "設計意図"
 
 skills:
   directory: .claude/skills/
   invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
   usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
   auto_invoke: true
-  count: 18
+  count: 21
   files:
     - name: "abort-playbook"
       description: "明示的な playbook 中断・破棄処理"
@@ -62,6 +71,8 @@ skills:
       description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
     - name: "deploy-checker"
       description: "デプロイ準備・検証専門スキル"
+    - name: "executor-resolver"
+      description: "設計意図"
     - name: "frontend-design"
       description: "プロダクション品質のフロントエンドインターフェースを作成する"
     - name: "git-workflow"
@@ -78,6 +89,8 @@ skills:
       description: "このSkillは pm SubAgent への委譲を強制する。自分で処理してはならない。"
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の後処理"
+    - name: "prompt-analyzer"
+      description: "description: ユーザープロンプトの深層分析を行う専門Skill。5W1H抽出、リスク"
     - name: "quality-assurance"
       description: "品質保証"
     - name: "reward-guard"
@@ -86,6 +99,8 @@ skills:
       description: "セッション管理"
     - name: "state"
       description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
+    - name: "term-translator"
+      description: "description: ユーザープロンプト内の曖昧な表現をエンジニア用語に変換する"
     - name: "test-runner"
       description: "テスト実行・検証専門スキル"
     - name: "understanding-check"
@@ -135,7 +150,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 45
+      count: 47
     template:
       description: "playbook テンプレート"
       count: 5
@@ -217,6 +232,13 @@ hook_trigger_sequence:
           hooks:
             - script: "post-tool.sh"
               description: "post-tool.sh - PostToolUse(*) 導火線"
+    - trigger: "PreCompact"
+      description: "コンテキスト圧縮前に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "compact.sh"
+              description: ""
 
 # ==============================================================================
 # Workflows (M027)
@@ -377,6 +399,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2025-12-25 20:37:06"
+  - date: "2026-01-01 19:00:57"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

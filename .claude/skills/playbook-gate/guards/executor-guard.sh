@@ -18,6 +18,9 @@ set -uo pipefail
 # Note: -e を外す（grep が空の結果を返す場合のpipefail回避）
 
 STATE_FILE="${STATE_FILE:-state.md}"
+SESSION_STATE_DIR="${SESSION_STATE_DIR:-.claude/session-state}"
+LAST_FAIL_REASON_FILE="$SESSION_STATE_DIR/last-fail-reason"
+ITERATION_COUNT_FILE="$SESSION_STATE_DIR/iteration-count"
 
 # ============================================================
 # Admin モードチェック（M079: コア契約は回避不可）
@@ -221,6 +224,43 @@ case "$EXECUTOR" in
         # =============================================================
         # exit 2 でブロックするが、JSON 形式で具体的な呼び出し方法を提示
         # Claude はこのメッセージを見て Task ツールで codex-delegate を呼び出す
+
+        # =====================================================
+        # 自動リトライ機構: last-fail-reason の読み込みと注入
+        # =====================================================
+        FAIL_INFO=""
+        ITERATION_INFO=""
+        MAX_ITERATIONS_WARNING=""
+
+        if [[ -f "$LAST_FAIL_REASON_FILE" ]]; then
+            # FAIL 理由を読み込み
+            FAIL_REASON=$(cat "$LAST_FAIL_REASON_FILE" | tr '\n' '\\n' | sed 's/"/\\"/g')
+            FAIL_INFO="\\n\\n━━━ 前回の FAIL 情報 ━━━\\n$FAIL_REASON\\n━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n⚠️ 上記のエラーを修正してください。"
+
+            # 注入後にファイルをクリア
+            rm -f "$LAST_FAIL_REASON_FILE"
+        fi
+
+        if [[ -f "$ITERATION_COUNT_FILE" ]]; then
+            # イテレーションカウントを読み込み
+            CURRENT_COUNT=$(grep "^count:" "$ITERATION_COUNT_FILE" 2>/dev/null | sed 's/count: *//' | tr -d ' ' || echo "0")
+            ITERATION_INFO="\\n[iteration: $CURRENT_COUNT]"
+
+            # max_iterations を playbook から取得
+            MAX_ITER=5  # デフォルト
+            if [[ -f "$PLAYBOOK_PATH" ]]; then
+                PLAYBOOK_MAX=$(grep "max_iterations:" "$PLAYBOOK_PATH" 2>/dev/null | head -1 | sed 's/.*max_iterations: *//' | tr -d ' ' || echo "")
+                if [[ -n "$PLAYBOOK_MAX" && "$PLAYBOOK_MAX" =~ ^[0-9]+$ ]]; then
+                    MAX_ITER=$PLAYBOOK_MAX
+                fi
+            fi
+
+            # max_iterations 到達チェック
+            if [[ "$CURRENT_COUNT" -ge "$MAX_ITER" ]]; then
+                MAX_ITERATIONS_WARNING="\\n\\n🚨 MAX_ITERATIONS ($MAX_ITER) に到達しました。\\nAskUserQuestion で人間の確認を取ってください。\\n選択肢: リトライ継続 / 中止 / 手動対応"
+            fi
+        fi
+
         cat << EOF
 {
   "continue": false,
@@ -230,9 +270,12 @@ case "$EXECUTOR" in
     "action": "delegate_to_subagent",
     "target_subagent": "codex-delegate",
     "executor": "codex",
-    "file_path": "$RELATIVE_PATH"
+    "file_path": "$RELATIVE_PATH",
+    "has_fail_info": $([ -n "$FAIL_INFO" ] && echo "true" || echo "false"),
+    "iteration_count": "${CURRENT_COUNT:-0}",
+    "max_iterations": "${MAX_ITER:-5}"
   },
-  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  🔄 executor: codex - codex-delegate SubAgent に自動委譲\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  この subtask は Codex が担当です。\\n  以下の Task ツールを使って codex-delegate SubAgent に委譲してください:\\n\\n  Task(\\n    subagent_type='codex-delegate',\\n    prompt='【ここに実装内容を説明】'\\n  )\\n\\n  対象ファイル: $RELATIVE_PATH\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  🔄 executor: codex - codex-delegate SubAgent に自動委譲\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  この subtask は Codex が担当です。\\n  以下の Task ツールを使って codex-delegate SubAgent に委譲してください:\\n\\n  Task(\\n    subagent_type='codex-delegate',\\n    prompt='【ここに実装内容を説明】'\\n  )\\n\\n  対象ファイル: $RELATIVE_PATH$FAIL_INFO$ITERATION_INFO$MAX_ITERATIONS_WARNING\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 EOF
         exit 2

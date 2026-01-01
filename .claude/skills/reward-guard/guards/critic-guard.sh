@@ -17,6 +17,9 @@ set -uo pipefail
 # Note: -e を外す（heredoc 出力時の問題回避）
 
 STATE_FILE="${STATE_FILE:-state.md}"
+SESSION_STATE_DIR="${SESSION_STATE_DIR:-.claude/session-state}"
+LAST_FAIL_REASON_FILE="$SESSION_STATE_DIR/last-fail-reason"
+ITERATION_COUNT_FILE="$SESSION_STATE_DIR/iteration-count"
 
 # stdin から JSON を読み込む
 INPUT=$(cat)
@@ -77,6 +80,31 @@ fi
 # ブロック: critic PASS なしで state: done に変更しようとしている
 # ------------------------------------------------------------------
 
+# FAIL 情報を session-state に保存（自動リトライ機構用）
+save_fail_reason() {
+    mkdir -p "$SESSION_STATE_DIR"
+
+    # state.md から現在の Phase を取得
+    local phase_id="unknown"
+    if [ -f "$STATE_FILE" ]; then
+        phase_id=$(grep -A5 "^## goal" "$STATE_FILE" 2>/dev/null | grep "^phase:" | sed 's/phase: *//' | tr -d ' ' || echo "unknown")
+    fi
+
+    # タイムスタンプ
+    local timestamp
+    timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+    # FAIL 理由を YAML 形式で保存
+    cat > "$LAST_FAIL_REASON_FILE" << FAIL_EOF
+phase_id: $phase_id
+reason: "critic 未実行 - self_complete: true がありません。/crit を実行してください。"
+timestamp: $timestamp
+FAIL_EOF
+}
+
+# FAIL 情報を保存
+save_fail_reason
+
 cat >&2 << 'EOF'
 
 ========================================
@@ -102,6 +130,8 @@ cat >&2 << 'EOF'
   │ 証拠なしの done は自己報酬詐欺です。    │
   │ 「完了した気がする」は証拠ではありません。│
   └─────────────────────────────────────────┘
+
+  ※ FAIL 情報は .claude/session-state/last-fail-reason に保存されました
 
 ========================================
 

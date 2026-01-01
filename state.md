@@ -21,15 +21,21 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p1
+phase: p_final
 done_criteria:
+  # p0: プロンプト解釈基盤
+  - prompt-analyzer SubAgent が存在し、5W1H 分析 + リスク分析を実行する
+  - term-translator SubAgent が存在し、エンジニア用語への変換を実行する
+  - executor-resolver SubAgent が存在し、LLM ベースで executor を判定する
+  - pm SubAgent が orchestrator として上記 SubAgent を呼び出す
+  # p1-p4: 自動リトライ機構
   - critic-guard.sh が FAIL 時に .claude/session-state/last-fail-reason にエラー内容を保存する
   - executor-guard.sh が保存されたエラーを読み込み、codex プロンプトに注入する仕組みが存在する
   - iteration_count が .claude/session-state/iteration-count に記録される
   - max_iterations 到達時に AskUserQuestion が呼ばれる仕組みが存在する
   - playbook-format.md に max_iterations の自動リトライ動作が明記されている
   - ARCHITECTURE.md に自動リトライフローが追記されている
-note: critic FAIL 時に自動リトライする機構を実装する（max_iterations まで）
+note: プロンプト解釈基盤を構築し、critic FAIL 時に自動リトライする機構を実装する
 ```
 
 ---
@@ -37,7 +43,7 @@ note: critic FAIL 時に自動リトライする機構を実装する（max_iter
 ## session
 
 ```yaml
-last_start: 2026-01-01 18:09:39
+last_start: 2026-01-01 18:54:16
 last_end: 2025-12-24 03:27:11
 last_clear: 2025-12-24 03:20:00
 ```
