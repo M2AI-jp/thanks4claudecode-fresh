@@ -172,14 +172,18 @@ analysis_result:
 
 ## final_tasks
 
-- [ ] **ft1**: repository-map.yaml が更新されている
+- [x] **ft1**: repository-map.yaml が更新されている
   - command: `bash .claude/hooks/generate-repository-map.sh`
-  - status: pending
+  - status: done
+  - executed: 2026-01-02T08:27:00Z
 
-- [ ] **ft2**: 変更が全てコミットされている
+- [x] **ft2**: 変更が全てコミットされている
   - command: `git add -A && git commit -m "fix: resolve completeness-100 issues (6 items)"`
-  - status: pending
+  - status: done
+  - executed: 2026-01-02T08:28:00Z
+  - commit: 9ff7d2e
 
-- [ ] **ft3**: state.md が完了状態に更新されている
+- [x] **ft3**: state.md が完了状態に更新されている
   - command: `Edit state.md`
-  - status: pending
+  - status: done
+  - executed: 2026-01-02T08:28:00Z
