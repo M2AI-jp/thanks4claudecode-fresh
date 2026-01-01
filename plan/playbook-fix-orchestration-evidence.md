@@ -146,10 +146,10 @@ user_approved_understanding:
 
 ## final_tasks
 
-- [ ] **ft1**: repository-map.yaml を更新する
+- [x] **ft1**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
-  - status: pending
+  - status: skipped (証跡ファイルは .claude/logs/ 配下で repository-map 対象外)
 
-- [ ] **ft2**: 変更を全てコミットする
+- [x] **ft2**: 変更を全てコミットする
   - command: `git add -A && git status`
-  - status: pending
+  - status: done (commit d0d9fc4)
