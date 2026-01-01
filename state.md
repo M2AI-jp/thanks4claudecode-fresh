@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-orchestration-practice.md
+last_archived: plan/archive/playbook-orchestration-completeness-100.md
 review_pending: false
 ```
 
@@ -20,16 +20,21 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
+milestone: fix-completeness-100-issues
 phase: p1
 done_criteria:
-  - tmp/run.sh を実行すると Python -> TypeScript の順で処理が行われ最終結果が出力される
-  - codex executor で TypeScript 実装が行われた証跡がある
-  - CodeRabbit によるコードレビューが完了している
+  - playbook の全 phase/subtask が done になっている
+  - qa.sh の skip を FAIL 扱いに変更し、証跡ログ保存
+  - evidence の行数修正 + subagent.log 引用追加
+  - bats にエラーケース追加
+  - ts-node が devDependencies に追加され、README に前提条件追記
+  - timestamp 整合性修正
 status: in_progress
 note: |
-  複数言語オーケストレーション練習
-  playbook: plan/playbook-orchestration-practice.md
+  orchestration-completeness-100 の残課題6件を修正
+  prior_work:
+    - playbook: plan/archive/playbook-orchestration-completeness-100.md
+    - codex_agentId: a06e567 (transform.ts)
 ```
 
 ---
@@ -37,7 +42,7 @@ note: |
 ## session
 
 ```yaml
-last_start: 2026-01-01 23:28:43
+last_start: 2026-01-02 06:57:20
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
