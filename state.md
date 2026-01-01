@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-fix-completeness-100-issues.md
+branch: feat/multi-language-orchestration-demo
 last_archived: plan/archive/playbook-orchestration-completeness-100.md
 review_pending: false
 ```
@@ -20,22 +20,20 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: orchestration-completeness-100
-phase: completed
+milestone: fix-completeness-100-issues
+phase: p1
 done_criteria:
-  - ✅ state.md が status: completed, playbook.active: null に更新されている
-  - ✅ evidence/orchestration-codex-evidence.md に agentId と transform.ts の紐付け証跡が存在する
-  - ✅ tests/tmp-run.bats に run.sh の統合テストが存在し、bats で PASS する (8/8)
-  - ✅ shellcheck, ruff, eslint による静的解析が導入されている
-  - ✅ package-lock.json の健全性が確認されている (0 vulnerabilities)
-  - ✅ tmp/README.md に再現手順が記載されている
-  - ✅ scripts/qa.sh が存在し、全チェックを一括実行できる (5/5 PASS)
-status: completed
+  - playbook の全 phase/subtask が done になっている
+  - qa.sh の skip を FAIL 扱いに変更し、証跡ログ保存
+  - evidence の行数修正 + subagent.log 引用追加
+  - bats にエラーケース追加
+  - ts-node が devDependencies に追加され、README に前提条件追記
+  - timestamp 整合性修正
+status: in_progress
 note: |
-  orchestration-completeness-100 タスク完了
-  critic PASS: 2026-01-02T (agentId: a5a9ebb, done_when: 7/7)
+  orchestration-completeness-100 の残課題6件を修正
   prior_work:
-    - playbook: plan/archive/playbook-orchestration-practice.md
+    - playbook: plan/archive/playbook-orchestration-completeness-100.md
     - codex_agentId: a06e567 (transform.ts)
 ```
 
