@@ -9,10 +9,10 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-subagent-data-flow.md
+branch: fix/subagent-data-flow
 last_archived: plan/archive/playbook-auto-retry.md
-review_pending: false
+review_pending: true
 ```
 
 ---
@@ -20,22 +20,16 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: p_final
+milestone: subagent-data-flow
+phase: p1
 done_criteria:
-  # p0: プロンプト解釈基盤
-  - prompt-analyzer SubAgent が存在し、5W1H 分析 + リスク分析を実行する
-  - term-translator SubAgent が存在し、エンジニア用語への変換を実行する
-  - executor-resolver SubAgent が存在し、LLM ベースで executor を判定する
-  - pm SubAgent が orchestrator として上記 SubAgent を呼び出す
-  # p1-p4: 自動リトライ機構
-  - critic-guard.sh が FAIL 時に .claude/session-state/last-fail-reason にエラー内容を保存する
-  - executor-guard.sh が保存されたエラーを読み込み、codex プロンプトに注入する仕組みが存在する
-  - iteration_count が .claude/session-state/iteration-count に記録される
-  - max_iterations 到達時に AskUserQuestion が呼ばれる仕組みが存在する
-  - playbook-format.md に max_iterations の自動リトライ動作が明記されている
-  - ARCHITECTURE.md に自動リトライフローが追記されている
-note: プロンプト解釈基盤を構築し、critic FAIL 時に自動リトライする機構を実装する
+  - term-translator に「テスト」「検証」の変換ルールが追加されている
+  - understanding-check が term-translator の出力を参照して技術用語でユーザーに確認している
+  - playbook の context セクションに analysis_result, translated_requirements, user_approved_understanding が永続化される
+  - prompt-analyzer にテスト戦略（test_strategy）の分析項目が追加されている
+  - validations の実行フローが定義され、subtask 完了判定が自動化されている
+  - reviewer の判定基準が具体化され、各 Q の PASS/FAIL がログに記録される
+note: SubAgent 間のデータフロー断絶を修正し、プログラミング言語実装に耐えうる設計に改善する
 ```
 
 ---
