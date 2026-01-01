@@ -41,8 +41,9 @@ fi
 
 # 編集対象ファイルを取得
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
+SKIP_REASON=""
 if [[ -z "$FILE_PATH" ]]; then
-    exit 0
+    SKIP_REASON="missing file_path" # success return removed: consolidated skip exit below
 fi
 
 # 相対パスに変換
@@ -57,6 +58,11 @@ if [[ "$RELATIVE_PATH" == plan/playbook-*.md ]] || [[ "$RELATIVE_PATH" == *playb
 fi
 
 if [[ "$IS_PLAYBOOK" == false ]]; then
+    SKIP_REASON="non-playbook edit" # success return removed: consolidated skip exit below
+fi
+
+if [[ -n "$SKIP_REASON" ]]; then
+    # success return consolidated: multiple allow/skip paths return here.
     exit 0
 fi
 

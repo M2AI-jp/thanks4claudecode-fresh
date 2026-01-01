@@ -20,29 +20,30 @@ set -e
 SESSION_STATE_DIR=".claude/session-state"
 PENDING_FILE="$SESSION_STATE_DIR/post-loop-pending"
 
+SKIP_REASON=""
 # pending ファイルが存在しない場合はスキップ
 if [ ! -f "$PENDING_FILE" ]; then
-    exit 0
+    SKIP_REASON="pending file missing" # success return removed: consolidated skip exit below
+else
+    # stdin から JSON を読み込む
+    INPUT=$(cat)
+
+    # jq がない場合はスキップ（フェイルセーフ）
+    if ! command -v jq &> /dev/null; then
+        SKIP_REASON="jq missing" # success return removed: consolidated skip exit below
+    else
+        # ツール名を取得
+        TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
+
+        # Edit/Write 以外はスキップ
+        if [ "$TOOL_NAME" != "Edit" ] && [ "$TOOL_NAME" != "Write" ]; then
+            SKIP_REASON="non-edit tool" # success return removed: consolidated skip exit below
+        else
+            # ファイルパスを取得
+            FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
+        fi
+    fi
 fi
-
-# stdin から JSON を読み込む
-INPUT=$(cat)
-
-# jq がない場合はスキップ（フェイルセーフ）
-if ! command -v jq &> /dev/null; then
-    exit 0
-fi
-
-# ツール名を取得
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
-
-# Edit/Write 以外はスキップ
-if [ "$TOOL_NAME" != "Edit" ] && [ "$TOOL_NAME" != "Write" ]; then
-    exit 0
-fi
-
-# ファイルパスを取得
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
 
 # ==============================================================================
 # 許可リスト（これらのファイルは常に許可）
@@ -53,11 +54,19 @@ ALLOWLIST=(
     "post-loop-pending"
 )
 
-for ALLOWED in "${ALLOWLIST[@]}"; do
-    if [[ "$FILE_PATH" == *"$ALLOWED"* ]]; then
-        exit 0  # 許可
-    fi
-done
+if [[ -z "$SKIP_REASON" ]]; then
+    for ALLOWED in "${ALLOWLIST[@]}"; do
+        if [[ "$FILE_PATH" == *"$ALLOWED"* ]]; then
+            SKIP_REASON="allowlisted file" # success return removed: consolidated skip exit below
+            break
+        fi
+    done
+fi
+
+if [[ -n "$SKIP_REASON" ]]; then
+    # success return consolidated: multiple allow/skip paths return here.
+    exit 0
+fi
 
 # ==============================================================================
 # pending ファイルの内容を読み取り

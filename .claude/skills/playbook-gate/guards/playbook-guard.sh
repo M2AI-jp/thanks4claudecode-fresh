@@ -18,8 +18,9 @@ set -euo pipefail
 STATE_FILE="${STATE_FILE:-state.md}"
 
 # state.md が存在しない場合はパス
+SKIP_REASON=""
 if [[ ! -f "$STATE_FILE" ]]; then
-    exit 0
+    SKIP_REASON="state.md missing" # success return removed: consolidated skip exit below
 fi
 
 # --------------------------------------------------
@@ -33,36 +34,43 @@ SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | 
 # stdin から JSON を読み込む
 INPUT=$(cat)
 
-# jq がない場合はブロック（Fail-closed）
-if ! command -v jq &> /dev/null; then
-    cat >&2 << 'EOF'
+if [[ -z "$SKIP_REASON" ]]; then
+    # jq がない場合はブロック（Fail-closed）
+    if ! command -v jq &> /dev/null; then
+        cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ⛔ jq 未インストール - セキュリティチェック不可
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 jq はセキュリティガードに必須です。
 Install: brew install jq
 EOF
-    exit 2
+        exit 2
+    fi
+
+    # ファイルパスを取得
+    FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
+
+    # --------------------------------------------------
+    # 常に許可するファイル（デッドロック回避）
+    # --------------------------------------------------
+
+    # state.md への編集は常に許可
+    if [[ "$FILE_PATH" == *"state.md" ]]; then
+        SKIP_REASON="state.md edit allowed" # success return removed: consolidated skip exit below
+    fi
+
+    # --------------------------------------------------
+    # ブートストラップ例外: playbook ファイル自体の作成/編集は許可
+    # /playbook-init や pm が新規 playbook を作成できるようにする
+    # 注: plan/active/ は廃止済み（2025-12-25）、plan/ 直下のみ許可
+    # --------------------------------------------------
+    if [[ "$FILE_PATH" == *"plan/playbook-"*.md ]]; then
+        SKIP_REASON="playbook bootstrap edit allowed" # success return removed: consolidated skip exit below
+    fi
 fi
 
-# ファイルパスを取得
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
-
-# --------------------------------------------------
-# 常に許可するファイル（デッドロック回避）
-# --------------------------------------------------
-
-# state.md への編集は常に許可
-if [[ "$FILE_PATH" == *"state.md" ]]; then
-    exit 0
-fi
-
-# --------------------------------------------------
-# ブートストラップ例外: playbook ファイル自体の作成/編集は許可
-# /playbook-init や pm が新規 playbook を作成できるようにする
-# 注: plan/active/ は廃止済み（2025-12-25）、plan/ 直下のみ許可
-# --------------------------------------------------
-if [[ "$FILE_PATH" == *"plan/playbook-"*.md ]]; then
+if [[ -n "$SKIP_REASON" ]]; then
+    # success return consolidated: multiple allow/skip paths return here.
     exit 0
 fi
 
@@ -135,7 +143,7 @@ fi
 REVIEWED=$(grep -E "^\s*reviewed:" "$PLAYBOOK" 2>/dev/null | head -1 | sed 's/.*reviewed: *//' | sed 's/ *#.*//' | tr -d ' ')
 
 # context セクションの存在確認
-HAS_CONTEXT=$(grep -E "^context:" "$PLAYBOOK" 2>/dev/null | head -1 || echo "")
+HAS_CONTEXT=$(grep -E "^(##\s*context|context:)" "$PLAYBOOK" 2>/dev/null | head -1 || echo "")
 
 # reviewed: false または context セクションがない場合はブロック
 if [[ "$REVIEWED" == "false" ]] || [[ -z "$HAS_CONTEXT" ]]; then

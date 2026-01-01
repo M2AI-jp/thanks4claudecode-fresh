@@ -8,10 +8,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 GUARD_SCRIPT="$ROOT_DIR/.claude/skills/reward-guard/guards/critic-guard.sh"
 
-# テスト用一時ファイル
-TMP_DIR=$(mktemp -d)
-trap 'rm -rf "$TMP_DIR"' EXIT
-
 TOTAL=0
 PASSED=0
 
@@ -22,68 +18,220 @@ assert_exit_code() {
 
     TOTAL=$((TOTAL + 1))
     if [[ "$actual" -eq "$expected" ]]; then
-        echo "  ✓ $name (exit $actual)"
+        echo "  ok - $name (exit $actual)"
         PASSED=$((PASSED + 1))
     else
-        echo "  ✗ $name (expected exit $expected, got exit $actual)"
+        echo "  fail - $name (expected exit $expected, got exit $actual)"
         return 1
     fi
+}
+
+build_input() {
+    local file_path="$1"
+    local new_string="$2"
+    local old_string="${3:-old}"
+
+    jq -nc \
+        --arg file_path "$file_path" \
+        --arg old_string "$old_string" \
+        --arg new_string "$new_string" \
+        '{tool_name:"Edit", tool_input:{file_path:$file_path, old_string:$old_string, new_string:$new_string}}'
+}
+
+run_guard() {
+    local input="$1"
+    set +e
+    echo "$input" | bash "$GUARD_SCRIPT" > /dev/null 2>&1
+    local exit_code=$?
+    set -e
+    echo "$exit_code"
+}
+
+make_playbook_snippet() {
+    cat << 'PLAYBOOK_SNIP'
+- [x] **p3.3**: critic-guard evidence
+  - validations:
+    - technical: "__TECHNICAL__"
+    - consistency: "__CONSISTENCY__"
+    - completeness: "__COMPLETENESS__"
+PLAYBOOK_SNIP
+}
+
+render_playbook_snippet() {
+    local technical="$1"
+    local consistency="$2"
+    local completeness="$3"
+    local content
+
+    content=$(make_playbook_snippet)
+    content=${content//__TECHNICAL__/$technical}
+    content=${content//__CONSISTENCY__/$consistency}
+    content=${content//__COMPLETENESS__/$completeness}
+    echo "$content"
 }
 
 echo "Testing critic-guard.sh"
 echo "------------------------"
 
-# テスト 1: state: done を含まない編集は許可される
-test_non_done_edit() {
-    local input='{"file_path":"plan/playbook-test.md","old_string":"status: pending","new_string":"status: in_progress"}'
-    echo "$input" | bash "$GUARD_SCRIPT" > /dev/null 2>&1
-    local exit_code=$?
-    assert_exit_code "非 done 編集は許可される" 0 "$exit_code"
+# Good evidence patterns
+
+test_good_specific_details() {
+    local content
+    content=$(render_playbook_snippet \
+        "PASS - specific details about what was verified" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "good evidence: specific details" 0 "$exit_code"
 }
 
-# テスト 2: state: done への編集（self_complete なし）の動作確認
-# NOTE: 現在の critic-guard.sh は完全にはブロックしていない可能性あり（p4 で修正予定）
-test_done_without_self_complete() {
-    # 一時 playbook を作成
-    mkdir -p "$TMP_DIR/plan"
-    cat > "$TMP_DIR/plan/playbook-test.md" << 'EOF'
-## phases
-- id: p1
-  subtasks:
-    - id: p1.1
-      critic_required: true
-EOF
-
-    local input='{"file_path":"'"$TMP_DIR"'/plan/playbook-test.md","old_string":"status: in_progress","new_string":"status: done"}'
-
-    cd "$TMP_DIR"
-    echo "$input" | bash "$GUARD_SCRIPT" > /dev/null 2>&1 || true
-    local exit_code=$?
-    cd "$ROOT_DIR"
-
-    TOTAL=$((TOTAL + 1))
-    # 現状の動作を記録（exit 0 = 許可、exit 2 = ブロック）
-    if [[ "$exit_code" -eq 0 ]]; then
-        echo "  ⚠ done 編集（self_complete なし）が許可されている (exit 0) - p4 で修正予定"
-        PASSED=$((PASSED + 1))  # 現状の動作を記録
-    else
-        echo "  ✓ done 編集（self_complete なし）がブロックされる (exit $exit_code)"
-        PASSED=$((PASSED + 1))
-    fi
+test_good_command_output() {
+    local content
+    content=$(render_playbook_snippet \
+        "PASS - command output shows X" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "good evidence: command output" 0 "$exit_code"
 }
 
-# テスト 3: playbook 以外のファイルはスキップされる
-test_non_playbook_file() {
-    local input='{"file_path":"README.md","old_string":"old","new_string":"new"}'
-    echo "$input" | bash "$GUARD_SCRIPT" > /dev/null 2>&1
-    local exit_code=$?
-    assert_exit_code "playbook 以外のファイルはスキップ" 0 "$exit_code"
+test_good_file_contains() {
+    local content
+    content=$(render_playbook_snippet \
+        "PASS - file contains Y" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "good evidence: file contains" 0 "$exit_code"
+}
+
+# Bad evidence patterns
+
+test_bad_pass_only() {
+    local content
+    content=$(render_playbook_snippet \
+        "PASS" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "bad evidence: PASS only" 2 "$exit_code"
+}
+
+test_bad_done_only() {
+    local content
+    content=$(render_playbook_snippet \
+        "done" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "bad evidence: done only" 2 "$exit_code"
+}
+
+test_bad_completed_only() {
+    local content
+    content=$(render_playbook_snippet \
+        "completed" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "bad evidence: completed only" 2 "$exit_code"
+}
+
+test_bad_pass_dash_empty() {
+    local content
+    content=$(render_playbook_snippet \
+        "PASS - " \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "bad evidence: PASS - empty" 2 "$exit_code"
+}
+
+test_bad_empty_validation() {
+    local content
+    content=$(render_playbook_snippet \
+        "" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "bad evidence: empty validation" 2 "$exit_code"
+}
+
+test_bad_missing_prefix() {
+    local content
+    content=$(render_playbook_snippet \
+        "file contains Y" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "bad evidence: missing PASS - prefix" 2 "$exit_code"
+}
+
+test_bad_pass_done() {
+    local content
+    content=$(render_playbook_snippet \
+        "PASS - done" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "bad evidence: PASS - done" 2 "$exit_code"
+}
+
+test_bad_pass_completed() {
+    local content
+    content=$(render_playbook_snippet \
+        "PASS - completed" \
+        "PASS - command output shows X" \
+        "PASS - file contains Y")
+    local input
+    input=$(build_input "plan/playbook-test.md" "$content")
+    local exit_code
+    exit_code=$(run_guard "$input")
+    assert_exit_code "bad evidence: PASS - completed" 2 "$exit_code"
 }
 
 # テスト実行
-test_non_done_edit
-test_done_without_self_complete
-test_non_playbook_file
+test_good_specific_details
+test_good_command_output
+test_good_file_contains
+test_bad_pass_only
+test_bad_done_only
+test_bad_completed_only
+test_bad_pass_dash_empty
+test_bad_empty_validation
+test_bad_missing_prefix
+test_bad_pass_done
+test_bad_pass_completed
 
 echo ""
 echo "Results: $PASSED/$TOTAL passed"
