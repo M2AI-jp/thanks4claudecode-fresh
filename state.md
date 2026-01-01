@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-typescript-calculator.md
-branch: feat/typescript-calculator
-last_archived: plan/archive/playbook-verify-subagent-data-flow.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-typescript-calculator.md
 review_pending: false
 ```
 
