@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-fix-coderabbit-auto-delegate.md
+last_archived: plan/archive/playbook-verify-subagent-data-flow.md
 review_pending: false
 ```
 
@@ -21,18 +21,14 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p_final
+phase: p1
 done_criteria:
-  - executor-guard.sh の coderabbit case が hookSpecificOutput JSON 形式で出力する
-  - quality-assurance SKILL.md に coderabbit-delegate SubAgent が記載されている
-  - state.md の note が最新情報に更新されている
+  - ARCHITECTURE.md に coderabbit-delegate SubAgent が記載されている
+  - E2E テスト A/B/C/D が全て成功する
 status: in_progress
 note: |
-  coderabbit 自動委譲機能の修正完了。p_final 検証中。
-  - p1 完了: executor-guard.sh に hookSpecificOutput JSON 追加
-  - p2 完了: SKILL.md に coderabbit-delegate SubAgent 追加
-  - p3 完了: state.md 更新
-  playbook: plan/playbook-fix-coderabbit-auto-delegate.md
+  ARCHITECTURE.md 最新化 + coderabbit 統合テスト
+  playbook: plan/playbook-verify-subagent-data-flow.md
 ```
 
 ---
