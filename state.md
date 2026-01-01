@@ -21,14 +21,16 @@ review_pending: false
 
 ```yaml
 milestone: typescript-calculator
-phase: p1
+phase: p_final
 done_criteria:
-  - tmp/calculator/package.json が存在する
-  - tmp/calculator/src/calculator.ts に add, subtract, multiply, divide 関数が存在する
-  - npm test が exit 0 で終了する
+  - .tmp/calculator/package.json が存在する
+  - .tmp/calculator/src/calculator.ts に add, subtract, multiply, divide 関数が存在する
+  - npm test が exit 0 で終了する（13 tests passed 確認済み）
   - divide(1, 0) がエラーを throw するテストが PASS する
-status: pending
-note: executor 役割ベース指定の検証タスク
+status: ALL PASS - 全 done_criteria 検証完了
+note: |
+  executor 役割ベース指定の検証タスク完了。
+  発見: coderabbit-delegate SubAgent が未実装（codex は自動化済み）
 ```
 
 ---

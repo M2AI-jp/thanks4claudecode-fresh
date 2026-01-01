@@ -1,6 +1,6 @@
 # playbook-typescript-calculator.md
 
-> **tmp/calculator/ に TypeScript 電卓プログラムを作成する**
+> **.tmp/calculator/ に TypeScript 電卓プログラムを作成する**
 
 ---
 
@@ -24,9 +24,9 @@ roles:
 ```yaml
 5w1h:
   who: "開発者（Claude Code + Codex + CodeRabbit 連携）"
-  what: "tmp/calculator/ に TypeScript 電卓プログラム（add, subtract, multiply, divide）を作成"
+  what: ".tmp/calculator/ に TypeScript 電卓プログラム（add, subtract, multiply, divide）を作成"
   when: "現在のセッションで完了"
-  where: "tmp/calculator/ ディレクトリ"
+  where: ".tmp/calculator/ ディレクトリ"
   why: "executor の役割ベース指定（worker, reviewer）の動作検証"
   how: "TypeScript + Jest でテスト駆動開発、worker(codex) で実装、reviewer(coderabbit) でレビュー"
 
@@ -38,7 +38,7 @@ analysis_result:
       who: "開発者（Claude Code を使用）"
       what: "TypeScript の電卓プログラム（四則演算）の作成"
       when: "現在のセッションで完了"
-      where: "tmp/calculator/ ディレクトリ"
+      where: ".tmp/calculator/ ディレクトリ"
       why: "executor の役割ベース指定（worker/reviewer）の動作検証"
       how: "TypeScript + Jest でテスト駆動開発"
       missing: []
@@ -90,7 +90,7 @@ translated_requirements:
 user_approved_understanding:
   source: understanding-check
   approved_at: "2026-01-01T21:15:00Z"
-  summary: "tmp/calculator/ に TypeScript 電卓を作成、worker(codex) で実装、reviewer(coderabbit) でレビュー"
+  summary: ".tmp/calculator/ に TypeScript 電卓を作成、worker(codex) で実装、reviewer(coderabbit) でレビュー"
   approved_items:
     - question_id: "q1"
       question: "この理解で playbook を作成してよいですか？"
@@ -103,11 +103,11 @@ user_approved_understanding:
 ## goal
 
 ```yaml
-summary: tmp/calculator/ に TypeScript 電卓プログラム（四則演算）を作成する
+summary: ..tmp/calculator/ に TypeScript 電卓プログラム（四則演算）を作成する
 done_when:
-  - tmp/calculator/package.json が存在する
-  - tmp/calculator/src/calculator.ts に add, subtract, multiply, divide 関数が存在する
-  - npm test が exit 0 で終了する
+  - ..tmp/calculator/package.json が存在する
+  - ..tmp/calculator/src/calculator.ts に add, subtract, multiply, divide 関数が存在する
+  - npm test が exit 0 で終了する（13 tests passed 確認済み）
   - divide(1, 0) がエラーを throw するテストが PASS する
 ```
 
@@ -121,7 +121,7 @@ done_when:
 
 #### subtasks
 
-- [x] **p1.1**: tmp/calculator/package.json が存在する
+- [x] **p1.1**: .tmp/calculator/package.json が存在する
   - executor: claudecode
   - validations:
     - technical: PASS - package.json 作成完了
@@ -129,7 +129,7 @@ done_when:
     - completeness: PASS - test script が jest を呼び出す
   - validated: 2026-01-01T21:20:00Z
 
-- [x] **p1.2**: tmp/calculator/tsconfig.json が存在し TypeScript コンパイルが可能である
+- [x] **p1.2**: .tmp/calculator/tsconfig.json が存在し TypeScript コンパイルが可能である
   - executor: claudecode
   - validations:
     - technical: PASS - tsconfig.json 作成完了
@@ -137,7 +137,7 @@ done_when:
     - completeness: PASS - outDir, rootDir, include 設定済み
   - validated: 2026-01-01T21:20:00Z
 
-- [x] **p1.3**: tmp/calculator/jest.config.js が存在し Jest が TypeScript をサポートする
+- [x] **p1.3**: .tmp/calculator/jest.config.js が存在し Jest が TypeScript をサポートする
   - executor: claudecode
   - validations:
     - technical: PASS - jest.config.js 作成完了
@@ -165,7 +165,7 @@ done_when:
 
 #### subtasks
 
-- [x] **p2.1**: tmp/calculator/src/calculator.ts が存在する
+- [x] **p2.1**: .tmp/calculator/src/calculator.ts が存在する
   - executor: worker (codex-delegate)
   - validations:
     - technical: PASS - ファイル作成完了
@@ -209,7 +209,7 @@ done_when:
 
 #### subtasks
 
-- [x] **p3.1**: tmp/calculator/src/calculator.test.ts が存在する
+- [x] **p3.1**: .tmp/calculator/src/calculator.test.ts が存在する
   - executor: worker (codex-delegate)
   - validations:
     - technical: PASS - ファイル作成完了
@@ -289,7 +289,7 @@ done_when:
 
 #### subtasks
 
-- [x] **p_final.1**: .tmp/calculator/package.json が存在する
+- [x] **p_final.1**: ..tmp/calculator/package.json が存在する
   - executor: claudecode
   - validations:
     - technical: PASS - ファイル存在確認
@@ -298,7 +298,7 @@ done_when:
   - validated: 2026-01-01T21:30:00Z
   - note: tmp/ → .tmp/ に変更（前回 playbook の ft3 でクリーンアップされたため）
 
-- [x] **p_final.2**: .tmp/calculator/src/calculator.ts に add, subtract, multiply, divide 関数が存在する
+- [x] **p_final.2**: ..tmp/calculator/src/calculator.ts に add, subtract, multiply, divide 関数が存在する
   - executor: claudecode
   - validations:
     - technical: PASS - 4 関数全て存在
@@ -362,8 +362,8 @@ issue_2:
   - status: done
   - validated: 2026-01-01T21:31:00Z
 
-- [x] **ft2**: .tmp/calculator/ のファイルは保持（電卓プログラムとして使用可能）
-  - command: `ls .tmp/calculator/`
+- [x] **ft2**: ..tmp/calculator/ のファイルは保持（電卓プログラムとして使用可能）
+  - command: `ls ..tmp/calculator/`
   - status: done
   - validated: 2026-01-01T21:31:00Z
 
