@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-fix-orchestration-evidence.md
+last_archived: plan/archive/playbook-orchestration-completeness-100.md
 review_pending: false
 ```
 
@@ -20,22 +20,23 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: p1
+milestone: orchestration-completeness-100
+phase: completed
 done_criteria:
-  - .claude/logs/critic-results.log に orchestration-practice の PASS 記録が存在する
-  - .claude/logs/evidence/orchestration-practice-run-output.log に run.sh の実行結果が保存されている
-  - state.md の goal.done_criteria が playbook の done_when を参照している
-status: in_progress
+  - ✅ state.md が status: completed, playbook.active: null に更新されている
+  - ✅ evidence/orchestration-codex-evidence.md に agentId と transform.ts の紐付け証跡が存在する
+  - ✅ tests/tmp-run.bats に run.sh の統合テストが存在し、bats で PASS する (8/8)
+  - ✅ shellcheck, ruff, eslint による静的解析が導入されている
+  - ✅ package-lock.json の健全性が確認されている (0 vulnerabilities)
+  - ✅ tmp/README.md に再現手順が記載されている
+  - ✅ scripts/qa.sh が存在し、全チェックを一括実行できる (5/5 PASS)
+status: completed
 note: |
-  orchestration-practice 証跡修正タスク
-  前回 playbook: plan/archive/playbook-orchestration-practice.md
-  前回 critic_result: PASS (2026-01-02T00:00:00Z, agentId: a8720a3)
-  前回 evidence:
-    - coderabbit_log: ~/.coderabbit/logs/2026-01-01T14-47-52-887Z-coderabbit-cli-c4deb3b1-bf3c-4d47-a50d-8783f52d1188.log
-    - coderabbit_review: ~/.coderabbit/reviews/522bcf9e/10a17f98/reviews/1767279031937/
-    - codex_agent: a06e567 (subagent.log line 417)
-    - run_output: bash tmp/run.sh '{"input":"hello"}' → Python→TypeScript パイプライン成功
+  orchestration-completeness-100 タスク完了
+  critic PASS: 2026-01-02T (agentId: a5a9ebb, done_when: 7/7)
+  prior_work:
+    - playbook: plan/archive/playbook-orchestration-practice.md
+    - codex_agentId: a06e567 (transform.ts)
 ```
 
 ---
@@ -43,7 +44,7 @@ note: |
 ## session
 
 ```yaml
-last_start: 2026-01-01 23:28:43
+last_start: 2026-01-02 06:57:20
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
