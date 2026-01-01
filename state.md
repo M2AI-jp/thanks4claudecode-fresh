@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-verify-subagent-data-flow.md
+branch: verify/subagent-data-flow
 last_archived: plan/archive/playbook-subagent-data-flow.md
 review_pending: false
 ```
@@ -20,16 +20,17 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: subagent-data-flow
-phase: p1
+milestone: verify-subagent-data-flow
+phase: p_final
 done_criteria:
-  - term-translator に「テスト」「検証」の変換ルールが追加されている
-  - understanding-check が term-translator の出力を参照して技術用語でユーザーに確認している
-  - playbook の context セクションに analysis_result, translated_requirements, user_approved_understanding が永続化される
-  - prompt-analyzer にテスト戦略（test_strategy）の分析項目が追加されている
-  - validations の実行フローが定義され、subtask 完了判定が自動化されている
-  - reviewer の判定基準が具体化され、各 Q の PASS/FAIL がログに記録される
-note: SubAgent 間のデータフロー断絶を修正し、プログラミング言語実装に耐えうる設計に改善する
+  - term-translator に「テスト」「検証」の変換ルールが存在し、内容が適切である
+  - understanding-check が translated_requirements を参照している
+  - playbook-format.md と context-management に永続化フィールドが定義されている
+  - prompt-analyzer に test_strategy, preconditions, success_criteria, reverse_dependencies が追加されている
+  - validations に validation_type と証拠記録形式が定義されている
+  - reviewer に 4QV+ の具体的判定基準と PASS/FAIL ログ形式が定義されている
+status: ALL PASS - 全 done_criteria を検証完了
+note: playbook-subagent-data-flow.md の修正内容を網羅的に検証完了
 ```
 
 ---
@@ -37,8 +38,8 @@ note: SubAgent 間のデータフロー断絶を修正し、プログラミン�
 ## session
 
 ```yaml
-last_start: 2026-01-01 20:13:55
-last_end: 2025-12-24 03:27:11
+last_start: 2026-01-01 20:50:43
+last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
 
