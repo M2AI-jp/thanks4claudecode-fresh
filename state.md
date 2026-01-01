@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-architecture-sync.md
-branch: docs/architecture-sync
-last_archived: plan/archive/playbook-auto-retry.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-architecture-sync.md
 review_pending: false
 ```
 
