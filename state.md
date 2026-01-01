@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-orchestration-practice.md
-branch: feat/multi-language-orchestration-demo
-last_archived: plan/archive/playbook-verify-subagent-data-flow.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-orchestration-practice.md
 review_pending: false
 ```
 
