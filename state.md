@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-restore-demo-files.md
-branch: fix/restore-demo-files
-last_archived: plan/archive/playbook-tmp-demo-gitignore.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-restore-demo-files.md
 review_pending: true
 ```
 
