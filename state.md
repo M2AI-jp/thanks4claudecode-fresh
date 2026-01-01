@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-facade-audit.md
-branch: feat/facade-audit
-last_archived: plan/archive/playbook-architecture-visualizer.md
+active: plan/playbook-facade-audit-v2.md
+branch: feat/facade-audit-v2
+last_archived: plan/playbook-facade-audit.md
 review_pending: false
 ```
 
@@ -21,14 +21,15 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p1
+phase: p_init
 done_criteria:
-  - 全 20 ガードスクリプトが実際に機能することを E2E テストで確認
-  - test-runner が実行可能なテストスイートを持つ
-  - critic が「証拠なし PASS」を拒否できる
-  - 新規 playbook で実際のテスト駆動開発が機能する
-  - CodeRabbit レビューで「見かけ実装」ゼロ判定
-note: 「見かけだけの実装」を徹底検証し、実用に耐える品質に引き上げる
+  - playbook テンプレートが「executor 強制」「証拠強制」を構造的に保証している
+  - executor-guard が Task/Bash を含む全ツールを監視している
+  - Codex MCP が 5 回連続で正常応答する（タイムアウトなし）
+  - フォールバック時にユーザー確認プロンプトが発生する
+  - p3-p7 の実装が全て Codex によって行われた証拠がある
+  - CodeRabbit 最終レビューで critical: 0, major: 0 である
+note: executor 強制を構造的に保証し、Codex/CodeRabbit による監査を完遂する
 ```
 
 ---
