@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-subagent-data-flow.md
-branch: fix/subagent-data-flow
-last_archived: plan/archive/playbook-auto-retry.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-subagent-data-flow.md
 review_pending: false
 ```
 
