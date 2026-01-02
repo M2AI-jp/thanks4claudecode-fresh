@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-reward-fraud-verification.md
-branch: feat/harness-self-awareness
-last_archived: plan/archive/playbook-harness-self-awareness-v3.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-reward-fraud-verification.md
 review_pending: false
 ```
 
