@@ -93,28 +93,31 @@ user_approved_understanding:
 
 #### subtasks
 
-- [ ] **p1.1**: bash-check.sh:141 の check-coherence.sh パスが `.claude/skills/reward-guard/guards/coherence.sh` に修正されている
+- [x] **p1.1**: bash-check.sh:141 の check-coherence.sh パスが `.claude/skills/reward-guard/guards/coherence.sh` に修正されている
   - executor: codex
   - validations:
-    - technical: "grep で修正後のパスが存在することを確認"
-    - consistency: "coherence.sh の実際のパスと一致"
-    - completeness: "呼び出し箇所が全て修正されている"
+    - technical: "PASS - bash-check.sh:141 に正しいパス確認済み"
+    - consistency: "PASS - coherence.sh ファイルが存在"
+    - completeness: "PASS - 呼び出し箇所全て修正済み"
+  - validated: 2026-01-02T18:00:00
 
-- [ ] **p1.2**: bash-check.sh:144 の check-state-update.sh 呼び出しが削除されている
+- [x] **p1.2**: bash-check.sh:144 の check-state-update.sh 呼び出しが削除されている
   - executor: codex
   - validations:
-    - technical: "grep -c 'check-state-update' が 0 を返す"
-    - consistency: "関連する変数や条件分岐も削除されている"
-    - completeness: "呼び出し箇所が全て削除されている"
+    - technical: "PASS - grep 結果 0 件"
+    - consistency: "PASS - 関連行も削除済み"
+    - completeness: "PASS - 呼び出し箇所全て削除済み"
+  - validated: 2026-01-02T18:00:00
 
-- [ ] **p1.3**: bash -n .claude/hooks/bash-check.sh がシンタックスエラーなしで終了する
+- [x] **p1.3**: bash -n .claude/hooks/bash-check.sh がシンタックスエラーなしで終了する
   - executor: claudecode
   - validations:
-    - technical: "bash -n が exit 0 で終了"
-    - consistency: "他のスクリプトとの整合性確認"
-    - completeness: "全ての関数が正しく定義されている"
+    - technical: "PASS - bash -n exit 0"
+    - consistency: "PASS - 整合性確認済み"
+    - completeness: "PASS - 全関数正常定義"
+  - validated: 2026-01-02T18:00:00
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -126,28 +129,31 @@ user_approved_understanding:
 
 #### subtasks
 
-- [ ] **p2.1**: ARCHITECTURE.md Section 3 の `.claude/session-state/*` が `.claude/.session-init` に修正されている
+- [x] **p2.1**: ARCHITECTURE.md Section 3 の `.claude/session-state/*` が `.claude/.session-init` に修正されている
   - executor: codex
   - validations:
-    - technical: "grep で .claude/.session-init が存在することを確認"
-    - consistency: "init-guard.sh の INIT_DIR と一致"
-    - completeness: "関連する全ての記述が修正されている"
+    - technical: "PASS - Line 308 に .session-init 記述確認"
+    - consistency: "PASS - init-guard.sh:17 INIT_DIR と一致"
+    - completeness: "PASS - 関連記述全て修正済み"
+  - validated: 2026-01-02T18:00:00
 
-- [ ] **p2.2**: ARCHITECTURE.md Section 1.5 の `session.sh -> handlers/compact.sh` が直接 `compact.sh` 呼び出しに修正されている
+- [x] **p2.2**: ARCHITECTURE.md Section 1.5 の `session.sh -> handlers/compact.sh` が直接 `compact.sh` 呼び出しに修正されている
   - executor: codex
   - validations:
-    - technical: "grep で修正後の記述が存在することを確認"
-    - consistency: "settings.json の hooks 定義と一致"
-    - completeness: "PreCompact セクション全体が整合している"
+    - technical: "PASS - Line 121,169 に直接呼び出し記述確認"
+    - consistency: "PASS - settings.json と一致"
+    - completeness: "PASS - PreCompact セクション整合"
+  - validated: 2026-01-02T18:00:00
 
-- [ ] **p2.3**: ARCHITECTURE.md Section 7 の `session.log` が `subagent.log` に修正され、`archive-playbook.sh` 呼び出しが追記されている
+- [x] **p2.3**: ARCHITECTURE.md Section 7 の `session.log` が `subagent.log` に修正され、`archive-playbook.sh` 呼び出しが追記されている
   - executor: codex
   - validations:
-    - technical: "grep で subagent.log と archive-playbook.sh が存在することを確認"
-    - consistency: "subagent-stop.sh の実装と一致"
-    - completeness: "SubagentStop セクション全体が整合している"
+    - technical: "PASS - subagent.log 確認、session.log 検出なし"
+    - consistency: "PASS - subagent-stop.sh 実装と一致"
+    - completeness: "PASS - archive-playbook.sh 呼び出し追記済み"
+  - validated: 2026-01-02T18:00:00
 
-**status**: pending
+**status**: done
 **max_iterations**: 5
 
 ---
@@ -159,42 +165,45 @@ user_approved_understanding:
 
 #### subtasks
 
-- [ ] **p_final.1**: bash-check.sh が存在しないスクリプトを呼び出していない
+- [x] **p_final.1**: bash-check.sh が存在しないスクリプトを呼び出していない
   - executor: claudecode
   - validations:
-    - technical: "grep で check-coherence.sh と check-state-update.sh の古いパス/呼び出しがないことを確認"
-    - consistency: "呼び出されるスクリプトが全て存在する"
-    - completeness: "bash -n でエラーがない"
+    - technical: "PASS - 旧パス grep 検出なし"
+    - consistency: "PASS - coherence.sh 存在確認済み"
+    - completeness: "PASS - bash -n exit 0"
+  - validated: 2026-01-02T18:00:00
 
-- [ ] **p_final.2**: ARCHITECTURE.md の記述が実装と整合している
+- [x] **p_final.2**: ARCHITECTURE.md の記述が実装と整合している
   - executor: claudecode
   - validations:
-    - technical: "修正された 3 箇所を grep で確認"
-    - consistency: "各記述が対応する実装ファイルと一致"
-    - completeness: "全ての修正対象箇所が更新されている"
+    - technical: "PASS - 3箇所全て grep 確認済み"
+    - consistency: "PASS - 各実装ファイルと一致"
+    - completeness: "PASS - 全修正対象更新済み"
+  - validated: 2026-01-02T18:00:00
 
-- [ ] **p_final.3**: bash -n でシンタックスエラーがない
+- [x] **p_final.3**: bash -n でシンタックスエラーがない
   - executor: claudecode
   - validations:
-    - technical: "bash -n .claude/hooks/bash-check.sh が exit 0"
-    - consistency: "他のシェルスクリプトも同様にエラーがない"
-    - completeness: "修正による副作用がない"
+    - technical: "PASS - bash -n exit 0"
+    - consistency: "PASS - 他スクリプトもエラーなし"
+    - completeness: "PASS - 副作用なし"
+  - validated: 2026-01-02T18:00:00
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
 
 ## final_tasks
 
-- [ ] **ft1**: repository-map.yaml を更新する
+- [x] **ft1**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
-  - status: pending
+  - status: done
 
-- [ ] **ft2**: tmp/ 内の一時ファイルを削除する
+- [x] **ft2**: tmp/ 内の一時ファイルを削除する
   - command: `find tmp/ -type f ! -name 'README.md' -delete 2>/dev/null || true`
-  - status: pending
+  - status: done
 
-- [ ] **ft3**: 変更を全てコミットする
+- [x] **ft3**: 変更を全てコミットする
   - command: `git add -A && git status`
-  - status: pending
+  - status: done

@@ -96,7 +96,7 @@ session-start.sh:
   - Outputs required Read list
   - Warns if playbook=null
 
-check-coherence.sh:
+coherence.sh:
   - Validates four-tuple alignment
   - Blocks commits if misaligned
 

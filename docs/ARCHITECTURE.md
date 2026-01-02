@@ -118,8 +118,7 @@ Single Source of Truth:
 
 ### Hook
 ```
-.claude/hooks/session.sh
-    │
+.claude/skills/session-manager/handlers/compact.sh（直接呼び出し）
     └─→ .claude/skills/session-manager/handlers/start.sh
 ```
 
@@ -144,7 +143,7 @@ Single Source of Truth:
 | ファイル | 書き込みデータ |
 |----------|---------------|
 | state.md | session.last_start |
-| .claude/logs/session.log | セッション開始ログ |
+| .claude/logs/subagent.log | セッション開始ログ |
 
 ### 関連 SubAgent
 
@@ -167,9 +166,7 @@ Single Source of Truth:
 
 ### Hook
 ```
-.claude/hooks/session.sh
-    │
-    └─→ .claude/skills/session-manager/handlers/compact.sh
+.claude/skills/session-manager/handlers/compact.sh（直接呼び出し）
 ```
 
 ### 設計思想
@@ -308,7 +305,7 @@ Claude がツール名と入力パラメータを決定した後、実際の実�
 | ファイル | 取得データ | 用途 |
 |----------|-----------|------|
 | state.md | playbook.active | playbook 確認 |
-| .claude/session-state/* | 既読ファイル | init-guard 判定 |
+| .claude/.session-init | 初期化済フラグ | init-guard 判定 |
 
 ### main ブランチルール
 
@@ -769,8 +766,9 @@ Task(subagent_type='executor-resolver')
 .claude/hooks/subagent-stop.sh
     │
     └─→ SubAgent 終了時の後処理
-        - ログ記録
-        - リソースクリーンアップ
+        - ログ記録（.claude/logs/subagent.log）
+        - playbook 完了判定
+        └─→ archive-playbook.sh 呼び出し（全 Phase done の場合）
 ```
 
 #### 設定（.claude/settings.json）

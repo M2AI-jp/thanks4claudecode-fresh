@@ -71,7 +71,7 @@ model: opus
 # 新規セッション開始
 mcp__codex__codex:
   prompt: "実装内容"  # 必須
-  model: "o3"         # オプション（デフォルト: 設定に依存）
+  model: "opus"       # オプション（デフォルト: 設定に依存）
   sandbox: "..."      # オプション
   approval-policy: "..." # オプション
 

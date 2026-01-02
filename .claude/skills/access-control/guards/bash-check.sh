@@ -138,10 +138,8 @@ if [[ "$COMMAND" =~ $GIT_COMMIT_PATTERN ]]; then
     fi
 
     # 整合性チェックを実行
-    bash .claude/hooks/check-coherence.sh
+    bash .claude/skills/reward-guard/guards/coherence.sh
 
-    # state 更新チェックを実行
-    bash .claude/hooks/check-state-update.sh
 fi
 
 # 通常は通過

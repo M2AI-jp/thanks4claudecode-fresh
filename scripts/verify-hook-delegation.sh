@@ -111,8 +111,7 @@ check_hook_delegation() {
     local no_delegation_needed=(
         "session-start.sh"
         "session-end.sh"
-        "check-coherence.sh"
-        "check-state-update.sh"
+        "coherence.sh"
         "failure-logger.sh"
         "generate-repository-map.sh"
     )

@@ -12,9 +12,8 @@
 | session-end.sh | セッション終了時のクリーンアップ | 直接実行、出力確認 |
 | init-guard.sh | 必須 Read 完了まで他ツールをブロック | stdin 経由でテスト |
 | pre-bash-check.sh | Bash 実行前の保護チェック | stdin 経由でテスト |
-| check-coherence.sh | state/playbook/branch 整合性 | 直接実行、exit code 確認 |
+| coherence.sh | state/playbook/branch 整合性 | 直接実行、exit code 確認 |
 | check-protected-edit.sh | 保護ファイル編集ブロック | stdin 経由でテスト |
-| check-state-update.sh | state.md 更新確認 | 直接実行、exit code 確認 |
 | check-main-branch.sh | main ブランチ作業禁止 | 直接実行、exit code 確認 |
 | check-playbook-quality.sh | playbook 品質チェック | 直接実行、exit code 確認 |
 | check-file-dependencies.sh | ファイル依存チェック | 直接実行、exit code 確認 |
@@ -57,7 +56,7 @@
 ```yaml
 必須テスト:
   - session-start.sh: セッション開始が正常に動作
-  - check-coherence.sh: 整合性チェックが機能
+  - coherence.sh: 整合性チェックが機能
   - pre-bash-check.sh: 保護チェックが機能
   - init-guard.sh: 初期化ガードが機能
   - critic.md: critic が呼び出せる
@@ -68,7 +67,6 @@
 ```yaml
 推奨テスト:
   - check-protected-edit.sh
-  - check-state-update.sh
   - playbook-guard.sh
   - coherence.md
   - pm.md
