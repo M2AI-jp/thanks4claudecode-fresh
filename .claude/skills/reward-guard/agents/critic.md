@@ -1,7 +1,7 @@
 ---
 name: critic
-description: MUST BE USED before marking any task as done. Evaluates done_criteria with evidence-based judgment. Prevents self-reward fraud through critical thinking. Uses codex for independent verification (context separation).
-tools: Read, Grep, Bash, mcp__codex__codex
+description: MUST BE USED before marking any task as done. Evaluates done_criteria with evidence-based judgment. Prevents self-reward fraud through critical thinking. Recommends codex verification via main Claude.
+tools: Read, Grep, Bash
 model: opus
 skills: state, lint-checker, test-runner
 ---
@@ -330,50 +330,47 @@ CRITIQUE 実行時、以下を自問してください：
 
 ---
 
-## コンテキスト分離による独立検証（必須）
+## コンテキスト分離による独立検証（推奨）
 
-> **自己評価の限界を補うため、codex による独立検証を必ず実行する**
+> **自己評価の限界を補うため、codex による独立検証を推奨する**
 >
 > 問題: critic（Claude）が自分で評価しても、同じバイアスを共有する
-> 解決: codex（別セッション）に委譲し、コンテキスト分離を実現
+> 解決: codex（別セッション）による独立検証でコンテキスト分離を実現
 
-### 実行タイミング
+### ⚠️ 技術的制限
 
 ```yaml
-codex 独立検証のタイミング:
-  - critic の自己評価が PASS の場合、最後に必ず実行
-  - codex が FAIL を返した場合、総合判定は FAIL
-  - codex は「空気を読まない」ため、より厳しい評価が期待できる
+SubAgent の制限:
+  - SubAgent（critic）から MCP ツール（mcp__codex__codex）は使用不可
+  - SubAgent から他の SubAgent（Task ツール）も呼び出し不可
+  - frontmatter の tools に書いても実際には Read, Grep, Bash のみ利用可能
+
+結果:
+  - critic 内部から codex を直接呼び出すことはできない
+  - codex 検証は「メイン Claude」が行う必要がある
 ```
 
-### 実行方法
+### 推奨ワークフロー
 
 ```yaml
-1. 自己評価を完了（従来の CRITIQUE）
+1. critic が自己評価を実行（PASS/FAIL を判定）
 
-2. codex に独立検証を委譲:
-   mcp__codex__codex(
-     prompt: |
-       以下の done_criteria と証拠を評価してください。
-       「空気を読まず」厳しく判定してください。
-       疑わしい場合は FAIL としてください。
+2. critic は「codex 検証が必要」フラグを出力に含める:
+   [CRITIQUE]
+   ...
+   自己評価: PASS
+   codex_verification_required: true  # ← このフラグ
 
-       done_criteria:
-         {state.md の goal.done_criteria を貼り付け}
-
-       証拠:
-         {自己評価で収集した証拠を貼り付け}
-
-       判定してください: PASS または FAIL（理由付き）
+3. メイン Claude が codex-delegate を呼び出して独立検証:
+   Task(
+     subagent_type='codex-delegate',
+     prompt='done_criteria と証拠を評価してください...'
    )
 
-3. codex の判定を反映:
-   - codex PASS + 自己評価 PASS → 総合 PASS
-   - codex FAIL → 総合 FAIL（理由を記録）
-   - codex FAIL の場合、自動リトライ機構に進む
+4. codex が FAIL → メイン Claude が critic の PASS を却下
 ```
 
-### 出力フォーマット（codex 検証追加版）
+### critic の出力フォーマット
 
 ```
 [CRITIQUE]
@@ -384,31 +381,34 @@ subtasks 達成状況:
 自己評価総合判定: {PASS|FAIL}
 
 ---
-[CODEX 独立検証]
+[CODEX 独立検証 - メイン Claude への依頼]
 
-codex への入力:
-  done_criteria: {要約}
-  証拠: {要約}
+codex_verification_required: true
 
-codex の判定: {PASS|FAIL}
-codex の理由: {codex の出力}
+メイン Claude へ:
+  この評価結果を codex-delegate で独立検証してください。
+  以下の情報を codex に渡してください:
 
----
-最終判定: {PASS|FAIL}
-  自己評価: {PASS|FAIL}
-  codex 独立検証: {PASS|FAIL}
+  done_criteria:
+    {評価した done_criteria}
+
+  証拠:
+    {収集した証拠の要約}
+
+  codex が FAIL を返した場合、この PASS を却下してください。
 ```
 
-### 注意事項
+### メイン Claude への指示
 
 ```yaml
-必須:
-  - 自己評価が PASS でも、codex 検証をスキップしてはならない
-  - codex の FAIL は自己評価の PASS より優先される
+critic が PASS を返した場合:
+  1. codex_verification_required フラグを確認
+  2. true の場合、codex-delegate を呼び出して独立検証
+  3. codex が FAIL → critic の PASS を却下、修正を指示
+  4. codex が PASS → 最終的に PASS と判定
 
-禁止:
-  - codex の判定を無視して PASS とする
-  - codex 検証を「時間がない」等の理由でスキップする
+これは「構造的強制」ではなく「推奨ワークフロー」であることに注意。
+完全な強制には Hook での実装が必要（将来の課題）。
 ```
 
 ---
