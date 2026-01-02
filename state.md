@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-reward-fraud-verification.md
+branch: feat/harness-self-awareness
 last_archived: plan/archive/playbook-harness-self-awareness-v3.md
 review_pending: false
 ```
@@ -21,10 +21,13 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: null
-done_criteria: []
-status: idle
-note: harness-self-awareness v2+v3 完了。次タスク待ち。
+phase: p_final
+done_criteria:
+  - done_when_1（session-start.sh + coherence-checker）の 3重検証が PASS である
+  - done_when_2（apply-fixes.sh 存在 + 機能）の 3重検証が PASS である
+  - done_when_3（design.md v3 更新）の 3重検証が PASS である
+status: done
+note: codex による独立検証完了 - 11/11 PASS、報酬詐欺なし
 ```
 
 ---
@@ -32,7 +35,7 @@ note: harness-self-awareness v2+v3 完了。次タスク待ち。
 ## session
 
 ```yaml
-last_start: 2026-01-03 00:16:56
+last_start: 2026-01-03 01:08:04
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
