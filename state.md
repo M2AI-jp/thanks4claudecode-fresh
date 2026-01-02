@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-harness-self-awareness.md
-branch: feat/harness-self-awareness
-last_archived: plan/archive/playbook-repository-audit.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-harness-self-awareness.md
 review_pending: false
 ```
 
@@ -20,16 +20,11 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: harness-self-awareness-v2
-phase: p_final
-done_criteria:
-  - 不要ファイルが削除されている（context-estimator、旧 session-start.sh）
-  - prompt-analyzer に「複数論点・指示の分解」機能が組み込まれている
-  - SessionStart 時に全 Hook/Skill/SubAgent の状態が読み込まれる
-  - ARCHITECTURE.md と実装の整合性が自動チェックされる
-  - 問題検出時に自動修正（軽微）または提案（重大）される
-status: in_progress
-note: v2 方向転換。v1 成果物を削除して再設計。
+milestone: null
+phase: null
+done_criteria: []
+status: idle
+note: harness-self-awareness-v2 完了。次タスク待ち。
 ```
 
 ---
