@@ -195,16 +195,17 @@ additionalContext_minimal_set:
     - consistency: "PreCompact セクションに最小ポインタ設計が明記"
     - completeness: "変更履歴が更新済み"
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
 
 ## final_tasks
 
-- [ ] **ft1**: 変更をコミットする
+- [x] **ft1**: 変更をコミットする
   - command: `git add -A && git commit`
-  - status: pending
+  - status: done
+  - commit: 01d6da7
 
 - [ ] **ft2**: PR 作成またはマージ
   - status: pending
