@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-repository-audit.md
-branch: feat/repository-audit
+active: plan/archive/playbook-repository-audit.md
+branch: chore/archive-repository-audit
 last_archived: plan/archive/playbook-docs-audit-update.md
 review_pending: false
 ```
@@ -21,16 +21,10 @@ review_pending: false
 
 ```yaml
 milestone: repository-audit
-phase: p_final
-done_criteria:
-  - phase-status-guard.sh が存在し、Phase status 変更時に全 subtask 完了を検証する
-  - subtask-guard.sh が critic 呼び出しを構造的に強制する
-  - archive-playbook.sh が全 subtask `[x]` を検証し、`[ ]` が残っていればアーカイブを拒否する
-  - RUNBOOK.md に TodoWrite と playbook の関係ルールが記載されている
-  - prompt.sh でユーザープロンプト時に subtask 状況リマインダーが表示される
-  - pre-tool.sh から phase-status-guard.sh が呼び出される
-status: active
-note: 報酬詐欺防止の構造的強制を実装
+phase: post_loop
+done_criteria: []
+status: archiving
+note: playbook アーカイブ処理中
 ```
 
 ---
