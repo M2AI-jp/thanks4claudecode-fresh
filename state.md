@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-docs-audit-update.md
-branch: feat/docs-audit-update
-last_archived: plan/archive/playbook-codex-audit-fix.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-docs-audit-update.md
 review_pending: false
 ```
 
@@ -20,14 +20,11 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: docs-audit-update
-phase: p1
-done_criteria:
-  - ARCHITECTURE.md の全参照が有効である
-  - repository-map.yaml が現状と整合している
-  - 不要ファイルが削除されている
-status: in_progress
-note: 一次情報リソースの監査・改善
+milestone: null
+phase: null
+done_criteria: []
+status: idle
+note: playbook 完了後の待機状態
 ```
 
 ---
