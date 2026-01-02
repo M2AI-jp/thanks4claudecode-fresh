@@ -1,0 +1,1 @@
+../skills/term-translator/agents/term-translator.md

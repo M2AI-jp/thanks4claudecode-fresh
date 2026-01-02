@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-codex-audit-findings.md
+last_archived: plan/archive/playbook-codex-audit-fix.md
 review_pending: false
 ```
 
@@ -20,14 +20,11 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: codex-audit-findings
-phase: p1
-done_criteria:
-  - bash-check.sh が存在しないスクリプトを呼び出していない
-  - ARCHITECTURE.md の記述が実装と整合している
-  - bash -n でシンタックスエラーがない
-status: in_progress
-note: Codex 監査で発見された問題の修正
+milestone: null
+phase: null
+done_criteria: []
+status: idle
+note: playbook 完了後の待機状態
 ```
 
 ---
