@@ -118,7 +118,7 @@ Single Source of Truth:
 
 ### Hook
 ```
-.claude/skills/session-manager/handlers/compact.sh（直接呼び出し）
+.claude/hooks/session.sh
     └─→ .claude/skills/session-manager/handlers/start.sh
 ```
 
@@ -1030,7 +1030,6 @@ Task(subagent_type='executor-resolver')
 | ai-orchestration.md | 役割定義（executor） | pm |
 | git-operations.md | git 操作ルール | pm |
 | folder-management.md | フォルダ管理 | cleanup |
-| current-definitions.md | 用語定義 | 全般 |
 
 ---
 
@@ -1233,7 +1232,6 @@ evidence: PASS 判定には実行可能な証拠が必要
 └── state-schema.sh    # state.md スキーマ定義（Getter/Validator）
 
 scripts/
-├── common.sh          # 共通関数（色定義、ログ出力）
 ├── contract.sh        # 契約チェック関数（ALLOW/WARN/BLOCK）
 └── verify-hook-delegation.sh  # Hook 委譲検証
 ```
@@ -1247,7 +1245,7 @@ scripts/
 └── .session-init/     # セッション初期化状態
 
 .mcp.json              # MCP サーバー設定（Codex 等）
-mcp.json               # MCP サーバー設定（別形式）
+.claude/mcp.json       # MCP サーバー設定（Claude IDE 用）
 ```
 
 ### test 層

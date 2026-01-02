@@ -163,8 +163,7 @@ Claude の自動対応:
 
 ### 参照ドキュメント
 
-- `docs/repository-structure.md` - 活用ガイド
-- `docs/extension-system.md` - Hook/Skill/Command 発火タイミング
+- `docs/ARCHITECTURE.md` - リポジトリ構造・Hook/Skill/SubAgent アーキテクチャ
 
 ---
 
