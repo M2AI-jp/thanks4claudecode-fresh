@@ -8,18 +8,19 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-02 21:26:42"
+  generated: "2026-01-03 00:09:44"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 286
+  total_files: 292
 
 hooks:
   directory: .claude/hooks/
-  count: 6
+  count: 7
   files:
     - name: "generate-repository-map.sh"
     - name: "post-tool.sh"
     - name: "pre-tool.sh"
     - name: "prompt.sh"
+    - name: "session-start.sh"
     - name: "session.sh"
     - name: "subagent-stop.sh"
 
@@ -64,12 +65,14 @@ skills:
   invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
   usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
   auto_invoke: true
-  count: 21
+  count: 22
   files:
     - name: "abort-playbook"
       description: "明示的な playbook 中断・破棄処理"
     - name: "access-control"
       description: "アクセス制御"
+    - name: "coherence-checker"
+      description: "ARCHITECTURE.md と実装の整合性チェック"
     - name: "context-management"
       description: "チャット履歴に依存しない状態管理。プロンプト→意図→処理→結果を外�"
     - name: "deploy-checker"
@@ -130,7 +133,7 @@ commands:
 
 docs:
   directory: docs/
-  count: 8
+  count: 9
   files:
     - name: "ARCHITECTURE.md"
       description: "ユーザー体験ベースの状態遷移マップ"
@@ -146,6 +149,8 @@ docs:
       description: "全フォルダの役割、テンポラリ/永続区分、削除タイミングを定義"
     - name: "git-operations.md"
       description: "設計方針"
+    - name: "harness-self-awareness-design.md"
+      description: "Claude Code が自分自身を掌握するための設計ドキュメント"
 
 plan:
   directory: plan/
@@ -158,7 +163,7 @@ plan:
       count: 65
     template:
       description: "playbook テンプレート"
-      count: 5
+      count: 6
 
 root:
   description: "ルートディレクトリの主要ファイル"
@@ -404,6 +409,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-02 21:26:42"
+  - date: "2026-01-03 00:09:44"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
