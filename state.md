@@ -21,13 +21,13 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p_final
+phase: p1
 done_criteria:
-  - done_when_1（session-start.sh + coherence-checker）の 3重検証が PASS である
-  - done_when_2（apply-fixes.sh 存在 + 機能）の 3重検証が PASS である
-  - done_when_3（design.md v3 更新）の 3重検証が PASS である
-status: done
-note: codex による独立検証完了 - 11/11 PASS、報酬詐欺なし
+  - deflection-guard.sh が存在し、「技術的にできない」パターンを WARN + 代替案提示する
+  - responsibility-shift-guard.sh が存在し、「ユーザーが判断」パターンを BLOCK する
+  - state.md に correction_log セクションが追加され、ユーザー修正を蓄積する仕組みがある
+  - critic.md の Plus_批判的思考に「思考プロセス自己診断」4項目が追加されている
+status: in_progress
 ```
 
 ---
@@ -35,7 +35,7 @@ note: codex による独立検証完了 - 11/11 PASS、報酬詐欺なし
 ## session
 
 ```yaml
-last_start: 2026-01-03 01:08:04
+last_start: 2026-01-03 01:24:49
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
