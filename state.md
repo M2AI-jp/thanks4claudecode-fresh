@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-precompact-debug-log.md
-branch: fix/restore-demo-files
-last_archived: plan/archive/playbook-restore-demo-files.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-precompact-debug-log.md
 review_pending: false
 ```
 
@@ -21,17 +21,10 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p_final
-done_criteria:
-  - compact.sh が最小ポインタ（playbook/phase/branch）のみを additionalContext に出力する
-  - snapshot.json 作成コードが削除されている
-  - start.sh から restore_from_snapshot が削除されている
-  - ARCHITECTURE.md に PreCompact セクションと全 Skills が記載されている
-  - repository-map.yaml が最新状態に同期されている
-status: in_progress
-note: |
-  PreCompact 設計の刷新: snapshot.json 廃止 → 最小ポインタ設計
-  p1-p4 完了、p_final（完了検証）待ち
+phase: null
+done_criteria: []
+status: idle
+note: playbook 完了後の待機状態
 ```
 
 ---
