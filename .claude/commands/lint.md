@@ -10,7 +10,7 @@ state.md と playbook の整合性をチェックしてください。
 ## 実行内容
 
 ```bash
-bash .claude/hooks/check-coherence.sh
+bash .claude/skills/reward-guard/guards/coherence.sh
 ```
 
 ## チェック項目

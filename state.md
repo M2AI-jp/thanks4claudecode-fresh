@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-precompact-debug-log.md
+last_archived: plan/archive/playbook-codex-audit-findings.md
 review_pending: false
 ```
 
@@ -20,11 +20,14 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-status: idle
-note: playbook 完了後の待機状態
+milestone: codex-audit-findings
+phase: p1
+done_criteria:
+  - bash-check.sh が存在しないスクリプトを呼び出していない
+  - ARCHITECTURE.md の記述が実装と整合している
+  - bash -n でシンタックスエラーがない
+status: in_progress
+note: Codex 監査で発見された問題の修正
 ```
 
 ---
@@ -32,7 +35,7 @@ note: playbook 完了後の待機状態
 ## session
 
 ```yaml
-last_start: 2026-01-02 16:46:21
+last_start: 2026-01-02 17:55:35
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

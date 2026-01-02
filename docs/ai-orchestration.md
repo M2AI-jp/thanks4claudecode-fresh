@@ -152,7 +152,7 @@ MCP サーバー設定を読み込むため、Claude Code を再起動します�
 # 新規セッション
 mcp__codex__codex:
   prompt: "実装内容"
-  model: "o3"  # オプション
+  model: "opus"  # オプション
 
 # 継続会話
 mcp__codex__codex-reply:

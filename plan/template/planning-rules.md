@@ -188,7 +188,7 @@ Phase 完了時に確認すること:
   - state.md との整合性が保たれているか
 
 done_criteria に含めるべき項目:
-  - "check-coherence.sh が PASS する"
+  - "coherence.sh が PASS する"
   - "保護ファイルへの変更がない（git diff で確認）"
 ```
 

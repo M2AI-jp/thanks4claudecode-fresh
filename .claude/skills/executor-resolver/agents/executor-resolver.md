@@ -83,7 +83,7 @@ skills: prompt-analyzer
 ### codex
 
 ```yaml
-説明: Codex CLI（o3/o4-mini）でコード生成
+説明: Codex CLI（opus）でコード生成
 
 適用条件:
   primary:
@@ -116,7 +116,7 @@ skills: prompt-analyzer
     - 外部ライブラリの統合
 
 config:
-  model: o3 | o4-mini  # タスク複雑さに応じて選択
+  model: opus          # 固定
   reasoning: minimal | low | medium | high
 ```
 
@@ -447,7 +447,7 @@ resolution:
     confidence: high
     rationale: "複雑な認証ロジック、複数エンドポイント、セキュリティ要件があり codex が適切。"
     config:
-      model: o3
+      model: opus
       reasoning: high
     alternatives:
       - executor: claudecode
@@ -518,7 +518,7 @@ resolution:
       executor: codex
       rationale: "決済機能の本格実装（Stripe SDK 連携）"
       config:
-        model: o3
+        model: opus
         reasoning: high
     - subtask_id: p1.4
       executor: coderabbit
