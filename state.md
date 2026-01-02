@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-harness-self-awareness-v3.md
-branch: feat/harness-self-awareness
-last_archived: plan/archive/playbook-harness-self-awareness.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-harness-self-awareness-v3.md
 review_pending: false
 ```
 
