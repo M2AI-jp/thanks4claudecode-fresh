@@ -152,7 +152,7 @@ if [ "$DONE_PHASES" -ne "$TOTAL_PHASES" ]; then
 fi
 
 # ==============================================================================
-# V12: チェックボックス形式の完了判定
+# V12: チェックボックス形式の完了判定（報酬詐欺防止強化）
 # ==============================================================================
 CHECKED_COUNT=$(grep -c '\- \[x\]' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
 UNCHECKED_COUNT=$(grep -c '\- \[ \]' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
@@ -162,16 +162,33 @@ TOTAL_CHECKBOX=$((CHECKED_COUNT + UNCHECKED_COUNT))
 
 if [ "$TOTAL_CHECKBOX" -gt 0 ]; then
     if [ "$UNCHECKED_COUNT" -gt 0 ]; then
-        echo ""
-        echo "$SEP"
-        echo "  ⚠️ 未完了の subtask があります（V12 形式）"
-        echo "$SEP"
-        echo "  完了: $CHECKED_COUNT / 未完了: $UNCHECKED_COUNT"
-        echo ""
-        echo "  全ての subtask を完了させてください:"
-        echo "  - [ ] → - [x] に変更"
-        echo "$SEP"
-        exit 0  # 未完了があれば処理しない
+        echo "" >&2
+        echo "$SEP" >&2
+        echo "  ⛔ BLOCKED: 未完了の subtask があります" >&2
+        echo "$SEP" >&2
+        echo "  完了: $CHECKED_COUNT / 未完了: $UNCHECKED_COUNT" >&2
+        echo "" >&2
+        # Phase 単位で未完了 subtask を表示
+        echo "  【未完了 subtask 一覧（Phase 別）】" >&2
+        current_phase=""
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^###\ (p[0-9_a-z]+): ]]; then
+                current_phase="${BASH_REMATCH[1]}"
+            elif [[ "$line" =~ ^\-\ \[\ \]\ \*\*([^*]+)\*\* ]]; then
+                subtask_id="${BASH_REMATCH[1]}"
+                echo "    - ${current_phase}: ${subtask_id}" >&2
+            fi
+        done < "$FILE_PATH"
+        echo "" >&2
+        echo "  【必要な対応】" >&2
+        echo "    1. 各 subtask の作業を完了する" >&2
+        echo "    2. Skill(skill='crit') または /crit で検証" >&2
+        echo "    3. チェックボックスを [x] に変更" >&2
+        echo "    4. validations と validated を記入" >&2
+        echo "" >&2
+        echo "  アーカイブは全 subtask 完了後に自動実行されます。" >&2
+        echo "$SEP" >&2
+        exit 2  # 未完了があればブロック
     fi
 fi
 
@@ -434,24 +451,23 @@ EOF
 log_info "pending ファイル作成完了: $PENDING_FILE (status: $OVERALL_STATUS)"
 
 # ==============================================================================
-# 完了メッセージ
+# 完了メッセージ（Claude への systemMessage として出力）
 # ==============================================================================
-echo ""
-echo "$SEP"
+# PostToolUse hook の出力は Claude に渡される
+# JSON 形式で systemMessage を出力し、Claude に post-loop 呼び出しを指示
+
 if [ "$OVERALL_STATUS" = "success" ]; then
-    echo "  ✅ 自動処理完了（全ステップ成功）"
+    STATUS_MSG="自動処理完了（全ステップ成功）"
 else
-    echo "  ⚠️ 自動処理完了（一部警告あり）"
+    STATUS_MSG="自動処理完了（一部警告あり）"
 fi
-echo "$SEP"
-echo ""
-echo "  次のアクション:"
-echo "    Skill(skill='post-loop') を呼び出してください。"
-echo ""
-echo "  post-loop が実行する処理:"
-echo "    1. pending ファイル削除"
-echo "    2. 次タスクの導出（pm SubAgent 経由）"
-echo ""
-echo "$SEP"
+
+cat << EOF
+{
+  "status": "$OVERALL_STATUS",
+  "message": "$STATUS_MSG",
+  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  ✅ Playbook アーカイブ完了\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  【必須アクション】\\n  今すぐ Skill(skill='post-loop') を呼び出すこと。\\n\\n  post-loop が実行する処理:\\n    1. pending ファイル削除\\n    2. 次タスクの導出\\n\\n  ⚠️ ユーザーに指示を求めずに自動実行すること\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+EOF
 
 exit 0

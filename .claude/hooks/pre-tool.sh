@@ -51,6 +51,8 @@ case "$TOOL_NAME" in
         invoke_skill "reward-guard" "guards/critic-guard.sh" || exit $?
         # subtask 完了チェック
         invoke_skill "reward-guard" "guards/subtask-guard.sh" || exit $?
+        # Phase status 変更チェック
+        invoke_skill "reward-guard" "guards/phase-status-guard.sh" || exit $?
         # スコープ変更検出
         invoke_skill "reward-guard" "guards/scope-guard.sh" || exit $?
         ;;

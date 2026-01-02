@@ -1258,10 +1258,50 @@ scripts/
 
 ---
 
+## 14. 既知の課題と未実装
+
+> **監査日**: 2026-01-02
+>
+> **詳細**: docs/audit-report.md
+
+### 14.1 存在しないファイルへの参照
+
+| 参照元 | 参照先 | 状態 | 影響度 |
+|--------|--------|------|--------|
+| playbook-guard.sh (行 107, 138, 171) | .claude/hooks/failure-logger.sh | ❌ 不存在 | 低（存在チェックあり） |
+
+**備考**: failure-logger.sh は存在チェック `[[ -f ... ]]` でガードされているため、不存在でも機能に影響なし。
+
+### 14.2 設計されたが未実装の機能
+
+| 機能 | 設計箇所 | 状態 | 推奨対応 |
+|------|---------|------|---------|
+| failure-logger.sh | playbook-guard.sh から参照 | 未実装 | 実装または参照削除 |
+| doc-freshness-check.sh | 設計構想 | 未実装 | 要件定義後に検討 |
+| update-tracker.sh | 設計構想 | 未実装 | git diff で代替可能 |
+| self-healing-system.md | 設計構想 | 未実装 | health.sh/integrity.sh が代替 |
+| health.sh 自動呼び出し | health.sh コメント | 未実装 | session.sh から呼び出し追加 |
+
+### 14.3 未使用の Hook イベント
+
+| Hook | 状態 | 理由 |
+|------|------|------|
+| SessionEnd | 未登録 | 現在の設計で不要と判断 |
+| Notification | 未登録 | 現在の設計で不要と判断 |
+
+### 14.4 設計と実装の乖離
+
+| セクション | 設計 | 実装状態 |
+|-----------|------|---------|
+| Section 1 (SessionStart) | health.sh を SessionStart から自動呼び出し | ❌ 未実装（手動のみ） |
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2026-01-02 | Section 14「既知の課題と未実装」追加（リポジトリ監査結果） |
 | 2026-01-02 | Skills 全面追記: 13 Skills 追加（abort-playbook〜understanding-check） |
 | 2026-01-02 | SubAgents 追記: prompt-analyzer, term-translator, executor-resolver |
 | 2026-01-02 | 既存 Skills 補完: role-resolver.sh, merge-pr.sh, integrity.sh 等 |
