@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-restore-demo-files.md
+active: plan/playbook-precompact-debug-log.md
 branch: fix/restore-demo-files
-last_archived: plan/archive/playbook-tmp-demo-gitignore.md
+last_archived: plan/archive/playbook-restore-demo-files.md
 review_pending: false
 ```
 
@@ -23,14 +23,12 @@ review_pending: false
 milestone: null
 phase: p1
 done_criteria:
-  - tmp/README.md に前提条件が追記されている（jq, ts-node, bats, shellcheck, ruff, eslint）
-  - evidence/ に証跡補足ログが存在する（8→11 tests の経緯を説明）
-  - scripts/qa.sh が PASS する
-  - 新しい QA 証跡が evidence/ に記録されている
+  - compact.sh の33行目（mkdir -p "$INIT_DIR"）直後にデバッグログコードが追加されている
+  - evidence/precompact-debug.log にログが出力される仕組みが実装されている
 status: in_progress
 note: |
-  デモファイル復元と証跡整合性修正
-  背景: tmp/ ファイル消失 → git checkout で復元済み → 証跡整合性修正
+  PreCompact Hook デバッグログ追加
+  目的: Hook が /compact 実行時に snapshot.json を作成しているか検証
 ```
 
 ---
@@ -38,7 +36,7 @@ note: |
 ## session
 
 ```yaml
-last_start: 2026-01-02 08:36:39
+last_start: 2026-01-02 09:27:08
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

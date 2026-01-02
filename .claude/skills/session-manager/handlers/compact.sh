@@ -33,6 +33,22 @@ STATE_FILE="state.md"
 mkdir -p "$INIT_DIR"
 
 # ==============================================================================
+# 0. デバッグログ（絶対パス版）
+# ==============================================================================
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "/Users/amano/Desktop/thanks4claudecode-v2")
+DEBUG_LOG="$REPO_ROOT/evidence/precompact-debug.log"
+mkdir -p "$REPO_ROOT/evidence"
+{
+  echo "=== PreCompact Debug Log ==="
+  echo "date: $(date '+%Y-%m-%d %H:%M:%S')"
+  echo "pwd: $(pwd)"
+  echo "REPO_ROOT: $REPO_ROOT"
+  echo "trigger: $TRIGGER"
+  echo "SNAPSHOT_FILE: $SNAPSHOT_FILE"
+  echo "==="
+} >> "$DEBUG_LOG"
+
+# ==============================================================================
 # 1. 状態情報の収集
 # ==============================================================================
 
