@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/archive/playbook-repository-audit.md
-branch: chore/archive-repository-audit
-last_archived: plan/archive/playbook-docs-audit-update.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-repository-audit.md
 review_pending: false
 ```
 
@@ -20,11 +20,11 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: repository-audit
-phase: post_loop
+milestone: null
+phase: null
 done_criteria: []
-status: archiving
-note: playbook アーカイブ処理中
+status: idle
+note: null
 ```
 
 ---
