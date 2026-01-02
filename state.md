@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-codex-audit-findings.md
-branch: fix/codex-audit-findings
-last_archived: plan/archive/playbook-precompact-debug-log.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-codex-audit-findings.md
 review_pending: false
 ```
 
