@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-harness-self-awareness-v3.md
+branch: feat/harness-self-awareness
 last_archived: plan/archive/playbook-harness-self-awareness.md
 review_pending: false
 ```
@@ -20,11 +20,14 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-status: idle
-note: harness-self-awareness-v2 完了。次タスク待ち。
+milestone: harness-self-awareness-v3
+phase: p1
+done_criteria:
+  - session-start.sh が coherence-checker を呼び出し、問題があれば詳細（ファイル一覧含む）を表示する
+  - severity: low の auto_fix を適用するスクリプト（apply-fixes.sh）が存在する
+  - docs/harness-self-awareness-design.md が v3 の内容で更新されている
+status: in_progress
+note: v3 - SessionStart 連携と auto_fix 適用機能
 ```
 
 ---

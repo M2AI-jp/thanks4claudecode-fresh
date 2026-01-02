@@ -63,16 +63,82 @@ count_subagents() {
     echo "$agent_count"
 }
 
+# Run coherence checker and display results
+run_coherence_check() {
+    local check_script="$REPO_ROOT/.claude/skills/coherence-checker/scripts/check.sh"
+
+    if [[ ! -f "$check_script" ]]; then
+        echo "  [Coherence] check.sh not found, skipping"
+        return 0
+    fi
+
+    # Run check.sh and capture output
+    local output
+    if ! output=$(bash "$check_script" 2>/dev/null); then
+        echo "  [Coherence] check.sh failed to execute"
+        return 0
+    fi
+
+    # Parse summary counts from YAML output
+    local verified inconsistent missing
+    verified=$(echo "$output" | grep -E '^\s+verified:' | head -1 | sed 's/.*: *//')
+    inconsistent=$(echo "$output" | grep -E '^\s+inconsistent:' | head -1 | sed 's/.*: *//')
+    missing=$(echo "$output" | grep -E '^\s+missing:' | head -1 | sed 's/.*: *//')
+
+    # Default to 0 if not found
+    verified=${verified:-0}
+    inconsistent=${inconsistent:-0}
+    missing=${missing:-0}
+
+    # Display summary
+    echo "[SessionStart] Coherence Check"
+    echo "  verified: $verified, inconsistent: $inconsistent, missing: $missing"
+
+    # If there are problems, show details
+    if [[ "$inconsistent" -gt 0 ]] || [[ "$missing" -gt 0 ]]; then
+        echo ""
+        echo "  [WARNING] Documentation/Implementation mismatch detected:"
+
+        # Show inconsistent items (documented but not implemented)
+        if [[ "$inconsistent" -gt 0 ]]; then
+            echo "    Inconsistent (documented but not implemented):"
+            echo "$output" | grep -B1 'status: inconsistent' | grep -E 'file:|dir:' | while read -r line; do
+                local item
+                item=$(echo "$line" | sed 's/.*: *"\([^"]*\)".*/\1/')
+                echo "      - $item"
+            done
+        fi
+
+        # Show missing items (implemented but not documented)
+        if [[ "$missing" -gt 0 ]]; then
+            echo "    Missing (implemented but not documented):"
+            echo "$output" | grep -B1 'status: missing' | grep -E 'file:|dir:' | while read -r line; do
+                local item
+                item=$(echo "$line" | sed 's/.*: *"\([^"]*\)".*/\1/')
+                echo "      - $item"
+            done
+        fi
+
+        echo ""
+        echo "  Run 'bash .claude/skills/coherence-checker/scripts/check.sh' for full report"
+        echo "  Run 'bash .claude/skills/coherence-checker/scripts/apply-fixes.sh' to fix missing docs"
+    fi
+}
+
 # Main output
 main() {
     read -r hook_total hook_ok hook_missing <<< "$(count_hooks)"
     read -r skill_total skill_with_md <<< "$(count_skills)"
     subagent_total=$(count_subagents)
-    
+
     echo "[SessionStart] Component Status"
     echo "  Hooks: $hook_total registered ($hook_ok OK, $hook_missing missing)"
     echo "  Skills: $skill_total found ($skill_with_md have SKILL.md)"
     echo "  SubAgents: $subagent_total found"
+    echo ""
+
+    # Run coherence check
+    run_coherence_check
 }
 
 main

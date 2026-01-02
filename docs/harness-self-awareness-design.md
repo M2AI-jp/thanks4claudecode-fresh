@@ -313,6 +313,60 @@ P* = Pr(success) = 0.5 の点を破綻許容値として定義（CI付き）
 
 ---
 
+## 実装ロードマップ（v3）
+
+> v2 で実現した「整合性チェック + 提案」を、SessionStart で自動実行し、auto_fix を実際に適用できるようにする。
+
+### Phase 1: SessionStart 連携 ✓
+
+- session-start.sh に coherence-checker 呼び出しを追加
+- 問題があれば詳細警告（ファイル一覧含む）を表示
+- executor: claudecode
+
+### Phase 2: auto_fix 適用スクリプト ✓
+
+- apply-fixes.sh を実装
+- severity: low の問題に対して ARCHITECTURE.md への追記を生成
+- ユーザー承認を必須とする（インタラクティブモード）
+- バックアップ作成後に適用
+- executor: claudecode
+
+### v3 で実現したフィードバックループ
+
+```
+SessionStart
+    │
+    ├─→ session-start.sh
+    │     ├─→ Component Status（Hooks/Skills/SubAgents 数）
+    │     └─→ Coherence Check（整合性チェック）
+    │           ├─→ verified: 整合OK
+    │           ├─→ inconsistent: 要対応（実装なし）
+    │           └─→ missing: 要対応（ドキュメントなし）
+    │
+    └─→ ユーザーに警告表示
+          │
+          └─→ apply-fixes.sh（任意）
+                ├─→ 提案表示
+                ├─→ ユーザー承認
+                ├─→ バックアップ作成
+                └─→ ARCHITECTURE.md 更新
+```
+
+### 使用方法
+
+```bash
+# SessionStart 時に自動実行（session-start.sh）
+# 問題があれば警告が表示される
+
+# 詳細レポートを確認
+bash .claude/skills/coherence-checker/scripts/check.sh
+
+# missing（ドキュメント未記載）を修正
+bash .claude/skills/coherence-checker/scripts/apply-fixes.sh
+```
+
+---
+
 ## 関連ドキュメント
 
 | ファイル | 役割 |
@@ -328,6 +382,7 @@ P* = Pr(success) = 0.5 の点を破綻許容値として定義（CI付き）
 
 | 日時 | 内容 |
 |------|------|
+| 2026-01-03 | v3 実装完了: SessionStart 連携、apply-fixes.sh 実装 |
 | 2026-01-03 | v2 実装完了: 全5フェーズ完了、coherence-checker 追加 |
 | 2026-01-02 | v2 方向転換: context-estimator 削除、整合性チェック + 自動修正に変更 |
 | 2026-01-02 | 初版作成（会話から抽出、playbook p1で実装） |
