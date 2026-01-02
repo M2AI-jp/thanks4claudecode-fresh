@@ -451,24 +451,23 @@ EOF
 log_info "pending ファイル作成完了: $PENDING_FILE (status: $OVERALL_STATUS)"
 
 # ==============================================================================
-# 完了メッセージ
+# 完了メッセージ（Claude への systemMessage として出力）
 # ==============================================================================
-echo ""
-echo "$SEP"
+# PostToolUse hook の出力は Claude に渡される
+# JSON 形式で systemMessage を出力し、Claude に post-loop 呼び出しを指示
+
 if [ "$OVERALL_STATUS" = "success" ]; then
-    echo "  ✅ 自動処理完了（全ステップ成功）"
+    STATUS_MSG="自動処理完了（全ステップ成功）"
 else
-    echo "  ⚠️ 自動処理完了（一部警告あり）"
+    STATUS_MSG="自動処理完了（一部警告あり）"
 fi
-echo "$SEP"
-echo ""
-echo "  次のアクション:"
-echo "    Skill(skill='post-loop') を呼び出してください。"
-echo ""
-echo "  post-loop が実行する処理:"
-echo "    1. pending ファイル削除"
-echo "    2. 次タスクの導出（pm SubAgent 経由）"
-echo ""
-echo "$SEP"
+
+cat << EOF
+{
+  "status": "$OVERALL_STATUS",
+  "message": "$STATUS_MSG",
+  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  ✅ Playbook アーカイブ完了\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  【必須アクション】\\n  今すぐ Skill(skill='post-loop') を呼び出すこと。\\n\\n  post-loop が実行する処理:\\n    1. pending ファイル削除\\n    2. 次タスクの導出\\n\\n  ⚠️ ユーザーに指示を求めずに自動実行すること\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+EOF
 
 exit 0
