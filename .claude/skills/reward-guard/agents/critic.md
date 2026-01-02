@@ -1,6 +1,6 @@
 ---
 name: critic
-description: MUST BE USED before marking any task as done. Evaluates done_criteria with evidence-based judgment. Prevents self-reward fraud through critical thinking. Recommends codex verification via main Claude.
+description: MUST BE USED before marking any task as done. Evaluates done_criteria with evidence-based judgment. Prevents self-reward fraud through critical thinking. Called by /crit Skill which orchestrates codex verification.
 tools: Read, Grep, Bash
 model: opus
 skills: state, lint-checker, test-runner
@@ -330,86 +330,72 @@ CRITIQUE 実行時、以下を自問してください：
 
 ---
 
-## コンテキスト分離による独立検証（推奨）
+## /crit Skill との連携（アーキテクチャ）
 
-> **自己評価の限界を補うため、codex による独立検証を推奨する**
+> **critic SubAgent は「自己評価」に専念する。codex 独立検証は Skill 層が担当。**
 >
-> 問題: critic（Claude）が自分で評価しても、同じバイアスを共有する
-> 解決: codex（別セッション）による独立検証でコンテキスト分離を実現
+> これは「Hook → Skill → SubAgent」チェーンの正しい役割分担。
 
-### ⚠️ 技術的制限
-
-```yaml
-SubAgent の制限:
-  - SubAgent（critic）から MCP ツール（mcp__codex__codex）は使用不可
-  - SubAgent から他の SubAgent（Task ツール）も呼び出し不可
-  - frontmatter の tools に書いても実際には Read, Grep, Bash のみ利用可能
-
-結果:
-  - critic 内部から codex を直接呼び出すことはできない
-  - codex 検証は「メイン Claude」が行う必要がある
-```
-
-### 推奨ワークフロー
+### 役割分担
 
 ```yaml
-1. critic が自己評価を実行（PASS/FAIL を判定）
+/crit Skill（オーケストレーター）:
+  責務:
+    - 複数 SubAgent の呼び出しと統合
+    - critic SubAgent → codex-delegate SubAgent の順序制御
+    - 最終判定の統合
+  参照: .claude/commands/crit.md
 
-2. critic は「codex 検証が必要」フラグを出力に含める:
-   [CRITIQUE]
-   ...
-   自己評価: PASS
-   codex_verification_required: true  # ← このフラグ
+critic SubAgent（自己評価）:
+  責務:
+    - done_criteria の批判的評価
+    - 証拠ベースの PASS/FAIL 判定
+    - 3点検証（technical/consistency/completeness）
+  ツール: Read, Grep, Bash のみ（書き込み不可 = 自己完了防止）
 
-3. メイン Claude が codex-delegate を呼び出して独立検証:
-   Task(
-     subagent_type='codex-delegate',
-     prompt='done_criteria と証拠を評価してください...'
-   )
-
-4. codex が FAIL → メイン Claude が critic の PASS を却下
+codex-delegate SubAgent（独立検証）:
+  責務:
+    - コンテキスト分離による独立評価
+    - 「空気を読まない」厳しい判定
+  ツール: Bash, mcp__codex__codex（MCP 使用可能）
 ```
 
-### critic の出力フォーマット
+### 正しい呼び出しフロー
+
+```
+/crit Skill が呼ばれる
+    │
+    ├─→ Step 1: Task(subagent_type='critic')
+    │       └─→ critic が自己評価を実行
+    │       └─→ PASS/FAIL + 証拠を返す
+    │
+    ├─→ Step 2: Task(subagent_type='codex-delegate')
+    │       └─→ codex が独立検証を実行
+    │       └─→ PASS/FAIL を返す
+    │
+    └─→ Step 3: Skill が最終判定を統合
+            └─→ critic PASS + codex PASS → 総合 PASS
+            └─→ どちらか FAIL → 総合 FAIL
+```
+
+### critic の出力
 
 ```
 [CRITIQUE]
 
 subtasks 達成状況:
-  {従来の出力}
+  {subtask ごとの PASS/FAIL と証拠}
 
 自己評価総合判定: {PASS|FAIL}
 
----
-[CODEX 独立検証 - メイン Claude への依頼]
-
-codex_verification_required: true
-
-メイン Claude へ:
-  この評価結果を codex-delegate で独立検証してください。
-  以下の情報を codex に渡してください:
-
-  done_criteria:
-    {評価した done_criteria}
-
-  証拠:
-    {収集した証拠の要約}
-
-  codex が FAIL を返した場合、この PASS を却下してください。
+{PASS の場合は証拠サマリーを含める}
+証拠サマリー:
+  - {証拠1}
+  - {証拠2}
 ```
 
-### メイン Claude への指示
-
-```yaml
-critic が PASS を返した場合:
-  1. codex_verification_required フラグを確認
-  2. true の場合、codex-delegate を呼び出して独立検証
-  3. codex が FAIL → critic の PASS を却下、修正を指示
-  4. codex が PASS → 最終的に PASS と判定
-
-これは「構造的強制」ではなく「推奨ワークフロー」であることに注意。
-完全な強制には Hook での実装が必要（将来の課題）。
-```
+Skill 層がこの出力を受け取り、codex-delegate に渡して独立検証を行う。
+critic が codex を呼び出す必要はない。
 
 ---
 
