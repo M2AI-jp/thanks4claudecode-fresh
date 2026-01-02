@@ -21,14 +21,17 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p1
+phase: p_final
 done_criteria:
-  - compact.sh の33行目（mkdir -p "$INIT_DIR"）直後にデバッグログコードが追加されている
-  - evidence/precompact-debug.log にログが出力される仕組みが実装されている
+  - compact.sh が最小ポインタ（playbook/phase/branch）のみを additionalContext に出力する
+  - snapshot.json 作成コードが削除されている
+  - start.sh から restore_from_snapshot が削除されている
+  - ARCHITECTURE.md に PreCompact セクションと全 Skills が記載されている
+  - repository-map.yaml が最新状態に同期されている
 status: in_progress
 note: |
-  PreCompact Hook デバッグログ追加
-  目的: Hook が /compact 実行時に snapshot.json を作成しているか検証
+  PreCompact 設計の刷新: snapshot.json 廃止 → 最小ポインタ設計
+  p1-p4 完了、p_final（完了検証）待ち
 ```
 
 ---
@@ -36,7 +39,7 @@ note: |
 ## session
 
 ```yaml
-last_start: 2026-01-02 09:27:08
+last_start: 2026-01-02 16:46:21
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

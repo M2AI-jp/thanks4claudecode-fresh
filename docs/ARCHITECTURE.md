@@ -154,6 +154,54 @@ Single Source of Truth:
 
 ---
 
+## 1.5. PreCompact（コンテキスト圧縮前）
+
+### 発火条件
+
+**Hook イベント**: `PreCompact`
+
+| matcher | 説明 |
+|---------|------|
+| `manual` | `/compact` コマンド実行時 |
+| `auto` | auto-compact 発火時 |
+
+### Hook
+```
+.claude/hooks/session.sh
+    │
+    └─→ .claude/skills/session-manager/handlers/compact.sh
+```
+
+### 設計思想
+
+```yaml
+永続データ: playbook に集約（SSOT の延長）
+復元橋: additionalContext（最小ポインタのみ）
+snapshot.json: 廃止（.claude/ 配下は compact で削除されるため）
+```
+
+### additionalContext 出力（最小セット）
+
+| フィールド | 必須 | 用途 |
+|-----------|------|------|
+| resume_instruction | ✓ | 1行で「何を読むか」（例: "Read state.md then open plan/playbook-xxx.md"） |
+| playbook | ✓ | 現在の playbook パス |
+| phase | ✓ | 現在の phase ID |
+| branch | - | 作業ブランチ（便利） |
+
+### 状態遷移
+
+| Before | 処理 | After |
+|--------|------|-------|
+| コンテキスト大 | compact.sh 実行 | additionalContext に最小ポインタ出力 |
+| playbook 作業中 | 状態収集 | playbook/phase/branch を抽出 |
+
+### 書き込み
+
+なし（additionalContext への出力のみ）
+
+---
+
 ## 2. UserPromptSubmit（ユーザープロンプト送信）
 
 ### 発火条件
@@ -625,6 +673,50 @@ Task(subagent_type='setup-guide')
         └─→ CLAUDE.md（カスタマイズ）
 ```
 
+### prompt-analyzer SubAgent
+
+```
+Task(subagent_type='prompt-analyzer')
+    │
+    ├─→ .claude/skills/prompt-analyzer/agents/prompt-analyzer.md
+    │
+    ├─→ 処理:
+    │   ├─→ 5W1H 抽出（Who, What, When, Where, Why, How）
+    │   ├─→ リスク分析
+    │   └─→ 曖昧さ検出
+    │
+    └─→ 出力:
+        └─→ 構造化データ（pm SubAgent へ）
+```
+
+### term-translator SubAgent
+
+```
+Task(subagent_type='term-translator')
+    │
+    ├─→ .claude/skills/term-translator/agents/term-translator.md
+    │
+    ├─→ 処理:
+    │   └─→ 曖昧表現 → エンジニア用語に変換
+    │
+    └─→ 出力:
+        └─→ 技術的に明確な表現
+```
+
+### executor-resolver SubAgent
+
+```
+Task(subagent_type='executor-resolver')
+    │
+    ├─→ .claude/skills/executor-resolver/agents/executor-resolver.md
+    │
+    ├─→ 処理:
+    │   └─→ タスク性質を LLM ベースで分析 → executor 判定
+    │
+    └─→ 出力:
+        └─→ executor: claudecode | codex | coderabbit | user
+```
+
 ### SubAgent ツール制限（報酬詐欺防止）
 
 > **参照: https://code.claude.com/docs/ja/sub-agents**
@@ -640,6 +732,9 @@ Task(subagent_type='setup-guide')
 | **setup-guide** | Read, Write, Edit, Bash, Grep, Glob | 初期設定に書き込み必要 |
 | **codex-delegate** | Bash, mcp__codex__codex, mcp__codex__codex-reply | Codex MCP 専用 |
 | **coderabbit-delegate** | Bash | CodeRabbit CLI 専用（レビューのみ） |
+| **prompt-analyzer** | Read, Grep | 分析専念（読み取りのみ） |
+| **term-translator** | Read, Grep | 変換専念（読み取りのみ） |
+| **executor-resolver** | Read, Grep | 判定専念（読み取りのみ） |
 
 ```yaml
 設計原則:
@@ -711,8 +806,10 @@ Task(subagent_type='setup-guide')
 │   └── setup-guide.md          # setup-guide SubAgent
 └── handlers/
     ├── init-guard.sh           # 必須ファイル Read 強制
-    └── start.sh                # セッション開始処理
-        └─→ source: .claude/lib/common.sh
+    ├── start.sh                # セッション開始処理
+    ├── end.sh                  # セッション終了処理
+    └── compact.sh              # PreCompact: 最小ポインタで復元橋を架ける
+        └─→ additionalContext に playbook/phase/branch のみ出力
 ```
 
 ### access-control/
@@ -735,8 +832,9 @@ Task(subagent_type='setup-guide')
 │   │   └─→ 参照: state.md, plan/playbook-*.md
 │   ├── depends-check.sh        # Phase 依存チェック
 │   │   └─→ 参照: plan/playbook-*.md（depends_on）
-│   └── executor-guard.sh       # executor 制御
-│       └─→ 参照: plan/playbook-*.md（executor）
+│   ├── executor-guard.sh       # executor 制御
+│   │   └─→ 参照: plan/playbook-*.md（executor）
+│   └── role-resolver.sh        # executor 役割解決
 └── workflow/
     ├── archive-playbook.sh     # playbook アーカイブ
     │   └─→ 書き込み: plan/archive/, state.md
@@ -769,7 +867,9 @@ Task(subagent_type='setup-guide')
 │   └── coderabbit-delegate.md  # coderabbit-delegate SubAgent（外部レビュー）
 │       └─→ CLI: coderabbit review --plain
 └── checkers/
-    └── lint.sh                 # 静的解析
+    ├── lint.sh                 # 静的解析
+    ├── integrity.sh            # 整合性チェック
+    └── health.sh               # 健全性チェック
 ```
 
 ### golden-path/
@@ -789,7 +889,9 @@ Task(subagent_type='setup-guide')
 .claude/skills/git-workflow/
 ├── SKILL.md                    # Skill 定義
 └── handlers/
-    └── create-pr-hook.sh       # PR 作成提案
+    ├── create-pr-hook.sh       # PR 作成提案（Hook から呼び出し）
+    ├── create-pr.sh            # PR 作成実行
+    └── merge-pr.sh             # PR マージ実行
 ```
 
 ### post-loop/
@@ -804,6 +906,100 @@ Task(subagent_type='setup-guide')
 └── handlers/
     └── complete.sh             # pending ファイル削除
         └─→ Edit/Write ブロック解除
+```
+
+### abort-playbook/
+```
+.claude/skills/abort-playbook/
+├── SKILL.md                    # Skill 定義
+└── abort.sh                    # playbook 中断・破棄処理
+```
+
+### context-management/
+```
+.claude/skills/context-management/
+└── SKILL.md                    # /compact 最適化と履歴要約のガイドライン
+```
+
+### deploy-checker/
+```
+.claude/skills/deploy-checker/
+└── SKILL.md                    # デプロイ準備・検証（git push 前の最終確認）
+```
+
+### executor-resolver/
+```
+.claude/skills/executor-resolver/
+├── SKILL.md                    # Skill 定義
+└── agents/
+    └── executor-resolver.md    # タスク性質分析 → executor 判定
+```
+
+### frontend-design/
+```
+.claude/skills/frontend-design/
+└── SKILL.md                    # プロダクション品質 UI 作成ガイドライン
+```
+
+### lint-checker/
+```
+.claude/skills/lint-checker/
+└── SKILL.md                    # ESLint・型チェック・コーディング規約検証
+```
+
+### plan-management/
+```
+.claude/skills/plan-management/
+└── SKILL.md                    # Multi-layer planning と playbook 管理
+```
+
+### playbook-init/
+```
+.claude/skills/playbook-init/
+└── SKILL.md                    # タスク開始フロー → pm SubAgent 委譲
+    └─→ Hook → Skill → SubAgent チェーン強制
+```
+
+### prompt-analyzer/
+```
+.claude/skills/prompt-analyzer/
+├── SKILL.md                    # Skill 定義
+└── agents/
+    └── prompt-analyzer.md      # 5W1H 抽出・リスク分析・曖昧さ検出
+```
+
+### state/
+```
+.claude/skills/state/
+└── SKILL.md                    # state.md 管理・playbook 運用の専門知識
+```
+
+### term-translator/
+```
+.claude/skills/term-translator/
+├── SKILL.md                    # Skill 定義
+└── agents/
+    └── term-translator.md      # 曖昧表現 → エンジニア用語変換
+```
+
+### test-runner/
+```
+.claude/skills/test-runner/
+├── SKILL.md                    # Skill 定義
+└── scripts/
+    ├── run-all.sh              # 全テスト実行
+    ├── run-unit.sh             # Unit テスト
+    ├── run-e2e.sh              # E2E テスト
+    ├── run-typecheck.sh        # 型チェック
+    ├── run-build.sh            # ビルドテスト
+    └── run-critic.sh           # critic 検証
+```
+
+### understanding-check/
+```
+.claude/skills/understanding-check/
+└── SKILL.md                    # タスク依頼時の理解確認（5W1H）
+    └─→ pm SubAgent から呼び出し
 ```
 
 ---
@@ -1021,6 +1217,11 @@ evidence: PASS 判定には実行可能な証拠が必要
 
 | 日時 | 内容 |
 |------|------|
+| 2026-01-02 | Skills 全面追記: 13 Skills 追加（abort-playbook〜understanding-check） |
+| 2026-01-02 | SubAgents 追記: prompt-analyzer, term-translator, executor-resolver |
+| 2026-01-02 | 既存 Skills 補完: role-resolver.sh, merge-pr.sh, integrity.sh 等 |
+| 2026-01-02 | PreCompact 設計更新: snapshot.json 廃止、最小ポインタ（additionalContext のみ）に変更 |
+| 2026-01-02 | session-manager/handlers に end.sh, compact.sh 追記 |
 | 2025-12-25 | post-loop 自動発火: archive-playbook.sh 自動実行、pending-guard.sh 追加 |
 | 2025-12-25 | 公式 Hook リファレンス追加（イベント一覧、入力 JSON、exit code） |
 | 2025-12-25 | 全面改訂: ユーザー体験ベースの状態遷移マップに変更 |
