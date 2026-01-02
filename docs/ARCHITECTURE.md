@@ -1211,6 +1211,55 @@ evidence: PASS 判定には実行可能な証拠が必要
 
 ---
 
+
+## 13. 補助モジュール（MECE 補完）
+
+### command 層（.claude/commands/）
+
+```
+.claude/commands/
+├── lint.md            # /lint スラッシュコマンド
+├── test.md            # /test スラッシュコマンド
+├── crit.md            # /crit スラッシュコマンド（critic 呼び出し）
+├── rollback.md        # /rollback Git ロールバック
+├── state-rollback.md  # /state-rollback state.md 復元
+└── user-intent.md     # ユーザー意図解析
+```
+
+### utility 層（共通関数）
+
+```
+.claude/schema/
+└── state-schema.sh    # state.md スキーマ定義（Getter/Validator）
+
+scripts/
+├── common.sh          # 共通関数（色定義、ログ出力）
+├── contract.sh        # 契約チェック関数（ALLOW/WARN/BLOCK）
+└── verify-hook-delegation.sh  # Hook 委譲検証
+```
+
+### config 層
+
+```
+.claude/
+├── settings.json      # Claude Code 設定（Hooks 定義）
+├── protected-files.txt # HARD_BLOCK 対象ファイルリスト
+└── .session-init/     # セッション初期化状態
+
+.mcp.json              # MCP サーバー設定（Codex 等）
+mcp.json               # MCP サーバー設定（別形式）
+```
+
+### test 層
+
+```
+.claude/tests/
+├── regression-test.sh     # 回帰テスト（git commit 前に自動実行）
+└── regression-targets.md  # 回帰テスト対象一覧
+```
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |
