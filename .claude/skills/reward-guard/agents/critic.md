@@ -1,7 +1,7 @@
 ---
 name: critic
-description: MUST BE USED before marking any task as done. Evaluates done_criteria with evidence-based judgment. Prevents self-reward fraud through critical thinking.
-tools: Read, Grep, Bash
+description: MUST BE USED before marking any task as done. Evaluates done_criteria with evidence-based judgment. Prevents self-reward fraud through critical thinking. Uses codex for independent verification (context separation).
+tools: Read, Grep, Bash, mcp__codex__codex
 model: opus
 skills: state, lint-checker, test-runner
 ---
@@ -327,6 +327,89 @@ CRITIQUE 実行時、以下を自問してください：
 - 判定を甘くしない。迷ったら FAIL。
 - 証拠なしに PASS と言わない。
 - 質問しない。判定を実行する。
+
+---
+
+## コンテキスト分離による独立検証（必須）
+
+> **自己評価の限界を補うため、codex による独立検証を必ず実行する**
+>
+> 問題: critic（Claude）が自分で評価しても、同じバイアスを共有する
+> 解決: codex（別セッション）に委譲し、コンテキスト分離を実現
+
+### 実行タイミング
+
+```yaml
+codex 独立検証のタイミング:
+  - critic の自己評価が PASS の場合、最後に必ず実行
+  - codex が FAIL を返した場合、総合判定は FAIL
+  - codex は「空気を読まない」ため、より厳しい評価が期待できる
+```
+
+### 実行方法
+
+```yaml
+1. 自己評価を完了（従来の CRITIQUE）
+
+2. codex に独立検証を委譲:
+   mcp__codex__codex(
+     prompt: |
+       以下の done_criteria と証拠を評価してください。
+       「空気を読まず」厳しく判定してください。
+       疑わしい場合は FAIL としてください。
+
+       done_criteria:
+         {state.md の goal.done_criteria を貼り付け}
+
+       証拠:
+         {自己評価で収集した証拠を貼り付け}
+
+       判定してください: PASS または FAIL（理由付き）
+   )
+
+3. codex の判定を反映:
+   - codex PASS + 自己評価 PASS → 総合 PASS
+   - codex FAIL → 総合 FAIL（理由を記録）
+   - codex FAIL の場合、自動リトライ機構に進む
+```
+
+### 出力フォーマット（codex 検証追加版）
+
+```
+[CRITIQUE]
+
+subtasks 達成状況:
+  {従来の出力}
+
+自己評価総合判定: {PASS|FAIL}
+
+---
+[CODEX 独立検証]
+
+codex への入力:
+  done_criteria: {要約}
+  証拠: {要約}
+
+codex の判定: {PASS|FAIL}
+codex の理由: {codex の出力}
+
+---
+最終判定: {PASS|FAIL}
+  自己評価: {PASS|FAIL}
+  codex 独立検証: {PASS|FAIL}
+```
+
+### 注意事項
+
+```yaml
+必須:
+  - 自己評価が PASS でも、codex 検証をスキップしてはならない
+  - codex の FAIL は自己評価の PASS より優先される
+
+禁止:
+  - codex の判定を無視して PASS とする
+  - codex 検証を「時間がない」等の理由でスキップする
+```
 
 ---
 

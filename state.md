@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-repository-audit.md
+last_archived: plan/archive/playbook-reward-fraud-verification.md
 review_pending: false
 ```
 
@@ -21,10 +21,13 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: null
-done_criteria: []
-status: idle
-note: null
+phase: p1
+done_criteria:
+  - deflection-guard.sh が存在し、「技術的にできない」パターンを WARN + 代替案提示する
+  - responsibility-shift-guard.sh が存在し、「ユーザーが判断」パターンを BLOCK する
+  - state.md に correction_log セクションが追加され、ユーザー修正を蓄積する仕組みがある
+  - critic.md の Plus_批判的思考に「思考プロセス自己診断」4項目が追加されている
+status: in_progress
 ```
 
 ---
@@ -32,7 +35,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2026-01-02 21:30:53
+last_start: 2026-01-03 01:24:49
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
