@@ -37,14 +37,34 @@ inject_state() {
 }
 EOF
     else
-        # 通常の State Injection（理解確認メッセージを追加）
+        # playbook が存在する場合、現在 Phase の subtask 状況を取得
+        local subtask_reminder=""
+        local playbook_path="$REPO_ROOT/$playbook_active"
+
+        if [[ -f "$playbook_path" && -n "$phase" && "$phase" != "unknown" ]]; then
+            # 現在 Phase の subtask 完了状況を取得
+            local phase_section
+            phase_section=$(awk "/^### ${phase}:/,/^---\$/" "$playbook_path" 2>/dev/null)
+
+            local completed
+            completed=$(echo "$phase_section" | grep -c '\- \[x\]' 2>/dev/null || echo "0")
+            local incomplete
+            incomplete=$(echo "$phase_section" | grep -c '\- \[ \]' 2>/dev/null || echo "0")
+            local total=$((completed + incomplete))
+
+            if [[ "$incomplete" -gt 0 ]]; then
+                subtask_reminder="\\n\\n📋 Phase ${phase} の進捗: ${completed}/${total} subtask 完了（未完了: ${incomplete}）\\n⚠️ 報酬詐欺防止: subtask 完了時は必ず playbook チェックボックスを更新し、critic を呼び出すこと"
+            fi
+        fi
+
+        # 通常の State Injection（理解確認メッセージ + subtask リマインダー）
         cat << EOF
 {
   "decision": "continue",
   "messages": [
     {
       "role": "user",
-      "content": "[State Injection]\\n\\nplaybook.active = ${playbook_active}\\nphase = ${phase}\\n\\n${understanding_check_msg}"
+      "content": "[State Injection]\\n\\nplaybook.active = ${playbook_active}\\nphase = ${phase}${subtask_reminder}\\n\\n${understanding_check_msg}"
     }
   ]
 }

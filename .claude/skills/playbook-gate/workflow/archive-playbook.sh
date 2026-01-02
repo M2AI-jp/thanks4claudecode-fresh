@@ -152,7 +152,7 @@ if [ "$DONE_PHASES" -ne "$TOTAL_PHASES" ]; then
 fi
 
 # ==============================================================================
-# V12: チェックボックス形式の完了判定
+# V12: チェックボックス形式の完了判定（報酬詐欺防止強化）
 # ==============================================================================
 CHECKED_COUNT=$(grep -c '\- \[x\]' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
 UNCHECKED_COUNT=$(grep -c '\- \[ \]' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
@@ -162,16 +162,33 @@ TOTAL_CHECKBOX=$((CHECKED_COUNT + UNCHECKED_COUNT))
 
 if [ "$TOTAL_CHECKBOX" -gt 0 ]; then
     if [ "$UNCHECKED_COUNT" -gt 0 ]; then
-        echo ""
-        echo "$SEP"
-        echo "  ⚠️ 未完了の subtask があります（V12 形式）"
-        echo "$SEP"
-        echo "  完了: $CHECKED_COUNT / 未完了: $UNCHECKED_COUNT"
-        echo ""
-        echo "  全ての subtask を完了させてください:"
-        echo "  - [ ] → - [x] に変更"
-        echo "$SEP"
-        exit 0  # 未完了があれば処理しない
+        echo "" >&2
+        echo "$SEP" >&2
+        echo "  ⛔ BLOCKED: 未完了の subtask があります" >&2
+        echo "$SEP" >&2
+        echo "  完了: $CHECKED_COUNT / 未完了: $UNCHECKED_COUNT" >&2
+        echo "" >&2
+        # Phase 単位で未完了 subtask を表示
+        echo "  【未完了 subtask 一覧（Phase 別）】" >&2
+        current_phase=""
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^###\ (p[0-9_a-z]+): ]]; then
+                current_phase="${BASH_REMATCH[1]}"
+            elif [[ "$line" =~ ^\-\ \[\ \]\ \*\*([^*]+)\*\* ]]; then
+                subtask_id="${BASH_REMATCH[1]}"
+                echo "    - ${current_phase}: ${subtask_id}" >&2
+            fi
+        done < "$FILE_PATH"
+        echo "" >&2
+        echo "  【必要な対応】" >&2
+        echo "    1. 各 subtask の作業を完了する" >&2
+        echo "    2. Skill(skill='crit') または /crit で検証" >&2
+        echo "    3. チェックボックスを [x] に変更" >&2
+        echo "    4. validations と validated を記入" >&2
+        echo "" >&2
+        echo "  アーカイブは全 subtask 完了後に自動実行されます。" >&2
+        echo "$SEP" >&2
+        exit 2  # 未完了があればブロック
     fi
 fi
 

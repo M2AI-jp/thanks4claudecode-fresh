@@ -66,6 +66,75 @@ steps:
 
 ---
 
+## TodoWrite と Playbook の関係
+
+**重要**: TodoWrite と playbook のチェックボックスは別のシステムです。両方を正しく更新する必要があります。
+
+### 2つのシステムの役割
+
+| システム | 役割 | 永続性 |
+|---------|------|--------|
+| TodoWrite | LLM の作業進捗追跡 | セッション内のみ |
+| Playbook チェックボックス | **公式な完了記録** | 永続（ファイル） |
+
+### subtask 完了時の必須フロー
+
+```yaml
+subtask 完了チェックリスト:
+  1. 作業を完了する
+  2. Skill(skill='crit') または /crit で検証を実行
+  3. validations (3点検証) を記入:
+     - technical: "PASS - (技術的な検証結果)"
+     - consistency: "PASS - (整合性の検証結果)"
+     - completeness: "PASS - (完全性の検証結果)"
+  4. チェックボックスを更新: `- [ ]` → `- [x]`
+  5. validated タイムスタンプを追加
+  6. TodoWrite で該当タスクを completed に更新
+```
+
+### 報酬詐欺防止ルール
+
+```yaml
+禁止行為:
+  - TodoWrite だけ更新して playbook チェックボックスを更新しない
+  - validations を記入せずにチェックボックスを [x] にする
+  - critic 呼び出しなしで Phase を done にする
+  - 全 subtask が [x] でないのに Phase を done にする
+
+Guard による強制:
+  - subtask-guard.sh: validations なしの [x] をブロック
+  - phase-status-guard.sh: 未完了 subtask ありの Phase done をブロック
+  - archive-playbook.sh: 未完了 subtask ありのアーカイブをブロック
+```
+
+### 正しいワークフロー例
+
+```markdown
+# 1. TodoWrite で計画（内部用）
+TodoWrite([
+  {content: "機能A実装", status: "in_progress", activeForm: "Implementing feature A"},
+  {content: "機能Bテスト", status: "pending", activeForm: "Testing feature B"}
+])
+
+# 2. 作業完了 → playbook 更新（公式記録）
+Edit: playbook の subtask を更新
+  old: `- [ ] **p1.1**: 機能Aを実装する`
+  new: `- [x] **p1.1**: 機能Aを実装する
+    - validations:
+      - technical: "PASS - ..."
+      - consistency: "PASS - ..."
+      - completeness: "PASS - ..."
+    - validated: 2026-01-02T12:00:00Z`
+
+# 3. TodoWrite を同期（内部用）
+TodoWrite([
+  {content: "機能A実装", status: "completed", ...},
+  {content: "機能Bテスト", status: "in_progress", ...}
+])
+```
+
+---
+
 ## Commit Message Format
 
 ```

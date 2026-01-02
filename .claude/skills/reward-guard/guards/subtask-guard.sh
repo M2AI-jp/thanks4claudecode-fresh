@@ -73,69 +73,17 @@ if [[ "$NEW_STRING" == *"status: PASS"* ]]; then
 fi
 
 # ==============================================================================
-# M088: Phase レベルの status 変更を検出（報酬詐欺防止強化）
+# Phase status 変更の検出とスキップ
 # ==============================================================================
-# パターン 4: **status**: pending/in_progress → **status**: done (Phase レベル)
-# Phase を done にする前に、全 subtask が完了していることを確認
+# Phase status 変更 (**status**: pending/in_progress → done) は
+# phase-status-guard.sh が担当するため、このスクリプトではスキップ
+# 参照: .claude/skills/reward-guard/guards/phase-status-guard.sh
 # ==============================================================================
-PHASE_STATUS_CHANGE=false
-
 if [[ "$OLD_STRING" == *"**status**: pending"* || "$OLD_STRING" == *"**status**: in_progress"* ]]; then
-    # done または completed を完了として扱う
     if [[ "$NEW_STRING" == *"**status**: done"* || "$NEW_STRING" == *"**status**: completed"* ]]; then
-        PHASE_STATUS_CHANGE=true
+        # Phase status 変更は phase-status-guard.sh に委譲
+        exit 0
     fi
-fi
-
-# Phase status 変更の場合、該当 Phase の subtask 完了状態をチェック
-if [[ "$PHASE_STATUS_CHANGE" == "true" ]]; then
-    if [[ -f "$FILE_PATH" ]]; then
-        # 変更対象の Phase を特定（**status**: pending/in_progress を含む Phase を検索）
-        # ファイル内で OLD_STRING の位置を見つけ、その直前の ### p{N}: を取得
-        TARGET_PHASE=$(awk '
-            /^### p[0-9_a-z]*:/ { phase = $0; gsub(/^### /, "", phase); gsub(/:.*/, "", phase) }
-            /\*\*status\*\*: (pending|in_progress)/ { print phase; exit }
-        ' "$FILE_PATH" 2>/dev/null)
-
-        if [[ -n "$TARGET_PHASE" ]]; then
-            # その Phase の subtask セクションを抽出
-            PHASE_SECTION=$(awk "/^### ${TARGET_PHASE}:/,/^### p[0-9_]|^## final_tasks/" "$FILE_PATH" 2>/dev/null)
-
-            # 未完了 subtask (- [ ]) があるかチェック
-            INCOMPLETE_SUBTASKS=$(echo "$PHASE_SECTION" | grep -c '\- \[ \]' 2>/dev/null | tr -d '\n' || echo "0")
-
-            if [[ "$INCOMPLETE_SUBTASKS" -gt 0 ]]; then
-                echo "[subtask-guard] ❌ BLOCKED: Phase ${TARGET_PHASE} を done にする前に全 subtask を完了してください。"
-                echo ""
-                echo "未完了の subtask が ${INCOMPLETE_SUBTASKS} 個あります。"
-                echo ""
-                echo "各 subtask を完了するには:"
-                echo "  1. criterion を満たす作業を実施"
-                echo "  2. validations (3点検証) を記入"
-                echo "  3. チェックボックスを [x] に変更"
-                echo "  4. validated タイムスタンプを追加"
-                echo ""
-                echo "参照: plan/template/playbook-format.md"
-                exit 2
-            fi
-
-            # validated タイムスタンプの存在をチェック
-            COMPLETED_SUBTASKS=$(echo "$PHASE_SECTION" | grep -c '\- \[x\]' 2>/dev/null | tr -d '\n' || echo "0")
-            VALIDATED_COUNT=$(echo "$PHASE_SECTION" | grep -c 'validated:' 2>/dev/null | tr -d '\n' || echo "0")
-
-            if [[ "$COMPLETED_SUBTASKS" -gt 0 && "$VALIDATED_COUNT" -lt "$COMPLETED_SUBTASKS" ]]; then
-                echo "[subtask-guard] ⚠️ WARNING: Phase ${TARGET_PHASE} の一部の完了 subtask に validated タイムスタンプがありません。"
-                echo ""
-                echo "完了 subtask: ${COMPLETED_SUBTASKS} 個"
-                echo "validated あり: ${VALIDATED_COUNT} 個"
-                echo ""
-                echo "推奨: 各完了 subtask に validated: $(date -u +%Y-%m-%dT%H:%M:%S) を追加してください。"
-            fi
-        fi
-    fi
-
-    # Phase status 変更自体は許可（subtask チェックが通った場合）
-    exit 0
 fi
 
 # チェックボックス/status 変更がない場合はパス
@@ -200,27 +148,52 @@ EOF
 fi
 
 # ==============================================================================
-# M088: reviewer SubAgent 発動を構造的に強制
+# critic 呼び出しの構造的強制（報酬詐欺防止）
 # ==============================================================================
-# subtask 完了時に 4QV+ レビューを確実に実行するため、reviewer 呼び出しを指示
-# validations がある場合でも、reviewer による検証を推奨する systemMessage を出力
+# subtask 完了時に critic SubAgent 呼び出しを必須として指示
+# validations がある場合でも、Phase 完了前に critic 検証を要求
 # ==============================================================================
 
 # subtask ID を抽出
-SUBTASK_ID=$(echo "$NEW_STRING" | grep -oE 'p[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+SUBTASK_ID=$(echo "$NEW_STRING" | grep -oE 'p[0-9]+\.[0-9]+|p_[a-z_]+\.[0-9]+' | head -1 || echo "unknown")
 
-# validations がある場合は許可しつつ、reviewer 発動を促す
+# Phase ID を抽出
+PHASE_ID=$(echo "$SUBTASK_ID" | sed 's/\.[0-9]*$//')
+
+# 残り subtask 数を計算（該当 Phase 内）
+REMAINING_SUBTASKS=0
+if [[ -f "$FILE_PATH" && -n "$PHASE_ID" ]]; then
+    PHASE_SECTION=$(awk "/^### ${PHASE_ID}:/,/^---\$/" "$FILE_PATH" 2>/dev/null)
+    REMAINING_SUBTASKS=$(echo "$PHASE_SECTION" | grep -c '\- \[ \]' 2>/dev/null || echo "0")
+    REMAINING_SUBTASKS=$((REMAINING_SUBTASKS - 1))  # 現在完了中の分を引く
+    if [[ "$REMAINING_SUBTASKS" -lt 0 ]]; then
+        REMAINING_SUBTASKS=0
+    fi
+fi
+
+# 最後の subtask かどうかで警告レベルを変更
+if [[ "$REMAINING_SUBTASKS" -eq 0 ]]; then
+    # 最後の subtask → critic 必須を強調
+    CRITIC_MESSAGE="  ⚠️ これが Phase ${PHASE_ID} の最後の subtask です\\n\\n  【critic 呼び出し必須】\\n  Phase を done にする前に必ず以下を実行してください:\\n\\n    Skill(skill='crit') または /crit\\n\\n  critic SubAgent が done_criteria を検証します。\\n  critic なしで Phase を done にすると報酬詐欺となります。"
+else
+    # まだ subtask が残っている
+    CRITIC_MESSAGE="  【critic 呼び出しについて】\\n  Phase 完了前に必ず以下を実行してください:\\n\\n    Skill(skill='crit') または /crit\\n\\n  残り subtask: ${REMAINING_SUBTASKS} 個"
+fi
+
+# validations がある場合は許可しつつ、critic 発動を指示
 cat << EOF
 {
   "continue": true,
   "decision": "allow",
   "reason": "subtask $SUBTASK_ID の validations が記入されています",
   "hookSpecificOutput": {
-    "action": "recommend_reviewer",
+    "action": "require_critic",
     "subtask_id": "$SUBTASK_ID",
-    "message": "4QV+ レビューの実行を推奨します"
+    "phase_id": "$PHASE_ID",
+    "remaining_subtasks": $REMAINING_SUBTASKS,
+    "message": "Phase 完了前に critic 呼び出しが必須です"
   },
-  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  ✅ subtask $SUBTASK_ID の validations を確認\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  【4QV+ レビュー推奨】\\n  より確実な検証のため、Phase 完了前に以下を実行してください:\\n\\n    Skill(skill='crit') または /crit\\n\\n  critic SubAgent が 4QV+ フレームワークに従って検証します。\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  ✅ subtask $SUBTASK_ID の validations を確認\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n$CRITIC_MESSAGE\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 EOF
 
