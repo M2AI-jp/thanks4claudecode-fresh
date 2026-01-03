@@ -346,7 +346,7 @@ else
 fi
 
 # ==============================================================================
-# Step 5: state.md 更新
+# Step 5: state.md 更新（playbook + goal セクション両方をリセット）
 # ==============================================================================
 echo ""
 echo "$SEP"
@@ -355,13 +355,24 @@ echo "$SEP"
 
 STATE_FILE="state.md"
 if [ -f "$STATE_FILE" ]; then
-    # playbook.active を null に
+    # === playbook セクション ===
     sed -i '' 's/^active: .*/active: null/' "$STATE_FILE" 2>/dev/null || true
-    # playbook.branch を null に
     sed -i '' 's/^branch: .*/branch: null/' "$STATE_FILE" 2>/dev/null || true
-    # last_archived を更新
     sed -i '' "s|^last_archived: .*|last_archived: $ARCHIVE_DIR/$PLAYBOOK_NAME|" "$STATE_FILE" 2>/dev/null || true
-    log_info "state.md 更新完了"
+
+    # === goal セクション（neutral 状態にリセット）===
+    sed -i '' 's/^milestone: .*/milestone: null/' "$STATE_FILE" 2>/dev/null || true
+    sed -i '' 's/^phase: .*/phase: null/' "$STATE_FILE" 2>/dev/null || true
+    sed -i '' 's/^status: in_progress/status: null/' "$STATE_FILE" 2>/dev/null || true
+    # done_criteria を空配列にリセット（複数行対応）
+    awk '
+        /^done_criteria:/ { in_dc = 1; print "done_criteria: []"; next }
+        in_dc && /^[a-z_]+:/ { in_dc = 0 }
+        in_dc && /^  - / { next }
+        { print }
+    ' "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+
+    log_info "state.md 更新完了（playbook + goal セクション）"
 else
     log_warn "state.md が見つかりません"
 fi
@@ -415,7 +426,7 @@ else
 fi
 
 # ==============================================================================
-# Step 9: main 同期
+# Step 9: main 同期（強制的に main へ checkout）
 # ==============================================================================
 echo ""
 echo "$SEP"
@@ -424,11 +435,24 @@ echo "$SEP"
 
 git fetch origin main 2>/dev/null || true
 CURRENT_AFTER=$(git branch --show-current 2>/dev/null || echo "")
+
+# main でない場合は checkout する
+if [ "$CURRENT_AFTER" != "main" ] && [ "$CURRENT_AFTER" != "master" ]; then
+    log_info "ブランチを main に切り替えます..."
+    if git checkout main 2>/dev/null; then
+        log_info "main へ checkout 完了"
+    else
+        log_warn "main への checkout に失敗しました（未コミット変更がある可能性）"
+    fi
+fi
+
+# main/master なら pull
+CURRENT_AFTER=$(git branch --show-current 2>/dev/null || echo "")
 if [ "$CURRENT_AFTER" = "main" ] || [ "$CURRENT_AFTER" = "master" ]; then
     git pull origin main 2>/dev/null || log_warn "main 同期に失敗しました"
     log_info "main 同期完了"
 else
-    log_info "現在 $CURRENT_AFTER ブランチ。main 同期はマージ完了後に実行されます。"
+    log_warn "main への切り替えに失敗しました。現在: $CURRENT_AFTER"
 fi
 
 # ==============================================================================

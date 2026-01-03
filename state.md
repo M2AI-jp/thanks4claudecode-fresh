@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-critic-codex-test.md
-branch: test/critic-codex-verification
-last_archived: plan/archive/playbook-reward-fraud-verification.md
+active: plan/playbook-completion-flow-fix.md
+branch: fix/playbook-completion-flow
+last_archived: plan/archive/playbook-purpose-verification-test.md
 review_pending: false
 ```
 
@@ -20,11 +20,13 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: critic-codex-test
+milestone: completion-flow-fix
 phase: p1
 done_criteria:
-  - tmp/hello.py が存在し、python tmp/hello.py で "Hello, World!" が出力される
-status: pending
+  - archive-playbook.sh の Step 9 で git checkout main が実行される
+  - archive-playbook.sh の Step 5 で goal セクションがリセットされる
+  - merge-pr.sh が --auto なしで即座にマージを試行する
+status: in_progress
 ```
 
 ---
@@ -32,7 +34,7 @@ status: pending
 ## session
 
 ```yaml
-last_start: 2026-01-03 01:58:11
+last_start: 2026-01-03 11:24:14
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
