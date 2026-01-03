@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-password-generator-cli.md
+active: plan/archive/playbook-password-generator-cli.md
 branch: feat/password-generator-cli
-last_archived: plan/archive/playbook-pb28-archive-fix-backlog-auto-mark.md
+last_archived: plan/archive/playbook-password-generator-cli.md
 review_pending: false
 ```
 
@@ -20,17 +20,11 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: Password Generator CLI
-phase: p_final
-done_criteria:
-  - R1: tmp/password-generator/ ディレクトリが存在する ✓
-  - R2: npm run gen が 16 文字のパスワードを出力する ✓
-  - R3: npm run gen -- --length 8 が 8 文字のパスワードを出力する ✓
-  - R4: npm run gen -- --no-symbols が記号なしパスワードを出力する ✓
-  - R5: npm run gen -- --no-numbers が数字なしパスワードを出力する ✓
-  - R6: エントロピー（ビット数）が正しく計算・表示される ✓
+milestone: null
+phase: null
+done_criteria: []
 self_complete: false
-status: completed
+status: idle
 ```
 
 ---
