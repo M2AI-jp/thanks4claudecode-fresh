@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-fix-failure-logger.md
+last_archived: plan/archive/playbook-fix-bash-check-repo-root.md
 review_pending: false
 ```
 
