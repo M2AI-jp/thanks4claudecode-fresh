@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-pb11-critic-guard.md
-branch: fix/pb11-critic-guard
-last_archived: plan/archive/playbook-pb10-executor-guard-close.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-pb11-critic-guard.md
 review_pending: false
 ```
 
@@ -20,12 +20,9 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: PB-11
-phase: p1
-done_criteria:
-  - critic-guard.sh のパターンが修正されている
-  - 無意味なコードブロックが削除されている
-  - critic 未実行で変更をブロックする
+milestone: null
+phase: null
+done_criteria: []
 self_complete: true
 status: done
 ```
