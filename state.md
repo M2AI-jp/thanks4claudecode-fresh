@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-purpose-verification-test.md
-branch: feat/purpose-verification-test
-last_archived: plan/archive/playbook-reward-fraud-verification.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-purpose-verification-test.md
 review_pending: false
 ```
 
