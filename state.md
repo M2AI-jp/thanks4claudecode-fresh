@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-skill-audit.md
-branch: refactor/repository-audit-and-simplification
-last_archived: plan/archive/playbook-completion-flow-fix.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-skill-audit.md
 review_pending: false
 ```
 
@@ -20,14 +20,9 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: "74ファイル監査完了"
-phase: "p_final (done)"
-done_criteria:
-  - "✓ 7 Hook 評価完了"
-  - "✓ 35 スクリプト評価完了"
-  - "✓ 22 SKILL.md 評価完了"
-  - "✓ 10 SubAgent 評価完了"
-  - "✓ SKILL_INDEX.md 作成完了"
+milestone: null
+phase: null
+done_criteria: []
 status: completed
 ```
 
