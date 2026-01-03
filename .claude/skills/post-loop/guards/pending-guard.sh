@@ -28,9 +28,10 @@ fi
 # stdin から JSON を読み込む
 INPUT=$(cat)
 
-# jq がない場合はスキップ（フェイルセーフ）
+# jq がない場合はブロック（fail-closed）
 if ! command -v jq &> /dev/null; then
-    exit 0
+    echo "[FAIL-CLOSED] jq not found - blocking for security" >&2
+    exit 2
 fi
 
 # ツール名を取得
