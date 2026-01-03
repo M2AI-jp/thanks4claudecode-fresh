@@ -174,8 +174,9 @@ user_approved_understanding:
 
 ## final_tasks
 
-- [ ] **ft1**: 変更をコミットする
+- [x] **ft1**: 変更をコミットする
   - command: `git add -A && git commit -m "chore: close PB-10 executor-guard verification"`
-  - status: pending
+  - status: done
+  - executed: 2026-01-03T19:15:00Z
 
 ---
