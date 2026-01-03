@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-post-loop-pending-deadlock.md
-branch: fix/post-loop-pending-deadlock
-last_archived: plan/archive/playbook-pb09-subagent-stop-fail-closed.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-post-loop-pending-deadlock.md
 review_pending: false
 ```
 
