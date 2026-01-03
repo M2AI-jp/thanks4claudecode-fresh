@@ -263,10 +263,43 @@ SubAgent 内部実行:
 
 ---
 
+## 既知の問題と Workaround
+
+### conversationId が返らない問題（Issue #8580）
+
+```yaml
+問題:
+  - Codex MCP サーバーの codex ツールが conversationId をレスポンスに含めない
+  - codex-reply を呼び出す際にセッションを特定できない
+  - GitHub Issue: https://github.com/openai/codex/issues/8580
+
+Workaround:
+  手順:
+    1. mcp__codex__codex を呼び出す
+    2. ~/.codex/sessions/YYYY/MM/DD/ から最新のセッションファイルを取得
+    3. ファイル名から conversationId を抽出
+       例: rollout-2026-01-03T10-51-58-{SESSION_ID}.jsonl
+    4. 抽出した SESSION_ID で mcp__codex__codex-reply を呼び出す
+
+  コマンド例:
+    # 最新のセッション ID を取得
+    ls -t ~/.codex/sessions/$(date +%Y/%m/%d)/ | head -1 | sed 's/.*-\([a-f0-9-]*\)\.jsonl/\1/'
+
+影響バージョン:
+  - Codex CLI 0.77.0（2026-01-03 時点で未修正）
+
+ステータス:
+  - Issue は Closed だが、#3712 / #5660 への重複として処理
+  - 将来のバージョンで修正予定
+```
+
+---
+
 ## 変更履歴
 
 | 日時 | 内容 |
 |------|------|
+| 2026-01-03 | conversationId 問題の Workaround を追加（Issue #8580） |
 | 2025-12-18 | CLI → MCP に変更（M078）。TTY 制約回避のため mcp__codex__codex を使用。 |
 | 2025-12-17 | CLI ベースに全面書き換え（M057） |
 | 2025-12-17 | 初版作成（M053） |

@@ -162,6 +162,42 @@ Task:
     - ...
 ```
 
+### Step 4: PASS 時の playbook 更新（自動アーカイブトリガー）
+
+> **総合 PASS の場合のみ実行。FAIL の場合はスキップして修正を待つ。**
+
+```yaml
+処理内容:
+  1. playbook ファイルのチェックボックスを更新:
+     - 各 subtask: `- [ ]` → `- [x]`
+     - Edit ツールで一括置換
+
+  2. Phase status を更新:
+     - `**status**: pending` → `**status**: done`
+     - 全 Phase に対して実行
+
+  3. final_tasks を実行（定義されている場合）:
+     - 各コマンドを Bash で順次実行
+     - 完了後 `status: pending` → `status: done` に更新
+
+  4. playbook を Edit で保存:
+     - これにより archive-playbook.sh が PostToolUse:Edit で発動
+     - 自動でコミット、PR 作成、アーカイブ、マージが実行される
+
+自動化フロー:
+  /crit PASS
+      ↓
+  Step 4: playbook 更新（Edit）
+      ↓
+  archive-playbook.sh 発動（PostToolUse:Edit フック）
+      ↓
+  コミット → Push → PR → アーカイブ → マージ
+      ↓
+  pending ファイル作成
+      ↓
+  post-loop Skill 呼び出し指示（systemMessage）
+```
+
 ---
 
 ## 禁止事項
