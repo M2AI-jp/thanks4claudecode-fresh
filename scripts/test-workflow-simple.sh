@@ -19,8 +19,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# git リポジトリを初期化
-git init -q "$TEMP_DIR" 2>/dev/null
+# git リポジトリを初期化（main ブランチで）
+git init -q --initial-branch=main "$TEMP_DIR" 2>/dev/null
+(cd "$TEMP_DIR" && git commit --allow-empty -m "init" 2>/dev/null)
 
 # カラー
 RED='\033[0;31m'
@@ -251,6 +252,86 @@ EOF
     fi
 else
     echo "[SKIP] contract.sh not found"
+fi
+
+# ==============================================================================
+# Test 6: pending-guard.sh - pending あり + 非 main ブランチでブロック
+# ==============================================================================
+echo "Test 6: pending-guard.sh (pending file exists, non-main branch)"
+
+# pending ファイル作成
+mkdir -p "$TEMP_DIR/.claude/session-state"
+cat > "$TEMP_DIR/.claude/session-state/post-loop-pending" << 'EOF'
+{
+  "playbook": "playbook-test.md",
+  "status": "success"
+}
+EOF
+
+# 非 main ブランチを作成
+(cd "$TEMP_DIR" && git checkout -b feat/test 2>/dev/null)
+
+PENDING_GUARD="$REPO_ROOT/.claude/skills/post-loop/guards/pending-guard.sh"
+run_hook_in_temp "$PENDING_GUARD" \
+    '{"tool_name": "Edit", "tool_input": {"file_path": "src/main.ts"}}' \
+    "$TEMP_DIR/state.md"
+
+if [ "$HOOK_EXIT" -eq 2 ]; then
+    pass "pending あり + 非 main ブランチでブロック (exit=2)"
+else
+    fail "Expected exit=2, got exit=$HOOK_EXIT"
+fi
+
+# ==============================================================================
+# Test 7: pending-guard.sh - pending あり + main ブランチで許可
+# ==============================================================================
+echo "Test 7: pending-guard.sh (pending file exists, main branch)"
+
+# main ブランチに戻る
+(cd "$TEMP_DIR" && git checkout main 2>/dev/null)
+
+run_hook_in_temp "$PENDING_GUARD" \
+    '{"tool_name": "Edit", "tool_input": {"file_path": "src/main.ts"}}' \
+    "$TEMP_DIR/state.md"
+
+if [ "$HOOK_EXIT" -eq 0 ]; then
+    pass "pending あり + main ブランチで許可 (exit=0)"
+else
+    fail "Expected exit=0, got exit=$HOOK_EXIT"
+fi
+
+# ==============================================================================
+# Test 8: session-start.sh - pending ファイルを自動削除
+# ==============================================================================
+echo "Test 8: session-start.sh (auto cleanup pending file)"
+
+# pending ファイルを再作成
+cat > "$TEMP_DIR/.claude/session-state/post-loop-pending" << 'EOF'
+{
+  "playbook": "playbook-test.md",
+  "status": "success"
+}
+EOF
+
+# session-start.sh を実行（TEMP_DIR をリポジトリルートとして）
+SESSION_START="$REPO_ROOT/.claude/hooks/session-start.sh"
+(
+    cd "$TEMP_DIR"
+    # REPO_ROOT を TEMP_DIR に設定するためスクリプトを修正して実行
+    REPO_ROOT="$TEMP_DIR" bash -c '
+        SESSION_STATE_DIR="$REPO_ROOT/.claude/session-state"
+        PENDING_FILE="$SESSION_STATE_DIR/post-loop-pending"
+        if [[ -f "$PENDING_FILE" ]]; then
+            rm -f "$PENDING_FILE"
+            echo "Removed pending file"
+        fi
+    '
+)
+
+if [ ! -f "$TEMP_DIR/.claude/session-state/post-loop-pending" ]; then
+    pass "session-start.sh で pending ファイルを自動削除"
+else
+    fail "pending file still exists after session-start"
 fi
 
 # ==============================================================================

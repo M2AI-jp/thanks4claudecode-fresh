@@ -25,6 +25,17 @@ if [ ! -f "$PENDING_FILE" ]; then
     exit 0
 fi
 
+# ==============================================================================
+# main ブランチ例外（副防御: デッドロック防止）
+# See: fix/post-loop-pending-deadlock
+# Reason: main にいる = アーカイブ完了後 = pending の役割は終了
+# ==============================================================================
+CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
+    # main ブランチでは pending があっても許可（アーカイブ完了済みのため）
+    exit 0
+fi
+
 # stdin から JSON を読み込む
 INPUT=$(cat)
 

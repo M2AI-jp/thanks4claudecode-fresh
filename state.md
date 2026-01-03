@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-fix-post-loop-pending-deadlock.md
+branch: fix/post-loop-pending-deadlock
 last_archived: plan/archive/playbook-pb09-subagent-stop-fail-closed.md
 review_pending: false
 ```
@@ -31,7 +31,7 @@ status: null
 ## session
 
 ```yaml
-last_start: 2026-01-03 18:31:24
+last_start: 2026-01-03 18:46:45
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
