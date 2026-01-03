@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-fix-protected-edit-repo-root.md
+branch: fix/protected-edit-repo-root
 last_archived: plan/archive/playbook-fix-bash-check-repo-root.md
 review_pending: false
 ```
@@ -20,10 +20,12 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-status: null
+milestone: PB-04
+phase: p1
+done_criteria:
+  - contract.sh が正しく source される
+  - bash -n protected-edit.sh が成功
+status: in_progress
 ```
 
 ---

@@ -19,7 +19,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${SCRIPT_DIR}/../.."
+REPO_ROOT="${SCRIPT_DIR}/../../../.."
 CONTRACT_SCRIPT="${REPO_ROOT}/scripts/contract.sh"
 
 # contract.sh が存在する場合は source
