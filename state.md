@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-self-evaluation-defense.md
-branch: refactor/skill-audit-v2
-last_archived: plan/archive/playbook-skill-audit-v2.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-self-evaluation-defense.md
 review_pending: false
 ```
 
@@ -20,13 +20,10 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: self-evaluation-defense
-phase: p1
-done_criteria:
-  - .claude/frameworks/self-evaluation-defense.md が存在する
-  - 5つの核心が構造化されている
-  - CLAUDE.md との整合性がある
-status: in_progress
+milestone: null
+phase: null
+done_criteria: []
+status: null
 ```
 
 ---
