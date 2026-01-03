@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-pb28-archive-fix-backlog-auto-mark.md
+branch: feat/pb28-archive-fix-backlog-auto-mark
 last_archived: plan/archive/playbook-pb11-critic-guard.md
 review_pending: false
 ```
@@ -20,11 +20,14 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-self_complete: true
-status: done
+milestone: pb28-archive-fix-backlog-auto-mark
+phase: p1
+done_criteria:
+  - archive-playbook.sh に Step 3.6（fix-backlog FIXED マーク）が追加されている
+  - meta.derives_from が PB-XX 形式の playbook 完了時に FIXED マークが追加される
+  - derives_from がない playbook では警告のみでスキップされる
+self_complete: false
+status: in_progress
 ```
 
 ---
