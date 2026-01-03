@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-repository-audit.md
+last_archived: plan/archive/playbook-completion-flow-fix.md
 review_pending: false
 ```
 
@@ -23,8 +23,7 @@ review_pending: false
 milestone: null
 phase: null
 done_criteria: []
-status: idle
-note: null
+status: null
 ```
 
 ---
@@ -32,7 +31,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2026-01-02 21:30:53
+last_start: 2026-01-03 11:24:14
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

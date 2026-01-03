@@ -207,6 +207,118 @@ severity 判定:
 
 ---
 
+## 論点分解（Multi-Topic Detection）
+
+> **設計意図**: 1つのユーザープロンプトに複数の指示・論点が含まれる場合を検出し、
+> 適切に分解することで、スコープ膨張と優先順位の曖昧さを防止する。
+
+### 検出ロジック
+
+```yaml
+detection_triggers:
+  接続詞パターン:
+    - "あと"、"で"、"それから"、"また"、"ついでに"
+    - "あと、"、"それと"、"さらに"、"加えて"
+    - "もう一つ"、"別件で"、"ちなみに"
+    適用: 接続詞の前後で論点を分割
+
+  命令形動詞の複数検出:
+    パターン:
+      - "〜して"、"〜する"、"〜作って"、"〜追加して"
+      - "〜修正して"、"〜変更して"、"〜削除して"
+      - "〜確認して"、"〜調べて"、"〜教えて"
+    判定: 2つ以上の命令形動詞 → 複数論点の可能性
+
+  箇条書きパターン:
+    - "1. ... 2. ..."
+    - "・ ... ・ ..."
+    - "- ... - ..."
+    判定: 各項目を独立した論点として認識
+
+  疑問文の複数検出:
+    パターン:
+      - "〜？"が複数存在
+      - "〜か？"、"〜ですか？"
+    判定: 各疑問を独立した論点として認識
+```
+
+### 論点タイプ分類
+
+```yaml
+topic_types:
+  instruction:
+    definition: 実行を求める指示
+    keywords: "〜して"、"〜する"、"〜作成"、"〜実装"
+    例: "ログイン機能を実装して"
+
+  question:
+    definition: 情報・回答を求める質問
+    keywords: "〜？"、"〜か"、"〜教えて"、"〜調べて"
+    例: "このエラーの原因は何？"
+
+  context:
+    definition: 背景情報・補足説明
+    keywords: "〜のため"、"〜だから"、"〜なので"
+    例: "セキュリティ監査があるので"
+
+判定ルール:
+  - 動詞の命令形 → instruction
+  - 疑問符・疑問表現 → question
+  - それ以外の説明文 → context
+```
+
+### 分解が必要な条件
+
+```yaml
+decomposition_needed_conditions:
+  true:
+    - 異なるタイプの論点が混在（instruction + question）
+    - 独立した instruction が2つ以上
+    - 論点間に依存関係がない
+    - 優先順位が不明確
+
+  false:
+    - 単一の論点のみ
+    - 複数論点だが全て context
+    - 論点間に明確な依存関係がある
+    - 1つの instruction とそれを補足する context のみ
+
+action_on_decomposition:
+  - 各論点を独立したタスクとして扱うか確認
+  - 優先順位の確認
+  - 依存関係の確認
+```
+
+### 分析手順
+
+```yaml
+analysis_steps:
+  1_tokenize:
+    - プロンプトを文単位に分割
+    - 接続詞で追加分割
+
+  2_classify:
+    - 各文の論点タイプを判定
+    - 命令形動詞の有無をチェック
+    - 疑問表現の有無をチェック
+
+  3_count:
+    - instruction の数をカウント
+    - question の数をカウント
+    - 総論点数を算出
+
+  4_evaluate:
+    - decomposition_needed を判定
+    - 論点間の依存関係を推定
+    - 優先順位の明確さを評価
+
+  5_output:
+    - 構造化データとして出力
+    - pm への推奨アクションを含める
+```
+
+---
+
 ## 出力フォーマット
 
 ```yaml
@@ -237,6 +349,19 @@ analysis:
   ambiguity:
     - term: "{曖昧な表現}"
       clarification_needed: "{必要な明確化}"
+
+  multi_topic_detection:
+    detected: true|false
+    topic_count: "{論点数}"
+    topics:
+      - id: 1
+        summary: "{論点1の要約}"
+        type: "instruction|question|context"
+      - id: 2
+        summary: "{論点2の要約}"
+        type: "instruction|question|context"
+    decomposition_needed: true|false
+    recommendation: "{pm への推奨アクション}"
 
   summary:
     confidence: high|medium|low
@@ -632,6 +757,17 @@ analysis:
         reason: "{理由}"
     total_affected: "{数}"
     risk_level: "high | medium | low"
+
+  # 論点分解（追加）
+  multi_topic_detection:
+    detected: true|false
+    topic_count: "{論点数}"
+    topics:
+      - id: 1
+        summary: "{要約}"
+        type: "instruction|question|context"
+    decomposition_needed: true|false
+    recommendation: "{推奨アクション}"
 
   summary:
     confidence: high | medium | low

@@ -183,7 +183,7 @@ case "$PR_MERGE_STATE" in
         echo "  更新が必要です:"
         echo "    gh pr update-branch $PR_NUMBER"
         echo ""
-        # 続行可能（--auto でマージ待機）
+        # 続行可能（ブランチ更新後にマージ再試行）
         ;;
     "UNKNOWN")
         log_warn "PR #$PR_NUMBER のマージステータスが不明です"
@@ -227,15 +227,14 @@ $GOAL_SUMMARY
 Co-Authored-By: Claude <noreply@anthropic.com>"
 
 # マージ実行（--merge でマージコミット作成）
-# --auto を使用して必須チェック通過後に自動マージ
+# 即座にマージを試行（--auto は削除: 待機状態を防ぐため）
 if gh pr merge "$PR_NUMBER" \
     --merge \
-    --auto \
     --body "$MERGE_BODY" \
     --delete-branch 2>&1; then
 
     echo ""
-    log_info "PR #$PR_NUMBER のマージが完了（または自動マージが設定）されました"
+    log_info "PR #$PR_NUMBER のマージが完了しました"
 
     # ローカルブランチを同期
     echo ""
