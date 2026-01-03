@@ -219,6 +219,6 @@ user_approved_understanding:
   - command: `find tmp/ -type f ! -name 'README.md' -delete 2>/dev/null || true`
   - status: done
 
-- [ ] **ft3**: 変更を全てコミットする
+- [x] **ft3**: 変更を全てコミットする
   - command: `git add -A && git status`
-  - status: pending
+  - status: done
