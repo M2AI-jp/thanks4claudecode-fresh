@@ -130,6 +130,7 @@ user_approved_understanding:
 
 ## final_tasks
 
-- [ ] **ft1**: 変更を全てコミットする
+- [x] **ft1**: 変更を全てコミットする
   - command: `git add -A && git status`
-  - status: pending
+  - status: done
+  - executed: 2026-01-03T17:07:00+09:00
