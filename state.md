@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-backlog.md
-branch: docs/fix-backlog
-last_archived: plan/archive/playbook-self-evaluation-defense.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-backlog.md
 review_pending: false
 ```
 
