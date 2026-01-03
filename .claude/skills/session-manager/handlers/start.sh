@@ -1,5 +1,6 @@
 #!/bin/bash
-# session-start.sh - LLMの自己認識を形成し、LOOPを開始させる
+# start.sh - LLMの自己認識を形成し、LOOPを開始させる
+# Note: 旧 .claude/hooks/session-start.sh の機能を統合（cleanup_stale_pending 含む）
 #
 # 設計方針（8.5 Hooks 設計ガイドライン準拠）:
 #   - 軽量な出力のみ（1KB 目標）
@@ -17,6 +18,27 @@
 #   - compact: auto-compact 後の復元
 
 set -e
+
+# ==============================================================================
+# Cleanup stale pending file from previous session (prevents deadlock)
+# See: fix/post-loop-pending-deadlock, fix/pb27-cleanup-stale-pending-refix
+# Reason: pending's lifetime is session-scoped, not cross-session
+# MUST be called before any other operations to prevent deadlock
+# ==============================================================================
+cleanup_stale_pending() {
+    local pending_file=".claude/session-state/post-loop-pending"
+
+    if [ -f "$pending_file" ]; then
+        echo "[SessionStart] Cleaning up stale post-loop-pending file"
+        echo "  (Previous session did not complete post-loop)"
+        rm -f "$pending_file"
+        echo "  Removed: $pending_file"
+        echo ""
+    fi
+}
+
+# First: cleanup stale pending to prevent deadlock
+cleanup_stale_pending
 
 # ==============================================================================
 # state-schema.sh を source して state.md のスキーマを参照

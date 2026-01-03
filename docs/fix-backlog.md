@@ -257,18 +257,21 @@ evidence_format:
   - 修正: 行 54-57 に Skill/Task ツール許可を追加
   - ヘッダーコメント（行 17）にも Skill/Task を例外として追記
 
-#### PB-27: playbook-fix-post-loop-pending-deadlock.md ✅ FIXED
+#### PB-27: playbook-fix-post-loop-pending-deadlock.md ✅ REFIXED
 - **概要**: post-loop-pending ファイルがセッションを跨いで残存するとデッドロックになる問題を修正
-- **Scope**: session-start.sh, pending-guard.sh, test-workflow-simple.sh
+- **Scope**: ~~session-start.sh~~ → session-manager/handlers/start.sh, pending-guard.sh, test-workflow-simple.sh
 - **Done when**: セッション開始時に stale な pending が自動削除される、main ブランチで pending があっても許可される
 - **Validation**: test-workflow-simple.sh（Test 6-8）
-- **Status**: 修正済み (2026-01-03)
-- **修正内容**:
-  - 問題: post-loop-pending ファイルがセッションを跨いで残存すると Edit/Write が全てブロック
-  - 原因: pending のライフタイムがセッションスコープであるべきだが、クロスセッションで残存
+- **Status**: 再修正済み (2026-01-03)
+- **初回修正（不完全）**:
   - 修正1: session-start.sh に cleanup_stale_pending() 追加（行 128-141）
   - 修正2: pending-guard.sh に main ブランチ例外を追加（行 28-37）
-  - テスト: Test 6-8 を追加（pending + non-main = BLOCK, pending + main = ALLOW, session-start で cleanup）
+  - **問題**: session-start.sh は Hook チェーンで呼ばれない孤立ファイルだった
+- **再修正（完全）**:
+  - 問題: settings.json の SessionStart は session.sh → start.sh を呼び出すが、cleanup は呼ばれない session-start.sh にあった
+  - 修正: cleanup_stale_pending() を .claude/skills/session-manager/handlers/start.sh に移動
+  - 削除: 孤立した .claude/hooks/session-start.sh を削除
+  - テスト: Test 8 を実際の Hook チェーン（start.sh）を呼び出すよう修正
 - **PR**: https://github.com/M2AI-jp/thanks4claudecode-fresh/pull/83
 
 ---

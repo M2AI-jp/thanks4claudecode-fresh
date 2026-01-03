@@ -301,9 +301,9 @@ else
 fi
 
 # ==============================================================================
-# Test 8: session-start.sh - pending ファイルを自動削除
+# Test 8: SessionStart Hook chain - pending ファイルを自動削除
 # ==============================================================================
-echo "Test 8: session-start.sh (auto cleanup pending file)"
+echo "Test 8: SessionStart Hook chain (auto cleanup pending file)"
 
 # pending ファイルを再作成
 cat > "$TEMP_DIR/.claude/session-state/post-loop-pending" << 'EOF'
@@ -313,25 +313,41 @@ cat > "$TEMP_DIR/.claude/session-state/post-loop-pending" << 'EOF'
 }
 EOF
 
-# session-start.sh を実行（TEMP_DIR をリポジトリルートとして）
-SESSION_START="$REPO_ROOT/.claude/hooks/session-start.sh"
+# 必要なファイルを TEMP_DIR に作成
+mkdir -p "$TEMP_DIR/.claude/schema"
+cp "$REPO_ROOT/.claude/schema/state-schema.sh" "$TEMP_DIR/.claude/schema/" 2>/dev/null || true
+
+# 最小限の state.md を作成
+cat > "$TEMP_DIR/state.md" << 'EOF'
+# state.md
+
+## playbook
+
+```yaml
+active: null
+```
+
+## session
+
+```yaml
+last_start: null
+last_end: null
+```
+EOF
+
+# 実際の Hook チェーンを実行: session.sh -> start.sh
+# session.sh は session-manager/handlers/start.sh を呼び出す
+START_SH="$REPO_ROOT/.claude/skills/session-manager/handlers/start.sh"
 (
     cd "$TEMP_DIR"
-    # REPO_ROOT を TEMP_DIR に設定するためスクリプトを修正して実行
-    REPO_ROOT="$TEMP_DIR" bash -c '
-        SESSION_STATE_DIR="$REPO_ROOT/.claude/session-state"
-        PENDING_FILE="$SESSION_STATE_DIR/post-loop-pending"
-        if [[ -f "$PENDING_FILE" ]]; then
-            rm -f "$PENDING_FILE"
-            echo "Removed pending file"
-        fi
-    '
+    # start.sh を直接実行（session.sh の invoke_skill と同等）
+    echo '{"trigger": "startup"}' | bash "$START_SH" >/dev/null 2>&1 || true
 )
 
 if [ ! -f "$TEMP_DIR/.claude/session-state/post-loop-pending" ]; then
-    pass "session-start.sh で pending ファイルを自動削除"
+    pass "SessionStart Hook chain で pending ファイルを自動削除"
 else
-    fail "pending file still exists after session-start"
+    fail "pending file still exists after SessionStart"
 fi
 
 # ==============================================================================
