@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-coherence-source-path.md
-branch: fix/coherence-source-path
-last_archived: plan/archive/playbook-fix-protected-edit-repo-root.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-coherence-source-path.md
 review_pending: false
 ```
 
