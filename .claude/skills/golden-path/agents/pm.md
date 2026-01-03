@@ -12,6 +12,49 @@ playbook の作成・管理・進捗追跡を行うプロジェクトマネー�
 
 > **重要**: 全てのタスク開始は pm を経由する必要があります。
 > 直接 playbook を作成したり、単一タスクで開始することは禁止されています。
+
+---
+
+## ★★★ 分析結果の再解釈禁止（最重要）★★★
+
+> **playbook-init Skill から分析済みデータを受け取った場合、pm は再解釈しない。**
+
+```yaml
+playbook-init 経由の場合:
+  入力に含まれるもの:
+    - ユーザー要求（原文）
+    - prompt-analyzer の分析結果（5W1H, リスク, 曖昧さ）
+    - ユーザー承認情報
+
+  pm がやること:
+    - 分析結果をそのまま playbook に反映
+    - executor-resolver で executor をアサイン
+    - reviewer で検証
+    - state.md 更新
+
+  pm がやらないこと:
+    - 分析結果の再解釈
+    - ユーザー要求の独自解釈
+    - 5W1H の再分析
+
+  なぜか:
+    - 解釈は playbook-init の Step 1 (prompt-analyzer) で完了済み
+    - ユーザー確認も playbook-init の Step 2 で取得済み
+    - pm が再解釈すると、誤った playbook が作成されるリスク
+```
+
+**悪い例（禁止）**:
+```
+入力: 分析結果に「達成済み8件を対象」と記載
+pm の行動: 「達成済みは完了しているから未達成19件にしよう」← 再解釈（禁止）
+```
+
+**良い例（必須）**:
+```
+入力: 分析結果に「達成済み8件を対象」と記載
+pm の行動: 「達成済み8件を対象とした playbook を作成」← 分析結果をそのまま使用
+```
+
 ---
 
 ## Orchestrator 設計（M086）
@@ -442,6 +485,25 @@ playbook なしで作業開始しない:
    → 2つ以下の場合: スキップ可能
 
 9. plan/playbook-{name}.md を作成（ドラフト状態）
+
+9.5. 【必須】context セクション書き込み（分析結果の永続化）★
+   → playbook の `## context` セクションに以下を埋め込む:
+     - analysis_result: prompt-analyzer の分析結果全体（省略禁止）
+       必須項目:
+         - 5w1h: Who/What/When/Where/Why/How + missing
+         - risks: technical/scope/dependency（severity + mitigation）
+         - ambiguity: 不明確な表現 + 明確化案
+         - multi_topic_detection: 論点分解（instruction/question/context）
+         - test_strategy: テストレベル + カバレッジ目標 + エッジケース
+         - preconditions: 既存コード状況 + 依存関係 + 制約
+         - success_criteria: 機能要件 + 非機能要件 + breaking_changes
+         - reverse_dependencies: 影響コンポーネント + リスクレベル
+         - summary: confidence + ready_for_playbook + blocking_issues
+     - translated_requirements: term-translator の出力（ある場合）
+     - user_approved_understanding: ユーザー承認情報（日時 + 承認内容）
+   → 目的: compact 後も分析結果を復元可能にする
+   → 参照: plan/template/playbook-format.md の context セクション定義
+   → 参照: .claude/skills/prompt-analyzer/agents/prompt-analyzer.md の出力フォーマット
 
 10. 【必須】reviewer を呼び出し（スキップ禁止）★
    → Task(subagent_type="reviewer", prompt="playbook をレビュー")

@@ -7,6 +7,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_DIR="$SCRIPT_DIR/../skills"
 LIB_DIR="$SCRIPT_DIR/../lib"
+MARKER_FILE="$SCRIPT_DIR/../session-state/prompt-analyzer-called"
 
 # 共通ライブラリ読み込み
 if [[ -f "$LIB_DIR/common.sh" ]]; then
@@ -16,6 +17,24 @@ fi
 # 入力を読み込み
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
+
+# === prompt-analyzer 強制ガード ===
+# マーカーがない場合、prompt-analyzer 以外をブロック
+if [[ ! -f "$MARKER_FILE" ]]; then
+    if [[ "$TOOL_NAME" == "Task" ]]; then
+        SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // empty')
+        if [[ "$SUBAGENT_TYPE" == "prompt-analyzer" ]]; then
+            # prompt-analyzer → マーカー作成して許可
+            touch "$MARKER_FILE"
+        else
+            echo "BLOCK: prompt-analyzer を先に呼び出してください"
+            exit 2
+        fi
+    else
+        echo "BLOCK: prompt-analyzer を先に呼び出してください"
+        exit 2
+    fi
+fi
 
 # Skill を呼び出す関数
 invoke_skill() {
