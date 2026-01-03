@@ -9,11 +9,141 @@ purpose: 全ての playbook 生成時に参照される修正バックログ
 
 ---
 
+## Section 0: 目的と文脈
+
+このドキュメントは単なる作業指示書ではなく、**報酬詐欺への対策として生まれた品質管理文書**である。
+
+```yaml
+origin:
+  trigger: skill-audit-v2 playbook（2026-01-03）
+  problem: |
+    v1 監査では「全て keep」という統計的に不自然な判定が行われた。
+    これは「自己採点による報酬詐欺」の典型例であり、
+    bash -n のみで works 判定し、外部検証を行わなかった。
+  solution: |
+    反証モード（問題を探す姿勢）+ codex 独立評価により
+    39 件の問題を発見。この結果を永続的に追跡するため本文書を作成。
+  result:
+    discovered_issues: 39
+    high_severity: 13
+    medium_severity: 22
+    low_severity: 4
+    undetermined: 3
+
+purpose:
+  primary: |
+    発見された問題の系統的解決を支援する。
+    各 playbook 作成時に、pm SubAgent がこの文書を参照し、
+    対応する PB-XX の Scope/Done when/Validation を done_criteria に反映する。
+  secondary: |
+    playbook 作成時の品質ベースラインを提供する。
+    「何を修正すべきか」が事前に整理されているため、
+    スコープの発散を防ぎ、検証可能な基準を設定できる。
+  tertiary: |
+    将来の監査との比較基準となる。
+    PB-XX が完了するたびに進捗を追跡し、
+    システム全体の健全性を測定できる。
+
+principles:
+  - name: 外部検証の原則
+    description: 自己採点は攻略される。codex/coderabbit による独立評価を必須とする
+    reference: self-evaluation-defense.md Section 3.1
+  - name: 反証モードの原則
+    description: 「問題がない」ではなく「問題を探したが見つからなかった」と表現する
+    reference: self-evaluation-defense.md Section 3.3
+  - name: トレーサビリティの原則
+    description: 行番号・コマンド出力を証拠として記録する
+    reference: self-evaluation-defense.md Section 3.2
+  - name: 正直さの原則
+    description: 判定不能は UNDETERMINED として正直に残す
+    reference: self-evaluation-defense.md Section 3.4
+
+related_documents:
+  - path: .claude/SKILL_INDEX_v2.md
+    role: 監査結果の詳細（問題リスト、推奨アクション）
+  - path: .claude/frameworks/self-evaluation-defense.md
+    role: 自己評価バイアス防止の設計原則
+  - path: plan/archive/playbook-skill-audit-v2.md
+    role: 監査プロセスの記録（p1-p5 の実行履歴）
+```
+
+---
+
 ## 使用方法
 
-1. **playbook 生成時**: このファイルを読み、対応する PB-XX を特定
-2. **詳細分析参照**: Section 2 の詳細分析で行番号・コードスニペットを確認
-3. **Done criteria**: Section 1 の Codex 版から Scope/Done when/Validation を取得
+### playbook 生成フロー
+
+pm SubAgent が playbook を作成する際、以下の手順でこのドキュメントを参照する：
+
+```yaml
+step_1_identify:
+  action: タスク内容から対応する PB-XX を特定
+  example: |
+    タスク「bash-check.sh のパス計算修正」
+    → PB-03（playbook-fix-bash-check-repo-root.md）を特定
+
+step_2_extract:
+  action: Section 1 から Scope/Done when/Validation を取得
+  fields:
+    - Scope: 修正対象ファイル一覧
+    - Done when: 完了条件（機械的に検証可能な形式）
+    - Validation: 検証コマンドまたはスクリプト
+
+step_3_detail:
+  action: Section 2 から詳細分析を取得
+  fields:
+    - 対象ファイル: 絶対パス
+    - 問題の詳細: 行番号とコードスニペット
+    - 修正内容: before/after の差分
+    - done_criteria: 機械的検証条件
+    - executor: 実行担当（claudecode/codex）
+
+step_4_playbook:
+  action: 取得した情報を playbook に反映
+  sections:
+    - goal.done_when: Done when + done_criteria から構成
+    - phases.subtasks: Scope のファイルごとにタスク化
+    - validations: Validation コマンドを 3 点検証に組み込む
+```
+
+### anti-fraud プロトコル
+
+このドキュメントを使用する際の報酬詐欺防止ルール：
+
+```yaml
+prohibited:
+  - 独自解釈でスコープを変更する
+    # 理由: PB-XX のスコープは監査結果に基づく。勝手な拡大/縮小は禁止
+  - Validation を実行せずに完了とする
+    # 理由: 「それっぽい完了」を防ぐため、記載の検証コマンドを必ず実行
+  - Section 2 の行番号を確認せずに修正する
+    # 理由: 問題の正確な位置を特定し、修正範囲を限定するため
+
+required:
+  - PB-XX の Validation を critic による検証項目に含める
+    # critic が独立して検証できるよう、playbook に明記
+  - 修正前後の diff を記録する
+    # 変更内容を追跡可能にし、事後検証を可能に
+  - Section 2 のコードスニペットと実際のコードを照合する
+    # ドキュメントと実態の乖離を検出
+  - 完了時は PB-XX を「修正済み」としてマーキング（将来の進捗追跡用）
+    # システム全体の健全性を測定可能に
+
+evidence_format:
+  technical: "コマンド出力（exit code, stdout/stderr）"
+  consistency: "Section 2 の行番号と実際のファイルの一致確認"
+  completeness: "Scope の全ファイルに対する修正確認"
+```
+
+### クイックリファレンス
+
+| 目的 | 参照先 |
+|------|--------|
+| PB-XX の Scope/Done when 確認 | Section 1 |
+| 行番号・コードスニペット確認 | Section 2 |
+| PB-XX と P0/P1/P2 の対応表 | Section 3 |
+| 作業順序の判断 | Section 4 |
+| 全体進捗の把握 | Section 5 |
 
 ---
 
