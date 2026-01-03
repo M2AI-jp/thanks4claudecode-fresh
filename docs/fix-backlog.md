@@ -191,11 +191,17 @@ evidence_format:
 - **Done when**: jq 不在でも PASS にならない
 - **Validation**: jq を外した環境で guard 単体実行
 
-#### PB-07: playbook-fix-prompt-grep-awk.md
+#### PB-07: playbook-fix-prompt-grep-awk.md ✅ FIXED
 - **概要**: grep -c/awk の 0 件時エラーを回避
 - **Scope**: prompt.sh
 - **Done when**: 空結果でも exit 0 を維持し誤 BLOCK しない
 - **Validation**: 0件ケースでの hook 単体実行
+- **Status**: 修正済み (2026-01-03)
+- **修正内容**:
+  - 問題: pipefail 環境で `grep -c ... || echo "0"` が `0\n0` を出力し算術演算エラー
+  - 原因: grep -c が 0 件時に exit 1 → pipefail で || が実行 → 出力が連結
+  - 修正: `|| true` + `${var:-0}` に変更（.claude/hooks/prompt.sh 行 52, 55-56）
+- **テスト**: 9テストケース全PASS (行18,20,47,52,55 + 全体実行)
 
 #### PB-08: playbook-fix-post-tool.md
 - **概要**: codex 指摘の不具合を再現→修正→回帰テスト追加
@@ -846,21 +852,32 @@ MAP_SCRIPT="${REPO_ROOT}/.claude/hooks/generate-repository-map.sh"
 
 ---
 
-#### P1-09: prompt.sh の grep -c 0 件時挙動確認
+#### P1-09: prompt.sh の grep -c 0 件時挙動確認 ✅ FIXED
 
 **対象ファイル**: .claude/hooks/prompt.sh
 
 **問題の詳細 (行 50-52)**:
 ```bash
+# 修正前（問題あり）
 completed=$(echo "$phase_section" | grep -c '\- \[x\]' 2>/dev/null || echo "0")
 incomplete=$(echo "$phase_section" | grep -c '\- \[ \]' 2>/dev/null || echo "0")
+
+# 修正後
+completed=$(echo "$phase_section" | grep -c '\- \[x\]' 2>/dev/null || true)
+completed=${completed:-0}
+incomplete=$(echo "$phase_section" | grep -c '\- \[ \]' 2>/dev/null || true)
+incomplete=${incomplete:-0}
 ```
 
-**確認結果**: || echo "0" があるため問題なし
+**確認結果**: ~~|| echo "0" があるため問題なし~~ → **問題あり・修正済み**
+- pipefail 環境で grep -c が 0 件時に exit 1 を返すと、|| echo "0" も実行され出力が "0\n0" に
+- 算術演算 `$((completed + incomplete))` で syntax error 発生
 
-**done_criteria**: N/A（確認のみ）
+**修正内容**: `|| true` + `${var:-0}` に変更
 
-**対応 PB**: PB-07（確認済み、問題なし）
+**done_criteria**: 修正済み (2026-01-03)
+
+**対応 PB**: PB-07（修正完了）
 
 ---
 
