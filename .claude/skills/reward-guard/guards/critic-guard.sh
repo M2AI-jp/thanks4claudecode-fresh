@@ -1,16 +1,16 @@
 #!/bin/bash
 # ==============================================================================
-# critic-guard.sh - state: done への変更を構造的にブロック
+# critic-guard.sh - status: done への変更を構造的にブロック
 # ==============================================================================
 # トリガー: PreToolUse(Edit)
-# 目的: critic PASS なしで state: done に変更することを防止
+# 目的: critic PASS なしで status: done に変更することを防止
 #
 # 動作:
 #   1. 編集対象が state.md かチェック
-#   2. new_string に "state: done" が含まれるかチェック
+#   2. new_string に "status: done" が含まれるかチェック
 #   3. self_complete: true がファイルに存在しなければブロック
 #
-# 根拠: CONTEXT.md「自己報酬詐欺」対策
+# 根拠: CLAUDE.md「自己報酬詐欺」対策（報酬詐欺防止）
 # ==============================================================================
 
 set -uo pipefail
@@ -46,25 +46,16 @@ if [[ "$FILE_PATH" != *"state.md" ]]; then
     exit 0
 fi
 
-# "state: done" を含まない編集は対象外
-# YAML 形式を考慮: "state: done" または "state:done"
-if ! echo "$NEW_STRING" | grep -qE "state:[[:space:]]*done"; then
+# "status: done" を含まない編集は対象外
+# YAML 形式を考慮: goal.status: done または status: done
+# Note: state.md の構造では goal.status フィールドを使用
+if ! echo "$NEW_STRING" | grep -qE "status:[[:space:]]*done"; then
     exit 0
 fi
 
 # ------------------------------------------------------------------
-# 重要: state: done への変更を検出
+# 重要: status: done への変更を検出
 # ------------------------------------------------------------------
-
-# layer セクション内の state: done かを判定
-# goal.phase など他の "done" 文字列は許可
-# layer 名を検出するためのパターン
-if ! echo "$NEW_STRING" | grep -qE "^state:[[:space:]]*done"; then
-    # 行頭でない場合（インデントあり）は許可
-    # これは YAML コードブロック内の可能性が高い
-    # より厳密には old_string も見るべきだが、ここでは簡易チェック
-    :
-fi
 
 # self_complete: true が現在のファイルに存在するかチェック
 if [ -f "$STATE_FILE" ]; then
@@ -77,7 +68,7 @@ if [ -f "$STATE_FILE" ]; then
 fi
 
 # ------------------------------------------------------------------
-# ブロック: critic PASS なしで state: done に変更しようとしている
+# ブロック: critic PASS なしで status: done に変更しようとしている
 # ------------------------------------------------------------------
 
 # FAIL 情報を session-state に保存（自動リトライ機構用）
@@ -111,7 +102,7 @@ cat >&2 << 'EOF'
   ⛔ critic 未実行 - 編集をブロック
 ========================================
 
-  state: done への変更には critic PASS が必要です。
+  status: done への変更には critic PASS が必要です。
 
   対処法（順番に実行）:
 
@@ -124,7 +115,7 @@ cat >&2 << 'EOF'
     3. critic が PASS を返したら:
        state.md の self_complete: true を確認
 
-    4. 再度 state: done に変更
+    4. 再度 status: done に変更
 
   ┌─────────────────────────────────────────┐
   │ 証拠なしの done は自己報酬詐欺です。    │
