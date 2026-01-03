@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-protected-edit-repo-root.md
-branch: fix/protected-edit-repo-root
-last_archived: plan/archive/playbook-fix-bash-check-repo-root.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-coherence-source-path.md
 review_pending: false
 ```
 
@@ -20,12 +20,10 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: PB-04
-phase: p1
-done_criteria:
-  - contract.sh が正しく source される
-  - bash -n protected-edit.sh が成功
-status: in_progress
+milestone: null
+phase: null
+done_criteria: []
+status: null
 ```
 
 ---
@@ -33,7 +31,7 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-03 15:12:56
+last_start: 2026-01-03 16:23:19
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

@@ -4,9 +4,12 @@
 set -e
 
 # ==============================================================================
-# state-schema.sh を source して state.md のスキーマを参照
+# SCRIPT_DIR と REPO_ROOT を計算して絶対パスで source
 # ==============================================================================
-source .claude/schema/state-schema.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${SCRIPT_DIR}/../../../.."
+
+source "${REPO_ROOT}/.claude/schema/state-schema.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
