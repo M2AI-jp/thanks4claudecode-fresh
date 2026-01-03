@@ -154,6 +154,10 @@ meta:
   - pm を経由せずに playbook を作成
   - main ブランチでの直接作業
   - reviewer の PASS なしで playbook を確定 ★
+  - playbook 完了時に state.md を直接更新 ★★重要★★
+    → archive-playbook.sh が自動処理する（PostToolUse:Edit フック）
+    → pm は state.md の playbook.active を null にしない
+    → pm は playbook をアーカイブしない
 
 発火コマンド:
   - /task-start → pm を呼び出してタスク開始
