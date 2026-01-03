@@ -32,10 +32,7 @@ SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | 
 
 # stdin から JSON を読み込む（タイムアウト付き）
 # Hook タイムアウト（10秒）の半分を使用し、残りを処理に充てる
-if ! INPUT=$(timeout 5 cat 2>/dev/null); then
-    echo "[WARN] stdin timeout or empty" >&2
-    INPUT="{}"
-fi
+INPUT=$(cat)
 
 # jq がない場合はブロック（Fail-closed）
 if ! command -v jq &> /dev/null; then
@@ -107,11 +104,6 @@ PLAYBOOK=$(grep -A6 "^## playbook" "$STATE_FILE" | grep "^active:" | head -1 | s
 
 # playbook が null または空なら ブロック
 if [[ -z "$PLAYBOOK" || "$PLAYBOOK" == "null" ]]; then
-    # 失敗を記録（学習ループ用）
-    if [[ -f ".claude/hooks/failure-logger.sh" ]]; then
-        echo '{"hook": "playbook-guard", "context": "playbook=null", "action": "Edit/Write blocked"}' | bash .claude/hooks/failure-logger.sh 2>/dev/null || true
-    fi
-
     cat >&2 << 'EOF'
 ========================================
   ⛔ playbook 必須
@@ -138,11 +130,6 @@ fi
 # playbook ファイルが存在するか確認
 # M-integrity: state.md に設定されているが実ファイルがない場合はブロック
 if [[ ! -f "$PLAYBOOK" ]]; then
-    # 失敗を記録（学習ループ用）
-    if [[ -f ".claude/hooks/failure-logger.sh" ]]; then
-        echo '{"hook": "playbook-guard", "context": "playbook file not found", "action": "Edit/Write blocked"}' | bash .claude/hooks/failure-logger.sh 2>/dev/null || true
-    fi
-
     cat >&2 << EOF
 ========================================
   ⛔ playbook ファイルが存在しません
@@ -171,11 +158,6 @@ HAS_CONTEXT=$(grep -E "^## context" "$PLAYBOOK" 2>/dev/null | head -1 || echo ""
 
 # reviewed: false または context セクションがない場合はブロック
 if [[ "$REVIEWED" == "false" ]] || [[ -z "$HAS_CONTEXT" ]]; then
-    # 失敗を記録（学習ループ用）
-    if [[ -f ".claude/hooks/failure-logger.sh" ]]; then
-        echo '{"hook": "playbook-guard", "context": "reviewed=false or no context", "action": "Edit/Write blocked"}' | bash .claude/hooks/failure-logger.sh 2>/dev/null || true
-    fi
-
     cat >&2 << 'EOF'
 ========================================
   ⛔ playbook 未承認
