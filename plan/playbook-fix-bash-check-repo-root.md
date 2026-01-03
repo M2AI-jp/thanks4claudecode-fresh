@@ -152,3 +152,7 @@ user_approved_understanding:
 - [x] **ft3**: 変更を全てコミットする
   - command: `git add -A && git commit`
   - status: done
+
+- [x] **ft4**: PR 作成
+  - command: `gh pr create`
+  - status: done (PR #74)
