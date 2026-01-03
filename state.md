@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-failure-logger.md
-branch: fix/remove-failure-logger-ref
-last_archived: plan/archive/playbook-fix-playbook-guard-timeout.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-failure-logger.md
 review_pending: false
 ```
 
@@ -20,13 +20,10 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: PB-02
-phase: p1
-done_criteria:
-  - playbook-guard.sh に failure-logger.sh への参照が含まれていない
-  - bash -n playbook-guard.sh がエラーなく通る
-  - rg "failure-logger" .claude の結果に playbook-guard.sh が含まれない
-status: in_progress
+milestone: null
+phase: null
+done_criteria: []
+status: null
 ```
 
 ---
