@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-post-loop-order.md
-branch: fix/post-loop-order
-last_archived: plan/archive/playbook-verify-prompt-sh-grep-awk.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-post-loop-order.md
 review_pending: false
 ```
 
