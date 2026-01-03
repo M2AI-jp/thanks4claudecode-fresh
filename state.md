@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: plan/archive/playbook-password-generator-cli.md
-branch: feat/password-generator-cli
+active: null
+branch: null
 last_archived: plan/archive/playbook-password-generator-cli.md
 review_pending: false
 ```
@@ -32,7 +32,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-03 20:44:51
+last_start: 2026-01-03 23:48:21
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
