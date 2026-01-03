@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-hook-robustness-phase2.md
-branch: fix/hook-robustness-phase2
-last_archived: plan/archive/playbook-fix-post-loop-order.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-hook-robustness-phase2.md
 review_pending: false
 ```
 
