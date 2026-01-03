@@ -232,17 +232,18 @@ evidence_format:
   - 修正: exit 2 + エラーメッセージ（Fail-closed）に変更
   - 対象行: 21-24
 
-#### PB-10: playbook-fix-executor-guard.md ✅ INVESTIGATED
+#### PB-10: playbook-fix-executor-guard.md ✅ CLOSED
 - **概要**: codex 指摘の guard 失敗パターンを特定し修正
 - **Scope**: executor-guard.sh
 - **Done when**: 想定外 executor を確実に BLOCK
 - **Validation**: guard 単体実行で PASS/FAIL を確認
-- **Status**: 調査済み・問題なし (2026-01-03)
+- **Status**: CLOSED - 問題なし判定 (2026-01-03)
 - **調査結果**:
   - bash -n 構文チェック: OK
   - jq 不在時 Fail-closed: 既に実装済み（行 47-57）
   - 未知の executor は警告のみで exit 0（設計意図通り）
   - 明確な不具合は発見されず
+- **判定**: 問題なしとして CLOSED
 
 #### PB-26: playbook-fix-main-branch-skill-task-deadlock.md ✅ FIXED
 - **概要**: main-branch.sh で Skill/Task ツールを許可し、playbook-init 呼び出し時のデッドロックを解消

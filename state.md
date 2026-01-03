@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-pb10-executor-guard-close.md
+branch: fix/pb10-executor-guard-close
 last_archived: plan/archive/playbook-fix-post-loop-pending-deadlock.md
 review_pending: false
 ```
