@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-pending-guard-fail-closed.md
-branch: fix/pending-guard-fail-closed
-last_archived: plan/archive/playbook-fix-coherence-source-path.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-pending-guard-fail-closed.md
 review_pending: false
 ```
 
@@ -20,12 +20,10 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: PB-06
-phase: p1
-done_criteria:
-  - jq 不在時に exit 2 でブロックする
-  - エラーメッセージが stderr に出力される
-status: in_progress
+milestone: null
+phase: null
+done_criteria: []
+status: null
 ```
 
 ---
