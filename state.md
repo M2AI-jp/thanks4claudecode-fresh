@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-fix-backlog.md
+last_archived: plan/archive/playbook-fix-backlog-context.md
 review_pending: false
 ```
 
@@ -31,7 +31,7 @@ status: null
 ## session
 
 ```yaml
-last_start: 2026-01-03 13:57:47
+last_start: 2026-01-03 14:23:43
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
