@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-playbook-guard-timeout.md
-branch: fix/playbook-guard-timeout
-last_archived: plan/archive/playbook-fix-backlog-context.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-playbook-guard-timeout.md
 review_pending: false
 ```
 
