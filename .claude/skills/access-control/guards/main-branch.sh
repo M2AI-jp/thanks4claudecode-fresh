@@ -92,7 +92,8 @@ if [ "$TOOL_NAME" = "Bash" ]; then
        [[ "$COMMAND" == *"git add"* ]] || \
        [[ "$COMMAND" == *"git commit"* ]] || \
        [[ "$COMMAND" == *"git stash"* ]] || \
-       [[ "$COMMAND" == *"git rebase"* ]]; then
+       [[ "$COMMAND" == *"git rebase"* ]] || \
+       [[ "$COMMAND" == *"gh pr "* ]]; then
         exit 0
     fi
 fi
