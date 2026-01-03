@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-pb11-move-cleanup-stale-pending.md
+branch: fix/pb11-move-cleanup-stale-pending
 last_archived: plan/archive/playbook-pb10-executor-guard-close.md
 review_pending: false
 ```
@@ -31,7 +31,7 @@ status: null
 ## session
 
 ```yaml
-last_start: 2026-01-03 18:46:45
+last_start: 2026-01-03 19:17:57
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
