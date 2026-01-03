@@ -26,8 +26,8 @@ pending-guard.sh によるブロック（Edit/Write が BLOCK された時）
 archive-playbook.sh（PostToolUse:Edit フック）が以下を自動実行済み:
 - 自動コミット（最終 Phase 分）
 - Push & PR 作成
-- playbook アーカイブ（plan/archive/ へ移動）
-- state.md 更新（playbook.active = null）
+- playbook アーカイブ + コミット + Push（state.md 更新前）
+- state.md 更新 + コミット + Push（全アーカイブ完了後）
 - PR マージ & main 同期
 - pending ファイル作成（`.claude/session-state/post-loop-pending`）
 
@@ -89,23 +89,29 @@ bash .claude/skills/post-loop/handlers/complete.sh
 Phase 完了検出:
   - playbook 解析（全 Phase が done か判定）
 
-自動コミット:
+Step 1-2: 自動コミット & Push:
   - git status --porcelain で未コミット変更を確認
-  - 変更あり → git add -A && git commit -m "feat: {playbook 名} 完了"
-
-自動プッシュ & PR 作成:
+  - 変更あり → git add -A && git commit
   - git push origin {branch}
+
+Step 3: PR 作成:
   - create-pr.sh を実行
 
-自動アーカイブ:
+Step 4-6: 自動アーカイブ（state.md 更新前）:
   - mkdir -p plan/archive && mv plan/playbook-*.md plan/archive/
-  - state.md の playbook.active を null に更新
+  - アーカイブのコミット（playbook 移動のみ）
+  - Push（アーカイブ分）
 
-自動マージ & 同期:
+Step 7-9: state.md 更新（全コミット後）:
+  - state.md の playbook.active を null に更新
+  - state.md 更新のコミット
+  - Push（state.md 分）
+
+Step 10-11: 自動マージ & 同期:
   - merge-pr.sh を実行
   - git checkout main && git pull
 
-pending ファイル作成:
+Step 12: pending ファイル作成:
   - .claude/session-state/post-loop-pending を作成
   - ステータス（success/partial）を記録
 ```

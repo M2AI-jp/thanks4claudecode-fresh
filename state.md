@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: plan/archive/playbook-verify-prompt-sh-grep-awk.md
-branch: fix/verify-prompt-sh-grep-awk
+active: plan/playbook-fix-post-loop-order.md
+branch: fix/post-loop-order
 last_archived: plan/archive/playbook-verify-prompt-sh-grep-awk.md
 review_pending: false
 ```
@@ -31,7 +31,7 @@ status: null
 ## session
 
 ```yaml
-last_start: 2026-01-03 16:40:25
+last_start: 2026-01-03 17:22:39
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
