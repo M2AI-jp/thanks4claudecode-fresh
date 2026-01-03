@@ -30,8 +30,12 @@ fi
 SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | head -1 | sed 's/security: *//' | tr -d ' ')
 # 特権モードでも playbook チェックは維持（コア契約）
 
-# stdin から JSON を読み込む
-INPUT=$(cat)
+# stdin から JSON を読み込む（タイムアウト付き）
+# Hook タイムアウト（10秒）の半分を使用し、残りを処理に充てる
+if ! INPUT=$(timeout 5 cat 2>/dev/null); then
+    echo "[WARN] stdin timeout or empty" >&2
+    INPUT="{}"
+fi
 
 # jq がない場合はブロック（Fail-closed）
 if ! command -v jq &> /dev/null; then
