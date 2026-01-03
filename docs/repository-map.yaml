@@ -8,19 +8,18 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-03 19:06:45"
+  generated: "2026-01-03 20:03:43"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 305
+  total_files: 309
 
 hooks:
   directory: .claude/hooks/
-  count: 7
+  count: 6
   files:
     - name: "generate-repository-map.sh"
     - name: "post-tool.sh"
     - name: "pre-tool.sh"
     - name: "prompt.sh"
-    - name: "session-start.sh"
     - name: "session.sh"
     - name: "subagent-stop.sh"
 
@@ -162,7 +161,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 88
+      count: 90
     template:
       description: "playbook テンプレート"
       count: 6
@@ -411,6 +410,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-03 19:06:45"
+  - date: "2026-01-03 20:03:43"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
