@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-03 12:32:00"
+  generated: "2026-01-03 14:22:06"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 287
+  total_files: 292
 
 hooks:
   directory: .claude/hooks/
@@ -133,7 +133,7 @@ commands:
 
 docs:
   directory: docs/
-  count: 9
+  count: 10
   files:
     - name: "ARCHITECTURE.md"
       description: "ユーザー体験ベースの状態遷移マップ"
@@ -145,6 +145,8 @@ docs:
       description: "調査日"
     - name: "criterion-validation-rules.md"
       description: "criterion（done_criteria の単位）の検証ルール"
+    - name: "fix-backlog.md"
+      description: "```yaml"
     - name: "folder-management.md"
       description: "全フォルダの役割、テンポラリ/永続区分、削除タイミングを定義"
     - name: "git-operations.md"
@@ -160,7 +162,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 72
+      count: 75
     template:
       description: "playbook テンプレート"
       count: 6
@@ -409,6 +411,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-03 12:32:00"
+  - date: "2026-01-03 14:22:06"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
