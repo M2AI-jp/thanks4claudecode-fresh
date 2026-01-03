@@ -32,7 +32,10 @@ SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | 
 
 # stdin から JSON を読み込む（タイムアウト付き）
 # Hook タイムアウト（10秒）の半分を使用し、残りを処理に充てる
-INPUT=$(cat)
+if ! INPUT=$(timeout 5 cat 2>/dev/null); then
+    echo "[WARN] stdin read timeout - skipping check" >&2
+    exit 0
+fi
 
 # jq がない場合はブロック（Fail-closed）
 if ! command -v jq &> /dev/null; then

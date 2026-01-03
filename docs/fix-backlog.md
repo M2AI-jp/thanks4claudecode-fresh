@@ -151,11 +151,16 @@ evidence_format:
 
 ### P0 Guard Stability
 
-#### PB-01: playbook-fix-playbook-guard-timeout.md
+#### PB-01: playbook-fix-playbook-guard-timeout.md ✅ FIXED
 - **概要**: playbook-guard.sh の非対話ハングを排除し必ず終了するよう修正
 - **Scope**: playbook-guard.sh, test-workflow-simple.sh
 - **Done when**: playbook 未設定時にタイムアウトせず BLOCK/WARN を返す
 - **Validation**: test-workflow-simple.sh
+- **Status**: 修正済み (2026-01-03)
+- **修正内容**:
+  - 問題: `INPUT=$(cat)` に timeout がなく無限ハングの可能性
+  - 修正: `if ! INPUT=$(timeout 5 cat 2>/dev/null); then` パターンに変更
+  - 対象行: 35-38
 
 #### PB-02: playbook-fix-failure-logger.md
 - **概要**: 欠損している failure logger を最小修正で解消（既存ログ機構へ集約 or 最小実装を追加）
@@ -203,17 +208,18 @@ evidence_format:
   - 修正: `|| true` + `${var:-0}` に変更（.claude/hooks/prompt.sh 行 52, 55-56）
 - **テスト**: 9テストケース全PASS (行18,20,47,52,55 + 全体実行)
 
-#### PB-08: playbook-fix-post-tool.md ✅ INVESTIGATED
+#### PB-08: playbook-fix-post-tool.md ✅ CLOSED
 - **概要**: codex 指摘の不具合を再現→修正→回帰テスト追加
 - **Scope**: post-tool.sh, test-workflow-simple.sh
 - **Done when**: 再現ケースが PASS
 - **Validation**: test-workflow-simple.sh
-- **Status**: 調査済み・問題なし (2026-01-03)
+- **Status**: CLOSED - 問題なし判定 (2026-01-03)
 - **調査結果**:
   - bash -n 構文チェック: OK
   - jq 不在時チェック: 不要（PostToolUse は後処理、ブロック不要）
   - invoke_skill で `|| true` 使用、失敗しても続行する設計
   - 明確な不具合は発見されず
+- **判定**: 問題なしとして CLOSED
 
 #### PB-09: playbook-fix-subagent-stop.md ✅ FIXED
 - **概要**: codex 指摘の不具合を再現→修正→回帰テスト追加
