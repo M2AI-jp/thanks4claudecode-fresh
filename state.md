@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-pb01-pb08-hook-fixes.md
-branch: fix/pb01-pb08-hook-fixes
-last_archived: plan/archive/playbook-hook-robustness-phase2.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-pb01-pb08-hook-fixes.md
 review_pending: false
 ```
 
@@ -20,14 +20,10 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: pb01-pb08-hook-fixes
-phase: p1
-done_criteria:
-  - playbook-guard.sh の INPUT=$(cat) が timeout 付きパターンに変更されている
-  - 修正後の playbook-guard.sh が bash -n を通過する
-  - PB-08 が fix-backlog.md で正式に CLOSED としてマーキングされている
-  - PB-01 が fix-backlog.md で FIXED としてマーキングされている
-status: in_progress
+milestone: null
+phase: null
+done_criteria: []
+status: null
 ```
 
 ---
