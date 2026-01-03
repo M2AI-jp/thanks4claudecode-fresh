@@ -364,9 +364,47 @@ analysis:
     recommendation: "{pm への推奨アクション}"
 
   summary:
+    primary_topic_type: instruction|question|context
     confidence: high|medium|low
     ready_for_playbook: true|false
     blocking_issues: ["{playbook 作成前に解決すべき問題}"]
+
+  必須アクション:
+    - id: 1
+      action: "この分析結果をチャットに出力"
+      根拠: "Hook 指示による"
+    - id: 2
+      action: "{primary_topic_type に基づくアクション}"
+      根拠: "{判定理由}"
+```
+
+---
+
+## Hook チェーンとの連携
+
+### 新しいフロー（全プロンプト分析）
+
+```
+ユーザープロンプト
+       ↓
+Hook(prompt.sh)
+       ↓ 「prompt-analyzer を呼べ」
+       ↓
+Task(prompt-analyzer)
+       ↓
+  ┌────────────────────────────┐
+  │  summary:                  │
+  │    primary_topic_type:     │
+  │      instruction|question  │
+  │      |context              │
+  │    ready_for_playbook:     │
+  │      true|false            │
+  └────────────────────────────┘
+       ↓
+  分岐:
+    instruction → Skill(playbook-init)
+    question    → 直接回答
+    context     → 現在タスクに統合
 ```
 
 ---
@@ -770,7 +808,113 @@ analysis:
     recommendation: "{推奨アクション}"
 
   summary:
+    primary_topic_type: instruction | question | context
+    # ↑ Hook チェーンが分岐に使用する主要分類
+    #   instruction → playbook-init を呼ぶ
+    #   question    → 直接回答
+    #   context     → 現在タスクに統合
     confidence: high | medium | low
     ready_for_playbook: true | false
     blocking_issues: ["{ブロッキング問題}"]
+
+  # === 必須アクション（新規追加）===
+  # 分析結果を具体的なアクションに変換
+  # メイン Claude はこのリストに従って行動する
+  必須アクション:
+    - id: 1
+      action: "この分析結果をチャットに出力"
+      根拠: "Hook 指示による"
+    - id: 2
+      action: "{primary_topic_type に基づくアクション}"
+      根拠: "{判定理由}"
+      # instruction → "playbook-init を呼び出す"
+      # question → "直接回答する"
+      # context → "現在のタスクに統合する"
+    - id: 3
+      action: "{blocking_issues がある場合: 解決してから進む}"
+      根拠: "ready_for_playbook が false"
+    # multi_topic_detection.topics から追加
+    - id: N
+      action: "{topic.type に基づくアクション}: {topic.summary}"
+      根拠: "論点 {id} の処理"
+```
+
+---
+
+## 必須アクション生成ルール
+
+> **目的**: 分析結果を「情報」から「指示」に変換し、メイン Claude が確実に行動するようにする。
+
+### 変換ロジック
+
+```yaml
+# 1. 常に含めるアクション
+固定アクション:
+  - id: 1
+    action: "この分析結果をチャットに出力"
+    根拠: "Hook 指示による"
+    条件: 常に
+
+# 2. primary_topic_type に基づくアクション
+primary_topic_type == instruction:
+  - action: "playbook-init を呼び出す"
+    根拠: "タスク依頼のため playbook が必要"
+
+primary_topic_type == question:
+  - action: "直接回答する"
+    根拠: "質問への回答"
+
+primary_topic_type == context:
+  - action: "現在のタスクに統合する"
+    根拠: "補足情報として処理"
+
+# 3. blocking_issues がある場合
+ready_for_playbook == false:
+  - action: "blocking_issues を解決してから進む"
+    根拠: "ready_for_playbook が false"
+    blocking_issues: ["{具体的な問題}"]
+
+# 4. multi_topic_detection.topics から変換
+for topic in topics:
+  topic.type == instruction:
+    - action: "このタスクを実行: {topic.summary}"
+  topic.type == question:
+    - action: "この質問に回答: {topic.summary}"
+  topic.type == context:
+    - action: "このコンテキストを考慮: {topic.summary}"
+```
+
+### 出力例
+
+```yaml
+必須アクション:
+  - id: 1
+    action: "この分析結果をチャットに出力"
+    根拠: "Hook 指示による"
+  - id: 2
+    action: "playbook-init を呼び出す"
+    根拠: "primary_topic_type が instruction"
+  - id: 3
+    action: "blocking_issues を解決: 「What が不明確」"
+    根拠: "ready_for_playbook が false"
+  - id: 4
+    action: "このタスクを実行: ログイン機能の実装"
+    根拠: "論点 1 の処理（instruction）"
+  - id: 5
+    action: "この質問に回答: 認証方式は何を使うか"
+    根拠: "論点 2 の処理（question）"
+```
+
+### 制約
+
+```yaml
+禁止:
+  - 必須アクションの省略
+  - スキップ条件の追加
+  - アクションの順序変更（id 順に処理）
+
+必須:
+  - 全ての必須アクションを出力に含める
+  - メイン Claude は必須アクションに従って行動する
+  - 分析結果のチャット出力は常に最初のアクション
 ```
