@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-pb09-subagent-stop-fail-closed.md
+branch: fix/pb09-subagent-stop-fail-closed
 last_archived: plan/archive/playbook-pb01-pb08-hook-fixes.md
 review_pending: false
 ```
@@ -20,10 +20,12 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-status: null
+milestone: PB-09
+phase: p_final
+done_criteria:
+  - subagent-stop.sh 行 22-24 に Fail-closed 実装が存在する
+  - jq 不在時に exit 2 でブロックされる
+status: in_progress
 ```
 
 ---
@@ -31,7 +33,7 @@ status: null
 ## session
 
 ```yaml
-last_start: 2026-01-03 18:14:25
+last_start: 2026-01-03 18:31:24
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
