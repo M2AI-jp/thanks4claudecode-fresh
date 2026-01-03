@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-completion-flow-fix.md
-branch: fix/playbook-completion-flow
-last_archived: plan/archive/playbook-purpose-verification-test.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-completion-flow-fix.md
 review_pending: false
 ```
 
@@ -20,13 +20,10 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: completion-flow-fix
-phase: p1
-done_criteria:
-  - archive-playbook.sh の Step 9 で git checkout main が実行される
-  - archive-playbook.sh の Step 5 で goal セクションがリセットされる
-  - merge-pr.sh が --auto なしで即座にマージを試行する
-status: in_progress
+milestone: null
+phase: null
+done_criteria: []
+status: null
 ```
 
 ---
