@@ -164,14 +164,16 @@ user_approved_understanding:
 
 ## final_tasks
 
-- [ ] **ft1**: repository-map.yaml を更新する
+- [x] **ft1**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
-  - status: pending
+  - status: skipped (no structural changes)
 
-- [ ] **ft2**: tmp/ 内の一時ファイルを削除する
+- [x] **ft2**: tmp/ 内の一時ファイルを削除する
   - command: `find tmp/ -type f ! -name 'README.md' -delete 2>/dev/null || true`
-  - status: pending
+  - status: skipped (no temp files)
 
-- [ ] **ft3**: 変更を全てコミットする
-  - command: `git add -A && git status`
-  - status: pending
+- [x] **ft3**: 変更を全てコミットする
+  - command: `git add -A && git commit`
+  - status: done
+  - commit: 8670cbf
+  - pr: https://github.com/M2AI-jp/thanks4claudecode-fresh/pull/72
