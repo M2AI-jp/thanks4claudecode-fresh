@@ -14,6 +14,8 @@
 #   1. 自動コミット（未コミット変更がある場合）
 #   2. push（PR 作成前に必要）
 #   3. PR 作成（create-pr.sh - playbook.active が必要）
+#   3.5. バックグラウンドタスク クリーンアップ（M088）
+#   3.6. fix-backlog.md 自動 FIXED マーク（PB-28: derives_from から PB-XX を抽出）
 #   4. playbook アーカイブ（plan/archive/ へ移動）
 #   5. アーカイブのコミット（playbook 移動のみ）
 #   6. push（アーカイブ分）
@@ -331,6 +333,121 @@ echo "$SEP"
 
 # playbook 完了時は全 phase のタスクをクリーンアップ
 cleanup_background_tasks_for_phase "all"
+
+# ==============================================================================
+# Step 3.6: fix-backlog.md 自動 FIXED マーク（PB-28）
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 3.6: fix-backlog.md 自動 FIXED マーク"
+echo "$SEP"
+
+update_fix_backlog() {
+    local playbook_path="$1"
+    local fix_backlog="docs/fix-backlog.md"
+
+    # fix-backlog.md が存在しない場合はスキップ
+    if [[ ! -f "$fix_backlog" ]]; then
+        log_info "fix-backlog.md が見つかりません。スキップ。"
+        return 0
+    fi
+
+    # playbook から derives_from を抽出
+    local derives_from
+    derives_from=$(grep -E "^derives_from:" "$playbook_path" 2>/dev/null | sed 's/derives_from: *//' | tr -d ' ')
+
+    if [[ -z "$derives_from" ]]; then
+        log_info "derives_from がありません。fix-backlog 更新をスキップ。"
+        return 0
+    fi
+
+    # PB-XX を抽出（例: "docs/fix-backlog.md#PB-11" → "PB-11"）
+    local pb_id
+    pb_id=$(echo "$derives_from" | grep -oE 'PB-[0-9]+' | head -1)
+
+    if [[ -z "$pb_id" ]]; then
+        log_info "derives_from に PB-XX が含まれていません: $derives_from"
+        return 0
+    fi
+
+    log_info "fix-backlog.md の $pb_id を FIXED マークします..."
+
+    # goal.summary を抽出
+    local goal_summary
+    goal_summary=$(sed -n '/^## goal/,/^## /p' "$playbook_path" | grep -E "^summary:" | sed 's/summary: *//' | head -1)
+
+    # PR URL を取得（gh pr list から現在のブランチの PR を取得）
+    local pr_url=""
+    if command -v gh &> /dev/null; then
+        pr_url=$(gh pr list --head "$CURRENT_BRANCH" --json url --jq '.[0].url' 2>/dev/null || echo "")
+    fi
+
+    # fix-backlog.md を更新
+    # 1. 見出し行に ✅ FIXED を追加
+    local heading_pattern="#### $pb_id:"
+    if grep -q "$heading_pattern" "$fix_backlog"; then
+        # すでに FIXED マークがあるかチェック
+        if grep -q "$heading_pattern.*✅ FIXED" "$fix_backlog"; then
+            log_info "$pb_id はすでに FIXED マーク済みです。"
+            return 0
+        fi
+
+        # 見出し行に ✅ FIXED を追加
+        sed -i '' "s|$heading_pattern\(.*\)|$heading_pattern\1 ✅ FIXED|" "$fix_backlog" 2>/dev/null
+
+        # 修正内容と PR URL を追加（Validation 行の後に挿入）
+        local insert_content=""
+        if [[ -n "$goal_summary" ]]; then
+            insert_content="- **修正内容**: $goal_summary"
+        fi
+        if [[ -n "$pr_url" ]]; then
+            if [[ -n "$insert_content" ]]; then
+                insert_content="$insert_content\n- **PR**: $pr_url"
+            else
+                insert_content="- **PR**: $pr_url"
+            fi
+        fi
+
+        if [[ -n "$insert_content" ]]; then
+            # Validation 行の後に挿入
+            # awk を使って該当セクションに追記
+            awk -v pb="$pb_id" -v content="$insert_content" '
+                /^#### '"$pb_id"':/ { in_section = 1 }
+                in_section && /^- \*\*Validation\*\*:/ {
+                    print
+                    # Validation の次の行まで読んで、その後に挿入
+                    if ((getline nextline) > 0) {
+                        if (nextline ~ /^- \*\*/) {
+                            # 次も箇条書きの場合はそのまま出力して content を最後に追加
+                            print nextline
+                        } else {
+                            # 空行や次のセクションの場合
+                            printf "%s\n", content
+                            print nextline
+                        }
+                    }
+                    in_section = 0
+                    next
+                }
+                { print }
+            ' "$fix_backlog" > "$fix_backlog.tmp" && mv "$fix_backlog.tmp" "$fix_backlog"
+        fi
+
+        log_info "$pb_id を FIXED マークしました"
+        if [[ -n "$pr_url" ]]; then
+            log_info "  PR: $pr_url"
+        fi
+    else
+        log_warn "fix-backlog.md に $pb_id が見つかりません"
+    fi
+}
+
+# playbook がまだ存在する間に実行
+if [[ -f "$FILE_PATH" ]]; then
+    update_fix_backlog "$FILE_PATH"
+else
+    log_warn "playbook ファイルが見つかりません: $FILE_PATH"
+fi
 
 # ==============================================================================
 # Step 4: Playbook アーカイブ

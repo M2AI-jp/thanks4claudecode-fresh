@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-pb11-critic-guard.md
+last_archived: plan/archive/playbook-pb28-archive-fix-backlog-auto-mark.md
 review_pending: false
 ```
 
@@ -32,7 +32,7 @@ status: done
 ## session
 
 ```yaml
-last_start: 2026-01-03 19:54:36
+last_start: 2026-01-03 20:44:51
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
