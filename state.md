@@ -9,10 +9,10 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-skill-audit-v2.md
+branch: refactor/skill-audit-v2
 last_archived: plan/archive/playbook-skill-audit.md
-review_pending: false
+review_pending: true
 ```
 
 ---
@@ -20,10 +20,14 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-status: completed
+milestone: "外部検証・反証モードによる機能監査"
+phase: "p1 (pending) - 機械的データ収集"
+done_criteria:
+  - "依存グラフが生成され、断絶がリストされている"
+  - "各ファイルに外部検証結果（codex）が付与されている"
+  - "反証モードで問題点がリストされている"
+  - "未確定項目が明示的にリストされている"
+status: pending_approval
 ```
 
 ---
@@ -31,7 +35,7 @@ status: completed
 ## session
 
 ```yaml
-last_start: 2026-01-03 12:23:29
+last_start: 2026-01-03 13:00:32
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
