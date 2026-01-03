@@ -11,7 +11,7 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-repository-audit.md
+last_archived: plan/archive/playbook-purpose-verification-test.md
 review_pending: false
 ```
 
@@ -20,11 +20,14 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: null
-phase: null
-done_criteria: []
-status: idle
-note: null
+milestone: purpose-verification-test
+phase: p1
+done_criteria:
+  - src/utils/string-utils.ts が存在し、slugify() 関数が日本語を含む文字列を URL-safe なスラッグに変換する
+  - 対応するテストファイルが存在し、npm test が PASS する
+  - CodeRabbit レビューが実行され、結果がログに記録されている
+  - p_final.purpose_alignment で「テスト通過以上の価値」が具体的に示されている
+status: in_progress
 ```
 
 ---
@@ -32,7 +35,7 @@ note: null
 ## session
 
 ```yaml
-last_start: 2026-01-02 21:30:53
+last_start: 2026-01-03 10:50:15
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

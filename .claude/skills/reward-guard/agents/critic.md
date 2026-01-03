@@ -1,6 +1,6 @@
 ---
 name: critic
-description: MUST BE USED before marking any task as done. Evaluates done_criteria with evidence-based judgment. Prevents self-reward fraud through critical thinking.
+description: MUST BE USED before marking any task as done. Evaluates done_criteria with evidence-based judgment. Prevents self-reward fraud through critical thinking. Called by /crit Skill which orchestrates codex verification.
 tools: Read, Grep, Bash
 model: opus
 skills: state, lint-checker, test-runner
@@ -178,7 +178,7 @@ playbook リセットのトリガー:
 
 ---
 
-## 出力フォーマット（V16: validations ベース）
+## 出力フォーマット（V16: validations ベース + 作業履歴）
 
 評価結果は以下の形式で出力してください：
 
@@ -216,6 +216,25 @@ playbook 自体の妥当性:
 修正が必要な項目:
   1. {項目1}（subtask ID: p{N}.{M}）
   2. {項目2}（subtask ID: p{N}.{M}）
+
+---
+[作業履歴要約 - codex 怠慢検出用]
+
+作業内容:
+  - {何を実装/修正したか}
+  - {使用したツール/コマンド}
+
+ユーザーとのやり取り:
+  - {ユーザーからの指示や修正}
+  - {それに対する対応}
+
+判断場面:
+  - {判断を迫られた場面}
+  - {その時の対応と根拠}
+
+「できない」と言った場面:
+  - {あれば具体的に記載}
+  - {その根拠}
 ```
 
 ### 判定ルール
@@ -327,6 +346,75 @@ CRITIQUE 実行時、以下を自問してください：
 - 判定を甘くしない。迷ったら FAIL。
 - 証拠なしに PASS と言わない。
 - 質問しない。判定を実行する。
+
+---
+
+## /crit Skill との連携（アーキテクチャ）
+
+> **critic SubAgent は「自己評価」に専念する。codex 独立検証は Skill 層が担当。**
+>
+> これは「Hook → Skill → SubAgent」チェーンの正しい役割分担。
+
+### 役割分担
+
+```yaml
+/crit Skill（オーケストレーター）:
+  責務:
+    - 複数 SubAgent の呼び出しと統合
+    - critic SubAgent → codex-delegate SubAgent の順序制御
+    - 最終判定の統合
+  参照: .claude/commands/crit.md
+
+critic SubAgent（自己評価）:
+  責務:
+    - done_criteria の批判的評価
+    - 証拠ベースの PASS/FAIL 判定
+    - 3点検証（technical/consistency/completeness）
+  ツール: Read, Grep, Bash のみ（書き込み不可 = 自己完了防止）
+
+codex-delegate SubAgent（独立検証）:
+  責務:
+    - コンテキスト分離による独立評価
+    - 「空気を読まない」厳しい判定
+  ツール: Bash, mcp__codex__codex（MCP 使用可能）
+```
+
+### 正しい呼び出しフロー
+
+```
+/crit Skill が呼ばれる
+    │
+    ├─→ Step 1: Task(subagent_type='critic')
+    │       └─→ critic が自己評価を実行
+    │       └─→ PASS/FAIL + 証拠を返す
+    │
+    ├─→ Step 2: Task(subagent_type='codex-delegate')
+    │       └─→ codex が独立検証を実行
+    │       └─→ PASS/FAIL を返す
+    │
+    └─→ Step 3: Skill が最終判定を統合
+            └─→ critic PASS + codex PASS → 総合 PASS
+            └─→ どちらか FAIL → 総合 FAIL
+```
+
+### critic の出力
+
+```
+[CRITIQUE]
+
+subtasks 達成状況:
+  {subtask ごとの PASS/FAIL と証拠}
+
+自己評価総合判定: {PASS|FAIL}
+
+{PASS の場合は証拠サマリーを含める}
+証拠サマリー:
+  - {証拠1}
+  - {証拠2}
+```
+
+Skill 層がこの出力を受け取り、codex-delegate に渡して独立検証を行う。
+critic が codex を呼び出す必要はない。
 
 ---
 
