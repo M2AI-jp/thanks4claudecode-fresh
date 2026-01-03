@@ -203,23 +203,52 @@ evidence_format:
   - 修正: `|| true` + `${var:-0}` に変更（.claude/hooks/prompt.sh 行 52, 55-56）
 - **テスト**: 9テストケース全PASS (行18,20,47,52,55 + 全体実行)
 
-#### PB-08: playbook-fix-post-tool.md
+#### PB-08: playbook-fix-post-tool.md ✅ INVESTIGATED
 - **概要**: codex 指摘の不具合を再現→修正→回帰テスト追加
 - **Scope**: post-tool.sh, test-workflow-simple.sh
 - **Done when**: 再現ケースが PASS
 - **Validation**: test-workflow-simple.sh
+- **Status**: 調査済み・問題なし (2026-01-03)
+- **調査結果**:
+  - bash -n 構文チェック: OK
+  - jq 不在時チェック: 不要（PostToolUse は後処理、ブロック不要）
+  - invoke_skill で `|| true` 使用、失敗しても続行する設計
+  - 明確な不具合は発見されず
 
-#### PB-09: playbook-fix-subagent-stop.md
+#### PB-09: playbook-fix-subagent-stop.md ✅ FIXED
 - **概要**: codex 指摘の不具合を再現→修正→回帰テスト追加
 - **Scope**: subagent-stop.sh, test-workflow-simple.sh
 - **Done when**: 再現ケースが PASS
 - **Validation**: test-workflow-simple.sh
+- **Status**: 修正済み (2026-01-03)
+- **修正内容**:
+  - 問題: jq 不在時に exit 0（Fail-open）
+  - 修正: exit 2 + エラーメッセージ（Fail-closed）に変更
+  - 対象行: 21-24
 
-#### PB-10: playbook-fix-executor-guard.md
+#### PB-10: playbook-fix-executor-guard.md ✅ INVESTIGATED
 - **概要**: codex 指摘の guard 失敗パターンを特定し修正
 - **Scope**: executor-guard.sh
 - **Done when**: 想定外 executor を確実に BLOCK
 - **Validation**: guard 単体実行で PASS/FAIL を確認
+- **Status**: 調査済み・問題なし (2026-01-03)
+- **調査結果**:
+  - bash -n 構文チェック: OK
+  - jq 不在時 Fail-closed: 既に実装済み（行 47-57）
+  - 未知の executor は警告のみで exit 0（設計意図通り）
+  - 明確な不具合は発見されず
+
+#### PB-26: playbook-fix-main-branch-skill-task-deadlock.md ✅ FIXED
+- **概要**: main-branch.sh で Skill/Task ツールを許可し、playbook-init 呼び出し時のデッドロックを解消
+- **Scope**: main-branch.sh
+- **Done when**: main ブランチで Skill/Task ツールがブロックされない
+- **Validation**: main ブランチで Skill(playbook-init) が実行可能
+- **Status**: 修正済み (2026-01-03)
+- **修正内容**:
+  - 問題: main-branch.sh の許可リストに Skill/Task がなく、playbook-init がブロックされる
+  - 原因: 設計意図「playbook 作成で自動ブランチ作成」が動作しないデッドロック
+  - 修正: 行 54-57 に Skill/Task ツール許可を追加
+  - ヘッダーコメント（行 17）にも Skill/Task を例外として追記
 
 ---
 
@@ -982,6 +1011,7 @@ fi
 | PB-23 | P1-02 | critic.md | tools説明 |
 | PB-24 | P1-01 | pm.md | 複雑性 |
 | PB-25 | - | playbook-format.md | トレーサビリティ |
+| PB-26 | - | main-branch.sh | デッドロック |
 
 ---
 
@@ -990,8 +1020,8 @@ fi
 ```
 Phase 1: P0 Guard Stability (PB-01 〜 PB-05)
   ↓ 実行時エラー解消
-Phase 2: P0 Hook Robustness (PB-06 〜 PB-10)
-  ↓ セキュリティ・堅牢性確保
+Phase 2: P0 Hook Robustness (PB-06 〜 PB-10, PB-26)
+  ↓ セキュリティ・堅牢性確保・デッドロック解消
 Phase 3: P0/P1 Skill & Agent Integrity (PB-11 〜 PB-15)
   ↓ ドキュメント整合
 Phase 4: P1 Workflow Verification (PB-16 〜 PB-20)
@@ -1007,11 +1037,11 @@ Phase 5: P1/P2 Documentation & Template Hygiene (PB-21 〜 PB-25)
 | 優先度 | 件数 | 内容 |
 |--------|------|------|
 | P0 Guard Stability | 5件 | パス計算修正、タイムアウト排除 |
-| P0 Hook Robustness | 5件 | Fail-closed化、エラー処理 |
+| P0 Hook Robustness | 6件 | Fail-closed化、エラー処理、デッドロック解消 |
 | P0/P1 Skill & Agent | 5件 | ドキュメント参照整合 |
 | P1 Workflow | 5件 | 冪等性、設計判断 |
 | P1/P2 Documentation | 5件 | テンプレ・ドキュメント整備 |
-| **合計** | **25件** | |
+| **合計** | **26件** | |
 
 ---
 

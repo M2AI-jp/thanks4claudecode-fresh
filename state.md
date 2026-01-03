@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-hook-robustness-phase2.md
+branch: fix/hook-robustness-phase2
 last_archived: plan/archive/playbook-fix-post-loop-order.md
 review_pending: false
 ```
@@ -31,7 +31,7 @@ status: null
 ## session
 
 ```yaml
-last_start: 2026-01-03 17:22:39
+last_start: 2026-01-03 17:34:52
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

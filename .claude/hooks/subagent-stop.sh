@@ -18,9 +18,10 @@ SKILLS_DIR="$SCRIPT_DIR/../skills"
 # stdin から JSON を読み込む
 INPUT=$(cat)
 
-# jq がない場合はスキップ
+# jq がない場合は Fail-closed（セキュリティのため）
 if ! command -v jq &> /dev/null; then
-    exit 0
+    echo "[FAIL-CLOSED] jq not found - blocking for security" >&2
+    exit 2
 fi
 
 # SubAgent 情報を取得

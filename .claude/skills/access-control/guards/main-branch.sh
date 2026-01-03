@@ -14,6 +14,7 @@
 #
 # 例外（常に許可）:
 #   - Read/Glob/Grep ツール（読み取りのみ）
+#   - Skill/Task ツール（playbook-init でブランチ自動作成に必要）
 #   - state.md への編集（デッドロック回避）
 #   - git 操作コマンド（ブランチ切り替え等）
 
@@ -47,6 +48,11 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
 
 # Read ツールは許可（読み取りのみ）
 if [ "$TOOL_NAME" = "Read" ] || [ "$TOOL_NAME" = "Glob" ] || [ "$TOOL_NAME" = "Grep" ]; then
+    exit 0
+fi
+
+# Skill/Task ツールは許可（playbook-init でブランチ自動作成に必要）
+if [ "$TOOL_NAME" = "Skill" ] || [ "$TOOL_NAME" = "Task" ]; then
     exit 0
 fi
 
