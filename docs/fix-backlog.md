@@ -256,6 +256,20 @@ evidence_format:
   - 修正: 行 54-57 に Skill/Task ツール許可を追加
   - ヘッダーコメント（行 17）にも Skill/Task を例外として追記
 
+#### PB-27: playbook-fix-post-loop-pending-deadlock.md ✅ FIXED
+- **概要**: post-loop-pending ファイルがセッションを跨いで残存するとデッドロックになる問題を修正
+- **Scope**: session-start.sh, pending-guard.sh, test-workflow-simple.sh
+- **Done when**: セッション開始時に stale な pending が自動削除される、main ブランチで pending があっても許可される
+- **Validation**: test-workflow-simple.sh（Test 6-8）
+- **Status**: 修正済み (2026-01-03)
+- **修正内容**:
+  - 問題: post-loop-pending ファイルがセッションを跨いで残存すると Edit/Write が全てブロック
+  - 原因: pending のライフタイムがセッションスコープであるべきだが、クロスセッションで残存
+  - 修正1: session-start.sh に cleanup_stale_pending() 追加（行 128-141）
+  - 修正2: pending-guard.sh に main ブランチ例外を追加（行 28-37）
+  - テスト: Test 6-8 を追加（pending + non-main = BLOCK, pending + main = ALLOW, session-start で cleanup）
+- **PR**: https://github.com/M2AI-jp/thanks4claudecode-fresh/pull/83
+
 ---
 
 ### P0/P1 Skill & Agent Integrity
@@ -1018,6 +1032,7 @@ fi
 | PB-24 | P1-01 | pm.md | 複雑性 |
 | PB-25 | - | playbook-format.md | トレーサビリティ |
 | PB-26 | - | main-branch.sh | デッドロック |
+| PB-27 | - | session-start.sh, pending-guard.sh | デッドロック |
 
 ---
 
@@ -1026,7 +1041,7 @@ fi
 ```
 Phase 1: P0 Guard Stability (PB-01 〜 PB-05)
   ↓ 実行時エラー解消
-Phase 2: P0 Hook Robustness (PB-06 〜 PB-10, PB-26)
+Phase 2: P0 Hook Robustness (PB-06 〜 PB-10, PB-26, PB-27)
   ↓ セキュリティ・堅牢性確保・デッドロック解消
 Phase 3: P0/P1 Skill & Agent Integrity (PB-11 〜 PB-15)
   ↓ ドキュメント整合
@@ -1043,11 +1058,11 @@ Phase 5: P1/P2 Documentation & Template Hygiene (PB-21 〜 PB-25)
 | 優先度 | 件数 | 内容 |
 |--------|------|------|
 | P0 Guard Stability | 5件 | パス計算修正、タイムアウト排除 |
-| P0 Hook Robustness | 6件 | Fail-closed化、エラー処理、デッドロック解消 |
+| P0 Hook Robustness | 7件 | Fail-closed化、エラー処理、デッドロック解消 |
 | P0/P1 Skill & Agent | 5件 | ドキュメント参照整合 |
 | P1 Workflow | 5件 | 冪等性、設計判断 |
 | P1/P2 Documentation | 5件 | テンプレ・ドキュメント整備 |
-| **合計** | **26件** | |
+| **合計** | **27件** | |
 
 ---
 

@@ -64,21 +64,23 @@ done_when:
 
 #### subtasks
 
-- [ ] **p1.1**: 変更がコミットされている
+- [x] **p1.1**: 変更がコミットされている
   - executor: claudecode
   - validations:
-    - technical: "git log で新しいコミットが確認できる"
-    - consistency: "コミットメッセージが変更内容を正確に反映"
-    - completeness: "全ての変更ファイルがコミットに含まれている"
+    - technical: "PASS - git log: 89cf911 fix(post-loop): prevent pending file deadlock across sessions"
+    - consistency: "PASS - コミットメッセージが問題と解決策を正確に反映"
+    - completeness: "PASS - session-start.sh, pending-guard.sh, test-workflow-simple.sh, state.md, playbook が含まれている"
+  - validated: 2026-01-03T19:00:00
 
-- [ ] **p1.2**: PR が作成されている
+- [x] **p1.2**: PR が作成されている
   - executor: claudecode
   - validations:
-    - technical: "gh pr view で PR 情報が確認できる"
-    - consistency: "PR タイトルと説明が変更内容を正確に反映"
-    - completeness: "PR が main ブランチへのマージ対象になっている"
+    - technical: "PASS - gh pr view 83: state=OPEN"
+    - consistency: "PASS - PR タイトル: fix(post-loop): prevent pending file deadlock across sessions"
+    - completeness: "PASS - baseRefName=main, headRefName=fix/post-loop-pending-deadlock"
+  - validated: 2026-01-03T19:00:00
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
@@ -91,35 +93,40 @@ done_when:
 
 #### subtasks
 
-- [ ] **p_final.1**: 変更がコミットされている
+- [x] **p_final.1**: 変更がコミットされている
   - executor: claudecode
   - validations:
-    - technical: "git log --oneline -1 でコミットを確認"
-    - consistency: "コミットが fix/post-loop-pending-deadlock ブランチにある"
-    - completeness: "session-start.sh, pending-guard.sh, test-workflow-simple.sh が含まれる"
+    - technical: "PASS - git log --oneline -1: 89cf911 fix(post-loop): prevent pending file deadlock across sessions"
+    - consistency: "PASS - コミットは fix/post-loop-pending-deadlock ブランチにある"
+    - completeness: "PASS - session-start.sh, pending-guard.sh, test-workflow-simple.sh, state.md, playbook が含まれる"
+  - validated: 2026-01-03T19:00:00
 
-- [ ] **p_final.2**: PR が作成されている
+- [x] **p_final.2**: PR が作成されている
   - executor: claudecode
   - validations:
-    - technical: "gh pr list で PR が表示される"
-    - consistency: "PR のベースブランチが main"
-    - completeness: "PR にラベルや説明が適切に設定されている"
+    - technical: "PASS - gh pr view 83: state=OPEN, PR #83"
+    - consistency: "PASS - baseRefName=main"
+    - completeness: "PASS - PR に Summary, Problem, Solution, Test plan セクションが含まれている"
+  - validated: 2026-01-03T19:00:00
 
-**status**: pending
+**status**: done
 **max_iterations**: 3
 
 ---
 
 ## final_tasks
 
-- [ ] **ft1**: repository-map.yaml を更新する
+- [x] **ft1**: repository-map.yaml を更新する
   - command: `bash .claude/hooks/generate-repository-map.sh`
-  - status: pending
+  - status: done
+  - executed: 2026-01-03T19:00:00
 
-- [ ] **ft2**: tmp/ 内の一時ファイルを削除する
+- [x] **ft2**: tmp/ 内の一時ファイルを削除する
   - command: `find tmp/ -type f ! -name 'README.md' -delete 2>/dev/null || true`
-  - status: pending
+  - status: done
+  - executed: 2026-01-03T19:00:00
 
-- [ ] **ft3**: 変更を全てコミットする
+- [x] **ft3**: 変更を全てコミットする
   - command: `git add -A && git status`
-  - status: pending
+  - status: done
+  - executed: 2026-01-03T19:00:00
