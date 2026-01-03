@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-verify-prompt-sh-grep-awk.md
+active: plan/archive/playbook-verify-prompt-sh-grep-awk.md
 branch: fix/verify-prompt-sh-grep-awk
-last_archived: plan/archive/playbook-fix-pending-guard-fail-closed.md
+last_archived: plan/archive/playbook-verify-prompt-sh-grep-awk.md
 review_pending: false
 ```
 
@@ -21,12 +21,9 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p1
-done_criteria:
-  - prompt.sh 内の全 grep/awk 使用箇所（行 18, 20, 47, 50, 52）のエラーハンドリング状態が文書化されている
-  - 0 件/パターン不一致ケースでのテスト実行結果が exit 0 を維持する
-  - 問題がある場合は修正済み、問題がない場合は「検証済み・問題なし」が証拠付きで記録されている
-status: in_progress
+phase: null
+done_criteria: []
+status: null
 ```
 
 ---
