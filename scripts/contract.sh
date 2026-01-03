@@ -284,6 +284,8 @@ BOOTSTRAP_COMPOUND_PATTERNS=(
 BOOTSTRAP_SINGLE_PATTERNS=(
     # 読み取り専用 git 操作
     '^git[[:space:]]+(status|diff|log|show|branch|remote|fetch|pull)'
+    # git add（archive 後のコミット準備に必要）
+    '^git[[:space:]]+add'
     # git push（main へのマージ完了後に必要）
     '^git[[:space:]]+push'
     # git commit（メンテナンスコミット用）
