@@ -46,10 +46,14 @@ EOF
             local phase_section
             phase_section=$(awk "/^### ${phase}:/,/^---\$/" "$playbook_path" 2>/dev/null)
 
+            # pipefail 環境で grep -c が 0 件時に exit 1 を返す問題を回避
+            # || true で exit code を 0 にし、空の場合のみデフォルト値を設定
             local completed
-            completed=$(echo "$phase_section" | grep -c '\- \[x\]' 2>/dev/null || echo "0")
+            completed=$(echo "$phase_section" | grep -c '\- \[x\]' 2>/dev/null || true)
+            completed=${completed:-0}
             local incomplete
-            incomplete=$(echo "$phase_section" | grep -c '\- \[ \]' 2>/dev/null || echo "0")
+            incomplete=$(echo "$phase_section" | grep -c '\- \[ \]' 2>/dev/null || true)
+            incomplete=${incomplete:-0}
             local total=$((completed + incomplete))
 
             if [[ "$incomplete" -gt 0 ]]; then

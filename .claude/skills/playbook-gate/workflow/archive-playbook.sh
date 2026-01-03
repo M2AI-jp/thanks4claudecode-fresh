@@ -15,12 +15,14 @@
 #   2. push（PR 作成前に必要）
 #   3. PR 作成（create-pr.sh - playbook.active が必要）
 #   4. playbook アーカイブ（plan/archive/ へ移動）
-#   5. state.md 更新（playbook.active = null）
-#   6. アーカイブのコミット
-#   7. push（追加コミット）
-#   8. PR マージ（merge-pr.sh）
-#   9. main 同期
-#   10. pending ファイル作成
+#   5. アーカイブのコミット（playbook 移動のみ）
+#   6. push（アーカイブ分）
+#   7. state.md 更新（playbook.active = null）
+#   8. state.md 更新のコミット
+#   9. push（state.md 分）
+#   10. PR マージ（merge-pr.sh）
+#   11. main 同期
+#   12. pending ファイル作成
 #
 # 参照: docs/archive-operation-rules.md
 
@@ -346,11 +348,44 @@ else
 fi
 
 # ==============================================================================
-# Step 5: state.md 更新（playbook + goal セクション両方をリセット）
+# Step 5: アーカイブのコミット（playbook 移動のみ）
 # ==============================================================================
 echo ""
 echo "$SEP"
-echo "  Step 5: state.md 更新"
+echo "  Step 5: アーカイブのコミット"
+echo "$SEP"
+
+if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+    git add -A
+    git commit -m "chore: archive ${PLAYBOOK_NAME%.md}
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>" || log_warn "アーカイブコミットに失敗しました"
+    log_info "アーカイブコミット完了"
+else
+    log_info "変更なし。スキップ。"
+fi
+
+# ==============================================================================
+# Step 6: Push（アーカイブ分）
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 6: Push（アーカイブ分）"
+echo "$SEP"
+
+if [ "$CURRENT_BRANCH" != "main" ] && [ "$CURRENT_BRANCH" != "master" ]; then
+    git push 2>&1 || log_warn "アーカイブ push に失敗しました"
+    log_info "アーカイブ Push 完了"
+fi
+
+# ==============================================================================
+# Step 7: state.md 更新（playbook + goal セクション両方をリセット）
+# ==============================================================================
+echo ""
+echo "$SEP"
+echo "  Step 7: state.md 更新"
 echo "$SEP"
 
 STATE_FILE="state.md"
@@ -378,44 +413,44 @@ else
 fi
 
 # ==============================================================================
-# Step 6: アーカイブのコミット
+# Step 8: state.md 更新のコミット
 # ==============================================================================
 echo ""
 echo "$SEP"
-echo "  Step 6: アーカイブのコミット"
+echo "  Step 8: state.md 更新のコミット"
 echo "$SEP"
 
 if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
     git add -A
-    git commit -m "chore: archive ${PLAYBOOK_NAME%.md}
+    git commit -m "chore: reset state.md after archive ${PLAYBOOK_NAME%.md}
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>" || log_warn "アーカイブコミットに失敗しました"
-    log_info "アーカイブコミット完了"
+Co-Authored-By: Claude <noreply@anthropic.com>" || log_warn "state.md コミットに失敗しました"
+    log_info "state.md コミット完了"
 else
     log_info "変更なし。スキップ。"
 fi
 
 # ==============================================================================
-# Step 7: Push（追加コミット）
+# Step 9: Push（state.md 分）
 # ==============================================================================
 echo ""
 echo "$SEP"
-echo "  Step 7: Push（追加コミット）"
+echo "  Step 9: Push（state.md 分）"
 echo "$SEP"
 
 if [ "$CURRENT_BRANCH" != "main" ] && [ "$CURRENT_BRANCH" != "master" ]; then
-    git push 2>&1 || log_warn "追加 push に失敗しました"
-    log_info "追加 Push 完了"
+    git push 2>&1 || log_warn "state.md push に失敗しました"
+    log_info "state.md Push 完了"
 fi
 
 # ==============================================================================
-# Step 8: PR マージ
+# Step 10: PR マージ
 # ==============================================================================
 echo ""
 echo "$SEP"
-echo "  Step 8: PR マージ"
+echo "  Step 10: PR マージ"
 echo "$SEP"
 
 MERGE_PR_SCRIPT="$SKILLS_DIR/git-workflow/handlers/merge-pr.sh"
@@ -426,11 +461,11 @@ else
 fi
 
 # ==============================================================================
-# Step 9: main 同期（強制的に main へ checkout）
+# Step 11: main 同期（強制的に main へ checkout）
 # ==============================================================================
 echo ""
 echo "$SEP"
-echo "  Step 9: main 同期"
+echo "  Step 11: main 同期"
 echo "$SEP"
 
 git fetch origin main 2>/dev/null || true
@@ -456,11 +491,11 @@ else
 fi
 
 # ==============================================================================
-# Step 10: pending ファイル作成
+# Step 12: pending ファイル作成
 # ==============================================================================
 echo ""
 echo "$SEP"
-echo "  Step 10: pending ファイル作成"
+echo "  Step 12: pending ファイル作成"
 echo "$SEP"
 
 mkdir -p "$SESSION_STATE_DIR"
