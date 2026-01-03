@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-bash-check-repo-root.md
-branch: fix/bash-check-repo-root
-last_archived: plan/archive/playbook-fix-failure-logger.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-fix-bash-check-repo-root.md
 review_pending: false
 ```
 
@@ -21,12 +21,9 @@ review_pending: false
 
 ```yaml
 milestone: null
-phase: p1
-done_criteria:
-  - bash-check.sh の REPO_ROOT が 4 階層上を指している
-  - bash -n bash-check.sh が成功する
-  - contract.sh が正しく source できるパスになっている
-status: in_progress
+phase: null
+done_criteria: []
+status: null
 ```
 
 ---
