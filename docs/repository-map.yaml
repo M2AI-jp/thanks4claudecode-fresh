@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-03 00:47:09"
+  generated: "2026-01-03 12:32:00"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 293
+  total_files: 287
 
 hooks:
   directory: .claude/hooks/
@@ -119,7 +119,7 @@ commands:
   usage: "即座に実行される CLI 機能。ユーザーの意図を明確に反映。"
   files:
     - name: "/crit"
-      description: "この処理は critic SubAgent に委譲される。直接 CRITIQUE を実行してはならない�"
+      description: "この Skill は複数 SubAgent をオーケストレーションする。直接 CRITIQUE を実行�"
     - name: "/lint"
       description: "allowed-tools: Read, Bash"
     - name: "/playbook-init"
@@ -160,7 +160,7 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 66
+      count: 72
     template:
       description: "playbook テンプレート"
       count: 6
@@ -409,6 +409,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-03 00:47:09"
+  - date: "2026-01-03 12:32:00"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
