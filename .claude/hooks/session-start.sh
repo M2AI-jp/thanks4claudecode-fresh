@@ -125,8 +125,26 @@ run_coherence_check() {
     fi
 }
 
+# Cleanup stale pending file from previous session (prevents deadlock)
+# See: fix/post-loop-pending-deadlock
+# Reason: pending's lifetime is session-scoped, not cross-session
+cleanup_stale_pending() {
+    local pending_file="$REPO_ROOT/.claude/session-state/post-loop-pending"
+
+    if [[ -f "$pending_file" ]]; then
+        echo "[SessionStart] Cleaning up stale post-loop-pending file"
+        echo "  (Previous session did not complete post-loop)"
+        rm -f "$pending_file"
+        echo "  Removed: $pending_file"
+        echo ""
+    fi
+}
+
 # Main output
 main() {
+    # First: cleanup stale pending to prevent deadlock
+    cleanup_stale_pending
+
     read -r hook_total hook_ok hook_missing <<< "$(count_hooks)"
     read -r skill_total skill_with_md <<< "$(count_skills)"
     subagent_total=$(count_subagents)
