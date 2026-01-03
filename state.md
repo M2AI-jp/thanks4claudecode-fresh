@@ -26,8 +26,8 @@ done_criteria:
   - archive-playbook.sh に Step 3.6（fix-backlog FIXED マーク）が追加されている
   - meta.derives_from が PB-XX 形式の playbook 完了時に FIXED マークが追加される
   - derives_from がない playbook では警告のみでスキップされる
-self_complete: false
-status: in_progress
+self_complete: true
+status: done
 ```
 
 ---
@@ -35,7 +35,7 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-03 19:54:36
+last_start: 2026-01-03 20:44:51
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

@@ -274,6 +274,12 @@ evidence_format:
   - テスト: Test 8 を実際の Hook チェーン（start.sh）を呼び出すよう修正
 - **PR**: https://github.com/M2AI-jp/thanks4claudecode-fresh/pull/83
 
+#### PB-28: playbook-archive-fix-backlog-auto-mark.md
+- **概要**: archive-playbook.sh に playbook 完了時の fix-backlog.md 自動 FIXED マーク機能を追加
+- **Scope**: archive-playbook.sh
+- **Done when**: derives_from が PB-XX 形式の playbook 完了時に fix-backlog.md が自動更新される
+- **Validation**: archive-playbook.sh の bash -n と Step 3.6 の存在確認
+
 ---
 
 ### P0/P1 Skill & Agent Integrity
@@ -1037,6 +1043,7 @@ fi
 | PB-25 | - | playbook-format.md | トレーサビリティ |
 | PB-26 | - | main-branch.sh | デッドロック |
 | PB-27 | - | session-start.sh, pending-guard.sh | デッドロック |
+| PB-28 | - | archive-playbook.sh | 設計不具合 |
 
 ---
 
