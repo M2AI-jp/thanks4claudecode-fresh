@@ -11,8 +11,8 @@
 ```yaml
 active: null
 branch: null
-last_archived: plan/archive/playbook-skill-audit-v2.md
-review_pending: true
+last_archived: plan/archive/playbook-self-evaluation-defense.md
+review_pending: false
 ```
 
 ---
@@ -23,7 +23,7 @@ review_pending: true
 milestone: null
 phase: null
 done_criteria: []
-status: pending_approval
+status: null
 ```
 
 ---
@@ -31,7 +31,7 @@ status: pending_approval
 ## session
 
 ```yaml
-last_start: 2026-01-03 13:00:32
+last_start: 2026-01-03 13:17:55
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
