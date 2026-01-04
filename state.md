@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-prompt-analyzer-lite.md
+branch: refactor/prompt-analyzer-lite
 last_archived: plan/archive/playbook-repository-health-master-plan.md
 review_pending: false
 ```
@@ -20,12 +20,17 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: repository-health-master-plan
-phase: p5
+milestone: prompt-analyzer-lite
+phase: p1
 done_criteria:
-  - plan/design/repository-health-master-plan.md が作成され、scope/definitions/workflow/evidence を含む
-  - docs/repository-health.md に判定基準と抽出結果（必須/壊れている/不要）が記載されている
-  - docs/repository-map.yaml と docs/ARCHITECTURE.md が抽出結果に沿って更新されている
+  - prompt-analyzer.md が 200 行以下である
+  - SKILL.md が 100 行以下である
+  - 5W1H 分析機能が保持されている
+  - リスク分析機能（technical/scope/dependency）が保持されている
+  - 曖昧さ検出機能が保持されている
+  - 論点分解機能（multi_topic_detection）が保持されている
+  - 拡張分析項目が保持されている
+  - 出力フォーマット（YAML 形式）が保持されている
 self_complete: false
 status: in_progress
 ```
@@ -35,7 +40,7 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-04 15:13:31
+last_start: 2026-01-04 17:39:57
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
