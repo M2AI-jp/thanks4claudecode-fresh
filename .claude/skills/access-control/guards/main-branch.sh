@@ -20,6 +20,10 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${SCRIPT_DIR}/../../../.."
+CONTRACT_SCRIPT="${REPO_ROOT}/scripts/contract.sh"
+
 # 現在のブランチを取得
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 
@@ -95,6 +99,15 @@ if [ "$TOOL_NAME" = "Bash" ]; then
        [[ "$COMMAND" == *"git rebase"* ]] || \
        [[ "$COMMAND" == *"gh pr "* ]]; then
         exit 0
+    fi
+
+    # 読み取り専用 Bash は許可（契約チェックに従う）
+    if [[ -f "$CONTRACT_SCRIPT" ]]; then
+        # shellcheck source=../../scripts/contract.sh
+        source "$CONTRACT_SCRIPT"
+        if contract_check_bash "$COMMAND" >/dev/null 2>&1; then
+            exit 0
+        fi
     fi
 fi
 

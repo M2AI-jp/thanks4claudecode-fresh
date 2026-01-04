@@ -7,6 +7,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_DIR="$SCRIPT_DIR/../skills"
 LIB_DIR="$SCRIPT_DIR/../lib"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+CONTRACT_SCRIPT="$REPO_ROOT/scripts/contract.sh"
 MARKER_FILE="$SCRIPT_DIR/../session-state/prompt-analyzer-called"
 
 # 共通ライブラリ読み込み
@@ -19,7 +21,7 @@ INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 
 # === prompt-analyzer 強制ガード ===
-# マーカーがない場合、prompt-analyzer 以外をブロック
+# マーカーがない場合、prompt-analyzer 以外をブロック（読み取り系は例外）
 if [[ ! -f "$MARKER_FILE" ]]; then
     if [[ "$TOOL_NAME" == "Task" ]]; then
         SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // empty')
@@ -27,12 +29,34 @@ if [[ ! -f "$MARKER_FILE" ]]; then
             # prompt-analyzer → マーカー作成して許可
             touch "$MARKER_FILE"
         else
-            echo "BLOCK: prompt-analyzer を先に呼び出してください"
+            echo "BLOCK: prompt-analyzer を先に呼び出してください (tool=Task, subagent=$SUBAGENT_TYPE)" >&2
             exit 2
         fi
     else
-        echo "BLOCK: prompt-analyzer を先に呼び出してください"
-        exit 2
+        ALLOW_WITHOUT_ANALYZER=false
+        case "$TOOL_NAME" in
+            Read|Grep|Glob)
+                ALLOW_WITHOUT_ANALYZER=true
+                ;;
+            Bash)
+                # 変更系 Bash を防ぐため、契約チェックで read-only を判定
+                COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
+                if [[ -f "$CONTRACT_SCRIPT" ]]; then
+                    # shellcheck source=../../scripts/contract.sh
+                    source "$CONTRACT_SCRIPT"
+                    if contract_check_bash "$COMMAND"; then
+                        ALLOW_WITHOUT_ANALYZER=true
+                    else
+                        exit 2
+                    fi
+                fi
+                ;;
+        esac
+
+        if [[ "$ALLOW_WITHOUT_ANALYZER" != "true" ]]; then
+            echo "BLOCK: prompt-analyzer を先に呼び出してください (tool=$TOOL_NAME)" >&2
+            exit 2
+        fi
     fi
 fi
 

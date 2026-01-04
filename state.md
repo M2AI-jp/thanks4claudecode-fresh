@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fix-backlog-batch-19.md
-branch: fix/backlog-batch-19-pbs
-last_archived: plan/archive/playbook-pb28-archive-fix-backlog-auto-mark.md
+active: plan/playbook-fizzbuzz-dogfooding.md
+branch: feat/fizzbuzz-dogfooding
+last_archived: plan/archive/playbook-repository-health-master-plan.md
 review_pending: false
 ```
 
@@ -20,12 +20,14 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: fix-backlog-batch-19
+milestone: fizzbuzz-dogfooding
 phase: p1
 done_criteria:
-  - fix-backlog.md の PB-02〜06, PB-11〜25 が全て FIXED または CLOSED
-  - 各修正に対して bash -n または grep による検証が PASS
-  - 関連ドキュメントの参照が実際に存在するファイルを指している
+  - tmp/fizzbuzz.py が存在し、FizzBuzz ロジックが実装されている
+  - Codex で実装コミットが作成されている
+  - CodeRabbit でレビューが完了している
+  - PR が作成され、main にマージされている
+  - 発見事項が docs/dogfooding-findings.md に記録されている
 self_complete: false
 status: in_progress
 ```
@@ -35,8 +37,8 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-04 03:17:24
-last_end: 2026-01-01 21:10:00
+last_start: 2026-01-04 15:53:16
+last_end: 2026-01-04 15:52:43
 last_clear: 2025-12-24 03:20:00
 ```
 
