@@ -128,15 +128,7 @@ rg -l "guards/|handlers/|agents/" .claude/skills/*/SKILL.md
 
 #### optional
 
-| component | reference | evidence | decision | notes |
-|---|---|---|---|---|
-| abort-playbook | .claude/skills/playbook-gate/guards/playbook-guard.sh:87-88 | test -f .claude/skills/abort-playbook/SKILL.md (exit 0) | optional | 手動中断手段 |
-| coherence-checker | .claude/skills/coherence-checker/SKILL.md:1 | test -f .claude/skills/coherence-checker/SKILL.md (exit 0) | optional | 手動整合性チェック |
-| context-management | .claude/skills/context-management/SKILL.md:1 | test -f .claude/skills/context-management/SKILL.md (exit 0) | optional | ガイダンスのみ |
-| deploy-checker | .claude/skills/deploy-checker/SKILL.md:1 | test -f .claude/skills/deploy-checker/SKILL.md (exit 0) | optional | 手動検証 |
-| frontend-design | .claude/skills/frontend-design/SKILL.md:1 | test -f .claude/skills/frontend-design/SKILL.md (exit 0) | optional | 手動 |
-| lint-checker | .claude/skills/lint-checker/SKILL.md:1 | test -f .claude/skills/lint-checker/SKILL.md (exit 0) | optional | 手動 |
-| test-runner | .claude/skills/test-runner/SKILL.md:1 | test -f .claude/skills/test-runner/SKILL.md (exit 0) | optional | 手動 |
+なし（core 以外の手動 Skill は削除済み）
 
 ### SubAgents
 
