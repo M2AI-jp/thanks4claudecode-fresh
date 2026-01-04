@@ -14,7 +14,7 @@
 | 条件 | 確認方法 |
 |------|---------|
 | 全 Phase の status が done | playbook 内の `status:` を確認 |
-| state.md active_playbooks に含まれていない | state.md を確認 |
+| state.md playbook.active に含まれていない | state.md を確認 |
 | 現在進行中でない | Claude の作業状態を確認 |
 
 ### 1.2 アーカイブ禁止条件
@@ -22,7 +22,7 @@
 以下の場合はアーカイブしない:
 
 - Phase の一部が pending または in_progress
-- state.md の active_playbooks に登録されている
+- state.md の playbook.active に登録されている
 - setup/playbook-setup.md（テンプレートとして常に保持）
 
 ---
@@ -32,7 +32,7 @@
 ```
 1. playbook を Edit → archive-playbook.sh 発火
 2. 全 Phase done を検出
-3. state.md active_playbooks をチェック
+3. state.md playbook.active をチェック
    └─ 含まれている → スキップ
    └─ 含まれていない → 「アーカイブ推奨」を出力
 4. Claude が POST_LOOP に入る
@@ -49,13 +49,13 @@ Claude が POST_LOOP で以下を実行:
 
 ```bash
 # 1. アーカイブディレクトリ作成（なければ）
-mkdir -p .archive/plan
+mkdir -p plan/archive
 
 # 2. playbook を移動
 mv plan/playbook-{name}.md plan/archive/
 
 # 3. state.md 更新
-# active_playbooks.{layer} を null に
+# playbook.active を null に
 ```
 
 ### 3.2 手動実行
@@ -74,7 +74,7 @@ mkdir -p plan/archive
 mv plan/playbook-{name}.md plan/archive/
 
 # 4. state.md を更新
-# active_playbooks.{layer}: null
+# playbook.active: null
 
 # 5. git 記録
 git add -A && git commit -m "chore: archive playbook-{name}"
@@ -125,7 +125,7 @@ playbook:
 ```markdown
 | 日時 | 内容 |
 |------|------|
-| 2025-XX-XX | **playbook-{name} 完了・アーカイブ**: 全N Phase完了。.archive/plan/ に退避。 |
+| 2025-XX-XX | **playbook-{name} 完了・アーカイブ**: 全N Phase完了。plan/archive/ に退避。 |
 ```
 
 ---
@@ -134,10 +134,10 @@ playbook:
 
 | ファイル | 役割 |
 |---------|------|
-| .claude/hooks/archive-playbook.sh | 自動検出 Hook |
+| .claude/skills/playbook-gate/workflow/archive-playbook.sh | 自動検出 Hook |
 | CLAUDE.md POST_LOOP | アーカイブ実行ルール |
-| state.md active_playbooks | 進行中 playbook 管理 |
-| .archive/plan/ | アーカイブ先フォルダ |
+| state.md playbook.active | 進行中 playbook 管理 |
+| plan/archive/ | アーカイブ先フォルダ |
 
 ---
 

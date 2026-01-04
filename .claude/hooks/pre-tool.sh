@@ -6,6 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_DIR="$SCRIPT_DIR/../skills"
+EVENTS_DIR="$SCRIPT_DIR/../events"
 LIB_DIR="$SCRIPT_DIR/../lib"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CONTRACT_SCRIPT="$REPO_ROOT/scripts/contract.sh"
@@ -72,6 +73,16 @@ invoke_skill() {
     return 0
 }
 
+invoke_event_chain() {
+    local unit="$1"
+    local path="$EVENTS_DIR/$unit/chain.sh"
+    if [[ -f "$path" ]]; then
+        echo "$INPUT" | bash "$path"
+        return $?
+    fi
+    return 0
+}
+
 # 1. session-manager: init-guard（全ツール共通）
 invoke_skill "session-manager" "handlers/init-guard.sh" || exit $?
 
@@ -80,32 +91,10 @@ invoke_skill "access-control" "guards/main-branch.sh" || exit $?
 
 case "$TOOL_NAME" in
     Edit|Write)
-        # post-loop pending チェック（playbook 完了後の強制）
-        invoke_skill "post-loop" "guards/pending-guard.sh" || exit $?
-        # 保護ファイルチェック
-        invoke_skill "access-control" "guards/protected-edit.sh" || exit $?
-        # playbook 必須チェック
-        invoke_skill "playbook-gate" "guards/playbook-guard.sh" || exit $?
-        # Phase 依存チェック
-        invoke_skill "playbook-gate" "guards/depends-check.sh" || exit $?
-        # executor チェック
-        invoke_skill "playbook-gate" "guards/executor-guard.sh" || exit $?
-        # done 変更前チェック
-        invoke_skill "reward-guard" "guards/critic-guard.sh" || exit $?
-        # subtask 完了チェック
-        invoke_skill "reward-guard" "guards/subtask-guard.sh" || exit $?
-        # Phase status 変更チェック
-        invoke_skill "reward-guard" "guards/phase-status-guard.sh" || exit $?
-        # スコープ変更検出
-        invoke_skill "reward-guard" "guards/scope-guard.sh" || exit $?
+        invoke_event_chain "pre-tool-edit" || exit $?
         ;;
     Bash)
-        # Bash 契約チェック
-        invoke_skill "access-control" "guards/bash-check.sh" || exit $?
-        # 整合性チェック
-        invoke_skill "reward-guard" "guards/coherence.sh" || exit $?
-        # Lint チェック（git commit 前など）
-        invoke_skill "quality-assurance" "checkers/lint.sh" || exit $?
+        invoke_event_chain "pre-tool-bash" || exit $?
         ;;
 esac
 

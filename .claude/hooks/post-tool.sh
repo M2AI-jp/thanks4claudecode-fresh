@@ -6,6 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_DIR="$SCRIPT_DIR/../skills"
+EVENTS_DIR="$SCRIPT_DIR/../events"
 LIB_DIR="$SCRIPT_DIR/../lib"
 
 # 共通ライブラリ読み込み
@@ -27,14 +28,17 @@ invoke_skill() {
     fi
 }
 
+invoke_event_chain() {
+    local unit="$1"
+    local path="$EVENTS_DIR/$unit/chain.sh"
+    if [[ -f "$path" ]]; then
+        echo "$INPUT" | bash "$path"
+    fi
+}
+
 case "$TOOL_NAME" in
     Edit)
-        # playbook 完了チェック・アーカイブ
-        invoke_skill "playbook-gate" "workflow/archive-playbook.sh"
-        # クリーンアップ
-        invoke_skill "playbook-gate" "workflow/cleanup.sh"
-        # PR 作成提案
-        invoke_skill "git-workflow" "handlers/create-pr-hook.sh"
+        invoke_event_chain "post-tool-edit"
         ;;
     Task)
         # SubAgent ログ記録（必要に応じて）

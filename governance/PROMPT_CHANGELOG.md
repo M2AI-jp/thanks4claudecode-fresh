@@ -133,7 +133,6 @@ Core Contract を CLAUDE.md に明記し、admin モードでも回避不可の�
 - `governance/PROMPT_CHANGELOG.md` (this file)
 - `scripts/lint_prompts.py` for automated validation
 - `.github/workflows/prompt-lint.yml` for CI enforcement
-- `eval/` directory for regression tests
 
 ### Rationale
 The previous CLAUDE.md was too long (648 lines), contained volatile information that required frequent updates, and had no change control mechanism. This refactor establishes CLAUDE.md as a stable "constitution" that changes rarely, with procedures moved to RUNBOOK.md which can evolve freely.

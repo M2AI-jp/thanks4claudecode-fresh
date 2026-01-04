@@ -27,17 +27,19 @@
 
 | フォルダ/ファイル | 区分 | 役割 | 削除タイミング |
 |------------------|------|------|----------------|
-| `.archive/` | 永続 | 過去のファイルのアーカイブ | 手動削除のみ |
+| `.archive/` | 永続 | 旧成果物の退避 | 手動削除のみ |
 | `.claude/` | 永続 | Claude Code 設定・拡張機能 | - |
-| `docs/` | 永続 | ドキュメント（仕様書・運用ルール） | - |
-| `plan/` | 永続 | プロジェクト計画・playbook | - |
-| `setup/` | 永続 | セットアップガイド | - |
-| `tmp/` | テンポラリ | 一時ファイル置き場（playbook 終了時に削除） | playbook 完了時 |
 | `.tmp/` | 半永続 | 永続的な一時ファイル置き場（自動削除されない） | 手動削除のみ |
+| `tmp/` | テンポラリ | 一時ファイル置き場（playbook 終了時に削除） | playbook 完了時 |
+| `docs/` | 永続 | 仕様・運用ドキュメント | - |
+| `plan/` | 永続 | プロジェクト計画・playbook | - |
+| `scripts/` | 永続 | 自動化スクリプト | - |
+| `governance/` | 永続 | 変更履歴/統制 | - |
 | `CLAUDE.md` | 永続 | LLM の振る舞いルール | - |
+| `AGENTS.md` | 永続 | コーディングルール | - |
+| `RUNBOOK.md` | 永続 | 運用手順 | - |
 | `state.md` | 永続 | 現在地を示す Single Source of Truth | - |
-| `README.md` | 永続 | プロジェクト説明 | - |
-| `AGENTS.md` | 永続 | SubAgent 一覧 | - |
+| `README.md` | 永続 | リポジトリ概要 | - |
 
 ### .claude/ 配下
 
@@ -45,11 +47,16 @@
 |----------|------|------|----------------|
 | `.claude/agents/` | 永続 | SubAgent 定義ファイル | - |
 | `.claude/commands/` | 永続 | カスタムコマンド定義 | - |
+| `.claude/context/` | 半永続 | 履歴・メモ | 手動削除のみ |
+| `.claude/events/` | 永続 | Event Unit チェーン | - |
+| `.claude/frameworks/` | 永続 | 参照フレームワーク | - |
 | `.claude/hooks/` | 永続 | Hook スクリプト | - |
+| `.claude/lib/` | 永続 | 共通ライブラリ | - |
 | `.claude/logs/` | 半永続 | ログファイル | 古いセッションログは定期削除 |
-| `.claude/rules/` | 永続 | モジュラールール | - |
+| `.claude/schema/` | 永続 | スキーマ定義 | - |
 | `.claude/scripts/` | 永続 | ユーティリティスクリプト | - |
 | `.claude/session-history/` | 半永続 | セッション履歴 | 古い履歴は定期削除 |
+| `.claude/session-state/` | 半永続 | セッション補助状態 | 手動削除のみ |
 | `.claude/skills/` | 永続 | Skill 定義 | - |
 | `.claude/templates/` | 永続 | テンプレートファイル | - |
 | `.claude/tests/` | 永続 | Hook テスト | - |
@@ -67,12 +74,14 @@
 | ファイル | 区分 | 役割 |
 |----------|------|------|
 | `repository-map.yaml` | 永続 | 全ファイルマッピング（★自動生成） |
-| `extension-system.md` | 永続 | Claude Code 公式リファレンス |
+| `ARCHITECTURE.md` | 永続 | リポジトリ構造・動線 |
+| `core-feature-reclassification.md` | 永続 | Hook Unit 目録 |
+| `ai-orchestration.md` | 永続 | executor 抽象化 |
 | `criterion-validation-rules.md` | 永続 | done_criteria 検証ルール |
 | `folder-management.md` | 永続 | フォルダ管理ルール（このファイル） |
 | `archive-operation-rules.md` | 永続 | アーカイブ操作ルール |
-| `artifact-management-rules.md` | 永続 | 成果物管理ルール |
 | `git-operations.md` | 永続 | git 操作ガイド |
+| `repository-health.md` | 永続 | 健全性判定の SSOT |
 
 #### 全ファイル自動マッピング
 
@@ -80,7 +89,7 @@
 マスターマップ: docs/repository-map.yaml
 
 自動更新タイミング:
-  - playbook 完了時（cleanup-hook.sh 経由）
+  - playbook 完了時（post-tool.sh → playbook-gate/workflow/cleanup.sh 経由）
 
 手動更新:
   bash .claude/hooks/generate-repository-map.sh
@@ -164,7 +173,7 @@
 
 ```yaml
 トリガー: playbook の全 Phase が done
-実行者: .claude/hooks/cleanup-hook.sh
+実行者: .claude/hooks/post-tool.sh → .claude/skills/playbook-gate/workflow/cleanup.sh
 対象:
   - tmp/ 内のファイル（README.md を除く）
   - 空のサブディレクトリ
@@ -191,7 +200,7 @@
       ↓
 2. archive-playbook.sh がアーカイブを提案
       ↓
-3. cleanup-hook.sh が tmp/ をクリーンアップ
+3. cleanup.sh（post-tool.sh 経由）が tmp/ をクリーンアップ
       ↓
 4. POST_LOOP で playbook を plan/archive/ に移動
       ↓
@@ -310,7 +319,7 @@ du -sh .archive/
 
 - `CLAUDE.md` - LLM の振る舞いルール
 - `docs/archive-operation-rules.md` - アーカイブ操作ルール
-- `.claude/hooks/cleanup-hook.sh` - クリーンアップ Hook
+- `.claude/skills/playbook-gate/workflow/cleanup.sh` - クリーンアップ本体
 - `plan/template/playbook-format.md` - playbook テンプレート
 
 ---

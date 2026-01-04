@@ -475,7 +475,7 @@ playbook なしで作業開始しない:
 7. 【必須】中間成果物の確認
    → 中間成果物がある場合:
       - 最終 Phase に「クリーンアップ」の subtask を追加
-   → 参照: docs/file-creation-process-design.md
+   → 参照: docs/folder-management.md
 
 8. 【必須】p_self_update 自動追加チェック（M082）
    → Phase 数をカウント（p1, p2, p3... の数）
@@ -889,7 +889,7 @@ pm の責務:
 - CLAUDE.md - playbook ルール（POST_LOOP: アーカイブ実行を含む）
 - .claude/agents/reviewer.md - 計画レビュー SubAgent（playbook レビューも担当）
 - docs/git-operations.md - git 操作 参照ドキュメント
-- docs/file-creation-process-design.md - 中間成果物の処理設計
+- docs/folder-management.md - 中間成果物/一時ファイルの扱い
 - .claude/skills/prompt-analyzer/agents/prompt-analyzer.md - プロンプト分析 SubAgent（M086: 5W1H + リスク分析）
 - .claude/skills/term-translator/agents/term-translator.md - 用語変換 SubAgent（M086: 曖昧表現 → エンジニア用語）
 - .claude/skills/executor-resolver/agents/executor-resolver.md - executor 判定 SubAgent（M086: LLM ベース判定）

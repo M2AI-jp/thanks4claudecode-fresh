@@ -8,7 +8,7 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-04 19:59:44"
+  generated: "2026-01-04 20:16:50"
   generator: ".claude/hooks/generate-repository-map.sh"
   total_files: 307
 
@@ -22,6 +22,41 @@ hooks:
     - name: "prompt.sh"
     - name: "session.sh"
     - name: "subagent-stop.sh"
+
+events:
+  directory: .claude/events/
+  count: 10
+  units:
+    - name: "notification"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: notification"
+    - name: "post-tool-edit"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: post-tool-edit"
+    - name: "pre-compact"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: pre-compact"
+    - name: "pre-tool-bash"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: pre-tool-bash"
+    - name: "pre-tool-edit"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: pre-tool-edit"
+    - name: "session-end"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: session-end"
+    - name: "session-start"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: session-start"
+    - name: "stop"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: stop"
+    - name: "subagent-stop"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: subagent-stop"
+    - name: "user-prompt-submit"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: user-prompt-submit"
 
 agents:
   directory: .claude/skills/*/agents/
@@ -39,7 +74,7 @@ agents:
       description: "重要"
     - name: "prompt-analyzer"
       skill: "prompt-analyzer"
-      description: "description: ユーザープロンプトの分析。topic_type判定、5W1H、リスク、曖昧さ�"
+      description: "description: ユーザープロンプトを分析し topic_type を判定する"
     - name: "coderabbit-delegate"
       skill: "quality-assurance"
       description: "CodeRabbit CLI をラップし、コードレビューを自動実行する SubAgent"
@@ -211,7 +246,7 @@ system_specification:
 
 hook_trigger_sequence:
   description: "Hook の発火順序（公式ドキュメント準拠）"
-  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd"
+  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd → Notification (async) → SubagentStop (task)"
   triggers:
     - trigger: "SessionStart"
       description: "セッション開始時に発火"
@@ -241,6 +276,13 @@ hook_trigger_sequence:
           hooks:
             - script: "post-tool.sh"
               description: "post-tool.sh - PostToolUse(*) 導火線"
+    - trigger: "Stop"
+      description: "セッション中断時（Ctrl+C, /stop）に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "chain.sh"
+              description: ""
     - trigger: "PreCompact"
       description: "コンテキスト圧縮前に発火"
       matchers:
@@ -248,6 +290,27 @@ hook_trigger_sequence:
           hooks:
             - script: "chain.sh"
               description: ""
+    - trigger: "SessionEnd"
+      description: "セッション終了時に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "chain.sh"
+              description: ""
+    - trigger: "Notification"
+      description: "通知送信時に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "chain.sh"
+              description: ""
+    - trigger: "SubagentStop"
+      description: "サブエージェント（Task）応答完了時に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "subagent-stop.sh"
+              description: "subagent-stop.sh - SubagentStop Hook dispatcher"
 
 # ==============================================================================
 # Workflows (M027)
@@ -408,6 +471,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-04 19:59:44"
+  - date: "2026-01-04 20:16:50"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

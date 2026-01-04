@@ -158,9 +158,9 @@ playbook リセットのトリガー:
 
 ```yaml
 ファイル存在:
-  criterion: "docs/readme.md が存在する"
+  criterion: "README.md が存在する"
   validations:
-    technical: test -f docs/readme.md で確認
+    technical: test -f README.md で確認
     consistency: 関連ドキュメントとの整合性を確認
     completeness: 必要な内容が含まれているか確認
 

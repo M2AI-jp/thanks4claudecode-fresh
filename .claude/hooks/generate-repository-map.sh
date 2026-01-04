@@ -178,7 +178,7 @@ count_files() {
 # ==============================================================================
 
 # 公式トリガー順序（https://code.claude.com/docs/ja/hooks）
-TRIGGER_ORDER=("SessionStart" "UserPromptSubmit" "PreToolUse" "PostToolUse" "Stop" "PreCompact" "SessionEnd")
+TRIGGER_ORDER=("SessionStart" "UserPromptSubmit" "PreToolUse" "PostToolUse" "Stop" "PreCompact" "SessionEnd" "Notification" "SubagentStop")
 
 # 指定トリガーの Hook 一覧を取得（詳細付き）
 get_hooks_for_trigger() {
@@ -212,7 +212,7 @@ generate_hook_trigger_sequence() {
 
 hook_trigger_sequence:
   description: "Hook の発火順序（公式ドキュメント準拠）"
-  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd"
+  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd → Notification (async) → SubagentStop (task)"
   triggers:
 HTS_HEADER
 
@@ -270,6 +270,8 @@ get_trigger_description() {
         Stop)            echo "セッション中断時（Ctrl+C, /stop）に発火" ;;
         PreCompact)      echo "コンテキスト圧縮前に発火" ;;
         SessionEnd)      echo "セッション終了時に発火" ;;
+        Notification)    echo "通知送信時に発火" ;;
+        SubagentStop)    echo "サブエージェント（Task）応答完了時に発火" ;;
         *)               echo "不明なトリガー" ;;
     esac
 }
@@ -498,6 +500,9 @@ get_affected_sections() {
         hooks)
             echo "0. Hook リファレンス|1. SessionStart|2. UserPromptSubmit|3. PreToolUse:*|4. PreToolUse:Edit/Write|5. PreToolUse:Bash|6. PostToolUse:Edit"
             ;;
+        events)
+            echo "Event Unit Architecture (SSOT)|Event Unit Mapping (current -> target)|0. Hook リファレンス"
+            ;;
         agents)
             echo "7. SubAgent 呼び出し"
             ;;
@@ -552,6 +557,21 @@ detect_drift_and_sync() {
             CHANGES+=("hooks: -$((PREV_HOOKS - CURR_HOOKS)) 削除")
         fi
         AFFECTED_SECTIONS+=("$(get_affected_sections hooks)")
+    fi
+
+    # events の比較
+    local PREV_EVENTS=$(grep -A3 "^events:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    local CURR_EVENTS=$(grep -A3 "^events:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_EVENTS=${PREV_EVENTS:-0}
+    CURR_EVENTS=${CURR_EVENTS:-0}
+    if [[ "$PREV_EVENTS" != "$CURR_EVENTS" ]]; then
+        DRIFT_DETECTED=true
+        if [[ "$CURR_EVENTS" -gt "$PREV_EVENTS" ]]; then
+            CHANGES+=("events: +$((CURR_EVENTS - PREV_EVENTS)) 追加")
+        else
+            CHANGES+=("events: -$((PREV_EVENTS - CURR_EVENTS)) 削除")
+        fi
+        AFFECTED_SECTIONS+=("$(get_affected_sections events)")
     fi
 
     # agents の比較
@@ -694,6 +714,43 @@ if [[ -d "$HOOKS_DIR" ]]; then
         [[ -f "$hook" ]] || continue
         name=$(basename "$hook")
         echo "    - name: \"$name\"" >> "$TEMP_FILE"
+    done
+fi
+
+# ==============================================================================
+# Event Units
+# ==============================================================================
+echo "  Scanning events..."
+EVENTS_DIR="$PROJECT_ROOT/.claude/events"
+EVENTS_COUNT=0
+
+if [[ -d "$EVENTS_DIR" ]]; then
+    EVENTS_COUNT=$(find "$EVENTS_DIR" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+fi
+
+cat >> "$TEMP_FILE" << EOF
+
+events:
+  directory: .claude/events/
+  count: $EVENTS_COUNT
+  units:
+EOF
+
+if [[ -d "$EVENTS_DIR" ]]; then
+    for unit_dir in "$EVENTS_DIR"/*/; do
+        [[ -d "$unit_dir" ]] || continue
+        unit_name=$(basename "$unit_dir")
+        chain="$unit_dir/chain.sh"
+        desc=""
+        if [[ -f "$chain" ]]; then
+            desc=$(extract_description "$chain")
+        fi
+
+        cat >> "$TEMP_FILE" << EOF
+    - name: "$unit_name"
+      chain: "chain.sh"
+      description: "$desc"
+EOF
     done
 fi
 

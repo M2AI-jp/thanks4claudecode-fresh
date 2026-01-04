@@ -86,8 +86,44 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/skills/session-manager/handlers/compact.sh",
+            "command": "bash .claude/events/pre-compact/chain.sh",
             "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/events/stop/chain.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/events/session-end/chain.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/events/notification/chain.sh",
+            "timeout": 3000
           }
         ]
       }

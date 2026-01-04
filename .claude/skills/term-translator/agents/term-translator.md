@@ -213,9 +213,8 @@ skills: prompt-analyzer
   - docs/*.md → ドキュメント規約
 
 規約ファイル:
-  - CONTRIBUTING.md → 貢献ガイドライン
-  - docs/coding-standards.md → コーディング規約
-  - .github/PULL_REQUEST_TEMPLATE.md → PR テンプレート
+  - AGENTS.md → コーディングルール
+  - CLAUDE.md → 運用ルール
 ```
 
 ### 分析手順
@@ -378,7 +377,7 @@ translation:
     relevant_files:
       - "src/middleware/timing.ts"
       - "src/utils/crypto.ts"
-      - "docs/api/"
+      - "docs/ARCHITECTURE.md"
     existing_patterns:
       - "crypto モジュールによる暗号化"
       - "zod によるリクエストバリデーション"

@@ -11,7 +11,7 @@ git 操作の標準手順を定義する参照ドキュメントです。
 
 ```yaml
 方式: Claude 直接実行（Bash ツール使用）
-トリガー: CLAUDE.md の LOOP / POST_LOOP セクション
+トリガー: 変更は手動実行が基本 / PR 作成・マージは PostToolUse:Edit で自動実行
 参照: このファイルはコマンド例・エラーハンドリングの参照用
 ```
 
@@ -21,29 +21,26 @@ git 操作の標準手順を定義する参照ドキュメントです。
 
 ```yaml
 auto_commit:
-  条件: Phase が done になったとき
-  発火: critic PASS 後、state.md 更新後
-  action: git add -A && git commit
+  状態: 未自動化（必要に応じて手動実行）
+  参考: 下記のコミット例
 
 auto_merge:
-  条件: playbook の全 Phase が done
-  発火: POST_LOOP の冒頭
-  action: git checkout main && git merge {branch}
+  状態: 自動（PostToolUse:Edit → create-pr-hook.sh）
+  条件: playbook の全 Phase が done + 未コミット変更なし
+  action: create-pr.sh → merge-pr.sh
 
 auto_branch:
-  条件: 新タスク開始時（pm から呼び出し）
-  発火: /task-start 実行時
-  action: git checkout -b feat/{task-name}
+  状態: pm が手動実行（/task-start 時のブランチ作成）
 ```
 
 ---
 
 ## 責務
 
-### 1. 自動コミット（Phase 完了時）
+### 1. コミット（Phase 完了時）
 
 ```yaml
-トリガー: Phase.status が done に変更された
+トリガー: Phase.status が done に変更された（手動実行）
 前提条件:
   - critic PASS 済み
   - state.md 更新済み
@@ -82,15 +79,15 @@ auto_branch:
   - リモートに push 済み
 
 実行内容（自動化）:
-  1. create-pr-hook.sh が PostToolUse:Edit で自動発火
+  1. PostToolUse:Edit → .claude/hooks/post-tool.sh 経由で create-pr-hook.sh が発火
   2. create-pr.sh で GitHub に PR を作成
   3. merge-pr.sh で PR をマージ（gh pr merge --auto）
   4. ローカルブランチを main に同期
 
 スクリプト:
-  - .claude/hooks/create-pr-hook.sh（PR 作成フック）
-  - .claude/hooks/create-pr.sh（PR 作成本体）
-  - .claude/hooks/merge-pr.sh（PR マージ）
+  - .claude/skills/git-workflow/handlers/create-pr-hook.sh（PR 作成フック）
+  - .claude/skills/git-workflow/handlers/create-pr.sh（PR 作成本体）
+  - .claude/skills/git-workflow/handlers/merge-pr.sh（PR マージ）
 
 PR タイトル形式:
   feat({playbook}/{phase}): {goal summary}
@@ -153,20 +150,20 @@ Phase 完了フロー:
   1. Claude が Phase の作業を完了
   2. critic が PASS を返す
   3. Claude が state.md を更新
-  4. Claude が自動コミットを実行
+  4. 必要に応じてコミット（手動）
 
 playbook 完了フロー:
   1. 最終 Phase が done
-  2. POST_LOOP が発動
-  3. Claude が自動マージを実行
-  4. pm を呼び出して次タスク導出
+  2. PostToolUse:Edit → archive-playbook.sh が完了判定
+  3. create-pr-hook.sh が PR 作成/マージを実行（条件一致時）
+  4. 次タスクは pm で作成
 ```
 
 ---
 
 ## コマンド実行例
 
-### 自動コミット
+### コミット（手動）
 
 ```bash
 # Phase 完了時のコミット
@@ -175,7 +172,7 @@ feat(phase-1): タスク開始プロセス標準化 完了
 
 - pm SubAgent がユーザー要求から playbook を生成
 - /task-start コマンドが pm 経由でタスクを開始
-- CLAUDE.md の INIT/POST_LOOP が pm 経由を強制
+- Hook/Skill チェーンに従って作業
 - タスク開始フロー図が作成
 
 critic: PASS
@@ -188,7 +185,7 @@ EOF
 )"
 ```
 
-### 自動マージ
+### マージ（手動 or PR 自動）
 
 ```bash
 # playbook 完了時のマージ
@@ -224,21 +221,10 @@ git checkout -b feat/{new-task-name}
 
 ---
 
-## 設定
-
-```yaml
-auto_push: false          # 自動 push は無効（安全のため）
-commit_on_phase: true     # Phase 完了時の自動コミット
-merge_on_playbook: true   # playbook 完了時の自動マージ
-branch_on_task: true      # 新タスク開始時の自動ブランチ
-```
-
----
-
 ## 参照ファイル
 
-- .claude/agents/pm.md - pm SubAgent（タスク開始の必須経由点）
-- CLAUDE.md - POST_LOOP セクション
+- .claude/skills/golden-path/agents/pm.md - pm SubAgent（タスク開始の必須経由点）
+- CLAUDE.md - Core Contract / playbook ルール
 - state.md - 現在の Phase 状態
 
 ---

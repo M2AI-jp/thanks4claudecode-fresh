@@ -405,9 +405,9 @@ validations:
 
 ```yaml
 claudecode:
-  criterion: "docs/readme.md が存在する"
+  criterion: "README.md が存在する"
   validations:
-    technical: "test -f docs/readme.md で確認"
+    technical: "test -f README.md で確認"
     consistency: "他ドキュメントとの整合性確認"
     completeness: "必須セクションが含まれているか確認"
 
@@ -844,7 +844,7 @@ phase_done_prerequisites:
 
 ### 参照ドキュメント
 
-- docs/file-creation-process-design.md - 詳細な設計ドキュメント
+- docs/folder-management.md - 中間成果物/一時ファイルの扱い
 
 ---
 
@@ -883,8 +883,8 @@ phase_done_prerequisites:
   - tmp/README.md は保持
 
 実装:
-  - .claude/hooks/cleanup-hook.sh が PostToolUse:Edit で発火
-  - archive-playbook.sh と同様のロジックで playbook 完了を検出
+  - .claude/hooks/post-tool.sh が PostToolUse:Edit で発火
+  - .claude/skills/playbook-gate/workflow/cleanup.sh が tmp/ を削除
 ```
 
 ### playbook 設計時の考慮
@@ -1027,19 +1027,19 @@ max_iterations: 3
 
 #### subtasks
 
-- [ ] **p_final.1**: docs/feature-priority-map.md が存在し、critical 機能が 5 個以上定義されている
+- [ ] **p_final.1**: docs/core-feature-reclassification.md に Hook Unit 目録が記載されている
   - executor: claudecode
   - validations:
-    - technical: "test -f と grep -c で確認"
-    - consistency: "critical 機能の数が feature-priority-map.md の定義と一致"
-    - completeness: "全ての重要機能が critical に分類されている"
+    - technical: "rg -n \"Hook Unit Catalog\" docs/core-feature-reclassification.md"
+    - consistency: "主要 Hook が目録に含まれていることを確認"
+    - completeness: "Hook Unit の chain/required docs が記載されている"
 
-- [ ] **p_final.2**: セッション開始時に critical 機能一覧が実際に表示される
+- [ ] **p_final.2**: docs/repository-map.yaml が最新化されている
   - executor: claudecode
   - validations:
-    - technical: "session-start.sh を実行して出力を確認"
-    - consistency: "表示される機能一覧が feature-priority-map.md と一致"
-    - completeness: "全 critical 機能が表示される"
+    - technical: "bash .claude/hooks/generate-repository-map.sh を実行"
+    - consistency: "hooks/skills/agents の件数が最新と一致"
+    - completeness: "docs/ と root の主要ファイルが含まれている"
 
 status: pending
 ```
