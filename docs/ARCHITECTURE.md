@@ -1006,7 +1006,6 @@ Task(subagent_type='executor-resolver')
 |----------|------|--------|
 | playbook-format.md | playbook テンプレート（V16） | pm, subtask-guard |
 | planning-rules.md | 計画ルール | pm |
-| playbook-examples.md | 具体例 | pm |
 
 ### .claude/frameworks/（検証時参照）
 
@@ -1209,18 +1208,6 @@ evidence: PASS 判定には実行可能な証拠が必要
 
 ## 13. 補助モジュール（MECE 補完）
 
-### command 層（.claude/commands/）
-
-```
-.claude/commands/
-├── lint.md            # /lint スラッシュコマンド
-├── test.md            # /test スラッシュコマンド
-├── crit.md            # /crit スラッシュコマンド（critic 呼び出し）
-├── rollback.md        # /rollback Git ロールバック
-├── state-rollback.md  # /state-rollback state.md 復元
-└── user-intent.md     # ユーザー意図解析
-```
-
 ### utility 層（共通関数）
 
 ```
@@ -1228,8 +1215,7 @@ evidence: PASS 判定には実行可能な証拠が必要
 └── state-schema.sh    # state.md スキーマ定義（Getter/Validator）
 
 scripts/
-├── contract.sh        # 契約チェック関数（ALLOW/WARN/BLOCK）
-└── verify-hook-delegation.sh  # Hook 委譲検証
+└── contract.sh        # 契約チェック関数（ALLOW/WARN/BLOCK）
 ```
 
 ### config 層
@@ -1242,14 +1228,6 @@ scripts/
 
 .mcp.json              # MCP サーバー設定（Codex 等）
 .claude/mcp.json       # MCP サーバー設定（Claude IDE 用）
-```
-
-### test 層
-
-```
-.claude/tests/
-├── regression-test.sh     # 回帰テスト（git commit 前に自動実行）
-└── regression-targets.md  # 回帰テスト対象一覧
 ```
 
 ---

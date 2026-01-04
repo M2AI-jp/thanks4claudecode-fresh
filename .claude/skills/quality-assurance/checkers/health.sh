@@ -71,14 +71,14 @@ done
 # 3. SubAgent 定義ファイルのチェック
 # ==============================================================================
 
-AGENTS_DIR=".claude/agents"
-if [ -d "$AGENTS_DIR" ]; then
+AGENTS_ROOT=".claude/skills"
+if [ -d "$AGENTS_ROOT" ]; then
     # CLAUDE.md で参照されている SubAgent が存在するか
     EXPECTED_AGENTS="critic pm reviewer health-checker"
 
     for agent in $EXPECTED_AGENTS; do
-        if [ ! -f "$AGENTS_DIR/$agent.md" ]; then
-            ISSUES="$ISSUES\n  - [WARN] SubAgent 定義が見つかりません: $AGENTS_DIR/$agent.md"
+        if ! find "$AGENTS_ROOT" -path "*/agents/${agent}.md" -type f -print -quit 2>/dev/null | grep -q .; then
+            ISSUES="$ISSUES\n  - [WARN] SubAgent 定義が見つかりません: */agents/${agent}.md"
             ISSUE_COUNT=$((ISSUE_COUNT + 1))
         fi
     done

@@ -1,1 +1,0 @@
-../skills/quality-assurance/agents/coderabbit-delegate.md

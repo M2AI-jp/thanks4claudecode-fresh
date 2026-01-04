@@ -3,7 +3,6 @@
 > **このテンプレートを埋めて playbook を作成する。**
 >
 > 詳細な記述方法は planning-rules.md を参照。
-> 具体例は playbook-examples.md を参照。
 
 ---
 
@@ -869,7 +868,7 @@ phase_done_prerequisites:
 注意:
   - tmp/ は .gitignore に登録されており、git に追跡されない
   - 重要なファイルは tmp/ に置かない
-  - 永続化が必要な場合は docs/ または .archive/ に移動
+  - 永続化が必要な場合は docs/ に移動
 ```
 
 ### 自動クリーンアップ

@@ -3,7 +3,7 @@ name: critic
 description: MUST BE USED before marking any task as done. Evaluates done_criteria with evidence-based judgment. Prevents self-reward fraud through critical thinking. Called by /crit Skill which orchestrates codex verification.
 tools: Read, Grep, Bash
 model: opus
-skills: state, lint-checker, test-runner
+skills: state
 ---
 
 # Critique Evaluator Agent
@@ -349,55 +349,9 @@ CRITIQUE 実行時、以下を自問してください：
 
 ---
 
-## /crit Skill との連携（アーキテクチャ）
+## critic 出力仕様
 
-> **critic SubAgent は「自己評価」に専念する。codex 独立検証は Skill 層が担当。**
->
-> これは「Hook → Skill → SubAgent」チェーンの正しい役割分担。
-
-### 役割分担
-
-```yaml
-/crit Skill（オーケストレーター）:
-  責務:
-    - 複数 SubAgent の呼び出しと統合
-    - critic SubAgent → codex-delegate SubAgent の順序制御
-    - 最終判定の統合
-  参照: .claude/commands/crit.md
-
-critic SubAgent（自己評価）:
-  責務:
-    - done_criteria の批判的評価
-    - 証拠ベースの PASS/FAIL 判定
-    - 3点検証（technical/consistency/completeness）
-  ツール: Read, Grep, Bash のみ（書き込み不可 = 自己完了防止）
-
-codex-delegate SubAgent（独立検証）:
-  責務:
-    - コンテキスト分離による独立評価
-    - 「空気を読まない」厳しい判定
-  ツール: Bash, mcp__codex__codex（MCP 使用可能）
-```
-
-### 正しい呼び出しフロー
-
-```
-/crit Skill が呼ばれる
-    │
-    ├─→ Step 1: Task(subagent_type='critic')
-    │       └─→ critic が自己評価を実行
-    │       └─→ PASS/FAIL + 証拠を返す
-    │
-    ├─→ Step 2: Task(subagent_type='codex-delegate')
-    │       └─→ codex が独立検証を実行
-    │       └─→ PASS/FAIL を返す
-    │
-    └─→ Step 3: Skill が最終判定を統合
-            └─→ critic PASS + codex PASS → 総合 PASS
-            └─→ どちらか FAIL → 総合 FAIL
-```
-
-### critic の出力
+### 出力フォーマット
 
 ```
 [CRITIQUE]
@@ -476,51 +430,29 @@ critic が codex を呼び出す必要はない。
    → 既存の処理通り
 ```
 
-## Skills 連携（必須）
+## 検証実行（必須）
 
-> **コード変更を含む Phase の評価時、以下の Skills を呼び出すこと。**
+> **コード変更を含む Phase は、playbook の validations に従って検証を実行する。**
 
-### 呼び出しルール
-
-```yaml
-lint-checker:
-  条件: 変更ファイルに .ts/.tsx/.js/.jsx/.sh が含まれる
-  タイミング: done_criteria 評価の前
-  呼び出し: Skill: "lint-checker"
-  目的: 静的解析エラーがないことを確認
-
-test-runner:
-  条件: 変更ファイルに *.test.* / *.spec.* / test/ が含まれる
-  タイミング: done_criteria 評価の前
-  呼び出し: Skill: "test-runner"
-  目的: テストが通ることを確認
-
-deploy-checker:
-  条件: done_criteria に「デプロイ」「本番」が含まれる
-  タイミング: done_criteria 評価の前
-  呼び出し: Skill: "deploy-checker"
-  目的: デプロイ状態を確認
-```
-
-### 評価フロー（Skills 統合版）
+### 評価フロー（検証実行）
 
 ```
 1. 変更ファイルを確認: git diff --name-only
-2. 該当 Skills を呼び出し（上記ルールに従う）
-3. Skills の結果を確認（FAIL なら即 CRITIQUE FAIL）
+2. playbook の validations を確認
+3. 必要な検証コマンドを実行し結果を記録
 4. done_criteria を評価（従来通り）
 5. 総合判定を出力
 ```
 
-### Skills 呼び出し結果の扱い
+### 検証結果の扱い
 
 ```yaml
-Skills PASS:
+検証 PASS:
   → done_criteria 評価に進む
 
-Skills FAIL:
-  → CRITIQUE は自動的に FAIL
-  → 修正項目に Skills の指摘を含める
+検証 FAIL:
+  → CRITIQUE は FAIL
+  → 修正項目に検証の指摘を含める
   → 再評価を要求
 ```
 
@@ -530,8 +462,6 @@ Skills FAIL:
 
 - **.claude/frameworks/done-criteria-validation.md** - **必須**: 妥当性評価の固定フレームワーク
 - **docs/criterion-validation-rules.md** - criterion 検証ルール（禁止パターン）
-- **.claude/skills/lint-checker/skill.md** - lint チェック手順
-- **.claude/skills/test-runner/skill.md** - テスト実行手順
 - state.md - 現在の goal.done_criteria
 - playbook - phase の subtasks（V16: criterion + executor + validations）
 

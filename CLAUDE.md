@@ -1,209 +1,156 @@
 # CLAUDE.md
 
 ```yaml
-version: 2.0.1
+version: 2.1.0
 status: FROZEN
-updated: 2025-12-25
+updated: 2026-01-04
 ```
 
 ---
 
-## 1. 設計思想
+## 1. 目的と範囲
 
-このリポジトリは **Claude Code 自律運用フレームワーク** である。
+このリポジトリは、Claude Code のイベント駆動フローを **Hook Unit（イベント単位）** で分割し、
+Hook -> Event Unit -> Skill -> SubAgent の連鎖で自律運用を行う。
+
+- 目的: 検証可能な成果物のみを出力し、報酬詐欺・スコープ逸脱・文脈ノイズを抑制する
+- 中心原理: 「いつ発火するか」を境界とし、機能は Hook Unit 内に閉じ込める
+
+---
+
+## 2. Event Unit Architecture（SSOT）
+
+Hook の発火タイミングを 1 ユニットとする。ユニットの内部に以下を閉じる:
+
+- Validator: 入力の検証と整形
+- Context Injector: そのタイミングに必要な情報だけを注入
+- Guardrail: 破壊的操作の遮断
+- Telemetry: 成功/失敗/遅延の記録
+- Recovery: 失敗時の復旧導線
 
 ```yaml
-purpose: |
-  LLM の「自己承認バイアス」と「スコープクリープ」を構造的に防止し、
-  検証可能な成果物のみを生産するシステム。
-
-problem_statement:
-  - LLM は自分の出力を「完了」と判断しがち（報酬詐欺）
-  - ユーザープロンプトに引きずられてスコープが肥大する
-  - コンテキストリセット後に状態を失う
-
-solution:
-  trinity:
-    hooks: 構造的強制（Edit/Write 前にゲートチェック）
-    subagents: 独立検証（critic が done_criteria を判定）
-    claude_md: 思考制御（このファイル）
-
-  enforcement: |
-    「お願い」ではなく「ブロック」で制御する。
-    Hook が BLOCK を返せば Claude は進めない。
+event_units:
+  SessionStart: .claude/events/session-start
+  UserPromptSubmit: .claude/events/user-prompt-submit
+  PreToolUse_EditWrite: .claude/events/pre-tool-edit
+  PreToolUse_Bash: .claude/events/pre-tool-bash
+  PostToolUse_Edit: .claude/events/post-tool-edit
+  SubagentStop: .claude/events/subagent-stop
+  PreCompact: .claude/events/pre-compact
+  Notification: .claude/events/notification
+  Stop: .claude/events/stop
+  SessionEnd: .claude/events/session-end
 ```
 
 ---
 
-## 2. 保護アーキテクチャ（4QV+）
-
-```yaml
-model: 導火線モデル（Fuse Model）
-
-layers:
-  L1_hooks:
-    role: トリガー（導火線）
-    files: .claude/hooks/{pre,post}-tool.sh
-    behavior: |
-      全ツール呼び出し前後に発火
-      条件不成立 → BLOCK/WARN を返す
-
-  L2_skills:
-    role: ユースケースパッケージ
-    files: .claude/skills/*/
-    behavior: |
-      Hook から呼び出される
-      SubAgent を内包する場合あり
-
-  L3_subagents:
-    role: 専門検証者
-    files: .claude/skills/*/agents/
-    critical_agents:
-      pm: タスク開始の必須エントリーポイント
-      critic: done_criteria 検証（PASS/FAIL 判定）
-      reviewer: playbook 検証
-
-chain: |
-  Hook → Skill → SubAgent
-  この順序をスキップしてはならない
-
-ssot: |
-  state.md = Single Source of Truth
-  playbook.active = 現在のタスク定義
-  コンテキストリセット後は state.md を再読
-```
-
----
-
-## 3. コア契約（Core Contract）
-
-以下は admin モードでも回避不可。
+## 3. Core Contract（回避不可）
 
 ```yaml
 golden_path:
-  trigger: タスク依頼パターン（作って/実装して/修正して/追加して）
-  required_chain: |
-    1. Skill(skill='playbook-init') を呼ぶ
-    2. playbook-init が pm SubAgent に委譲
-    3. pm が understanding-check を実行
-    4. reviewer が playbook を検証
+  trigger: タスク依頼（作って/実装/修正/追加 など）
+  required_chain:
+    - Skill(skill='playbook-init')
+    - playbook-init -> pm SubAgent
+    - understanding-check の実行
+    - reviewer による playbook 検証
   prohibited:
     - Task(subagent_type='pm') の直接呼び出し
-    - Hook/Skill チェーンのスキップ
-    - understanding-check の省略
+    - Hook/Unit/Skill のスキップ
 
 playbook_gate:
   condition: state.md の playbook.active == null
   action: Edit/Write/Bash(変更系) をブロック
-  bypass: なし
 
 reward_fraud_prevention:
-  rule: 自分の作業を自分で「完了」と判定しない
-  required: critic SubAgent による独立検証
-  evidence: PASS 判定には実行可能な証拠が必要
+  rule: done の判定は critic SubAgent の PASS が必須
+  evidence: 検証結果・ログ・引用を添付
 
 reviewer_gate:
   rule: playbook は reviewed: true でなければ確定しない
-  enforced_by: playbook-guard.sh
+
+executor_orchestration:
+  rule: playbook の executor を尊重し、codex/coderabbit/user へ委譲
 
 file_protection:
   hard_block:
     - CLAUDE.md
-    - .claude/protected-files.txt に記載のファイル
+    - .claude/protected-files.txt の対象
   soft_block:
-    - state.md の直接編集（Skill 経由推奨）
+    - state.md の直接編集（Skill 経由を推奨）
 ```
 
 ---
 
-## 4. 状態モデル
+## 4. 状態モデル（SSOT）
 
 ```yaml
 state_files:
   state.md:
     role: 現在状態の真実源
     contains: playbook.active, goal, config
-    rule: セッション開始時に必ず Read
-
   playbook:
     location: plan/playbook-*.md
     role: タスク定義と進捗
-    contains: phases, done_criteria, validations
-
   repository_map:
     location: docs/repository-map.yaml
-    role: ファイル構造のキャッシュ
+    role: 構造キャッシュ
 
 trust_hierarchy:
-  1: state.md（最優先）
+  1: state.md
   2: playbook
-  3: チャット履歴（コンテキストリセットで消失）
+  3: チャット履歴
 ```
 
 ---
 
-## 5. 実行プロトコル
+## 5. LOOP
 
-```yaml
-task_execution:
-  trivial: 直接実行（単一ファイル編集、質問回答）
-  non_trivial:
-    1: playbook 確認（なければ golden_path 発動）
-    2: phase の done_criteria 確認
-    3: 実行
-    4: critic による検証
-    5: 次 phase または完了
-
-output_requirements:
-  - 具体的成果物（diff, file, command）
-  - 検証手順
-  - 制限事項
-
-prohibited:
-  - 「後でやる」という約束
-  - 時間見積もり
-  - 検証なしの「完了」宣言
-  - スコープ外の変更
-  - 事実の捏造（知らなければ「知らない」と言う）
-
-git:
-  branch: main への直接コミット禁止
-  naming: {type}/{description}
-  commit: Co-Authored-By 必須
-```
+- state.md と playbook を読み、current phase と done_criteria を確認
+- playbook に従って作業し、validations に沿って検証
+- subtask/phase の完了前に critic を実行し、PASS を得る
+- 変更内容と証拠を記録し、次 phase へ進む
 
 ---
 
-## 6. 優先順位
+## 6. POST_LOOP
+
+- playbook の終了条件を満たしたら state.md を更新
+- 必要なら git-workflow Skill に従って PR/マージ手順を実行
+- アーカイブや記録更新は playbook の指示に従う
+
+---
+
+## 7. 禁止事項
+
+❌ Hook -> Event Unit -> Skill -> SubAgent の連鎖をスキップする
+❌ playbook なしで Edit/Write/Bash(変更系) を実行する
+❌ critic の PASS なしに done を宣言する
+❌ Task(subagent_type='pm'/'critic'/'reviewer') を直接呼び出す
+❌ CLAUDE.md を PROMPT_CHANGELOG.md なしで変更する
+
+---
+
+## 8. 優先順位
 
 ```yaml
 instruction_priority:
   1: Claude 組み込み安全性
-  2: CLAUDE.md（このファイル）
+  2: CLAUDE.md
   3: タスク固有指示（issue, ticket）
-  4: その他 docs（RUNBOOK.md 等）
-
-conflict_resolution: |
-  競合時は上位を優先。
-  安全に実行できない場合のみ停止して確認。
+  4: その他 docs
 ```
 
 ---
 
-## 7. 変更管理
+## 9. 変更管理
 
 ```yaml
 this_file:
   status: FROZEN
   change_requires:
     - governance/PROMPT_CHANGELOG.md に理由記録
-    - バージョン番号更新（SemVer）
-    - メンテナーレビュー
-
-mutable_files:
-  - RUNBOOK.md（手順書）
-  - docs/*（ドキュメント）
-  - .claude/skills/*（Skill 定義）
+    - version と updated の更新
 ```
 
 ---
@@ -211,19 +158,7 @@ mutable_files:
 ## References
 
 | ファイル | 役割 |
-|----------|------|
+|---|---|
 | state.md | 現在状態（SSOT） |
-| RUNBOOK.md | 手順書（変更可能） |
-| docs/ARCHITECTURE.md | 保護アーキテクチャ詳細・リポジトリ構造 |
-
----
-
-## Version History
-
-| Version | Date | Summary |
-|---------|------|---------|
-| 2.0.1 | 2025-12-25 | focus 機能削除: state.md から focus セクション削除、main ブランチブロック常時有効化 |
-| 2.0.0 | 2025-12-24 | 総編集: 設計思想追加、保護アーキテクチャ追加、MECE 化、LLM 向け最適化 |
-| 1.2.0 | 2025-12-24 | Golden Path: Hook→Skill→SubAgent チェーン経由を明記 |
-| 1.1.0 | 2025-12-18 | Core Contract + Admin Mode Contract 追加 |
-| 1.0.0 | 2025-12-18 | Initial frozen constitution |
+| docs/ARCHITECTURE.md | Event Unit の詳細 |
+| docs/core-feature-reclassification.md | Hook Unit 依存マップ |

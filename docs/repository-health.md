@@ -111,9 +111,9 @@ rg -l "guards/|handlers/|agents/" .claude/skills/*/SKILL.md
 | quality-assurance | .claude/hooks/pre-tool.sh:108 | test -x .claude/skills/quality-assurance/checkers/lint.sh (exit 0) | required | lint/coherence |
 | git-workflow | .claude/hooks/post-tool.sh:37 | test -x .claude/skills/git-workflow/handlers/create-pr-hook.sh (exit 0) | required | PR 補助 |
 | prompt-analyzer | .claude/hooks/prompt.sh:94-95 | test -f .claude/skills/prompt-analyzer/agents/prompt-analyzer.md (exit 0) | required | pre-tool の前提 |
-| playbook-init | CLAUDE.md:86 | test -f .claude/skills/playbook-init/SKILL.md (exit 0) | required | golden path エントリ |
-| golden-path | CLAUDE.md:83 | test -f .claude/skills/golden-path/SKILL.md (exit 0) | required | Core Contract #1 |
-| understanding-check | CLAUDE.md:88 | test -f .claude/skills/understanding-check/SKILL.md (exit 0) | required | pm 必須手順 |
+| playbook-init | CLAUDE.md:core_contract.golden_path | test -f .claude/skills/playbook-init/SKILL.md (exit 0) | required | golden path エントリ |
+| golden-path | CLAUDE.md:core_contract.golden_path | test -f .claude/skills/golden-path/SKILL.md (exit 0) | required | Core Contract #1 |
+| understanding-check | CLAUDE.md:core_contract.golden_path | test -f .claude/skills/understanding-check/SKILL.md (exit 0) | required | pm 必須手順 |
 | term-translator | .claude/skills/golden-path/agents/pm.md:86 | test -f .claude/skills/term-translator/agents/term-translator.md (exit 0) | required | 曖昧さ変換 |
 | executor-resolver | .claude/skills/golden-path/agents/pm.md:91 | test -f .claude/skills/executor-resolver/agents/executor-resolver.md (exit 0) | required | executor 判定 |
 | plan-management | .claude/skills/golden-path/agents/pm.md:6 | test -f .claude/skills/plan-management/SKILL.md (exit 0) | required | pm 依存 |

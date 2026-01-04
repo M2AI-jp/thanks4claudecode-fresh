@@ -1,1 +1,0 @@
-../skills/prompt-analyzer/agents/prompt-analyzer.md

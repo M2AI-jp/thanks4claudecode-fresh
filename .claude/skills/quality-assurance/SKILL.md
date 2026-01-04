@@ -163,5 +163,4 @@ Task(subagent_type='reviewer', prompt='このPRをレビュー')
 
 | ファイル | 役割 |
 |----------|------|
-| scripts/e2e-contract-test.sh | E2E テスト |
-| .claude/hooks/check-integrity.sh | 元の整合性チェック |
+| docs/repository-health.md | 健全性判定の SSOT |

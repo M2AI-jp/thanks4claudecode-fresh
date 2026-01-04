@@ -35,7 +35,9 @@
 | `governance/` | 永続 | 変更履歴/統制 | - |
 | `CLAUDE.md` | 永続 | LLM の振る舞いルール | - |
 | `AGENTS.md` | 永続 | コーディングルール | - |
+| `RUNBOOK.md` | 永続 | 運用手順 | - |
 | `state.md` | 永続 | 現在地を示す Single Source of Truth | - |
+| `README.md` | 永続 | リポジトリ概要 | - |
 
 ### .claude/ 配下
 

@@ -256,7 +256,6 @@ Allowed docs are only those referenced in this map plus core entry points:
 - `docs/archive-operation-rules.md`
 - `plan/template/playbook-format.md`
 - `plan/template/planning-rules.md`
-- `plan/template/playbook-examples.md`
 - `governance/PROMPT_CHANGELOG.md`
 
 Temporary exception: design artifacts referenced by state/playbook may remain

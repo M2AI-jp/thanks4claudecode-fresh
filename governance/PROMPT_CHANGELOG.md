@@ -11,6 +11,32 @@
 
 ---
 
+## [2.1.0] - 2026-01-04
+
+### Added
+- Event Unit Architecture のユニット定義と内部コンポーネント
+- 禁止事項セクション（Hook/Unit チェーンと critic 強制を明文化）
+- LOOP / POST_LOOP セクション（SSOT として復元）
+
+### Changed
+- CLAUDE.md をイベント単位の設計に合わせて全面再構成
+- Core Contract と状態モデルを現在のレイアウトに揃えた
+
+### Removed
+- 旧レイヤー記述や過去前提の運用プロトコルを整理
+
+### Rationale
+Hook Unit を境界とする設計思想を SSOT に反映し、文脈ノイズを抑えるため。
+
+### Risk Assessment
+- 参照元ドキュメントのリンクズレや運用手順の解釈変更リスク
+
+### Verification
+1. CLAUDE.md の Core Contract が repo-health の required と整合していること
+2. `rg -n "LOOP|POST_LOOP" CLAUDE.md` で参照セクションが存在すること
+
+---
+
 ## [2.0.1] - 2025-12-25
 
 ### Changed

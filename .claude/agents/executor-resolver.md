@@ -1,1 +1,0 @@
-../skills/executor-resolver/agents/executor-resolver.md

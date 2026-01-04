@@ -84,11 +84,10 @@ if [[ "$FILE_PATH" == *"plan/playbook-"*.md ]]; then
 $(echo "$OTHER_PLAYBOOKS" | sed 's/^/    /')
 
   これらは以下のいずれかを実行してください:
-    1. abort-playbook で明示的に中断:
-       Skill(skill='abort-playbook', args='<path>')
-
-    2. または完了させてからアーカイブ:
+    1. 完了させてからアーカイブ:
        全 Phase を done にして archive-playbook を発火
+
+    2. 不要であれば手動で削除/退避
 
   → 作成は許可しますが、orphan を放置しないでください。
 

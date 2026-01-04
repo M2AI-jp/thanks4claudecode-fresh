@@ -1,6 +1,6 @@
 ---
 name: setup-guide
-description: AUTOMATICALLY guides setup process when playbook=setup/playbook-setup.md. Conducts hearing, environment setup, and Skills generation. Does not ask unnecessary questions.
+description: AUTOMATICALLY guides setup process when playbook=setup/playbook-setup.md. Conducts hearing and environment setup. Does not ask unnecessary questions.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
 ---
@@ -28,11 +28,6 @@ playbook が setup/playbook-setup.md のときに発火し、セットアップ�
    - プロジェクト作成（create-next-app 等）
    - Vercel デプロイ
 
-3. **Skills 生成（必須）**
-   - lint-checker: コード品質チェック
-   - test-runner: テスト実行
-   - deploy-checker: デプロイ準備確認
-
 ## 行動原則
 
 ```yaml
@@ -59,22 +54,7 @@ NO と言う:
   - 開発ツールがインストール済み
   - プロジェクトがローカルで動作
   - Vercel にデプロイ済み
-  - .claude/skills/ に Skills が生成されている  # ← 必須
   - setup playbook が完了している
-```
-
-## Skills 生成テンプレート
-
-setup 完了時に以下を自動生成：
-
-```
-.claude/skills/
-├── lint-checker/
-│   └── skill.md
-├── test-runner/
-│   └── skill.md
-└── deploy-checker/
-    └── skill.md
 ```
 
 ## 参照ファイル
