@@ -62,14 +62,14 @@ Format:
 
 ### session-start
 - Components: validator, context-injector, telemetry, guardrail
-- Chain: session-manager/start -> quality-assurance/health -> quality-assurance/integrity -> coherence-checker
+- Chain: session-manager/start -> quality-assurance/health -> quality-assurance/integrity
 - Docs: state.md, docs/repository-map.yaml, docs/ARCHITECTURE.md
 - Outputs: session status + drift warnings + coherence warnings
 
 ### user-prompt-submit
 - Components: validator, context-injector, telemetry, guardrail
 - Chain: prompt-analyzer -> term-translator (if needed) -> understanding-check -> playbook-init -> pm -> reviewer
-- Docs: plan/template/playbook-format.md, plan/template/planning-rules.md, plan/template/playbook-examples.md,
+- Docs: plan/template/playbook-format.md, plan/template/planning-rules.md,
         docs/criterion-validation-rules.md, docs/ai-orchestration.md, docs/git-operations.md,
         docs/folder-management.md, docs/ARCHITECTURE.md, AGENTS.md
 - Outputs: analysis summary, playbook draft, reviewer verdict

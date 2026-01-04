@@ -16,7 +16,7 @@
   1. テンポラリファイルは tmp/ に統一
   2. 永続ファイルは適切なフォルダに配置
   3. playbook 完了時に自動クリーンアップ
-  4. アーカイブは .archive/ に統一
+  4. アーカイブは plan/archive/ に統一
 ```
 
 ---
@@ -27,9 +27,7 @@
 
 | フォルダ/ファイル | 区分 | 役割 | 削除タイミング |
 |------------------|------|------|----------------|
-| `.archive/` | 永続 | 旧成果物の退避 | 手動削除のみ |
 | `.claude/` | 永続 | Claude Code 設定・拡張機能 | - |
-| `.tmp/` | 半永続 | 永続的な一時ファイル置き場（自動削除されない） | 手動削除のみ |
 | `tmp/` | テンポラリ | 一時ファイル置き場（playbook 終了時に削除） | playbook 完了時 |
 | `docs/` | 永続 | 仕様・運用ドキュメント | - |
 | `plan/` | 永続 | プロジェクト計画・playbook | - |
@@ -37,29 +35,20 @@
 | `governance/` | 永続 | 変更履歴/統制 | - |
 | `CLAUDE.md` | 永続 | LLM の振る舞いルール | - |
 | `AGENTS.md` | 永続 | コーディングルール | - |
-| `RUNBOOK.md` | 永続 | 運用手順 | - |
 | `state.md` | 永続 | 現在地を示す Single Source of Truth | - |
-| `README.md` | 永続 | リポジトリ概要 | - |
 
 ### .claude/ 配下
 
 | フォルダ | 区分 | 役割 | 削除タイミング |
 |----------|------|------|----------------|
-| `.claude/agents/` | 永続 | SubAgent 定義ファイル | - |
-| `.claude/commands/` | 永続 | カスタムコマンド定義 | - |
-| `.claude/context/` | 半永続 | 履歴・メモ | 手動削除のみ |
 | `.claude/events/` | 永続 | Event Unit チェーン | - |
 | `.claude/frameworks/` | 永続 | 参照フレームワーク | - |
 | `.claude/hooks/` | 永続 | Hook スクリプト | - |
 | `.claude/lib/` | 永続 | 共通ライブラリ | - |
 | `.claude/logs/` | 半永続 | ログファイル | 古いセッションログは定期削除 |
 | `.claude/schema/` | 永続 | スキーマ定義 | - |
-| `.claude/scripts/` | 永続 | ユーティリティスクリプト | - |
-| `.claude/session-history/` | 半永続 | セッション履歴 | 古い履歴は定期削除 |
 | `.claude/session-state/` | 半永続 | セッション補助状態 | 手動削除のみ |
 | `.claude/skills/` | 永続 | Skill 定義 | - |
-| `.claude/templates/` | 永続 | テンプレートファイル | - |
-| `.claude/tests/` | 永続 | Hook テスト | - |
 
 ### plan/ 配下
 
@@ -96,9 +85,8 @@
 
 マッピング対象:
   - .claude/hooks/ - 全 Hook
-  - .claude/agents/ - 全 SubAgent
   - .claude/skills/ - 全 Skill
-  - .claude/commands/ - 全 Command
+  - .claude/skills/*/agents/ - 全 SubAgent
   - docs/ - 全ドキュメント
   - plan/ - active/archive/template
   - root - CLAUDE.md, state.md 等
@@ -110,32 +98,6 @@
 |----------|------|------|
 | `README.md` | 永続 | 使い方説明（削除しない） |
 | その他 | テンポラリ | 一時ファイル（playbook 完了時に自動削除） |
-
-### .tmp/ 配下（半永続）
-
-```yaml
-目的: |
-  playbook 完了時に自動削除されない一時ファイル置き場。
-  複数の playbook をまたいで利用するファイルや、
-  検証用の成果物を保持する場合に使用。
-
-使い分け:
-  tmp/:
-    - 1つの playbook 内でのみ使用
-    - playbook 完了時に削除される
-    - 例: 一時的なテスト出力、デバッグログ
-
-  .tmp/:
-    - 複数の playbook で共有
-    - 手動削除まで保持される
-    - 例: 検証用サンプルプロジェクト、参照用データ
-
-注意:
-  - .tmp/ も .gitignore に含まれる（git 管理外）
-  - 不要になったら手動で削除すること
-```
-
----
 
 ## テンポラリ vs 永続の判定基準
 
@@ -243,26 +205,10 @@
 | 仕様書・設計書 | `docs/` |
 | 運用ルール | `docs/` |
 | Hook スクリプト | `.claude/hooks/` |
-| SubAgent 定義 | `.claude/agents/` |
+| SubAgent 定義 | `.claude/skills/*/agents/` |
 | Skill 定義 | `.claude/skills/*/` |
 | playbook | `plan/` |
 | 完了した playbook | `plan/archive/` |
-| アーカイブ（過去のファイル） | `.archive/` |
-
----
-
-## .archive/ の構造
-
-```
-.archive/
-├── docs/           # 古いドキュメント
-├── plan/           # 古い playbook（plan/archive/ と併用）
-├── plan-archive/   # 古い plan アーカイブ
-├── test-m012/      # M012 のテスト成果物
-├── logs/           # 古いログ
-├── hooks/          # 古い Hook
-└── .claude/        # 古い .claude 設定
-```
 
 ---
 
@@ -273,13 +219,12 @@
   - ルート直下に一時ファイルを作成
   - docs/ に中間成果物を作成（後で削除が必要になる）
   - test/ フォルダの新規作成（tmp/ を使用）
-  - 複数のアーカイブ先を作成（.archive/ に統一）
   - tmp/ に重要なファイルを配置
 
 推奨:
   - 一時ファイルは必ず tmp/ に配置
   - 永続ファイルは最初から適切なフォルダに配置
-  - アーカイブは .archive/ に統一
+  - アーカイブは plan/archive/ に統一
 ```
 
 ---
@@ -296,7 +241,6 @@
   - .claude/logs/sessions/ の古いログ削除（1週間以上前）
 
 月次:
-  - .archive/ の整理（必要に応じて）
   - 未使用ドキュメントの確認
 ```
 
@@ -309,8 +253,6 @@ ls -la tmp/
 # 古いセッションログの削除（7日以上前）
 find .claude/logs/sessions -mtime +7 -type f -delete
 
-# .archive/ のサイズ確認
-du -sh .archive/
 ```
 
 ---

@@ -887,7 +887,7 @@ pm の責務:
 - docs/criterion-validation-rules.md - criterion 検証ルール（禁止パターン）
 - state.md - 現在の playbook
 - CLAUDE.md - playbook ルール（POST_LOOP: アーカイブ実行を含む）
-- .claude/agents/reviewer.md - 計画レビュー SubAgent（playbook レビューも担当）
+- .claude/skills/quality-assurance/agents/reviewer.md - 計画レビュー SubAgent（playbook レビューも担当）
 - docs/git-operations.md - git 操作 参照ドキュメント
 - docs/folder-management.md - 中間成果物/一時ファイルの扱い
 - .claude/skills/prompt-analyzer/agents/prompt-analyzer.md - プロンプト分析 SubAgent（M086: 5W1H + リスク分析）

@@ -227,8 +227,8 @@ regex_patterns:
 ## 参照
 
 - plan/template/playbook-format.md（subtasks 構造）
-- .claude/agents/pm.md（playbook 生成時に参照）
-- .claude/agents/critic.md（criterion 検証時に参照）
+- .claude/skills/golden-path/agents/pm.md（playbook 生成時に参照）
+- .claude/skills/reward-guard/agents/critic.md（criterion 検証時に参照）
 
 ---
 

@@ -304,19 +304,18 @@ workflows:
         - "playbook（active な場合）"
       process:
         hooks:
-          - "session-start.sh: pending 作成、失敗パターン表示"
-          - "init-guard.sh: 必須ファイル Read 強制"
-          - "check-main-branch.sh: main ブランチ禁止"
+          - "session.sh: SessionStart を event unit に委譲"
         subagents: []
-        skills: []
+        skills:
+          - "session-manager: handlers/start.sh"
         claude_md: "INIT セクション → [自認] 出力"
       output:
         - "[自認] ブロック（what, milestone, phase, branch...）"
         - "pending ファイル削除"
       references:
-        - ".claude/hooks/session-start.sh"
-        - ".claude/hooks/init-guard.sh"
-        - ".claude/hooks/check-main-branch.sh"
+        - ".claude/hooks/session.sh"
+        - ".claude/events/session-start/chain.sh"
+        - ".claude/skills/session-manager/handlers/start.sh"
         - "CLAUDE.md"
         - "state.md"
 
@@ -331,14 +330,11 @@ workflows:
         - "subtasks（criterion, executor, test_command）"
       process:
         hooks:
-          - "playbook-guard.sh: playbook 存在確認"
-          - "scope-guard.sh: スコープ制限"
-          - "executor-guard.sh: executor 整合性"
-          - "critic-guard.sh: critic 未実行チェック"
+          - "pre-tool-edit chain: playbook/reward guards"
+          - "pre-tool-bash chain: bash guards"
         subagents:
           - "critic: PASS/FAIL 判定"
-        skills:
-          - "test-runner: テスト実行"
+        skills: []
         claude_md: "LOOP セクション → subtask 実行"
       output:
         - "ファイル変更（Edit/Write）"
@@ -346,11 +342,9 @@ workflows:
         - "critic 判定（PASS/FAIL）"
         - "phase.status = done（PASS の場合）"
       references:
-        - ".claude/hooks/playbook-guard.sh"
-        - ".claude/hooks/scope-guard.sh"
-        - ".claude/hooks/executor-guard.sh"
-        - ".claude/hooks/critic-guard.sh"
-        - ".claude/agents/critic.md"
+        - ".claude/events/pre-tool-edit/chain.sh"
+        - ".claude/events/pre-tool-bash/chain.sh"
+        - ".claude/skills/reward-guard/agents/critic.md"
         - "CLAUDE.md"
 
     - id: post_loop
@@ -363,13 +357,9 @@ workflows:
         - "playbook（全 phase done）"
       process:
         hooks:
-          - "archive-playbook.sh: アーカイブ提案"
-          - "cleanup-hook.sh: tmp/ クリーンアップ"
-          - "create-pr-hook.sh: PR 作成トリガー"
-        subagents:
-          - "pm: 次 playbook 作成"
-        skills:
-          - "post-loop: 完了処理"
+          - "post-tool-edit chain: archive/cleanup/PR"
+        subagents: []
+        skills: []
         claude_md: "POST_LOOP セクション → milestone 更新"
       output:
         - "playbook アーカイブ（plan/archive/）"
@@ -377,11 +367,10 @@ workflows:
         - "次 playbook（存在する場合）"
         - "/clear 推奨アナウンス"
       references:
-        - ".claude/hooks/archive-playbook.sh"
-        - ".claude/hooks/cleanup-hook.sh"
-        - ".claude/hooks/create-pr-hook.sh"
-        - ".claude/agents/pm.md"
-        - ".claude/skills/post-loop/"
+        - ".claude/events/post-tool-edit/chain.sh"
+        - ".claude/skills/playbook-gate/workflow/archive-playbook.sh"
+        - ".claude/skills/playbook-gate/workflow/cleanup.sh"
+        - ".claude/skills/git-workflow/handlers/create-pr-hook.sh"
         - "CLAUDE.md"
 
     - id: critique_process
@@ -406,37 +395,10 @@ workflows:
         - "根拠（evidence）"
         - "修正指示（FAIL の場合）"
       references:
-        - ".claude/hooks/critic-guard.sh"
-        - ".claude/agents/critic.md"
+        - ".claude/skills/reward-guard/guards/critic-guard.sh"
+        - ".claude/skills/reward-guard/agents/critic.md"
         - ".claude/frameworks/done-criteria-validation.md"
         - "CLAUDE.md"
-
-    - id: project_complete
-      name: "PROJECT_COMPLETE"
-      why: |
-        playbook 完了時に feature ブランチを main にマージし、GitHub にプッシュ。
-        state.md を neutral 状態にリセットして次の作業に備える。
-      when: "playbook が完了した場合"
-      input:
-        - "現在の feature ブランチ"
-        - "state.md"
-      process:
-        hooks:
-          - "merge-pr.sh: main マージ"
-        subagents:
-          - "pm: 完了を検出"
-        skills:
-          - "post-loop: 完了処理"
-        claude_md: "POST_LOOP#PROJECT_COMPLETE"
-      output:
-        - "main ブランチにマージ"
-        - "GitHub にプッシュ"
-        - "state.md neutral 状態"
-        - "完了アナウンス"
-        - "/clear 推奨"
-      references:
-        - "CLAUDE.md"
-        - ".claude/hooks/merge-pr.sh"
 WORKFLOWS_HEADER
 }
 
