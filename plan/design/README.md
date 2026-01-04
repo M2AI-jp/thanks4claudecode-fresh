@@ -17,6 +17,7 @@
 |----------|------|----------------|
 | mission.md | 最上位概念（存在意義） | セッション開始時、方向性の確認時 |
 | self-healing-system.md | Self-Healing System 設計 | 自己修復機能の実装・改善時 |
+| repository-health-master-plan.md | 健全性メンテの上位設計 | 大規模メンテ開始時 |
 
 ---
 
@@ -43,6 +44,15 @@
   - Self-Improvement（失敗学習）
 - **参照タイミング**: 自己修復機能の実装・改善時
 
+### repository-health-master-plan.md
+
+- **目的**: リポジトリ健全性メンテナンスの上位設計
+- **内容**:
+  - 判定基準（必須/壊れている/不要）
+  - 依存抽出→分類→ドキュメント更新の手順
+  - 証拠ルールとメンテ方針
+- **参照タイミング**: 大規模メンテ開始時、更新計画立案時
+
 ---
 
 ## 連携
@@ -51,6 +61,7 @@
 plan/design/mission.md (最上位概念)
         │
         └── self-healing-system.md (自己修復の設計)
+                └── repository-health-master-plan.md (健全性メンテ設計)
 ```
 
 ---
