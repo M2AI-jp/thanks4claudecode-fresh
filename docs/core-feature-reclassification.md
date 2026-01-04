@@ -57,30 +57,31 @@ CLAUDE.md の設計思想:
 
 ---
 
-### Tier 3: 強化機能（未動作 + 中価値）
+### Tier 3: 未接続コア（設計済み + Hook 未接続だが価値あり）
 
-動作すれば品質が向上するが、なくてもコア契約は維持される。
+**動作すれば価値が高い。Hook 接続を検討すべき。**
 
 | 機能 | 現状 | 動作すれば得られる価値 | 優先度 |
 |------|------|------------------------|--------|
-| coherence-checker | 手動 | state.md / playbook の整合性自動チェック | Medium |
-| test-runner | 手動 | テスト自動化 | Medium |
-| health-checker | 未使用 | システム状態の定期監視 | Low |
-| lint-checker | 手動 | コード品質チェック自動化 | Low |
+| **critic** | 未発火 | 報酬詐欺防止（自己承認バイアス排除） | **Critical** |
+| **health-checker** | 未使用 | orphan 検出、整合性監視 | **High** |
+| **coherence-checker** | 手動 | ドキュメント乖離検出 | **High** |
+| **abort-playbook** | 手動 | playbook クリーンアップ | **Medium** |
 
 ---
 
-### Tier 4: 便利機能（optional + 低価値）
+### Tier 4: 重複・不要な Skill
 
-削除しても問題ない。
+**既存機能と重複、または価値が低い。削除可能。**
 
 | 機能 | 理由 |
 |------|------|
-| abort-playbook | 手動中断手段（なくても Ctrl+C で対応可） |
-| context-management | ガイダンスのみ（Claude が直接実行） |
-| deploy-checker | 手動検証（CI/CD で代替可） |
-| frontend-design | 手動（特定用途のみ） |
-| setup-guide | 初期設定専用（一度使えば不要） |
+| lint-checker | quality-assurance/checkers/lint.sh が Hook 接続済み。重複。 |
+| test-runner | pnpm test 直接実行で十分。ラッパーの価値低い。 |
+| deploy-checker | CI/CD で代替可能。 |
+| context-management | ガイダンスのみ。Claude が直接実行。 |
+| frontend-design | 毎回発火は重い。手動で十分。 |
+| setup-guide | 初期設定専用。一度使えば不要。 |
 
 ---
 
@@ -131,60 +132,50 @@ CLAUDE.md の設計思想:
 |------|------|------|
 | Tier 1（確認済み） | 5 | 維持 |
 | Tier 2（潜在的） | 5 | **修復・改善が最優先** |
-| Tier 3（強化） | 4 | あれば良い |
-| Tier 4（便利） | 5 | 削除可 |
+| Tier 3（未接続コア） | 4 | **Hook 接続を検討** |
+| Tier 4（重複・不要） | 6 | 削除可 |
 | Tier 5（broken） | 5 | 修復 or 参照削除 |
 
 ---
 
 ## 5. 削除可能ファイル一覧
 
-> **判定基準**: Tier 4（便利機能）+ 参照がないファイル + 重複ファイル
+> **判定基準**: Tier 4（重複・不要）
 >
 > コメントは削除理由を記載
 
 ### Skills（削除可能）
 
 ```
-.claude/skills/abort-playbook/
-  # 理由: 手動中断手段。Ctrl+C や /abort-playbook で代替可能。
-  # Hook から強制呼び出しなし。ユーザーが明示的に呼ぶ必要がある。
-
-.claude/skills/coherence-checker/
-  # 理由: 手動整合性チェック。Hook チェーンに組み込まれていない。
-  # 価値はあるが optional。削除しても動作に影響なし。
-
-.claude/skills/context-management/
-  # 理由: ガイダンスのみ。実際の処理は Claude が直接実行。
-  # Skill として存在する意味が薄い。
-
-.claude/skills/deploy-checker/
-  # 理由: 手動検証用。CI/CD パイプラインで代替可能。
-  # Hook から呼び出されない。
-
-.claude/skills/frontend-design/
-  # 理由: フロントエンドデザイン専用。特定用途に限定。
-  # 汎用フレームワークには不要。
-
 .claude/skills/lint-checker/
-  # 理由: 手動 lint チェック。IDE や pre-commit hook で代替可能。
-  # Hook チェーンに組み込まれていない。
+  # 理由: quality-assurance/checkers/lint.sh が Hook 接続済み。重複。
 
 .claude/skills/test-runner/
-  # 理由: 手動テスト実行。npm test / pytest で直接実行可能。
-  # Skill としてラップする価値が低い。
+  # 理由: pnpm test 直接実行で十分。ラッパーの価値低い。
+
+.claude/skills/deploy-checker/
+  # 理由: CI/CD で代替可能。
+
+.claude/skills/context-management/
+  # 理由: ガイダンスのみ。Claude が直接実行。
+
+.claude/skills/frontend-design/
+  # 理由: 毎回発火は重い。手動で十分。
 ```
 
 ### SubAgents（削除可能）
 
 ```
-.claude/skills/quality-assurance/agents/health-checker.md
-  # 理由: 任意の監視機能。Hook から強制呼び出しなし。
-  # 定期監視の仕組み自体が未実装。
-
 .claude/skills/session-manager/agents/setup-guide.md
   # 理由: 初期設定専用。一度使えば不要。
-  # セットアップ完了後は呼び出されない。
+```
+
+### 削除してはいけない（Tier 3: 未接続コア）
+
+```
+.claude/skills/abort-playbook/         # playbook クリーンアップに必要
+.claude/skills/coherence-checker/      # ドキュメント乖離検出に価値あり
+.claude/skills/quality-assurance/agents/health-checker.md  # orphan 検出に価値あり
 ```
 
 ### Supporting files（削除可能）
@@ -261,22 +252,16 @@ plan/archive/
 
 ## 6. 削除時の注意事項
 
-### 参照を先に削除すべきファイル
-
-以下は参照が残っているため、参照を削除してから本体を削除する:
-
-| ファイル | 参照元 | 対処 |
-|----------|--------|------|
-| docs/readme.md | critic.md:161 | 参照削除後に本体削除 |
-| .claude/lib/common.sh | pre-tool.sh:15 | source 行を削除 |
-
-### 削除してはいけないもの（誤って Tier 4 に見えるが Tier 2/3）
+### 削除してはいけないもの
 
 | ファイル | 理由 |
 |----------|------|
-| .claude/skills/quality-assurance/ | reviewer, coderabbit-delegate を含む（Tier 1/2） |
-| .claude/skills/reward-guard/ | critic を含む（Tier 2） |
-| .claude/skills/git-workflow/ | Hook から参照あり（Tier 2） |
+| .claude/skills/quality-assurance/ | reviewer, coderabbit-delegate, lint.sh を含む（コア） |
+| .claude/skills/reward-guard/ | critic を含む（コア） |
+| .claude/skills/git-workflow/ | Hook から参照あり（コア） |
+| .claude/skills/abort-playbook/ | playbook クリーンアップに必要（未接続コア） |
+| .claude/skills/coherence-checker/ | ドキュメント乖離検出に価値あり（未接続コア） |
+| health-checker.md | orphan 検出に価値あり（未接続コア） |
 
 ---
 
@@ -286,14 +271,10 @@ plan/archive/
    - .claude/logs/, .claude/session-history/, .claude/.session-init/, tmp/, .tmp/, evidence/, eval/, .ruff_cache/
    - これらは .gitignore に追加して管理
 
-2. **参照削除後に削除**
-   - docs/readme.md（critic.md の参照削除後）
-   - .claude/lib/common.sh（pre-tool.sh の source 削除後）
+2. **Skill 削除（Tier 4 のみ）**
+   - lint-checker, test-runner, deploy-checker, context-management, frontend-design
+   - setup-guide
 
 3. **運用方針次第**
    - plan/archive/, .archive/（履歴として残すか削除するか）
    - docs/audit-report.md, docs/harness-self-awareness-design.md
-
-4. **Skill 削除（慎重に）**
-   - abort-playbook, coherence-checker, context-management, deploy-checker, frontend-design, lint-checker, test-runner
-   - 削除前に SKILL.md 内の参照を確認
