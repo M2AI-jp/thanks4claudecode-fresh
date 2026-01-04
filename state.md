@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: null
-branch: null
+active: plan/playbook-fizzbuzz-dogfooding.md
+branch: feat/fizzbuzz-dogfooding
 last_archived: plan/archive/playbook-repository-health-master-plan.md
 review_pending: false
 ```
@@ -20,12 +20,14 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: repository-health-master-plan
-phase: p5
+milestone: fizzbuzz-dogfooding
+phase: p1
 done_criteria:
-  - plan/design/repository-health-master-plan.md が作成され、scope/definitions/workflow/evidence を含む
-  - docs/repository-health.md に判定基準と抽出結果（必須/壊れている/不要）が記載されている
-  - docs/repository-map.yaml と docs/ARCHITECTURE.md が抽出結果に沿って更新されている
+  - tmp/fizzbuzz.py が存在し、FizzBuzz ロジックが実装されている
+  - Codex で実装コミットが作成されている
+  - CodeRabbit でレビューが完了している
+  - PR が作成され、main にマージされている
+  - 発見事項が docs/dogfooding-findings.md に記録されている
 self_complete: false
 status: in_progress
 ```
@@ -35,8 +37,8 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-04 15:13:31
-last_end: 2026-01-01 21:10:00
+last_start: 2026-01-04 15:53:16
+last_end: 2026-01-04 15:52:43
 last_clear: 2025-12-24 03:20:00
 ```
 
