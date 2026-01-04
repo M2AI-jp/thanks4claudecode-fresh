@@ -71,7 +71,7 @@ Q5: 納期や優先度は？
 
 ```yaml
 ヒアリング結果から自動判定:
-  - Web UI + DB + 認証 → web_app → plan/template/vercel-nextjs-saas-structure.md
+  - Web UI + DB + 認証 → web_app
   - CLI ツール → automation
   - 記事・ドキュメント → natural_language
   - データ分析 → data_analysis
@@ -83,8 +83,6 @@ Q5: 納期や優先度は？
 ヒアリング完了
     ↓
 type を判定
-    ↓
-plan/template/{type}-structure.md を参照
     ↓
 playbook-format.md に従って playbook を生成
     ↓

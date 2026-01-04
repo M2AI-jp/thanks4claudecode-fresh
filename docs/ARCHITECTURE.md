@@ -17,6 +17,33 @@ Single Source of Truth:
   state.md → playbook → 実行
 ```
 
+> Hook Unit 目録: docs/core-feature-reclassification.md
+
+---
+
+## Event Unit Architecture (SSOT)
+
+Boundary is event timing, not function. Each Hook event owns a unit with its own
+validator/context/guardrail/telemetry/retry/snapshot + chain.
+
+Target layout (not yet implemented):
+
+```
+.claude/events/<event-unit>/
+  validator.sh
+  context-injector.sh
+  guardrail.sh
+  telemetry.sh
+  retry.sh        # optional
+  snapshot.sh     # optional
+  chain.sh
+```
+
+Current implementation dispatches from hooks to event unit chain wrappers,
+which still call existing skills. Component split is not yet implemented.
+The canonical mapping (ideal -> current -> missing) lives in
+`docs/core-feature-reclassification.md`.
+
 ---
 
 ## 0. Hook リファレンス（公式）
@@ -36,6 +63,21 @@ Single Source of Truth:
 | **SessionStart** | セッション開始/再開時 | `startup`/`resume`/`clear`/`compact` |
 | **SessionEnd** | セッション終了時 | なし |
 | **Notification** | Claude が通知を送信するとき | なし |
+
+### Event Unit Mapping (current -> target)
+
+| Hook event | Unit ID | Dispatcher (current) | Target unit dir |
+|-----------|---------|----------------------|-----------------|
+| SessionStart | session-start | `.claude/hooks/session.sh` | `.claude/events/session-start/` |
+| UserPromptSubmit | user-prompt-submit | `.claude/hooks/prompt.sh` | `.claude/events/user-prompt-submit/` |
+| PreToolUse (Edit/Write) | pre-tool-edit | `.claude/hooks/pre-tool.sh` | `.claude/events/pre-tool-edit/` |
+| PreToolUse (Bash) | pre-tool-bash | `.claude/hooks/pre-tool.sh` | `.claude/events/pre-tool-bash/` |
+| PostToolUse (Edit) | post-tool-edit | `.claude/hooks/post-tool.sh` | `.claude/events/post-tool-edit/` |
+| SubagentStop | subagent-stop | `.claude/hooks/subagent-stop.sh` | `.claude/events/subagent-stop/` |
+| PreCompact | pre-compact | `.claude/events/pre-compact/chain.sh` | `.claude/events/pre-compact/` |
+| Stop | stop | `.claude/events/stop/chain.sh` | `.claude/events/stop/` |
+| SessionEnd | session-end | `.claude/events/session-end/chain.sh` | `.claude/events/session-end/` |
+| Notification | notification | `.claude/events/notification/chain.sh` | `.claude/events/notification/` |
 
 ### 入力パラメータ（stdin JSON）
 
@@ -166,7 +208,7 @@ Single Source of Truth:
 
 ### Hook
 ```
-.claude/skills/session-manager/handlers/compact.sh（直接呼び出し）
+.claude/events/pre-compact/chain.sh（session-manager/handlers/compact.sh を呼び出し）
 ```
 
 ### 設計思想
@@ -661,7 +703,7 @@ Task(subagent_type='setup-guide')
     ├─→ .claude/skills/session-manager/agents/setup-guide.md
     │
     ├─→ 参照（読み取り）:
-    │   └─→ plan/template/state-initial.md（初期状態テンプレート）
+    │   └─→ state.md（初期状態の確認）
     │
     └─→ 書き込み:
         ├─→ state.md（セットアップ状態）
@@ -965,8 +1007,6 @@ Task(subagent_type='executor-resolver')
 | playbook-format.md | playbook テンプレート（V16） | pm, subtask-guard |
 | planning-rules.md | 計画ルール | pm |
 | playbook-examples.md | 具体例 | pm |
-| state-initial.md | 初期 state テンプレート | setup-guide |
-| vercel-nextjs-saas-structure.md | Next.js SaaS 構造 | pm（参考） |
 
 ### .claude/frameworks/（検証時参照）
 
@@ -1217,8 +1257,6 @@ scripts/
 ## 14. 既知の課題と未実装
 
 > **監査日**: 2026-01-02
->
-> **詳細**: docs/audit-report.md
 
 ### 14.1 存在しないファイルへの参照
 
@@ -1227,10 +1265,6 @@ scripts/
 | playbook-guard.sh (行 107, 138, 171) | .claude/hooks/failure-logger.sh | ❌ 不存在 | 低（存在チェックあり） |
 | cleanup.sh (行 85) | .claude/skills/playbook-gate/workflow/generate-repository-map.sh | ❌ 不存在 | 中（自動更新が無効） |
 | access-control/SKILL.md | .claude/skills/access-control/lib/contract.sh | ❌ 不存在 | 低（文書不整合） |
-| golden-path/SKILL.md | docs/4qv-architecture.md | ❌ 不存在 | 中（必須参照） |
-| pm.md | docs/file-creation-process-design.md | ❌ 不存在 | 中（手順参照） |
-| term-translator.md | docs/coding-standards.md | ❌ 不存在 | 低（用語変換参照） |
-| critic.md | docs/readme.md | ❌ 不存在 | 低（例示のみ） |
 
 **備考**: failure-logger.sh は存在チェック `[[ -f ... ]]` でガードされているため、不存在でも機能に影響なし。
 
@@ -1241,15 +1275,15 @@ scripts/
 | failure-logger.sh | playbook-guard.sh から参照 | 未実装 | 実装または参照削除 |
 | doc-freshness-check.sh | 設計構想 | 未実装 | 要件定義後に検討 |
 | update-tracker.sh | 設計構想 | 未実装 | git diff で代替可能 |
-| self-healing-system.md | 設計構想 | 未実装 | health.sh/integrity.sh が代替 |
 | health.sh 自動呼び出し | health.sh コメント | 未実装 | session.sh から呼び出し追加 |
 
-### 14.3 未使用の Hook イベント
+### 14.3 Hook イベント（no-op chain）
 
 | Hook | 状態 | 理由 |
 |------|------|------|
-| SessionEnd | 未登録 | 現在の設計で不要と判断 |
-| Notification | 未登録 | 現在の設計で不要と判断 |
+| Stop | 登録済み | 連携先が未実装のため no-op |
+| SessionEnd | 登録済み | 連携先が未実装のため no-op |
+| Notification | 登録済み | 連携先が未実装のため no-op |
 
 ### 14.4 設計と実装の乖離
 

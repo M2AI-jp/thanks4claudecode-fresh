@@ -1,299 +1,265 @@
-# コア機能再分類報告書
+# core-feature-reclassification.md
 
-> **視点**: 「正常に動作していなくてもいいが、正常に動作すればより良くなる機能がコア機能」
->
-> 作成日: 2026-01-04
-> 根拠: FizzBuzz ドッグフーディング (plan/playbook-fizzbuzz-dogfooding.md)
+> SSOT: event unit architecture dependency mapping.
+> Boundary = Hook event timing. One unit = Hook -> components -> skills/subagents -> docs.
 
 ---
 
-## 1. 分類基準の転換
+## 0. Principles
 
-| 従来の基準 | 新しい基準 |
-|------------|------------|
-| 参照チェーンで必須か | 動作すれば価値が高いか |
-| 存在しないと契約破綻 | 動作すればシステムが改善 |
-| required / optional | **潜在価値ベース** |
-
----
-
-## 2. 再分類結果
-
-### Tier 1: 確認済みコア（正常動作 + 高価値）
-
-ドッグフーディングで動作を確認。これらは**絶対に削除不可**。
-
-| 機能 | 検証結果 | 価値 |
-|------|----------|------|
-| prompt-analyzer 強制 | 動作確認 | プロンプト分類の自動化 |
-| main ブランチ保護 | 動作確認 | 安全性確保 |
-| codex-delegate | 動作確認 | コード実装の委譲 |
-| pm + reviewer フロー | 動作確認 | playbook 品質保証 |
-| playbook 作成チェーン | 動作確認 | タスク構造化 |
+- Event timing is the only boundary. Functional grouping is secondary.
+- Each event unit is self-contained: validator/context/guardrail/telemetry/retry/snapshot + chain.
+- Hooks are thin dispatchers. All logic lives inside event units.
+- Docs exist only if referenced by an event unit or by the unit interface contract.
 
 ---
 
-### Tier 2: 潜在的コア（未動作/部分動作 + 高価値）
+## 1. Event Unit Interface (target contract)
 
-**動作すればシステムが大幅に改善する**。修復・改善の優先度が高い。
+Each unit implements the same component set:
 
-| 機能 | 現状 | 動作すれば得られる価値 | 優先度 |
-|------|------|------------------------|--------|
-| **critic 強制呼び出し** | 未発火 | 報酬詐欺防止（自己承認バイアス排除） | **Critical** |
-| **reward-guard** | 未発火 | Phase 完了の独立検証 | **Critical** |
-| **playbook gate** | 未検証 | playbook なしの変更をブロック | **High** |
-| **coderabbit タイミング** | 部分動作 | コードレビュー自動化 | **High** |
-| **git-workflow Hook** | 未発火 | PR 作成の自動化・標準化 | **Medium** |
+- `validator`: normalize and validate raw hook input
+- `context-injector`: emit the minimum context for the unit
+- `guardrail`: policy checks + hard block conditions
+- `telemetry`: event-scoped logs (success/failure/perf)
+- `retry`: backoff strategy for transient failures (optional)
+- `snapshot`: pre-action state capture for recovery (optional)
+- `chain`: invokes skills/subagents and orchestrates outputs
 
-#### なぜこれらがコアか
+Target layout (not yet implemented):
 
 ```
-CLAUDE.md の設計思想:
-  「LLM の自己承認バイアスを構造的に防止する」
-
-→ critic / reward-guard が動作しないと、この設計思想が実現しない
-→ 動作していなくても「コア」である
+.claude/events/
+  <event-unit>/
+    validator.sh
+    context-injector.sh
+    guardrail.sh
+    telemetry.sh
+    retry.sh          # optional
+    snapshot.sh       # optional
+    chain.sh
 ```
+
+Event unit IDs (canonical):
+
+- session-start
+- user-prompt-submit
+- pre-tool-edit
+- pre-tool-bash
+- post-tool-edit
+- subagent-stop
+- pre-compact
+- stop
+- session-end
+- notification
 
 ---
 
-### Tier 3: 強化機能（未動作 + 中価値）
+## 2. Ideal Event Unit Map (design blueprint)
 
-動作すれば品質が向上するが、なくてもコア契約は維持される。
+Format:
+`event unit -> components -> chain -> required docs/templates -> outputs`
 
-| 機能 | 現状 | 動作すれば得られる価値 | 優先度 |
-|------|------|------------------------|--------|
-| coherence-checker | 手動 | state.md / playbook の整合性自動チェック | Medium |
-| test-runner | 手動 | テスト自動化 | Medium |
-| health-checker | 未使用 | システム状態の定期監視 | Low |
-| lint-checker | 手動 | コード品質チェック自動化 | Low |
+### session-start
+- Components: validator, context-injector, telemetry, guardrail
+- Chain: session-manager/start -> quality-assurance/health -> quality-assurance/integrity
+- Docs: state.md, docs/repository-map.yaml, docs/ARCHITECTURE.md
+- Outputs: session status + drift warnings + coherence warnings
 
----
+### user-prompt-submit
+- Components: validator, context-injector, telemetry, guardrail
+- Chain: prompt-analyzer -> term-translator (if needed) -> understanding-check -> playbook-init -> pm -> reviewer
+- Docs: plan/template/playbook-format.md, plan/template/planning-rules.md,
+        docs/criterion-validation-rules.md, docs/ai-orchestration.md, docs/git-operations.md,
+        docs/folder-management.md, docs/ARCHITECTURE.md, AGENTS.md
+- Outputs: analysis summary, playbook draft, reviewer verdict
 
-### Tier 4: 便利機能（optional + 低価値）
+### pre-tool-edit
+- Components: validator, guardrail, telemetry, snapshot
+- Chain: session-manager/init-guard -> access-control/main-branch -> post-loop/pending-guard -> access-control/protected-edit
+        -> playbook-gate/playbook-guard -> playbook-gate/depends-check -> playbook-gate/executor-guard
+        -> reward-guard/critic-guard -> reward-guard/subtask-guard -> reward-guard/phase-status-guard
+        -> reward-guard/scope-guard
+- Docs: state.md, playbook.active, .claude/protected-files.txt, .claude/frameworks/done-criteria-validation.md
+- Outputs: allow/block + guard reasons
 
-削除しても問題ない。
+### pre-tool-bash
+- Components: validator, guardrail, telemetry, retry (network-aware)
+- Chain: access-control/bash-check -> reward-guard/coherence -> quality-assurance/lint
+- Docs: state.md, scripts/contract.sh
+- Outputs: allow/block + guard reasons
 
-| 機能 | 理由 |
-|------|------|
-| abort-playbook | 手動中断手段（なくても Ctrl+C で対応可） |
-| context-management | ガイダンスのみ（Claude が直接実行） |
-| deploy-checker | 手動検証（CI/CD で代替可） |
-| frontend-design | 手動（特定用途のみ） |
-| setup-guide | 初期設定専用（一度使えば不要） |
+### post-tool-edit
+- Components: validator, telemetry
+- Chain: playbook-gate/archive-playbook -> playbook-gate/cleanup -> git-workflow/create-pr-hook
+- Docs: docs/archive-operation-rules.md, docs/folder-management.md, docs/repository-map.yaml
+- Outputs: archive/cleanup/PR actions
 
----
+### subagent-stop
+- Components: telemetry, validator
+- Chain: subagent-stop logger -> playbook-gate/archive-playbook (pseudo Edit)
+- Docs: state.md
+- Outputs: subagent log + playbook completion check
 
-### Tier 5: 要修復（required_broken）
+### pre-compact
+- Components: context-injector, validator, telemetry, snapshot
+- Chain: session-manager/compact
+- Docs: state.md, playbook.active
+- Outputs: additionalContext (minimal resume pointers)
 
-参照があるが実体がない。修復または参照削除が必要。
+### stop
+- Components: telemetry, snapshot
+- Chain: (none yet)
+- Docs: state.md
+- Outputs: end-of-response summary
 
-| ファイル | 潜在価値 | 対策 |
-|----------|----------|------|
-| docs/4qv-architecture.md | **高**（設計理解） | 新規作成 |
-| docs/coding-standards.md | **高**（コード品質） | 新規作成 |
-| docs/file-creation-process-design.md | 中（ファイル作成ルール） | 参照削除で可 |
-| workflow/generate-repository-map.sh | 低（パス違い） | 参照パス修正 |
-| lib/contract.sh | 低（パス違い） | 参照パス修正 |
+### session-end
+- Components: validator, telemetry, snapshot
+- Chain: session-manager/end
+- Docs: state.md
+- Outputs: end-of-session health summary + warnings
 
----
-
-## 3. 優先度マトリクス
-
-```
-                    動作すれば価値が高い
-                           ↑
-                           |
-    Tier 2              |  Tier 1
-    (潜在的コア)          |  (確認済みコア)
-    修復優先             |  維持
-                           |
-    ←───────────────────+───────────────────→
-    未動作                 |                正常動作
-                           |
-    Tier 4              |  Tier 3
-    (便利機能)            |  (強化機能)
-    削除可               |  あれば良い
-                           |
-                           ↓
-                    動作しても価値が低い
-```
-
----
-
-## 4. 結論
-
-### コア機能の定義（ユーザー視点）
-
-**コア機能 = Tier 1 + Tier 2**
-
-| Tier | 件数 | 方針 |
-|------|------|------|
-| Tier 1（確認済み） | 5 | 維持 |
-| Tier 2（潜在的） | 5 | **修復・改善が最優先** |
-| Tier 3（強化） | 4 | あれば良い |
-| Tier 4（便利） | 5 | 削除可 |
-| Tier 5（broken） | 5 | 修復 or 参照削除 |
+### notification
+- Components: telemetry
+- Chain: (none yet)
+- Docs: none
+- Outputs: notification log
 
 ---
 
-## 5. 削除可能ファイル一覧
+## 3. Current Implementation Map (as-is)
 
-> **判定基準**: Tier 4（便利機能）+ 参照がないファイル + 重複ファイル
->
-> コメントは削除理由を記載
+### session-start
+- Dispatcher: `.claude/hooks/session.sh` (SessionStart)
+- Unit chain: `.claude/events/session-start/chain.sh`
+- Components (current):
+  - validator: `session-manager/handlers/start.sh` (state schema load, hook validation)
+  - context-injector: `session-manager/handlers/start.sh` (state/playbook pointers)
+  - telemetry: `session-manager/handlers/start.sh` (stdout warnings)
+- Missing: dedicated guardrail/telemetry units; auto health/integrity/coherence chain
 
-### Skills（削除可能）
+### user-prompt-submit
+- Dispatcher: `.claude/hooks/prompt.sh`
+- Unit chain: `.claude/events/user-prompt-submit/chain.sh`
+- Components (current):
+  - context-injector: `prompt.sh` (state + progress injection)
+  - validator: `prompt-analyzer` subagent (manual enforcement via marker)
+- Missing: unit telemetry, explicit guardrail, unit-level validator script
 
-```
-.claude/skills/abort-playbook/
-  # 理由: 手動中断手段。Ctrl+C や /abort-playbook で代替可能。
-  # Hook から強制呼び出しなし。ユーザーが明示的に呼ぶ必要がある。
+### pre-tool-edit
+- Dispatcher: `.claude/hooks/pre-tool.sh` (PreToolUse)
+- Unit chain: `.claude/events/pre-tool-edit/chain.sh`
+- Components (current):
+  - validator: `session-manager/handlers/init-guard.sh`
+  - guardrail: access-control + playbook-gate + reward-guard scripts
+- Missing: telemetry, snapshot, event-scoped validator
 
-.claude/skills/coherence-checker/
-  # 理由: 手動整合性チェック。Hook チェーンに組み込まれていない。
-  # 価値はあるが optional。削除しても動作に影響なし。
+### pre-tool-bash
+- Dispatcher: `.claude/hooks/pre-tool.sh`
+- Unit chain: `.claude/events/pre-tool-bash/chain.sh`
+- Components (current):
+  - validator: `access-control/guards/bash-check.sh` + `scripts/contract.sh`
+  - guardrail: `reward-guard/guards/coherence.sh` + `quality-assurance/checkers/lint.sh`
+- Missing: telemetry, retry
 
-.claude/skills/context-management/
-  # 理由: ガイダンスのみ。実際の処理は Claude が直接実行。
-  # Skill として存在する意味が薄い。
+### post-tool-edit
+- Dispatcher: `.claude/hooks/post-tool.sh`
+- Unit chain: `.claude/events/post-tool-edit/chain.sh`
+- Components (current):
+  - chain: archive-playbook -> cleanup -> create-pr-hook
+- Missing: unit validator/telemetry
 
-.claude/skills/deploy-checker/
-  # 理由: 手動検証用。CI/CD パイプラインで代替可能。
-  # Hook から呼び出されない。
+### subagent-stop
+- Dispatcher: `.claude/hooks/subagent-stop.sh`
+- Unit chain: `.claude/events/subagent-stop/chain.sh`
+- Components (current):
+  - telemetry: `.claude/logs/subagent.log`
+  - chain: archive-playbook (pseudo Edit)
+- Missing: event-level validator/guardrail
 
-.claude/skills/frontend-design/
-  # 理由: フロントエンドデザイン専用。特定用途に限定。
-  # 汎用フレームワークには不要。
+### pre-compact
+- Dispatcher: `.claude/events/pre-compact/chain.sh` (PreCompact hook)
+- Components (current):
+  - context-injector: additionalContext output only
+- Missing: validator, telemetry, snapshot
 
-.claude/skills/lint-checker/
-  # 理由: 手動 lint チェック。IDE や pre-commit hook で代替可能。
-  # Hook チェーンに組み込まれていない。
-
-.claude/skills/test-runner/
-  # 理由: 手動テスト実行。npm test / pytest で直接実行可能。
-  # Skill としてラップする価値が低い。
-```
-
-### SubAgents（削除可能）
-
-```
-.claude/skills/quality-assurance/agents/health-checker.md
-  # 理由: 任意の監視機能。Hook から強制呼び出しなし。
-  # 定期監視の仕組み自体が未実装。
-
-.claude/skills/session-manager/agents/setup-guide.md
-  # 理由: 初期設定専用。一度使えば不要。
-  # セットアップ完了後は呼び出されない。
-```
-
-### Supporting files（削除可能）
-
-```
-.claude/lib/common.sh
-  # 理由: 共通関数ライブラリだが、参照が弱い。
-  # 各 Hook/Script が直接処理を実装しており、共通化されていない。
-
-.claude/hooks/generate-repository-map.sh
-  # 理由: repository-map.yaml 自動生成。optional 機能。
-  # 手動で yaml を更新しても問題ない。
-```
-
-### Docs（削除可能）
-
-```
-docs/audit-report.md
-  # 理由: 監査記録。参照元は ARCHITECTURE.md のみ。
-  # 削除しても動作に影響なし。履歴として残すなら archive へ。
-
-docs/harness-self-awareness-design.md
-  # 理由: 設計履歴・思考記録。運用には不要。
-  # 参照なし。設計意図の記録として残すなら archive へ。
-
-docs/readme.md
-  # 理由: 例示のみ。critic.md から参照されているが、例としてのみ。
-  # 参照を削除すれば削除可能。
-```
-
-### 生成物・一時ファイル（削除可能）
-
-```
-.claude/logs/
-  # 理由: ログ出力先。運用で蓄積されるが、.gitignore で管理すべき。
-  # リポジトリには含めない方が良い。
-
-.claude/session-history/
-  # 理由: セッション履歴。コンテキスト継続用だが、.gitignore で管理すべき。
-
-.claude/.session-init/
-  # 理由: セッション初期化一時ファイル。.gitignore で管理すべき。
-
-tmp/
-  # 理由: 一時作業ディレクトリ。.gitignore で管理すべき。
-  # ただし tmp/fizzbuzz.py はドッグフーディング成果物として残す場合あり。
-
-.tmp/
-  # 理由: 一時ファイル。.gitignore で管理すべき。
-
-evidence/
-  # 理由: 証拠収集用。タスク完了後は不要。.gitignore で管理すべき。
-
-eval/
-  # 理由: 評価用。開発時のみ使用。.gitignore で管理すべき。
-
-.ruff_cache/
-  # 理由: Ruff lint キャッシュ。.gitignore で管理すべき。
-```
-
-### アーカイブ（削除可能）
-
-```
-plan/archive/
-  # 理由: 完了した playbook のアーカイブ。
-  # 履歴として残すか、定期的に削除するかは運用方針次第。
-
-.archive/
-  # 理由: 古い設計ドキュメントのアーカイブ。
-  # 必要に応じて参照するが、削除しても動作に影響なし。
-```
+### stop / session-end / notification
+- Dispatcher: `.claude/settings.json` (Stop/SessionEnd/Notification → chain)
+- Unit chains: `.claude/events/stop/chain.sh`, `.claude/events/session-end/chain.sh`, `.claude/events/notification/chain.sh`
+- Components (current):
+  - stop: no-op placeholder
+  - session-end: `session-manager/handlers/end.sh`
+  - notification: no-op placeholder
+- Missing: unit-level validator/guardrail/telemetry/snapshot
 
 ---
 
-## 6. 削除時の注意事項
+## 4. Missing Components Map (new work assumed)
 
-### 参照を先に削除すべきファイル
+Target files (to be created):
 
-以下は参照が残っているため、参照を削除してから本体を削除する:
+- `.claude/events/session-start/{validator,context-injector,telemetry,guardrail,chain}.sh`
+- `.claude/events/user-prompt-submit/{validator,context-injector,telemetry,guardrail,chain}.sh`
+- `.claude/events/pre-tool-edit/{validator,guardrail,telemetry,snapshot,chain}.sh`
+- `.claude/events/pre-tool-bash/{validator,guardrail,telemetry,retry,chain}.sh`
+- `.claude/events/post-tool-edit/{validator,telemetry,chain}.sh`
+- `.claude/events/subagent-stop/{validator,telemetry,chain}.sh`
+- `.claude/events/pre-compact/{validator,context-injector,telemetry,snapshot,chain}.sh`
+- `.claude/events/stop/{telemetry,snapshot,chain}.sh`
+- `.claude/events/session-end/{validator,telemetry,snapshot,chain}.sh`
+- `.claude/events/notification/{telemetry,chain}.sh`
 
-| ファイル | 参照元 | 対処 |
-|----------|--------|------|
-| docs/readme.md | critic.md:161 | 参照削除後に本体削除 |
-| .claude/lib/common.sh | pre-tool.sh:15 | source 行を削除 |
+Dispatcher updates (target):
 
-### 削除してはいけないもの（誤って Tier 4 に見えるが Tier 2/3）
-
-| ファイル | 理由 |
-|----------|------|
-| .claude/skills/quality-assurance/ | reviewer, coderabbit-delegate を含む（Tier 1/2） |
-| .claude/skills/reward-guard/ | critic を含む（Tier 2） |
-| .claude/skills/git-workflow/ | Hook から参照あり（Tier 2） |
+- Hooks call event unit `chain.sh` instead of direct skill scripts.
+- Unit components are invoked by `chain.sh` in fixed order:
+  1. validator
+  2. context-injector
+  3. guardrail
+  4. snapshot (if needed)
+  5. chain (skills/subagents)
+  6. telemetry (always)
 
 ---
 
-## 7. 推奨削除順序
+## 5. Migration Plan (3)
 
-1. **即時削除可能**（参照なし）
-   - .claude/logs/, .claude/session-history/, .claude/.session-init/, tmp/, .tmp/, evidence/, eval/, .ruff_cache/
-   - これらは .gitignore に追加して管理
+1. Introduce `.claude/events/` layout with empty stubs for all units.
+2. Move existing logic into unit components without behavior changes:
+   - pre-tool guards -> pre-tool-edit/pre-tool-bash guardrail
+   - prompt state injection -> user-prompt-submit context-injector
+   - subagent-stop logging -> subagent-stop telemetry
+3. Add telemetry format + log targets for all units.
+4. Wire hooks to unit `chain.sh` dispatchers.
+5. Add missing units: stop/session-end/notification.
+6. Remove legacy direct calls once all hooks dispatch to event units.
 
-2. **参照削除後に削除**
-   - docs/readme.md（critic.md の参照削除後）
-   - .claude/lib/common.sh（pre-tool.sh の source 削除後）
+---
 
-3. **運用方針次第**
-   - plan/archive/, .archive/（履歴として残すか削除するか）
-   - docs/audit-report.md, docs/harness-self-awareness-design.md
+## 6. Doc Retention Rule (1)
 
-4. **Skill 削除（慎重に）**
-   - abort-playbook, coherence-checker, context-management, deploy-checker, frontend-design, lint-checker, test-runner
-   - 削除前に SKILL.md 内の参照を確認
+Allowed docs are only those referenced in this map plus core entry points:
+
+- `CLAUDE.md`
+- `AGENTS.md`
+- `RUNBOOK.md`
+- `README.md`
+- `state.md`
+- `docs/ARCHITECTURE.md`
+- `docs/core-feature-reclassification.md`
+- `docs/repository-health.md`
+- `docs/repository-map.yaml`
+- `docs/criterion-validation-rules.md`
+- `docs/ai-orchestration.md`
+- `docs/git-operations.md`
+- `docs/folder-management.md`
+- `docs/archive-operation-rules.md`
+- `plan/template/playbook-format.md`
+- `plan/template/planning-rules.md`
+- `plan/template/playbook-examples.md`
+- `governance/PROMPT_CHANGELOG.md`
+
+Temporary exception: design artifacts referenced by state/playbook may remain
+until the state is reset.
+
+Everything else is non-core and should be removed or archived.

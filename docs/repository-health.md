@@ -77,7 +77,25 @@ rg -l "guards/|handlers/|agents/" .claude/skills/*/SKILL.md
 | .claude/hooks/session.sh | .claude/settings.json:47-55 | test -x .claude/hooks/session.sh (exit 0) | required | SessionStart |
 | .claude/hooks/prompt.sh | .claude/settings.json:59-67 | test -x .claude/hooks/prompt.sh (exit 0) | required | UserPromptSubmit |
 | .claude/hooks/subagent-stop.sh | .claude/settings.json:71-79 | test -x .claude/hooks/subagent-stop.sh (exit 0) | required | SubagentStop |
-| .claude/skills/session-manager/handlers/compact.sh | .claude/settings.json:83-90 | test -x .claude/skills/session-manager/handlers/compact.sh (exit 0) | required | PreCompact |
+| .claude/events/pre-compact/chain.sh | .claude/settings.json:89 | test -f .claude/events/pre-compact/chain.sh (exit 0) | required | PreCompact |
+| .claude/events/stop/chain.sh | .claude/settings.json:95-103 | test -f .claude/events/stop/chain.sh (exit 0) | required | Stop |
+| .claude/events/session-end/chain.sh | .claude/settings.json:108-114 | test -f .claude/events/session-end/chain.sh (exit 0) | required | SessionEnd |
+| .claude/events/notification/chain.sh | .claude/settings.json:119-125 | test -f .claude/events/notification/chain.sh (exit 0) | required | Notification |
+
+### Event Units
+
+| component | reference | evidence | decision | notes |
+|---|---|---|---|---|
+| .claude/events/session-start/chain.sh | .claude/hooks/session.sh:31 | test -f .claude/events/session-start/chain.sh (exit 0) | required | SessionStart chain |
+| .claude/events/user-prompt-submit/chain.sh | .claude/hooks/prompt.sh:9 | test -f .claude/events/user-prompt-submit/chain.sh (exit 0) | required | UserPromptSubmit chain |
+| .claude/events/pre-tool-edit/chain.sh | .claude/hooks/pre-tool.sh:94 | test -f .claude/events/pre-tool-edit/chain.sh (exit 0) | required | PreToolUse(Edit/Write) chain |
+| .claude/events/pre-tool-bash/chain.sh | .claude/hooks/pre-tool.sh:97 | test -f .claude/events/pre-tool-bash/chain.sh (exit 0) | required | PreToolUse(Bash) chain |
+| .claude/events/post-tool-edit/chain.sh | .claude/hooks/post-tool.sh:41 | test -f .claude/events/post-tool-edit/chain.sh (exit 0) | required | PostToolUse(Edit) chain |
+| .claude/events/subagent-stop/chain.sh | .claude/hooks/subagent-stop.sh:9 | test -f .claude/events/subagent-stop/chain.sh (exit 0) | required | SubagentStop chain |
+| .claude/events/pre-compact/chain.sh | .claude/settings.json:89 | test -f .claude/events/pre-compact/chain.sh (exit 0) | required | PreCompact chain |
+| .claude/events/stop/chain.sh | .claude/settings.json:95-103 | test -f .claude/events/stop/chain.sh (exit 0) | required | Stop chain |
+| .claude/events/session-end/chain.sh | .claude/settings.json:108-114 | test -f .claude/events/session-end/chain.sh (exit 0) | required | SessionEnd chain |
+| .claude/events/notification/chain.sh | .claude/settings.json:119-125 | test -f .claude/events/notification/chain.sh (exit 0) | required | Notification chain |
 
 ### Skills
 
@@ -110,15 +128,7 @@ rg -l "guards/|handlers/|agents/" .claude/skills/*/SKILL.md
 
 #### optional
 
-| component | reference | evidence | decision | notes |
-|---|---|---|---|---|
-| abort-playbook | .claude/skills/playbook-gate/guards/playbook-guard.sh:87-88 | test -f .claude/skills/abort-playbook/SKILL.md (exit 0) | optional | 手動中断手段 |
-| coherence-checker | .claude/skills/coherence-checker/SKILL.md:1 | test -f .claude/skills/coherence-checker/SKILL.md (exit 0) | optional | 手動整合性チェック |
-| context-management | .claude/skills/context-management/SKILL.md:1 | test -f .claude/skills/context-management/SKILL.md (exit 0) | optional | ガイダンスのみ |
-| deploy-checker | .claude/skills/deploy-checker/SKILL.md:1 | test -f .claude/skills/deploy-checker/SKILL.md (exit 0) | optional | 手動検証 |
-| frontend-design | .claude/skills/frontend-design/SKILL.md:1 | test -f .claude/skills/frontend-design/SKILL.md (exit 0) | optional | 手動 |
-| lint-checker | .claude/skills/lint-checker/SKILL.md:1 | test -f .claude/skills/lint-checker/SKILL.md (exit 0) | optional | 手動 |
-| test-runner | .claude/skills/test-runner/SKILL.md:1 | test -f .claude/skills/test-runner/SKILL.md (exit 0) | optional | 手動 |
+なし（core 以外の手動 Skill は削除済み）
 
 ### SubAgents
 
@@ -161,6 +171,7 @@ rg -l "guards/|handlers/|agents/" .claude/skills/*/SKILL.md
 | CLAUDE.md | .claude/protected-files.txt:12 | test -f CLAUDE.md (exit 0) | required | コア契約 |
 | state.md | .claude/skills/session-manager/handlers/init-guard.sh:30-38 | test -f state.md (exit 0) | required | SSOT |
 | docs/ARCHITECTURE.md | .claude/skills/session-manager/handlers/start.sh:131 | test -f docs/ARCHITECTURE.md (exit 0) | required | 参照ガイド |
+| docs/core-feature-reclassification.md | docs/core-feature-reclassification.md:1 | test -f docs/core-feature-reclassification.md (exit 0) | required | Hook Unit 目録 |
 | docs/repository-map.yaml | .claude/skills/session-manager/handlers/start.sh:53 | test -f docs/repository-map.yaml (exit 0) | required | マップ参照 |
 | docs/criterion-validation-rules.md | .claude/skills/golden-path/agents/pm.md:421 | test -f docs/criterion-validation-rules.md (exit 0) | required | criterion ルール |
 | docs/ai-orchestration.md | .claude/skills/golden-path/agents/pm.md:131 | test -f docs/ai-orchestration.md (exit 0) | required | executor 指針 |
@@ -168,12 +179,6 @@ rg -l "guards/|handlers/|agents/" .claude/skills/*/SKILL.md
 | docs/folder-management.md | .claude/skills/playbook-gate/workflow/cleanup.sh:16 | test -f docs/folder-management.md (exit 0) | required | tmp 方針 |
 | docs/archive-operation-rules.md | .claude/skills/playbook-gate/workflow/archive-playbook.sh:29 | test -f docs/archive-operation-rules.md (exit 0) | required | アーカイブ規則 |
 | docs/repository-health.md | docs/repository-health.md:1 | test -f docs/repository-health.md (exit 0) | required | 健全性 SSOT |
-| docs/audit-report.md | docs/ARCHITECTURE.md:1267 | test -f docs/audit-report.md (exit 0) | optional | 監査記録 |
-| docs/harness-self-awareness-design.md | docs/harness-self-awareness-design.md:1 | test -f docs/harness-self-awareness-design.md (exit 0) | optional | 設計履歴 |
-| docs/4qv-architecture.md | .claude/skills/golden-path/SKILL.md:84 | test -f docs/4qv-architecture.md (exit 1) | required_broken | 参照切れ |
-| docs/file-creation-process-design.md | .claude/skills/golden-path/agents/pm.md:478 | test -f docs/file-creation-process-design.md (exit 1) | required_broken | 参照切れ |
-| docs/coding-standards.md | .claude/skills/term-translator/agents/term-translator.md:217 | test -f docs/coding-standards.md (exit 1) | required_broken | 参照切れ |
-| docs/readme.md | .claude/skills/reward-guard/agents/critic.md:161 | test -f docs/readme.md (exit 1) | optional | 例示のみ |
 
 ---
 

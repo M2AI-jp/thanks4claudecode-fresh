@@ -81,4 +81,4 @@ Task(subagent_type='pm', prompt='playbook を作成')
 | .claude/skills/playbook-init/SKILL.md | エントリーポイント Skill |
 | .claude/skills/golden-path/agents/pm.md | pm SubAgent |
 | .claude/hooks/prompt.sh | State Injection（導火線） |
-| docs/4qv-architecture.md | アーキテクチャ設計書 |
+| docs/ARCHITECTURE.md | アーキテクチャ設計書 |

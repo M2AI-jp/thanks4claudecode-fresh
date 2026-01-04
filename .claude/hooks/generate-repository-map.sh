@@ -178,7 +178,7 @@ count_files() {
 # ==============================================================================
 
 # 公式トリガー順序（https://code.claude.com/docs/ja/hooks）
-TRIGGER_ORDER=("SessionStart" "UserPromptSubmit" "PreToolUse" "PostToolUse" "Stop" "PreCompact" "SessionEnd")
+TRIGGER_ORDER=("SessionStart" "UserPromptSubmit" "PreToolUse" "PostToolUse" "Stop" "PreCompact" "SessionEnd" "Notification" "SubagentStop")
 
 # 指定トリガーの Hook 一覧を取得（詳細付き）
 get_hooks_for_trigger() {
@@ -212,7 +212,7 @@ generate_hook_trigger_sequence() {
 
 hook_trigger_sequence:
   description: "Hook の発火順序（公式ドキュメント準拠）"
-  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd"
+  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd → Notification (async) → SubagentStop (task)"
   triggers:
 HTS_HEADER
 
@@ -270,6 +270,8 @@ get_trigger_description() {
         Stop)            echo "セッション中断時（Ctrl+C, /stop）に発火" ;;
         PreCompact)      echo "コンテキスト圧縮前に発火" ;;
         SessionEnd)      echo "セッション終了時に発火" ;;
+        Notification)    echo "通知送信時に発火" ;;
+        SubagentStop)    echo "サブエージェント（Task）応答完了時に発火" ;;
         *)               echo "不明なトリガー" ;;
     esac
 }
@@ -302,19 +304,18 @@ workflows:
         - "playbook（active な場合）"
       process:
         hooks:
-          - "session-start.sh: pending 作成、失敗パターン表示"
-          - "init-guard.sh: 必須ファイル Read 強制"
-          - "check-main-branch.sh: main ブランチ禁止"
+          - "session.sh: SessionStart を event unit に委譲"
         subagents: []
-        skills: []
+        skills:
+          - "session-manager: handlers/start.sh"
         claude_md: "INIT セクション → [自認] 出力"
       output:
         - "[自認] ブロック（what, milestone, phase, branch...）"
         - "pending ファイル削除"
       references:
-        - ".claude/hooks/session-start.sh"
-        - ".claude/hooks/init-guard.sh"
-        - ".claude/hooks/check-main-branch.sh"
+        - ".claude/hooks/session.sh"
+        - ".claude/events/session-start/chain.sh"
+        - ".claude/skills/session-manager/handlers/start.sh"
         - "CLAUDE.md"
         - "state.md"
 
@@ -329,14 +330,11 @@ workflows:
         - "subtasks（criterion, executor, test_command）"
       process:
         hooks:
-          - "playbook-guard.sh: playbook 存在確認"
-          - "scope-guard.sh: スコープ制限"
-          - "executor-guard.sh: executor 整合性"
-          - "critic-guard.sh: critic 未実行チェック"
+          - "pre-tool-edit chain: playbook/reward guards"
+          - "pre-tool-bash chain: bash guards"
         subagents:
           - "critic: PASS/FAIL 判定"
-        skills:
-          - "test-runner: テスト実行"
+        skills: []
         claude_md: "LOOP セクション → subtask 実行"
       output:
         - "ファイル変更（Edit/Write）"
@@ -344,11 +342,9 @@ workflows:
         - "critic 判定（PASS/FAIL）"
         - "phase.status = done（PASS の場合）"
       references:
-        - ".claude/hooks/playbook-guard.sh"
-        - ".claude/hooks/scope-guard.sh"
-        - ".claude/hooks/executor-guard.sh"
-        - ".claude/hooks/critic-guard.sh"
-        - ".claude/agents/critic.md"
+        - ".claude/events/pre-tool-edit/chain.sh"
+        - ".claude/events/pre-tool-bash/chain.sh"
+        - ".claude/skills/reward-guard/agents/critic.md"
         - "CLAUDE.md"
 
     - id: post_loop
@@ -361,13 +357,9 @@ workflows:
         - "playbook（全 phase done）"
       process:
         hooks:
-          - "archive-playbook.sh: アーカイブ提案"
-          - "cleanup-hook.sh: tmp/ クリーンアップ"
-          - "create-pr-hook.sh: PR 作成トリガー"
-        subagents:
-          - "pm: 次 playbook 作成"
-        skills:
-          - "post-loop: 完了処理"
+          - "post-tool-edit chain: archive/cleanup/PR"
+        subagents: []
+        skills: []
         claude_md: "POST_LOOP セクション → milestone 更新"
       output:
         - "playbook アーカイブ（plan/archive/）"
@@ -375,11 +367,10 @@ workflows:
         - "次 playbook（存在する場合）"
         - "/clear 推奨アナウンス"
       references:
-        - ".claude/hooks/archive-playbook.sh"
-        - ".claude/hooks/cleanup-hook.sh"
-        - ".claude/hooks/create-pr-hook.sh"
-        - ".claude/agents/pm.md"
-        - ".claude/skills/post-loop/"
+        - ".claude/events/post-tool-edit/chain.sh"
+        - ".claude/skills/playbook-gate/workflow/archive-playbook.sh"
+        - ".claude/skills/playbook-gate/workflow/cleanup.sh"
+        - ".claude/skills/git-workflow/handlers/create-pr-hook.sh"
         - "CLAUDE.md"
 
     - id: critique_process
@@ -404,37 +395,10 @@ workflows:
         - "根拠（evidence）"
         - "修正指示（FAIL の場合）"
       references:
-        - ".claude/hooks/critic-guard.sh"
-        - ".claude/agents/critic.md"
+        - ".claude/skills/reward-guard/guards/critic-guard.sh"
+        - ".claude/skills/reward-guard/agents/critic.md"
         - ".claude/frameworks/done-criteria-validation.md"
         - "CLAUDE.md"
-
-    - id: project_complete
-      name: "PROJECT_COMPLETE"
-      why: |
-        playbook 完了時に feature ブランチを main にマージし、GitHub にプッシュ。
-        state.md を neutral 状態にリセットして次の作業に備える。
-      when: "playbook が完了した場合"
-      input:
-        - "現在の feature ブランチ"
-        - "state.md"
-      process:
-        hooks:
-          - "merge-pr.sh: main マージ"
-        subagents:
-          - "pm: 完了を検出"
-        skills:
-          - "post-loop: 完了処理"
-        claude_md: "POST_LOOP#PROJECT_COMPLETE"
-      output:
-        - "main ブランチにマージ"
-        - "GitHub にプッシュ"
-        - "state.md neutral 状態"
-        - "完了アナウンス"
-        - "/clear 推奨"
-      references:
-        - "CLAUDE.md"
-        - ".claude/hooks/merge-pr.sh"
 WORKFLOWS_HEADER
 }
 
@@ -498,6 +462,9 @@ get_affected_sections() {
         hooks)
             echo "0. Hook リファレンス|1. SessionStart|2. UserPromptSubmit|3. PreToolUse:*|4. PreToolUse:Edit/Write|5. PreToolUse:Bash|6. PostToolUse:Edit"
             ;;
+        events)
+            echo "Event Unit Architecture (SSOT)|Event Unit Mapping (current -> target)|0. Hook リファレンス"
+            ;;
         agents)
             echo "7. SubAgent 呼び出し"
             ;;
@@ -552,6 +519,21 @@ detect_drift_and_sync() {
             CHANGES+=("hooks: -$((PREV_HOOKS - CURR_HOOKS)) 削除")
         fi
         AFFECTED_SECTIONS+=("$(get_affected_sections hooks)")
+    fi
+
+    # events の比較
+    local PREV_EVENTS=$(grep -A3 "^events:" "$PREV_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    local CURR_EVENTS=$(grep -A3 "^events:" "$REPO_MAP" | grep "count:" | head -1 | sed 's/.*: *//')
+    PREV_EVENTS=${PREV_EVENTS:-0}
+    CURR_EVENTS=${CURR_EVENTS:-0}
+    if [[ "$PREV_EVENTS" != "$CURR_EVENTS" ]]; then
+        DRIFT_DETECTED=true
+        if [[ "$CURR_EVENTS" -gt "$PREV_EVENTS" ]]; then
+            CHANGES+=("events: +$((CURR_EVENTS - PREV_EVENTS)) 追加")
+        else
+            CHANGES+=("events: -$((PREV_EVENTS - CURR_EVENTS)) 削除")
+        fi
+        AFFECTED_SECTIONS+=("$(get_affected_sections events)")
     fi
 
     # agents の比較
@@ -694,6 +676,43 @@ if [[ -d "$HOOKS_DIR" ]]; then
         [[ -f "$hook" ]] || continue
         name=$(basename "$hook")
         echo "    - name: \"$name\"" >> "$TEMP_FILE"
+    done
+fi
+
+# ==============================================================================
+# Event Units
+# ==============================================================================
+echo "  Scanning events..."
+EVENTS_DIR="$PROJECT_ROOT/.claude/events"
+EVENTS_COUNT=0
+
+if [[ -d "$EVENTS_DIR" ]]; then
+    EVENTS_COUNT=$(find "$EVENTS_DIR" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+fi
+
+cat >> "$TEMP_FILE" << EOF
+
+events:
+  directory: .claude/events/
+  count: $EVENTS_COUNT
+  units:
+EOF
+
+if [[ -d "$EVENTS_DIR" ]]; then
+    for unit_dir in "$EVENTS_DIR"/*/; do
+        [[ -d "$unit_dir" ]] || continue
+        unit_name=$(basename "$unit_dir")
+        chain="$unit_dir/chain.sh"
+        desc=""
+        if [[ -f "$chain" ]]; then
+            desc=$(extract_description "$chain")
+        fi
+
+        cat >> "$TEMP_FILE" << EOF
+    - name: "$unit_name"
+      chain: "chain.sh"
+      description: "$desc"
+EOF
     done
 fi
 

@@ -181,10 +181,10 @@ mcp__codex__codex-reply:
 
 ```bash
 # 使用例
-echo 'worker' | bash .claude/hooks/role-resolver.sh
+echo 'worker' | bash .claude/skills/playbook-gate/guards/role-resolver.sh
 # 出力: codex（toolstack B の場合）
 
-bash .claude/hooks/role-resolver.sh orchestrator
+bash .claude/skills/playbook-gate/guards/role-resolver.sh orchestrator
 # 出力: claudecode
 ```
 

@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-04 15:34:50"
+  generated: "2026-01-04 20:16:50"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 312
+  total_files: 307
 
 hooks:
   directory: .claude/hooks/
@@ -22,6 +22,41 @@ hooks:
     - name: "prompt.sh"
     - name: "session.sh"
     - name: "subagent-stop.sh"
+
+events:
+  directory: .claude/events/
+  count: 10
+  units:
+    - name: "notification"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: notification"
+    - name: "post-tool-edit"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: post-tool-edit"
+    - name: "pre-compact"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: pre-compact"
+    - name: "pre-tool-bash"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: pre-tool-bash"
+    - name: "pre-tool-edit"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: pre-tool-edit"
+    - name: "session-end"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: session-end"
+    - name: "session-start"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: session-start"
+    - name: "stop"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: stop"
+    - name: "subagent-stop"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: subagent-stop"
+    - name: "user-prompt-submit"
+      chain: "chain.sh"
+      description: "chain.sh - event unit: user-prompt-submit"
 
 agents:
   directory: .claude/skills/*/agents/
@@ -39,7 +74,7 @@ agents:
       description: "重要"
     - name: "prompt-analyzer"
       skill: "prompt-analyzer"
-      description: "設計意図"
+      description: "description: ユーザープロンプトを分析し topic_type を判定する"
     - name: "coderabbit-delegate"
       skill: "quality-assurance"
       description: "CodeRabbit CLI をラップし、コードレビューを自動実行する SubAgent"
@@ -91,11 +126,11 @@ skills:
     - name: "playbook-gate"
       description: "Core Contract #2: Playbook Gate"
     - name: "playbook-init"
-      description: "このSkillは pm SubAgent への委譲を強制する。自分で処理してはならない。"
+      description: "このSkillは prompt-analyzer の分析結果を受け取る。再分析しない。"
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の後処理"
     - name: "prompt-analyzer"
-      description: "description: ユーザープロンプトの深層分析を行う専門Skill。5W1H抽出、リスク"
+      description: "description: ユーザープロンプトを分析し、topic_type（instruction/question/context）�"
     - name: "quality-assurance"
       description: "品質保証"
     - name: "reward-guard"
@@ -140,18 +175,17 @@ docs:
       description: "役割ベース executor 抽象化 - playbook の再利用性向上"
     - name: "archive-operation-rules.md"
       description: "目的"
-    - name: "audit-report.md"
-      description: "調査日"
+    - name: "core-feature-reclassification.md"
+      description: "> SSOT: event unit architecture dependency mapping."
     - name: "criterion-validation-rules.md"
       description: "criterion（done_criteria の単位）の検証ルール"
     - name: "folder-management.md"
       description: "全フォルダの役割、テンポラリ/永続区分、削除タイミングを定義"
     - name: "git-operations.md"
       description: "設計方針"
-    - name: "harness-self-awareness-design.md"
-      description: "Claude Code が自分自身を掌握するための設計ドキュメント"
     - name: "repository-health.md"
-      description: "repository health inventory"
+      description: "リポジトリ健全性の判定基準と抽出結果"
+
 plan:
   directory: plan/
   subdirectories:
@@ -160,10 +194,10 @@ plan:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
-      count: 94
+      count: 95
     template:
       description: "playbook テンプレート"
-      count: 6
+      count: 3
 
 root:
   description: "ルートディレクトリの主要ファイル"
@@ -173,7 +207,7 @@ root:
     - name: "AGENTS.md"
       description: "このファイルは純粋なコーディングルール。"
     - name: "README.md"
-      description: "Claude Code の自律性と品質を向上させるフレームワーク"
+      description: "> Claude Code の Hook/Skill/SubAgent を前提にした運用ハーネス。"
     - name: "state.md"
       description: "現在地を示す Single Source of Truth"
     - name: ".gitignore"
@@ -212,7 +246,7 @@ system_specification:
 
 hook_trigger_sequence:
   description: "Hook の発火順序（公式ドキュメント準拠）"
-  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd"
+  order_reference: "SessionStart → UserPromptSubmit → PreToolUse → PostToolUse → Stop → PreCompact → SessionEnd → Notification (async) → SubagentStop (task)"
   triggers:
     - trigger: "SessionStart"
       description: "セッション開始時に発火"
@@ -227,7 +261,7 @@ hook_trigger_sequence:
         - matcher: "*"
           hooks:
             - script: "prompt.sh"
-              description: "prompt.sh - UserPromptSubmit 導火線"
+              description: "prompt.sh - UserPromptSubmit Hook dispatcher"
     - trigger: "PreToolUse"
       description: "ツール実行前に発火（matcher でフィルタ可能）"
       matchers:
@@ -242,13 +276,41 @@ hook_trigger_sequence:
           hooks:
             - script: "post-tool.sh"
               description: "post-tool.sh - PostToolUse(*) 導火線"
+    - trigger: "Stop"
+      description: "セッション中断時（Ctrl+C, /stop）に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "chain.sh"
+              description: ""
     - trigger: "PreCompact"
       description: "コンテキスト圧縮前に発火"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "skills/session-manager/handlers/compact.sh"
+            - script: "chain.sh"
               description: ""
+    - trigger: "SessionEnd"
+      description: "セッション終了時に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "chain.sh"
+              description: ""
+    - trigger: "Notification"
+      description: "通知送信時に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "chain.sh"
+              description: ""
+    - trigger: "SubagentStop"
+      description: "サブエージェント（Task）応答完了時に発火"
+      matchers:
+        - matcher: "*"
+          hooks:
+            - script: "subagent-stop.sh"
+              description: "subagent-stop.sh - SubagentStop Hook dispatcher"
 
 # ==============================================================================
 # Workflows (M027)
@@ -271,9 +333,9 @@ workflows:
         - "playbook（active な場合）"
       process:
         hooks:
-          - "session.sh: session-manager/start.sh"
-          - "pre-tool.sh: init-guard (required Read)"
-          - "pre-tool.sh: main-branch guard"
+          - "session-start.sh: pending 作成、失敗パターン表示"
+          - "init-guard.sh: 必須ファイル Read 強制"
+          - "check-main-branch.sh: main ブランチ禁止"
         subagents: []
         skills: []
         claude_md: "INIT セクション → [自認] 出力"
@@ -281,11 +343,9 @@ workflows:
         - "[自認] ブロック（what, milestone, phase, branch...）"
         - "pending ファイル削除"
       references:
-        - ".claude/hooks/session.sh"
-        - ".claude/hooks/pre-tool.sh"
-        - ".claude/skills/session-manager/handlers/start.sh"
-        - ".claude/skills/session-manager/handlers/init-guard.sh"
-        - ".claude/skills/access-control/guards/main-branch.sh"
+        - ".claude/hooks/session-start.sh"
+        - ".claude/hooks/init-guard.sh"
+        - ".claude/hooks/check-main-branch.sh"
         - "CLAUDE.md"
         - "state.md"
 
@@ -300,13 +360,10 @@ workflows:
         - "subtasks（criterion, executor, test_command）"
       process:
         hooks:
-          - "pre-tool.sh: playbook-guard"
-          - "pre-tool.sh: depends-check"
-          - "pre-tool.sh: executor-guard"
-          - "pre-tool.sh: critic-guard"
-          - "pre-tool.sh: subtask-guard"
-          - "pre-tool.sh: phase-status-guard"
-          - "pre-tool.sh: scope-guard"
+          - "playbook-guard.sh: playbook 存在確認"
+          - "scope-guard.sh: スコープ制限"
+          - "executor-guard.sh: executor 整合性"
+          - "critic-guard.sh: critic 未実行チェック"
         subagents:
           - "critic: PASS/FAIL 判定"
         skills:
@@ -318,15 +375,11 @@ workflows:
         - "critic 判定（PASS/FAIL）"
         - "phase.status = done（PASS の場合）"
       references:
-        - ".claude/hooks/pre-tool.sh"
-        - ".claude/skills/playbook-gate/guards/playbook-guard.sh"
-        - ".claude/skills/playbook-gate/guards/depends-check.sh"
-        - ".claude/skills/playbook-gate/guards/executor-guard.sh"
-        - ".claude/skills/reward-guard/guards/critic-guard.sh"
-        - ".claude/skills/reward-guard/guards/subtask-guard.sh"
-        - ".claude/skills/reward-guard/guards/phase-status-guard.sh"
-        - ".claude/skills/reward-guard/guards/scope-guard.sh"
-        - ".claude/skills/reward-guard/agents/critic.md"
+        - ".claude/hooks/playbook-guard.sh"
+        - ".claude/hooks/scope-guard.sh"
+        - ".claude/hooks/executor-guard.sh"
+        - ".claude/hooks/critic-guard.sh"
+        - ".claude/agents/critic.md"
         - "CLAUDE.md"
 
     - id: post_loop
@@ -339,10 +392,9 @@ workflows:
         - "playbook（全 phase done）"
       process:
         hooks:
-          - "post-tool.sh: archive-playbook"
-          - "post-tool.sh: cleanup"
-          - "post-tool.sh: create-pr-hook"
-          - "subagent-stop.sh: archive-playbook fallback"
+          - "archive-playbook.sh: アーカイブ提案"
+          - "cleanup-hook.sh: tmp/ クリーンアップ"
+          - "create-pr-hook.sh: PR 作成トリガー"
         subagents:
           - "pm: 次 playbook 作成"
         skills:
@@ -354,13 +406,11 @@ workflows:
         - "次 playbook（存在する場合）"
         - "/clear 推奨アナウンス"
       references:
-        - ".claude/hooks/post-tool.sh"
-        - ".claude/hooks/subagent-stop.sh"
-        - ".claude/skills/playbook-gate/workflow/archive-playbook.sh"
-        - ".claude/skills/playbook-gate/workflow/cleanup.sh"
-        - ".claude/skills/git-workflow/handlers/create-pr-hook.sh"
-        - ".claude/skills/post-loop/guards/pending-guard.sh"
-        - ".claude/skills/golden-path/agents/pm.md"
+        - ".claude/hooks/archive-playbook.sh"
+        - ".claude/hooks/cleanup-hook.sh"
+        - ".claude/hooks/create-pr-hook.sh"
+        - ".claude/agents/pm.md"
+        - ".claude/skills/post-loop/"
         - "CLAUDE.md"
 
     - id: critique_process
@@ -375,7 +425,7 @@ workflows:
         - "変更内容"
       process:
         hooks:
-          - "pre-tool.sh: critic-guard"
+          - "critic-guard.sh: critic 実行チェック"
         subagents:
           - "critic: done_criteria 検証"
         skills: []
@@ -385,9 +435,8 @@ workflows:
         - "根拠（evidence）"
         - "修正指示（FAIL の場合）"
       references:
-        - ".claude/hooks/pre-tool.sh"
-        - ".claude/skills/reward-guard/guards/critic-guard.sh"
-        - ".claude/skills/reward-guard/agents/critic.md"
+        - ".claude/hooks/critic-guard.sh"
+        - ".claude/agents/critic.md"
         - ".claude/frameworks/done-criteria-validation.md"
         - "CLAUDE.md"
 
@@ -402,7 +451,7 @@ workflows:
         - "state.md"
       process:
         hooks:
-          - "git-workflow/handlers/merge-pr.sh: main merge"
+          - "merge-pr.sh: main マージ"
         subagents:
           - "pm: 完了を検出"
         skills:
@@ -415,13 +464,13 @@ workflows:
         - "完了アナウンス"
         - "/clear 推奨"
       references:
-        - ".claude/skills/git-workflow/handlers/merge-pr.sh"
         - "CLAUDE.md"
+        - ".claude/hooks/merge-pr.sh"
 
 # ==============================================================================
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-03 20:46:13"
+  - date: "2026-01-04 20:16:50"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
