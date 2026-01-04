@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-ops-ssot.md
-branch: docs/playbook-ops-ssot
-last_archived: null
+active: null
+branch: null
+last_archived: plan/archive/playbook-ops-ssot.md
 review_pending: false
 ```
 
@@ -20,16 +20,11 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: playbook-ops-ssot
-phase: p1
-done_criteria:
-  - state/playbook-guard の前提強制が計画として明文化されている
-  - UserPromptSubmit の固定チェーン計画が明文化されている
-  - reward-guard + critic のゲート条件が計画として明文化されている
-  - executor-guard の役割分離計画が明文化されている
-  - post-tool-edit の自動アーカイブ計画が明文化されている
-self_complete: true
-status: completed
+milestone: null
+phase: null
+done_criteria: []
+self_complete: false
+status: idle
 ```
 
 ---
