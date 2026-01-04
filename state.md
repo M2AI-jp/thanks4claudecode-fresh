@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-repository-health-master-plan.md
-branch: docs/repository-health-master-plan
-last_archived: plan/archive/playbook-pb28-archive-fix-backlog-auto-mark.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-repository-health-master-plan.md
 review_pending: false
 ```
 
@@ -21,7 +21,7 @@ review_pending: false
 
 ```yaml
 milestone: repository-health-master-plan
-phase: p1
+phase: p5
 done_criteria:
   - plan/design/repository-health-master-plan.md が作成され、scope/definitions/workflow/evidence を含む
   - docs/repository-health.md に判定基準と抽出結果（必須/壊れている/不要）が記載されている
@@ -35,7 +35,7 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-04 14:18:20
+last_start: 2026-01-04 15:13:31
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```

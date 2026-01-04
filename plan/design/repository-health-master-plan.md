@@ -54,11 +54,12 @@
 
 ---
 
-## 4. fix-backlog 連携
+## 4. playbook 生成方針
 
-- docs/fix-backlog.md は本計画に包含する（上位レイヤー）
-- 未完了 PB は「修復対象一覧」に参照として紐付ける
-- 新規発見は PB-29 以降として追記する
+- SSOT は docs/repository-health.md
+- required_broken は 1 件 = 1 playbook の単位
+- 生成はユーザー指示またはメンテナンス実行時に行う
+- fix-backlog は廃止（運用・更新対象から除外）
 
 ---
 

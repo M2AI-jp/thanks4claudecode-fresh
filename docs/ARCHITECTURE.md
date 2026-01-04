@@ -1030,6 +1030,8 @@ Task(subagent_type='executor-resolver')
 | ai-orchestration.md | 役割定義（executor） | pm |
 | git-operations.md | git 操作ルール | pm |
 | folder-management.md | フォルダ管理 | cleanup |
+| repository-map.yaml | リポジトリ構造マップ | session-manager |
+| repository-health.md | 必須/壊れている/不要の分類 | メンテナンス |
 
 ---
 
@@ -1269,6 +1271,12 @@ scripts/
 | 参照元 | 参照先 | 状態 | 影響度 |
 |--------|--------|------|--------|
 | playbook-guard.sh (行 107, 138, 171) | .claude/hooks/failure-logger.sh | ❌ 不存在 | 低（存在チェックあり） |
+| cleanup.sh (行 85) | .claude/skills/playbook-gate/workflow/generate-repository-map.sh | ❌ 不存在 | 中（自動更新が無効） |
+| access-control/SKILL.md | .claude/skills/access-control/lib/contract.sh | ❌ 不存在 | 低（文書不整合） |
+| golden-path/SKILL.md | docs/4qv-architecture.md | ❌ 不存在 | 中（必須参照） |
+| pm.md | docs/file-creation-process-design.md | ❌ 不存在 | 中（手順参照） |
+| term-translator.md | docs/coding-standards.md | ❌ 不存在 | 低（用語変換参照） |
+| critic.md | docs/readme.md | ❌ 不存在 | 低（例示のみ） |
 
 **備考**: failure-logger.sh は存在チェック `[[ -f ... ]]` でガードされているため、不存在でも機能に影響なし。
 
@@ -1301,6 +1309,7 @@ scripts/
 
 | 日時 | 内容 |
 |------|------|
+| 2026-01-04 | repository-health 追加、repository-map 更新 |
 | 2026-01-02 | Section 14「既知の課題と未実装」追加（リポジトリ監査結果） |
 | 2026-01-02 | Skills 全面追記: 13 Skills 追加（abort-playbook〜understanding-check） |
 | 2026-01-02 | SubAgents 追記: prompt-analyzer, term-translator, executor-resolver |
