@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-prompt-analyzer-lite.md
-branch: refactor/prompt-analyzer-lite
-last_archived: plan/archive/playbook-repository-health-master-plan.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-prompt-analyzer-lite.md
 review_pending: false
 ```
 
@@ -20,19 +20,11 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: prompt-analyzer-lite
-phase: p1
-done_criteria:
-  - prompt-analyzer.md が 200 行以下である
-  - SKILL.md が 100 行以下である
-  - 5W1H 分析機能が保持されている
-  - リスク分析機能（technical/scope/dependency）が保持されている
-  - 曖昧さ検出機能が保持されている
-  - 論点分解機能（multi_topic_detection）が保持されている
-  - 拡張分析項目が保持されている
-  - 出力フォーマット（YAML 形式）が保持されている
+milestone: null
+phase: null
+done_criteria: []
 self_complete: false
-status: in_progress
+status: idle
 ```
 
 ---
