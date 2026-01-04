@@ -152,7 +152,6 @@
 対象:
   - tmp/ 内の不要ファイル
   - .claude/logs/sessions/ の古いセッションログ
-  - .archive/ の古いファイル（必要に応じて）
 ```
 
 ### playbook 完了時の流れ
