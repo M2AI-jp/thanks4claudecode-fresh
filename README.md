@@ -5,7 +5,7 @@ Event-unit Claude Code harness using Hook -> Event Unit -> Skill/SubAgent.
 Core docs:
 - docs/core-feature-reclassification.md
 - docs/ARCHITECTURE.md
-- docs/repository-health.md
+- docs/repository-map.yaml
 
 Entry points:
 - CLAUDE.md (behavior)

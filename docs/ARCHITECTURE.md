@@ -2,8 +2,8 @@
 
 > **ユーザー体験ベースの状態遷移マップ**
 >
-> Hook → Skill → SubAgent の動線と、全ての参照関係・情報移動を表現。
-> 修正作業時のナビゲーションマップとして機能する。
+> Hook Unit（イベント境界）→ Skill → SubAgent の動線と、参照関係・情報移動を表現。
+> ユーザーフローの設計図と修正作業時のナビゲーションマップとして機能する。
 
 ---
 
@@ -18,6 +18,33 @@ Single Source of Truth:
 ```
 
 > Hook Unit 目録: docs/core-feature-reclassification.md
+
+---
+
+## 理想ユーザーフロー（SSOT）
+
+```
+1) ユーザー依頼
+   UserPromptSubmit Unit が意図を解析
+   -> playbook-init -> pm -> reviewer で計画を確定
+   -> state.md に反映
+
+2) 実行
+   PreToolUse(Edit/Write/Bash) Unit が playbook gate と安全性を強制
+   -> executor（codex/coderabbit/user）に委譲
+   -> validations を実行
+
+3) 検証
+   critic が done_criteria を証拠ベースで判定
+   -> PASS でのみ完了へ進む
+
+4) 完了
+   PostToolUse(Edit) Unit が整理・PRフロー・アーカイブを実施
+   Stop/SessionEnd/Notification が状態を記録
+```
+
+このフローは Hook Unit 単位で保証される。詳細な依存マップは
+`docs/core-feature-reclassification.md` が SSOT。
 
 ---
 
@@ -161,13 +188,15 @@ The canonical mapping (ideal -> current -> missing) lives in
 ### Hook
 ```
 .claude/hooks/session.sh
-    └─→ .claude/skills/session-manager/handlers/start.sh
+    └─→ .claude/events/session-start/chain.sh
+            └─→ .claude/skills/session-manager/handlers/start.sh
 ```
 
 ### 状態遷移
 
 | Before | 処理 | After |
 |--------|------|-------|
+| post-loop-pending 残存 | stale pending を削除 | デッドロック回避 |
 | 前セッションの状態不明 | state.md 読み込み | playbook 把握 |
 | last_start 古い | タイムスタンプ更新 | last_start 現在時刻 |
 | 状態不整合の可能性 | DRIFT チェック実行 | 整合性確認済み |
@@ -177,21 +206,20 @@ The canonical mapping (ideal -> current -> missing) lives in
 | ファイル | 取得データ | 用途 |
 |----------|-----------|------|
 | state.md | playbook.active | 現在状態把握 |
-| plan/playbook-*.md | phases, done_criteria | 作業計画確認 |
-| docs/repository-map.yaml | ファイル構造 | 変更検出 |
+| docs/repository-map.yaml | 構造カウント | 乖離検出 |
+| .claude/.session-init/architecture-sync.yaml | drift フラグ | ARCHITECTURE 同期警告 |
 
 ### 書き込み
 
 | ファイル | 書き込みデータ |
 |----------|---------------|
 | state.md | session.last_start |
-| .claude/logs/subagent.log | セッション開始ログ |
+| .claude/.session-init/pending | init-guard 用フラグ |
+| .claude/.session-init/required_playbook | playbook.active の記録 |
 
 ### 関連 SubAgent
 
-| SubAgent | トリガー条件 | 参照ファイル |
-|----------|-------------|-------------|
-| setup-guide | playbook.active == 'setup/playbook-setup.md' | .claude/skills/session-manager/agents/setup-guide.md |
+なし
 
 ---
 
@@ -208,7 +236,9 @@ The canonical mapping (ideal -> current -> missing) lives in
 
 ### Hook
 ```
-.claude/events/pre-compact/chain.sh（session-manager/handlers/compact.sh を呼び出し）
+.claude/settings.json (PreCompact)
+    └─→ .claude/events/pre-compact/chain.sh
+            └─→ .claude/skills/session-manager/handlers/compact.sh
 ```
 
 ### 設計思想
@@ -253,8 +283,8 @@ snapshot.json: 廃止（.claude/ 配下は compact で削除されるため）
 ### Hook
 ```
 .claude/hooks/prompt.sh
-    │
-    └─→ State Injection（systemMessage への情報注入）
+    └─→ .claude/events/user-prompt-submit/chain.sh
+            └─→ prompt-analyzer 呼び出しを指示（自動実行ではない）
 ```
 
 ### 状態遷移
@@ -275,34 +305,12 @@ snapshot.json: 廃止（.claude/ 配下は compact で削除されるため）
 ### 書き込み
 なし（systemMessage への出力のみ）
 
-### タスク依頼パターン検出時のチェーン
+### タスク依頼パターン検出時のチェーン（設計）
+
+Hook Unit の理想チェーンは `docs/core-feature-reclassification.md` に準拠。
 
 ```
-prompt.sh
-    │ playbook=null + タスク依頼パターン
-    │
-    └─→ Skill(skill='playbook-init') を呼べと案内
-            │
-            ├─→ .claude/skills/playbook-init/SKILL.md
-            │       │
-            │       └─→ 参照: .claude/skills/understanding-check/SKILL.md
-            │
-            └─→ Task(subagent_type='pm')
-                    │
-                    ├─→ .claude/skills/golden-path/agents/pm.md
-                    │       │
-                    │       ├─→ 参照: plan/template/playbook-format.md
-                    │       ├─→ 参照: docs/criterion-validation-rules.md
-                    │       └─→ 参照: .claude/frameworks/playbook-review-criteria.md
-                    │
-                    └─→ Task(subagent_type='reviewer')
-                            │
-                            ├─→ .claude/skills/quality-assurance/agents/reviewer.md
-                            │       │
-                            │       ├─→ 参照: .claude/frameworks/playbook-review-criteria.md
-                            │       └─→ 参照: .claude/frameworks/playbook-reviewer-spec.md
-                            │
-                            └─→ 書き込み: playbook.reviewed = true
+prompt-analyzer -> understanding-check -> playbook-init -> pm -> reviewer
 ```
 
 ---
@@ -331,8 +339,12 @@ Claude がツール名と入力パラメータを決定した後、実際の実�
     ├─→ .claude/skills/session-manager/handlers/init-guard.sh
     │       └─→ 必須ファイル Read 強制
     │
-    └─→ .claude/skills/access-control/guards/main-branch.sh
-            └─→ main ブランチでの作業ブロック
+    ├─→ .claude/skills/access-control/guards/main-branch.sh
+    │       └─→ main ブランチでの作業ブロック
+    │
+    └─→ tool_name で分岐
+            ├─→ .claude/events/pre-tool-edit/chain.sh (Edit|Write)
+            └─→ .claude/events/pre-tool-bash/chain.sh (Bash)
 ```
 
 ### 状態遷移
@@ -379,42 +391,44 @@ Claude は playbook 作成時に自動でブランチを切る。
 ### Hook チェーン
 ```
 .claude/hooks/pre-tool.sh
-    │
-    ├─→ .claude/skills/post-loop/guards/pending-guard.sh
-    │       │
-    │       ├─→ post-loop-pending ファイル存在 → BLOCK
-    │       ├─→ 許可リスト: state.md, session-state/（デッドロック防止）
-    │       └─→ Skill(skill='post-loop') 呼び出しを強制
-    │
-    ├─→ .claude/skills/access-control/guards/protected-edit.sh
-    │       │
-    │       └─→ 参照: .claude/protected-files.txt
-    │
-    ├─→ .claude/skills/playbook-gate/guards/playbook-guard.sh
-    │       │
-    │       ├─→ playbook=null → BLOCK + playbook-init 案内
-    │       └─→ reviewed=false → BLOCK + reviewer 必須案内
-    │
-    ├─→ .claude/skills/playbook-gate/guards/depends-check.sh
-    │       │
-    │       └─→ 参照: plan/playbook-*.md（depends_on）
-    │
-    ├─→ .claude/skills/playbook-gate/guards/executor-guard.sh
-    │       │
-    │       └─→ 参照: plan/playbook-*.md（executor）
-    │
-    ├─→ .claude/skills/reward-guard/guards/critic-guard.sh
-    │       │
-    │       └─→ done 変更前に critic 必須
-    │
-    ├─→ .claude/skills/reward-guard/guards/subtask-guard.sh
-    │       │
-    │       ├─→ - [ ] → - [x] 変更時に 3点検証確認
-    │       └─→ 参照: plan/template/playbook-format.md（validations）
-    │
-    └─→ .claude/skills/reward-guard/guards/scope-guard.sh
+    └─→ .claude/events/pre-tool-edit/chain.sh
+            ├─→ .claude/skills/post-loop/guards/pending-guard.sh
+            │       │
+            │       ├─→ post-loop-pending ファイル存在 → BLOCK
+            │       ├─→ 許可リスト: state.md, session-state/（デッドロック防止）
+            │       └─→ Skill(skill='post-loop') 呼び出しを強制
             │
-            └─→ done_criteria 変更検出
+            ├─→ .claude/skills/access-control/guards/protected-edit.sh
+            │       │
+            │       └─→ 参照: .claude/protected-files.txt
+            │
+            ├─→ .claude/skills/playbook-gate/guards/playbook-guard.sh
+            │       │
+            │       ├─→ playbook=null → BLOCK + playbook-init 案内
+            │       └─→ reviewed=false → BLOCK + reviewer 必須案内
+            │
+            ├─→ .claude/skills/playbook-gate/guards/depends-check.sh
+            │       │
+            │       └─→ 参照: plan/playbook-*.md（depends_on）
+            │
+            ├─→ .claude/skills/playbook-gate/guards/executor-guard.sh
+            │       │
+            │       └─→ 参照: plan/playbook-*.md（executor）
+            │
+            ├─→ .claude/skills/reward-guard/guards/critic-guard.sh
+            │       │
+            │       └─→ done 変更前に critic 必須
+            │
+            ├─→ .claude/skills/reward-guard/guards/subtask-guard.sh
+            │       │
+            │       ├─→ - [ ] → - [x] 変更時に 3点検証確認
+            │       └─→ 参照: plan/template/playbook-format.md（validations）
+            │
+            ├─→ .claude/skills/reward-guard/guards/phase-status-guard.sh
+            │       └─→ phase status 変更検出
+            │
+            └─→ .claude/skills/reward-guard/guards/scope-guard.sh
+                    └─→ done_criteria 変更検出
 ```
 
 ### 状態遷移
@@ -460,18 +474,15 @@ Claude は playbook 作成時に自動でブランチを切る。
 ### Hook チェーン
 ```
 .claude/hooks/pre-tool.sh
-    │
-    ├─→ .claude/skills/access-control/guards/bash-check.sh
-    │       │
-    │       └─→ 破壊的コマンドの検出・警告
-    │
-    ├─→ .claude/skills/reward-guard/guards/coherence.sh
-    │       │
-    │       └─→ state.md と playbook の整合性チェック
-    │
-    └─→ .claude/skills/quality-assurance/checkers/lint.sh
+    └─→ .claude/events/pre-tool-bash/chain.sh
+            ├─→ .claude/skills/access-control/guards/bash-check.sh
+            │       └─→ 破壊的コマンドの検出・警告
             │
-            └─→ git commit 前の静的解析
+            ├─→ .claude/skills/reward-guard/guards/coherence.sh
+            │       └─→ state.md と playbook の整合性チェック
+            │
+            └─→ .claude/skills/quality-assurance/checkers/lint.sh
+                    └─→ git commit 前の静的解析
 ```
 
 ### 状態遷移
@@ -512,30 +523,32 @@ Claude は playbook 作成時に自動でブランチを切る。
 ### Hook チェーン
 ```
 .claude/hooks/post-tool.sh
-    │
-    ├─→ .claude/skills/playbook-gate/workflow/archive-playbook.sh
-    │       │
-    │       ├─→ 全 Phase done 検出
-    │       ├─→ 自動実行（10ステップ）:
-    │       │   1. 未コミット変更を自動コミット
-    │       │   2. Push（PR 作成前に必須）
-    │       │   3. PR 作成（create-pr.sh）
-    │       │   4. playbook アーカイブ（plan/archive/ へ移動）
-    │       │   5. state.md 更新（playbook.active = null）
-    │       │   6. アーカイブ変更をコミット
-    │       │   7. 追加コミットを Push
-    │       │   8. PR マージ（merge-pr.sh）
-    │       │   9. main 同期（checkout + pull）
-    │       │   10. pending ファイル作成（post-loop 強制用）
-    │       │
-    │       └─→ 書き込み:
-    │           ├─→ plan/archive/playbook-*.md
-    │           ├─→ state.md（playbook.active = null）
-    │           └─→ .claude/session-state/post-loop-pending
-    │
-    └─→ .claude/skills/playbook-gate/workflow/cleanup.sh
+    └─→ .claude/events/post-tool-edit/chain.sh
+            ├─→ .claude/skills/playbook-gate/workflow/archive-playbook.sh
+            │       │
+            │       ├─→ 全 Phase done 検出
+            │       ├─→ 自動実行（10ステップ）:
+            │       │   1. 未コミット変更を自動コミット
+            │       │   2. Push（PR 作成前に必須）
+            │       │   3. PR 作成（create-pr.sh）
+            │       │   4. playbook アーカイブ（plan/archive/ へ移動）
+            │       │   5. state.md 更新（playbook.active = null）
+            │       │   6. アーカイブ変更をコミット
+            │       │   7. 追加コミットを Push
+            │       │   8. PR マージ（merge-pr.sh）
+            │       │   9. main 同期（checkout + pull）
+            │       │   10. pending ファイル作成（post-loop 強制用）
+            │       │
+            │       └─→ 書き込み:
+            │           ├─→ plan/archive/playbook-*.md
+            │           ├─→ state.md（playbook.active = null）
+            │           └─→ .claude/session-state/post-loop-pending
             │
-            └─→ tmp/ クリーンアップ
+            ├─→ .claude/skills/playbook-gate/workflow/cleanup.sh
+            │       └─→ tmp/ クリーンアップ
+            │
+            └─→ .claude/skills/git-workflow/handlers/create-pr-hook.sh
+                    └─→ PR 作成の案内/補助
 ```
 
 ### 状態遷移
@@ -569,8 +582,6 @@ Task(subagent_type='pm')
     ├─→ 参照（読み取り）:
     │   ├─→ plan/template/playbook-format.md（テンプレート）
     │   ├─→ plan/template/planning-rules.md（計画ルール）
-    │   ├─→ docs/criterion-validation-rules.md（禁止パターン）
-    │   ├─→ docs/ai-orchestration.md（役割定義）
     │   └─→ .claude/skills/understanding-check/SKILL.md（理解確認）
     │
     ├─→ 書き込み:
@@ -629,7 +640,6 @@ Task(subagent_type='critic')
     │
     ├─→ 参照（読み取り）:
     │   ├─→ .claude/frameworks/done-criteria-validation.md（評価フレームワーク）
-    │   ├─→ docs/criterion-validation-rules.md（禁止パターン）
     │   └─→ plan/playbook-*.md（subtasks, validations）
     │
     ├─→ 呼び出し:
@@ -679,37 +689,6 @@ Task(subagent_type='coderabbit-delegate')
         └─→ status: approved/needs_changes/rejected
 ```
 
-### health-checker SubAgent
-
-```
-Task(subagent_type='health-checker')
-    │
-    ├─→ .claude/skills/quality-assurance/agents/health-checker.md
-    │
-    ├─→ 参照（読み取り）:
-    │   ├─→ state.md（整合性チェック）
-    │   ├─→ plan/playbook-*.md（存在確認）
-    │   └─→ docs/repository-map.yaml（DRIFT 検出）
-    │
-    └─→ 出力:
-        └─→ 健全性レポート
-```
-
-### setup-guide SubAgent
-
-```
-Task(subagent_type='setup-guide')
-    │
-    ├─→ .claude/skills/session-manager/agents/setup-guide.md
-    │
-    ├─→ 参照（読み取り）:
-    │   └─→ state.md（初期状態の確認）
-    │
-    └─→ 書き込み:
-        ├─→ state.md（セットアップ状態）
-        └─→ CLAUDE.md（カスタマイズ）
-```
-
 ### prompt-analyzer SubAgent
 
 ```
@@ -724,20 +703,6 @@ Task(subagent_type='prompt-analyzer')
     │
     └─→ 出力:
         └─→ 構造化データ（pm SubAgent へ）
-```
-
-### term-translator SubAgent
-
-```
-Task(subagent_type='term-translator')
-    │
-    ├─→ .claude/skills/term-translator/agents/term-translator.md
-    │
-    ├─→ 処理:
-    │   └─→ 曖昧表現 → エンジニア用語に変換
-    │
-    └─→ 出力:
-        └─→ 技術的に明確な表現
 ```
 
 ### executor-resolver SubAgent
@@ -765,18 +730,15 @@ Task(subagent_type='executor-resolver')
 | **critic** | Read, Grep, Bash | 書き込み不可 → 自己完了防止 |
 | **reviewer** | Read, Grep, Glob, Bash | 検証専念（編集権限なし） |
 | **pm** | Read, Write, Edit, Grep, Glob, Bash | playbook 作成に書き込み必要 |
-| **health-checker** | Read, Grep, Glob, Bash | 読み取り専用の健全性チェック |
-| **setup-guide** | Read, Write, Edit, Bash, Grep, Glob | 初期設定に書き込み必要 |
 | **codex-delegate** | Bash, mcp__codex__codex, mcp__codex__codex-reply | Codex MCP 専用 |
 | **coderabbit-delegate** | Bash | CodeRabbit CLI 専用（レビューのみ） |
 | **prompt-analyzer** | Read, Grep | 分析専念（読み取りのみ） |
-| **term-translator** | Read, Grep | 変換専念（読み取りのみ） |
 | **executor-resolver** | Read, Grep | 判定専念（読み取りのみ） |
 
 ```yaml
 設計原則:
-  - 検証系（critic, reviewer, health-checker）は書き込み権限を与えない
-  - 作成系（pm, setup-guide）は必要最小限の書き込み権限
+  - 検証系（critic, reviewer）は書き込み権限を与えない
+  - 作成系（pm）は必要最小限の書き込み権限
   - 外部連携（codex-delegate）は専用ツールのみ
 ```
 
@@ -804,11 +766,9 @@ Task(subagent_type='executor-resolver')
 
 ```
 .claude/hooks/subagent-stop.sh
-    │
-    └─→ SubAgent 終了時の後処理
-        - ログ記録（.claude/logs/subagent.log）
-        - playbook 完了判定
-        └─→ archive-playbook.sh 呼び出し（全 Phase done の場合）
+    └─→ .claude/events/subagent-stop/chain.sh
+            ├─→ playbook 完了判定
+            └─→ archive-playbook.sh 呼び出し（全 Phase done の場合）
 ```
 
 #### 設定（.claude/settings.json）
@@ -841,7 +801,6 @@ Task(subagent_type='executor-resolver')
 .claude/skills/session-manager/
 ├── SKILL.md                    # Skill 定義
 ├── agents/
-│   └── setup-guide.md          # setup-guide SubAgent
 └── handlers/
     ├── init-guard.sh           # 必須ファイル Read 強制
     ├── start.sh                # セッション開始処理
@@ -901,7 +860,6 @@ Task(subagent_type='executor-resolver')
 ├── agents/
 │   ├── reviewer.md             # reviewer SubAgent
 │   │   └─→ 参照: .claude/frameworks/playbook-review-criteria.md
-│   ├── health-checker.md       # health-checker SubAgent
 │   └── coderabbit-delegate.md  # coderabbit-delegate SubAgent（外部レビュー）
 │       └─→ CLI: coderabbit review --plain
 └── checkers/
@@ -917,7 +875,6 @@ Task(subagent_type='executor-resolver')
 └── agents/
     ├── pm.md                   # pm SubAgent（エントリーポイント）
     │   ├─→ 参照: plan/template/playbook-format.md
-    │   ├─→ 参照: docs/criterion-validation-rules.md
     │   └─→ 呼び出し: understanding-check, reviewer
     └── codex-delegate.md       # codex-delegate SubAgent
 ```
@@ -954,12 +911,6 @@ Task(subagent_type='executor-resolver')
     └── executor-resolver.md    # タスク性質分析 → executor 判定
 ```
 
-### plan-management/
-```
-.claude/skills/plan-management/
-└── SKILL.md                    # Multi-layer planning と playbook 管理
-```
-
 ### playbook-init/
 ```
 .claude/skills/playbook-init/
@@ -979,14 +930,6 @@ Task(subagent_type='executor-resolver')
 ```
 .claude/skills/state/
 └── SKILL.md                    # state.md 管理・playbook 運用の専門知識
-```
-
-### term-translator/
-```
-.claude/skills/term-translator/
-├── SKILL.md                    # Skill 定義
-└── agents/
-    └── term-translator.md      # 曖昧表現 → エンジニア用語変換
 ```
 
 ### understanding-check/
@@ -1019,12 +962,8 @@ Task(subagent_type='executor-resolver')
 
 | ファイル | 用途 | 参照元 |
 |----------|------|--------|
-| criterion-validation-rules.md | criterion 禁止パターン | pm, critic |
-| ai-orchestration.md | 役割定義（executor） | pm |
-| git-operations.md | git 操作ルール | pm |
-| folder-management.md | フォルダ管理 | cleanup |
+| core-feature-reclassification.md | Hook Unit SSOT | 全体 |
 | repository-map.yaml | リポジトリ構造マップ | session-manager |
-| repository-health.md | 必須/壊れている/不要の分類 | メンテナンス |
 
 ---
 
@@ -1211,8 +1150,6 @@ evidence: PASS 判定には実行可能な証拠が必要
 ### utility 層（共通関数）
 
 ```
-.claude/schema/
-└── state-schema.sh    # state.md スキーマ定義（Getter/Validator）
 
 scripts/
 └── contract.sh        # 契約チェック関数（ALLOW/WARN/BLOCK）
@@ -1227,7 +1164,6 @@ scripts/
 └── .session-init/     # セッション初期化状態
 
 .mcp.json              # MCP サーバー設定（Codex 等）
-.claude/mcp.json       # MCP サーバー設定（Claude IDE 用）
 ```
 
 ---
@@ -1275,10 +1211,10 @@ scripts/
 
 | 日時 | 内容 |
 |------|------|
-| 2026-01-04 | repository-health 追加、repository-map 更新 |
+| 2026-01-04 | repository-map 更新 |
 | 2026-01-02 | Section 14「既知の課題と未実装」追加（リポジトリ監査結果） |
 | 2026-01-02 | Skills 全面追記: core skills 追加 |
-| 2026-01-02 | SubAgents 追記: prompt-analyzer, term-translator, executor-resolver |
+| 2026-01-02 | SubAgents 追記: prompt-analyzer, executor-resolver |
 | 2026-01-02 | 既存 Skills 補完: role-resolver.sh, merge-pr.sh, integrity.sh 等 |
 | 2026-01-02 | PreCompact 設計更新: snapshot.json 廃止、最小ポインタ（additionalContext のみ）に変更 |
 | 2026-01-02 | session-manager/handlers に end.sh, compact.sh 追記 |

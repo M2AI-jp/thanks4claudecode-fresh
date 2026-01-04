@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-04 21:41:13"
+  generated: "2026-01-05 03:59:02"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 107
+  total_files: 92
 
 hooks:
   directory: .claude/hooks/
@@ -61,7 +61,7 @@ events:
 agents:
   directory: .claude/skills/*/agents/
   note: "4QV+ アーキテクチャ: SubAgents は各 Skill 内に配置"
-  count: 10
+  count: 7
   files:
     - name: "executor-resolver"
       skill: "executor-resolver"
@@ -78,28 +78,19 @@ agents:
     - name: "coderabbit-delegate"
       skill: "quality-assurance"
       description: "CodeRabbit CLI をラップし、コードレビューを自動実行する SubAgent"
-    - name: "health-checker"
-      skill: "quality-assurance"
-      description: "description: システム状態の定期監視。state.md/playbook の整合性、git 状態、フ�"
     - name: "reviewer"
       skill: "quality-assurance"
       description: "正規ソース"
     - name: "critic"
       skill: "reward-guard"
       description: "reviewer との違い"
-    - name: "setup-guide"
-      skill: "session-manager"
-      description: "description: AUTOMATICALLY guides setup process when playbook=setup/playbook-setup.md. Conducts hear"
-    - name: "term-translator"
-      skill: "term-translator"
-      description: "設計意図"
 
 skills:
   directory: .claude/skills/
   invocation: "Claude が文脈から自動検出して Skill ツールで呼び出す"
   usage: "プロンプトにマッチしたら発火。モデル主導で判断。"
   auto_invoke: true
-  count: 15
+  count: 13
   files:
     - name: "access-control"
       description: "アクセス制御"
@@ -109,8 +100,6 @@ skills:
       description: "Git/PR ワークフロー"
     - name: "golden-path"
       description: "Core Contract #1: Golden Path"
-    - name: "plan-management"
-      description: "description: Multi-layer planning and playbook management. Use when creating playbooks, transitionin"
     - name: "playbook-gate"
       description: "Core Contract #2: Playbook Gate"
     - name: "playbook-init"
@@ -127,10 +116,8 @@ skills:
       description: "セッション管理"
     - name: "state"
       description: "description: このワークスペースの state.md 管理、playbook 運用の専門知識。state"
-    - name: "term-translator"
-      description: "description: ユーザープロンプト内の曖昧な表現をエンジニア用語に変換する"
     - name: "understanding-check"
-      description: "term-translator の出力を参照し、技術用語でユーザーに確認する"
+      description: "prompt-analyzer の ambiguity を使って確認質問を明確化する"
 
 commands:
   directory: .claude/commands/
@@ -141,26 +128,12 @@ commands:
 
 docs:
   directory: docs/
-  count: 10
+  count: 3
   files:
     - name: "ARCHITECTURE.md"
       description: "ユーザー体験ベースの状態遷移マップ"
-    - name: "ai-orchestration.md"
-      description: "役割ベース executor 抽象化 - playbook の再利用性向上"
-    - name: "archive-operation-rules.md"
-      description: "目的"
     - name: "core-feature-reclassification.md"
-      description: "> SSOT: event unit architecture dependency mapping."
-    - name: "criterion-validation-rules.md"
-      description: "criterion（done_criteria の単位）の検証ルール"
-    - name: "dogfooding-findings.md"
-      description: "FizzBuzz ドッグフーディングで発見した問題点・改善点"
-    - name: "folder-management.md"
-      description: "全フォルダの役割、テンポラリ/永続区分、削除タイミングを定義"
-    - name: "git-operations.md"
-      description: "設計方針"
-    - name: "repository-health.md"
-      description: "リポジトリ健全性の判定基準と抽出結果"
+      description: "> SSOT: Hook Unit catalog + dependency map (ideal -> current -> missing)."
 
 plan:
   directory: plan/
@@ -409,6 +382,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-04 21:41:13"
+  - date: "2026-01-05 03:59:02"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

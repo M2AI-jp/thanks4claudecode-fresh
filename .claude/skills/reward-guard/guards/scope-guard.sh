@@ -99,8 +99,8 @@ if [[ "$MODIFYING_SCOPE" == true ]]; then
 
   正しい手順:
     1. ユーザーに変更理由を説明
-    2. plan-management Skill で playbook を更新
-       Skill(skill='plan-management') または /plan-management
+    2. pm SubAgent 経由で playbook を更新
+       Task(subagent_type='pm')
     3. 承認を得てから編集
 
   スコープクリープの例（禁止）:

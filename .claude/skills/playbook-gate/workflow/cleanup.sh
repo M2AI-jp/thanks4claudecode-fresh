@@ -13,7 +13,6 @@
 # 連携:
 #   - archive-playbook.sh: playbook 完了検出ロジックを共有
 #
-# 参照: docs/folder-management.md
 
 set -e
 

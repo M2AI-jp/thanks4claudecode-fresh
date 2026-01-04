@@ -3,7 +3,7 @@ name: pm
 description: PROACTIVELY manages playbooks and project progress. Creates playbook when missing, tracks phase completion, manages scope. Says NO to scope creep. **MANDATORY entry point for all task starts.**
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: opus
-skills: state, plan-management, understanding-check, prompt-analyzer, term-translator, executor-resolver
+skills: state, understanding-check, prompt-analyzer, executor-resolver
 ---
 
 # Project Manager Agent
@@ -83,8 +83,8 @@ pm SubAgent（orchestrator）
 1. Task(subagent_type='prompt-analyzer', prompt='{ユーザー依頼}')
    → 5W1H 分析、リスク分析、曖昧さ検出
      ↓
-2. Task(subagent_type='term-translator', prompt='{ambiguity}')
-   → 曖昧表現をエンジニア用語に変換（曖昧さがある場合のみ）
+2. understanding-check（ユーザー確認）
+   → prompt-analyzer の結果と曖昧さを提示し合意を得る
      ↓
 3. playbook ドラフト作成（テンプレートに基づく）
      ↓
@@ -102,7 +102,6 @@ pm SubAgent（orchestrator）
 | SubAgent | 役割 | 入力 | 出力 |
 |----------|------|------|------|
 | prompt-analyzer | 5W1H 分析、リスク分析、曖昧さ検出 | ユーザープロンプト | 構造化された分析結果 |
-| term-translator | 曖昧表現 → エンジニア用語 | ambiguity 配列 | 技術要件リスト |
 | executor-resolver | LLM ベース executor 判定 | subtask リスト | executor アサイン結果 |
 | reviewer | playbook 品質チェック | playbook ドラフト | PASS/FAIL + 修正案 |
 
@@ -119,7 +118,6 @@ pm がやること:
 pm がやらないこと（委譲済み）:
   - 5W1H の深層分析 → prompt-analyzer
   - リスク分析 → prompt-analyzer
-  - 曖昧表現の解釈 → term-translator
   - executor 判定 → executor-resolver
   - playbook 品質検証 → reviewer
 ```
@@ -128,7 +126,6 @@ pm がやらないこと（委譲済み）:
 ## 役割定義（M073: AI エージェントオーケストレーション）
 
 > **抽象的な役割名で executor を指定し、実行時に具体的なツールに解決する。**
-> **詳細: docs/ai-orchestration.md**
 
 ```yaml
 # 標準役割定義（抽象 → 具体）
@@ -426,12 +423,6 @@ playbook なしで作業開始しない:
    → 出力: 5W1H 分析、リスク分析、曖昧さ検出
    → 目的: 深い分析を専門 SubAgent に委譲
 
-0.6. term-translator 呼び出し（曖昧さがある場合）
-   → 条件: prompt-analyzer の ambiguity が空でない場合
-   → Task(subagent_type='term-translator', prompt='{ambiguity}')
-   → 出力: 曖昧表現のエンジニア用語変換
-   → 目的: done_criteria を具体化するための情報収集
-
 1. ユーザーの要望を確認
    → prompt-analyzer の分析結果を基に確認事項を整理
    → 「何を作りたいですか？」は不要（0.5 で分析済み）
@@ -475,7 +466,6 @@ playbook なしで作業開始しない:
 7. 【必須】中間成果物の確認
    → 中間成果物がある場合:
       - 最終 Phase に「クリーンアップ」の subtask を追加
-   → 参照: docs/folder-management.md
 
 8. 【必須】p_self_update 自動追加チェック（M082）
    → Phase 数をカウント（p1, p2, p3... の数）
@@ -498,8 +488,7 @@ playbook なしで作業開始しない:
          - preconditions: 既存コード状況 + 依存関係 + 制約
          - success_criteria: 機能要件 + 非機能要件 + breaking_changes
          - reverse_dependencies: 影響コンポーネント + リスクレベル
-         - summary: confidence + ready_for_playbook + blocking_issues
-     - translated_requirements: term-translator の出力（ある場合）
+     - summary: confidence + ready_for_playbook + blocking_issues
      - user_approved_understanding: ユーザー承認情報（日時 + 承認内容）
    → 目的: compact 後も分析結果を復元可能にする
    → 参照: plan/template/playbook-format.md の context セクション定義
@@ -888,10 +877,7 @@ pm の責務:
 - state.md - 現在の playbook
 - CLAUDE.md - playbook ルール（POST_LOOP: アーカイブ実行を含む）
 - .claude/skills/quality-assurance/agents/reviewer.md - 計画レビュー SubAgent（playbook レビューも担当）
-- docs/git-operations.md - git 操作 参照ドキュメント
-- docs/folder-management.md - 中間成果物/一時ファイルの扱い
 - .claude/skills/prompt-analyzer/agents/prompt-analyzer.md - プロンプト分析 SubAgent（M086: 5W1H + リスク分析）
-- .claude/skills/term-translator/agents/term-translator.md - 用語変換 SubAgent（M086: 曖昧表現 → エンジニア用語）
 - .claude/skills/executor-resolver/agents/executor-resolver.md - executor 判定 SubAgent（M086: LLM ベース判定）
 
 ---
@@ -910,28 +896,20 @@ pm の責務:
 │  入力: ユーザープロンプト（raw text）                 │
 │  出力: analysis（5w1h, risks, ambiguity, summary）    │
 └──────────────────────────────────────────────────────┘
-       ↓ analysis.ambiguity
+       ↓ analysis
 ┌──────────────────────────────────────────────────────┐
-│  Step 2: term-translator（曖昧さがある場合）         │
-│  入力: analysis.ambiguity                             │
-│  出力: translation（original_terms, technical_reqs）  │
-└──────────────────────────────────────────────────────┘
-       ↓ analysis + translation
-┌──────────────────────────────────────────────────────┐
-│  Step 3: understanding-check                          │
+│  Step 2: understanding-check                          │
 │  入力:                                                │
 │    - analysis.5w1h（prompt-analyzer から）           │
-│    - translation.original_terms（term-translator から）│
-│    - translation.technical_requirements               │
+│    - analysis.ambiguity                               │
 │  出力: understanding_check（summary, questions）      │
 │  ★ ユーザーに技術用語で確認 ★                       │
 └──────────────────────────────────────────────────────┘
        ↓ ユーザー承認
 ┌──────────────────────────────────────────────────────┐
-│  Step 4: playbook 作成                                │
+│  Step 3: playbook 作成                                │
 │  入力:                                                │
 │    - analysis（永続化用）                            │
-│    - translation（永続化用）                         │
 │    - understanding_check.approved_answers             │
 │  出力: playbook（context セクションに全データ保存）   │
 └──────────────────────────────────────────────────────┘
@@ -946,36 +924,22 @@ analysis = Task(
   prompt='{ユーザー依頼}'
 )
 
-# Step 2: term-translator 呼び出し（曖昧さがある場合）
-if analysis.ambiguity is not empty:
-  translation = Task(
-    subagent_type='term-translator',
-    prompt='{analysis.ambiguity}'
-  )
-else:
-  translation = null
-
-# Step 3: understanding-check 実行
-# ★ translation を含めて understanding-check に渡す ★
+# Step 2: understanding-check 実行
 understanding_check_input:
   5w1h: analysis.5w1h
   risks: analysis.risks
-  translated_requirements: translation.original_terms
-  technical_requirements: translation.technical_requirements
+  ambiguity: analysis.ambiguity
 
 # ユーザーに確認（技術用語で）
 # → AskUserQuestion で選択肢を提示
 
-# Step 4: playbook 作成
+# Step 3: playbook 作成
 # ★ context セクションに全データを永続化 ★
 playbook.context:
   5w1h: analysis.5w1h
   analysis_result:
     source: prompt-analyzer
     data: analysis
-  translated_requirements:
-    source: term-translator
-    data: translation
   user_approved_understanding:
     source: understanding-check
     approved_at: '{timestamp}'
@@ -986,8 +950,7 @@ playbook.context:
 
 ```yaml
 必須確認:
-  - prompt-analyzer の出力が term-translator の入力に渡されているか
-  - term-translator の出力が understanding-check の入力に渡されているか
+  - prompt-analyzer の出力が understanding-check の入力に渡されているか
   - understanding-check の結果が playbook.context に保存されているか
 
 禁止パターン:

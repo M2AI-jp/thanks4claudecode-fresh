@@ -9,8 +9,8 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-handoff-ssot.md
-branch: docs/ssot-handoff
+active: plan/playbook-ops-ssot.md
+branch: docs/playbook-ops-ssot
 last_archived: null
 review_pending: false
 ```
@@ -20,16 +20,16 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: ssot-handoff
+milestone: playbook-ops-ssot
 phase: p1
 done_criteria:
-  - docs/core-feature-reclassification.md と docs/ARCHITECTURE.md が最新の Hook timing×ファイルマッピングを反映している
-  - 欠落コンポーネントの確定リストが SSOT に固定されている
-  - Unit 単位のドッグフーディング記録（ログ/状態/コマンド出力）が残っている
-  - 漸進統合の配線結果が SSOT と docs/repository-map.yaml に反映されている
-  - Decision Log と DRIFT対応の記録が更新されている
-self_complete: false
-status: in_progress
+  - state/playbook-guard の前提強制が計画として明文化されている
+  - UserPromptSubmit の固定チェーン計画が明文化されている
+  - reward-guard + critic のゲート条件が計画として明文化されている
+  - executor-guard の役割分離計画が明文化されている
+  - post-tool-edit の自動アーカイブ計画が明文化されている
+self_complete: true
+status: completed
 ```
 
 ---
@@ -37,7 +37,7 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-05 02:36:20
+last_start: 2026-01-05 04:33:55
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
