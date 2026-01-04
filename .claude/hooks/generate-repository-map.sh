@@ -170,6 +170,10 @@ get_hook_trigger() {
 count_files() {
     local dir="$1"
     local pattern="$2"
+    if [[ ! -d "$dir" ]]; then
+        echo "0"
+        return
+    fi
     find "$dir" -maxdepth 1 -type f -name "$pattern" 2>/dev/null | wc -l | tr -d ' '
 }
 

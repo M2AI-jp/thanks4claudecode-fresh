@@ -3,7 +3,6 @@ name: reviewer
 description: Use this agent for code and design reviews. Evaluates code quality, design patterns, and best practices. Provides constructive feedback for improvements.
 tools: Read, Grep, Glob, Bash
 model: opus
-skills: lint-checker, deploy-checker
 ---
 
 # Code & Design Reviewer Agent

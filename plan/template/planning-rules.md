@@ -212,7 +212,34 @@ done_criteria に含めるべき項目:
 
 ---
 
-## 8. よくある失敗パターン
+## 8. 計画の保全と健全性（Plan Health）
+
+```yaml
+SSOT:
+  - docs/core-feature-reclassification.md を設計の唯一基準とする
+  - docs/ARCHITECTURE.md はユーザーフローの説明書として維持する
+
+整合性:
+  - state.md の playbook.active と plan/playbook-*.md を一致させる
+  - context セクションに analysis_result と user_approved_understanding を必ず残す
+
+参照の健全性:
+  - ファイル削除/移動の後は rg で参照切れを除去
+  - bash .claude/hooks/generate-repository-map.sh を実行し、差分を更新
+  - セッション開始時に DRIFT が出たら ARCHITECTURE を同期する
+
+自動化ギャップ対策:
+  - UserPromptSubmit → prompt-analyzer → playbook-init → pm → reviewer の自動化を維持する
+  - 自動化が未完なら playbook に「自動化補完」サブタスクを追加する
+
+孤立 playbook 対応:
+  - playbook.active が null なのに playbook が残る場合は整理する
+  - 状態修復は pm 経由、またはアーカイブで確定する
+```
+
+---
+
+## 9. よくある失敗パターン
 
 ```yaml
 オフラインタスク漏れ:
@@ -234,7 +261,7 @@ Phase 粒度過大:
 
 ---
 
-## 9. 出力フォーマット
+## 10. 出力フォーマット
 
 PM は以下のフォーマットで playbook を出力する:
 

@@ -1,1 +1,0 @@
-../skills/golden-path/agents/codex-delegate.md

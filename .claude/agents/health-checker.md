@@ -1,1 +1,0 @@
-../skills/quality-assurance/agents/health-checker.md

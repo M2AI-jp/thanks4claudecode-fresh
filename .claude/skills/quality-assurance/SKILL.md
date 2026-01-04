@@ -27,7 +27,6 @@ quality-assurance/
 │   └── health.sh             ← システムヘルスチェック
 └── agents/
     ├── reviewer.md           ← reviewer SubAgent（コードレビュー）
-    ├── health-checker.md     ← health-checker SubAgent（システム監視）
     └── coderabbit-delegate.md ← coderabbit-delegate SubAgent（外部レビュー）
 ```
 
@@ -63,18 +62,6 @@ output:
   - judgment: PASS/FAIL
   - comments: レビューコメント
   - suggestions: 改善提案
-```
-
-### health-checker SubAgent
-
-```yaml
-role: システム状態の監視
-location: .claude/skills/quality-assurance/agents/health-checker.md
-invocation: Task(subagent_type='health-checker', prompt='システム状態を確認')
-output:
-  - status: healthy/warning/critical
-  - issues: 検出された問題
-  - recommendations: 推奨アクション
 ```
 
 ### coderabbit-delegate SubAgent
@@ -163,5 +150,3 @@ Task(subagent_type='reviewer', prompt='このPRをレビュー')
 
 | ファイル | 役割 |
 |----------|------|
-| scripts/e2e-contract-test.sh | E2E テスト |
-| .claude/hooks/check-integrity.sh | 元の整合性チェック |

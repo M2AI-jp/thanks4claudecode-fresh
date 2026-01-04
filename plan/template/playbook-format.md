@@ -3,7 +3,6 @@
 > **このテンプレートを埋めて playbook を作成する。**
 >
 > 詳細な記述方法は planning-rules.md を参照。
-> 具体例は playbook-examples.md を参照。
 
 ---
 
@@ -21,7 +20,6 @@ roles:  # オプション: 役割の override（state.md のデフォルトを�
 
 > **branch フィールド**: playbook とブランチは 1:1 で紐づく。
 > **roles フィールド（M073 新規）**: 役割の override。未指定の場合は state.md config.roles が使用される。
-> 詳細: docs/ai-orchestration.md
 
 ---
 
@@ -458,7 +456,7 @@ user:
   - "正しく動作する" ← 「正しく」とは？
   - "確認する" ← アクションであり状態でない
 
-⚠️ 禁止パターン（docs/criterion-validation-rules.md 参照）:
+⚠️ 禁止パターン:
   - 動詞で終わる（「〜する」「〜した」）
   - 曖昧な形容詞（「適切」「正しく」「良い」）
   - 検証方法が不明（validations が書けない）
@@ -842,10 +840,6 @@ phase_done_prerequisites:
   - または Phase 8 の done_criteria に「phase-*.md が削除されている」を含める
 ```
 
-### 参照ドキュメント
-
-- docs/folder-management.md - 中間成果物/一時ファイルの扱い
-
 ---
 
 ## テンポラリファイルとクリーンアップ
@@ -869,7 +863,7 @@ phase_done_prerequisites:
 注意:
   - tmp/ は .gitignore に登録されており、git に追跡されない
   - 重要なファイルは tmp/ に置かない
-  - 永続化が必要な場合は docs/ または .archive/ に移動
+  - 永続化が必要な場合は docs/ に移動
 ```
 
 ### 自動クリーンアップ
@@ -899,10 +893,6 @@ phase_done_prerequisites:
   - ルート直下に一時ファイルを作成
   - docs/ に中間成果物を作成（後で削除が必要になる）
 ```
-
-### 参照ドキュメント
-
-- docs/folder-management.md - フォルダ管理ルール全般
 
 ---
 
@@ -1222,24 +1212,6 @@ analysis_result:
       ready_for_playbook: true|false
       blocking_issues: ["{ブロッキング問題}"]
 
-translated_requirements:
-  source: term-translator
-  timestamp: "{変換日時}"
-  data:
-    original_terms:
-      - original: "{元の表現}"
-        translated: "{変換後の技術用語}"
-        rationale: "{変換理由}"
-        alternatives: ["{代替候補}"]
-    technical_requirements:
-      - requirement: "{技術要件}"
-        derived_from: "{元の表現}"
-        implementation_hint: "{実装ヒント}"
-    codebase_context:
-      relevant_files: ["{関連ファイル}"]
-      existing_patterns: ["{既存パターン}"]
-      conventions: ["{コーディング規約}"]
-
 user_approved_understanding:
   source: understanding-check
   approved_at: "{ユーザー承認日時}"
@@ -1263,12 +1235,7 @@ playbook 作成時の必須アクション:
      - analysis_result.timestamp = 現在日時
      - analysis_result.data = prompt-analyzer の出力全体
 
-  2. term-translator 呼び出し後（曖昧さがある場合）:
-     - translated_requirements.source = "term-translator"
-     - translated_requirements.timestamp = 現在日時
-     - translated_requirements.data = term-translator の出力全体
-
-  3. understanding-check 完了後:
+  2. understanding-check 完了後:
      - user_approved_understanding.source = "understanding-check"
      - user_approved_understanding.approved_at = ユーザー承認日時
      - user_approved_understanding.summary = 承認された理解の要約
@@ -1288,7 +1255,7 @@ playbook 作成時の必須アクション:
   2. playbook の context セクションを読み込む
   3. 以下の情報を復元:
      - ユーザーの元の意図（analysis_result）
-     - 技術要件の変換結果（translated_requirements）
+     - 承認済み理解（user_approved_understanding）
      - ユーザーが承認した理解（user_approved_understanding）
   4. 復元した情報を元に作業を継続
 

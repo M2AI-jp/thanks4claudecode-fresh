@@ -1,1 +1,0 @@
-../skills/quality-assurance/agents/reviewer.md

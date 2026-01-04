@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: plan/playbook-fizzbuzz-dogfooding.md
-branch: feat/fizzbuzz-dogfooding
-last_archived: plan/archive/playbook-prompt-analyzer-lite.md
+active: null
+branch: null
+last_archived: plan/archive/playbook-ops-ssot.md
 review_pending: false
 ```
 
@@ -20,16 +20,11 @@ review_pending: false
 ## goal
 
 ```yaml
-milestone: fizzbuzz-dogfooding
-phase: p1
-done_criteria:
-  - tmp/fizzbuzz.py が存在し、FizzBuzz ロジックが実装されている
-  - Codex で実装コミットが作成されている
-  - CodeRabbit でレビューが完了している
-  - PR が作成され、main にマージされている
-  - 発見事項が docs/dogfooding-findings.md に記録されている
+milestone: null
+phase: null
+done_criteria: []
 self_complete: false
-status: in_progress
+status: idle
 ```
 
 ---
@@ -37,7 +32,7 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-04 17:39:57
+last_start: 2026-01-05 04:33:55
 last_end: 2026-01-01 21:10:00
 last_clear: 2025-12-24 03:20:00
 ```
@@ -64,4 +59,4 @@ roles:
 |----------|------|
 | CLAUDE.md | LLM の振る舞いルール |
 | docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
-| docs/folder-management.md | フォルダ管理ルール |
+| docs/core-feature-reclassification.md | Hook Unit SSOT |

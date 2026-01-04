@@ -71,14 +71,14 @@ done
 # 3. SubAgent 定義ファイルのチェック
 # ==============================================================================
 
-AGENTS_DIR=".claude/agents"
-if [ -d "$AGENTS_DIR" ]; then
+AGENTS_ROOT=".claude/skills"
+if [ -d "$AGENTS_ROOT" ]; then
     # CLAUDE.md で参照されている SubAgent が存在するか
-    EXPECTED_AGENTS="critic pm reviewer health-checker"
+    EXPECTED_AGENTS="critic pm reviewer"
 
     for agent in $EXPECTED_AGENTS; do
-        if [ ! -f "$AGENTS_DIR/$agent.md" ]; then
-            ISSUES="$ISSUES\n  - [WARN] SubAgent 定義が見つかりません: $AGENTS_DIR/$agent.md"
+        if ! find "$AGENTS_ROOT" -path "*/agents/${agent}.md" -type f -print -quit 2>/dev/null | grep -q .; then
+            ISSUES="$ISSUES\n  - [WARN] SubAgent 定義が見つかりません: */agents/${agent}.md"
             ISSUE_COUNT=$((ISSUE_COUNT + 1))
         fi
     done
@@ -181,12 +181,12 @@ check_orphan_playbooks() {
         if [ -z "$active_playbook" ] || [ "$active_playbook" = "null" ]; then
             # active が null なのに playbook ファイルがある = orphan
             ISSUES="$ISSUES\n  - [WARN] orphan playbook を検出: $playbook_path"
-            ISSUES="$ISSUES\n          → Skill(skill='abort-playbook') で処理してください"
+            ISSUES="$ISSUES\n          → pm で playbook.active を整理するか、不要ならアーカイブしてください"
             ISSUE_COUNT=$((ISSUE_COUNT + 1))
         elif [ "$active_playbook" != "$playbook_path" ]; then
             # active が別のファイルを指している = orphan
             ISSUES="$ISSUES\n  - [WARN] orphan playbook を検出: $playbook_path (active=$active_playbook)"
-            ISSUES="$ISSUES\n          → Skill(skill='abort-playbook') で処理してください"
+            ISSUES="$ISSUES\n          → pm で playbook.active を整理するか、不要ならアーカイブしてください"
             ISSUE_COUNT=$((ISSUE_COUNT + 1))
         fi
     done

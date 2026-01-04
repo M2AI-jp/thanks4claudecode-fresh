@@ -8,7 +8,7 @@
 #   1. .claude/commands/*.md が参照する .claude/hooks/*.sh
 #   2. .claude/commands/*.md が参照する .claude/scripts/*.sh
 #   3. state.md の参照セクションに記載されたファイル
-#   4. .claude/agents/*.md が参照するフレームワークファイル
+#   4. .claude/skills/*/agents/*.md が参照するフレームワークファイル
 #
 # 使用方法:
 #   bash .claude/hooks/check-integrity.sh
@@ -95,7 +95,7 @@ echo ""
 # ============================================================
 echo "[3/4] Checking agents → framework references..."
 
-for agent_file in .claude/agents/*.md; do
+for agent_file in .claude/skills/*/agents/*.md; do
     [ -f "$agent_file" ] || continue
     
     # 参照パスを抽出（.claude/rules/, docs/, plan/ など）

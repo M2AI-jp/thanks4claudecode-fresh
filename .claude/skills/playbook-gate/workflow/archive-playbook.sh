@@ -25,7 +25,6 @@
 #   11. main 同期
 #   12. pending ファイル作成
 #
-# 参照: docs/archive-operation-rules.md
 
 set -e
 

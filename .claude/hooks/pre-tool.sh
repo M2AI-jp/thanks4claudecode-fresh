@@ -11,6 +11,10 @@ LIB_DIR="$SCRIPT_DIR/../lib"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CONTRACT_SCRIPT="$REPO_ROOT/scripts/contract.sh"
 MARKER_FILE="$SCRIPT_DIR/../session-state/prompt-analyzer-called"
+MARKER_DIR="$(dirname "$MARKER_FILE")"
+
+# セッション状態ディレクトリを確保
+mkdir -p "$MARKER_DIR"
 
 # 共通ライブラリ読み込み
 if [[ -f "$LIB_DIR/common.sh" ]]; then

@@ -279,52 +279,28 @@ pm_flow:
 
 ---
 
-## translated_requirements（term-translator 連携）
+## ambiguity clarification（prompt-analyzer 連携）
 
-> **term-translator の出力を参照し、技術用語でユーザーに確認する**
+> **prompt-analyzer の ambiguity を使って確認質問を明確化する**
 
 ### 入力
 
 pm SubAgent から以下の情報を受け取る:
 
 ```yaml
-translated_requirements:
-  source: term-translator
-  original_terms:
-    - original: "{元の表現}"
-      translated: "{変換後の技術用語}"
-      alternatives: ["{代替候補}"]
-  technical_requirements:
-    - requirement: "{技術要件}"
-      implementation_hint: "{実装ヒント}"
+analysis_result:
+  ambiguity:
+    - phrase: "{曖昧表現}"
+      question: "{具体化のための確認質問}"
 ```
 
 ### ユーザー確認での使用
 
 ```markdown
-## 理解確認結果
+### 不明点
 
-### 5W1H 分析
-
-| 項目 | 内容 |
-|------|------|
-| What | {具体的に何を作るか} |
-| Why | {なぜ必要か、解決する課題} |
-| ... | ... |
-
-### 技術要件（term-translator による変換結果）
-
-| 元の表現 | 技術要件 |
-|----------|----------|
-| {original_1} | {translated_1} |
-| {original_2} | {translated_2} |
-
-### 確認事項
-
-上記の技術要件で進めてよろしいですか？
-
-- [ ] 「セキュアに」→「AES-256 暗号化 + アクセス制御」で合意
-- [ ] 「高速に」→「レスポンスタイム 200ms 以下」で合意
+- [ ] 「{曖昧表現}」とは具体的に何を指しますか？
+- [ ] 「{曖昧表現}」の範囲に含めるもの／除外するものはありますか？
 ```
 
 ### Structured Output Format の拡張
@@ -332,24 +308,13 @@ translated_requirements:
 ```yaml
 understanding_check:
   summary: "{5W1H の要約}"
-  
-  translated_requirements:
-    - original: "{元の表現}"
-      translated: "{変換後の技術用語}"
-      confirmed: false  # ユーザー確認待ち
+
+  ambiguity_clarifications:
+    - phrase: "{曖昧表現}"
+      answer: "{ユーザー回答}"
 
   questions:
-    # 技術要件確認（single_choice タイプ）
-    - id: tr1
-      text: "「{original}」の要件は {translated} でよいですか？"
-      type: single_choice
-      options:
-        - label: "{translated}（推奨）"
-          description: "{term-translator の rationale}"
-        - label: "{alternative_1}"
-          description: "{代替案の説明}"
-        - label: "カスタム"
-          description: "具体的な要件を入力"
-
-    # 既存の質問...
+    - id: amb1
+      text: "「{曖昧表現}」の意味を具体化してください"
+      type: free_form
 ```
