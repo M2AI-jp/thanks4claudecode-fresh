@@ -591,8 +591,6 @@ Task(subagent_type='critic')
     │   └─→ plan/playbook-*.md（subtasks, validations）
     │
     ├─→ 呼び出し:
-    │   ├─→ Skill: lint-checker（コード変更時）
-    │   └─→ Skill: test-runner（テスト変更時）
     │
     └─→ 出力:
         └─→ CRITIQUE 結果（PASS/FAIL + 証拠）
@@ -906,43 +904,12 @@ Task(subagent_type='executor-resolver')
         └─→ Edit/Write ブロック解除
 ```
 
-### abort-playbook/
-```
-.claude/skills/abort-playbook/
-├── SKILL.md                    # Skill 定義
-└── abort.sh                    # playbook 中断・破棄処理
-```
-
-### context-management/
-```
-.claude/skills/context-management/
-└── SKILL.md                    # /compact 最適化と履歴要約のガイドライン
-```
-
-### deploy-checker/
-```
-.claude/skills/deploy-checker/
-└── SKILL.md                    # デプロイ準備・検証（git push 前の最終確認）
-```
-
 ### executor-resolver/
 ```
 .claude/skills/executor-resolver/
 ├── SKILL.md                    # Skill 定義
 └── agents/
     └── executor-resolver.md    # タスク性質分析 → executor 判定
-```
-
-### frontend-design/
-```
-.claude/skills/frontend-design/
-└── SKILL.md                    # プロダクション品質 UI 作成ガイドライン
-```
-
-### lint-checker/
-```
-.claude/skills/lint-checker/
-└── SKILL.md                    # ESLint・型チェック・コーディング規約検証
 ```
 
 ### plan-management/
@@ -978,19 +945,6 @@ Task(subagent_type='executor-resolver')
 ├── SKILL.md                    # Skill 定義
 └── agents/
     └── term-translator.md      # 曖昧表現 → エンジニア用語変換
-```
-
-### test-runner/
-```
-.claude/skills/test-runner/
-├── SKILL.md                    # Skill 定義
-└── scripts/
-    ├── run-all.sh              # 全テスト実行
-    ├── run-unit.sh             # Unit テスト
-    ├── run-e2e.sh              # E2E テスト
-    ├── run-typecheck.sh        # 型チェック
-    ├── run-build.sh            # ビルドテスト
-    └── run-critic.sh           # critic 検証
 ```
 
 ### understanding-check/
@@ -1311,7 +1265,7 @@ scripts/
 |------|------|
 | 2026-01-04 | repository-health 追加、repository-map 更新 |
 | 2026-01-02 | Section 14「既知の課題と未実装」追加（リポジトリ監査結果） |
-| 2026-01-02 | Skills 全面追記: 13 Skills 追加（abort-playbook〜understanding-check） |
+| 2026-01-02 | Skills 全面追記: core skills 追加 |
 | 2026-01-02 | SubAgents 追記: prompt-analyzer, term-translator, executor-resolver |
 | 2026-01-02 | 既存 Skills 補完: role-resolver.sh, merge-pr.sh, integrity.sh 等 |
 | 2026-01-02 | PreCompact 設計更新: snapshot.json 廃止、最小ポインタ（additionalContext のみ）に変更 |
