@@ -1,0 +1,307 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "python-filesearch",
+    "branch": "feat/python-filesearch",
+    "created": "2026-01-06",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Python CLI tool to list folder contents with count, max size, and modification time",
+    "done_when": [
+      "tmp/filesearch.py exists and is executable as CLI",
+      "CLI displays file/directory list for given path",
+      "CLI displays total entry count",
+      "CLI displays maximum file size",
+      "CLI displays modification timestamps",
+      "Uses only Python standard library",
+      "tmp/test_filesearch.py exists with pytest tests",
+      "pytest passes all tests",
+      "Changes are committed and pushed to remote"
+    ],
+    "scope": {
+      "includes": [
+        "tmp/filesearch.py implementation",
+        "tmp/test_filesearch.py tests",
+        "git push to feat/python-filesearch"
+      ],
+      "excludes": [
+        "External library dependencies",
+        "GUI interface",
+        "Recursive deep scan (simple listing only)"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Developer (user)",
+          "what": "Python CLI tool - folder content viewer",
+          "when": "Immediate",
+          "where": "tmp/ directory",
+          "why": "Quick folder content overview",
+          "how": "Python stdlib only, pytest tests, git push",
+          "missing": []
+        },
+        "success_criteria": {
+          "functional": [
+            "Display file/directory list for specified path",
+            "Display total entry count",
+            "Display maximum file size",
+            "Display modification timestamps",
+            "Executable as CLI (python tmp/filesearch.py <path>)"
+          ],
+          "non_functional": {
+            "performance": "Under 1 second for 1000 entries",
+            "maintainability": "Single file, clear function separation"
+          }
+        },
+        "test_strategy": {
+          "test_types": ["unit"],
+          "coverage_target": "standard",
+          "edge_cases": [
+            "Empty directory",
+            "Non-existent path"
+          ]
+        },
+        "preconditions": {
+          "existing_code": {
+            "status": "New creation",
+            "files": [
+              "tmp/filesearch.py (new)",
+              "tmp/test_filesearch.py (new)"
+            ]
+          },
+          "dependencies": {
+            "installed": ["python3", "stdlib"],
+            "required": ["pytest"]
+          }
+        },
+        "git_workflow": {
+          "current_branch": "feat/python-filesearch",
+          "action_required": "commit and push to current branch"
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-06",
+      "summary": "AUTO_APPROVED: Python CLI for folder listing with count, max size, timestamps; stdlib only; pytest tests; git push",
+      "approved_items": [
+        {
+          "question_id": "auto_approve",
+          "question": "Automatic approval enabled",
+          "answer": "true"
+        }
+      ],
+      "technical_requirements_confirmed": [
+        {
+          "original": "folder listing",
+          "confirmed_translation": "os.listdir or pathlib for directory entries"
+        },
+        {
+          "original": "max size",
+          "confirmed_translation": "os.path.getsize for file sizes"
+        },
+        {
+          "original": "timestamps",
+          "confirmed_translation": "os.path.getmtime for modification time"
+        }
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "CLI Implementation",
+      "description": "Create the Python CLI tool with all required features",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "tmp/filesearch.py exists with CLI argument parsing",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "test -f tmp/filesearch.py && python tmp/filesearch.py --help",
+            "consistency": "argparse or sys.argv handling present",
+            "completeness": "Script accepts path argument"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "CLI displays file/directory list with entry type indicators",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "python tmp/filesearch.py . shows entries with [F]/[D] markers",
+            "consistency": "Output format is consistent for all entries",
+            "completeness": "Both files and directories are listed"
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "CLI displays total entry count",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "Output includes 'Total: N entries' or similar",
+            "consistency": "Count matches actual number of entries",
+            "completeness": "Count appears in output"
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "CLI displays maximum file size with human-readable format",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "Output includes max size information",
+            "consistency": "Size is accurate for largest file",
+            "completeness": "Size format is readable (bytes or KB/MB)"
+          }
+        },
+        {
+          "id": "p1.5",
+          "criterion": "CLI displays modification timestamps for each entry",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "Each entry shows modification time",
+            "consistency": "Timestamp format is consistent",
+            "completeness": "All entries have timestamps"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Test Implementation",
+      "description": "Create pytest tests covering main functionality and edge cases",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "tmp/test_filesearch.py exists with pytest test functions",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "test -f tmp/test_filesearch.py",
+            "consistency": "Test file imports from filesearch module",
+            "completeness": "Multiple test functions defined"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "Tests cover empty directory edge case",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "Test function for empty dir exists",
+            "consistency": "Uses pytest fixtures for temp directories",
+            "completeness": "Asserts correct behavior for empty input"
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "Tests cover non-existent path edge case",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "Test function for invalid path exists",
+            "consistency": "Expects appropriate error handling",
+            "completeness": "Verifies error message or exit code"
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": "pytest exits with code 0 (all tests pass)",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "pytest tmp/test_filesearch.py returns exit 0",
+            "consistency": "No test failures or errors",
+            "completeness": "All defined tests executed"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Git Push",
+      "description": "Commit all changes and push to remote",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "All changes committed to feat/python-filesearch branch",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "git status shows clean working tree",
+            "consistency": "Commit message describes the feature",
+            "completeness": "tmp/filesearch.py and tmp/test_filesearch.py included"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "Changes pushed to remote origin",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "git push origin feat/python-filesearch succeeds",
+            "consistency": "Remote branch exists with commits",
+            "completeness": "All local commits synced to remote"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification",
+      "description": "Independent verification of all done_when items",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "All done_when conditions verified by reviewer",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification for each done_when item",
+            "consistency": "All items pass verification",
+            "completeness": "9 done_when items all verified"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": [
+    {
+      "id": "ft1",
+      "description": "Update repository-map.yaml",
+      "command": "bash .claude/hooks/generate-repository-map.sh"
+    },
+    {
+      "id": "ft2",
+      "description": "Clean tmp/ temporary files (keep project files)",
+      "command": "echo 'Keeping tmp/filesearch.py and tmp/test_filesearch.py as project outputs'"
+    }
+  ]
+}

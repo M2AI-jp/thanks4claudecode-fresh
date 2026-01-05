@@ -39,12 +39,13 @@ Thumbs.db
 # Temporary files
 .tmp/
 out/
-tmp/
 tmp/*
 !tmp/README.md
 !tmp/process.py
 !tmp/run.sh
 !tmp/transform.ts
+!tmp/filesearch.py
+!tmp/test_filesearch.py
 
 # Coverage
 coverage/

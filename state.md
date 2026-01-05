@@ -9,9 +9,9 @@
 ## playbook
 
 ```yaml
-active: null
-current_phase: null
-branch: null
+active: play/python-filesearch/plan.json
+current_phase: p1
+branch: feat/python-filesearch
 last_archived: play/archive/python-ext-counter
 review_pending: false
 
@@ -23,10 +23,19 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: python-filesearch
+phase: p1
+done_criteria:
+  - tmp/filesearch.py exists and is executable as CLI
+  - CLI displays file/directory list for given path
+  - CLI displays total entry count
+  - CLI displays maximum file size
+  - CLI displays modification timestamps
+  - Uses only Python standard library
+  - tmp/test_filesearch.py exists with pytest tests
+  - pytest passes all tests
+  - Changes are committed and pushed to remote
+status: active
 
 ```
 
@@ -35,8 +44,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-06 02:12:49
-last_end: 2026-01-05 22:36:52
+last_start: 2026-01-06 03:47:22
+last_end: 2026-01-06 03:47:20
 last_clear: 2025-12-24 03:20:00
 ```
 
