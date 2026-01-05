@@ -438,7 +438,7 @@ Claude は playbook 作成時に自動でブランチを切る。
 | post-loop-pending 存在 | pending-guard | BLOCK + post-loop 必須案内 |
 | 保護ファイル編集試行 | protected-edit | BLOCK |
 | playbook=null | playbook-guard | BLOCK + 案内 |
-| reviewed=false | playbook-guard | BLOCK + reviewer 必要 |
+| reviewed=false / context 欠落（v2: meta.reviewed/context） | playbook-guard | BLOCK + reviewer 必要 |
 | 依存 Phase 未完了 | depends-check | BLOCK + 依存表示 |
 | executor 不一致 | executor-guard | WARN |
 | done 変更試行 | critic-guard | critic 必須通知 |
@@ -872,7 +872,7 @@ Task(subagent_type='executor-resolver')
 │       └─→ CLI: coderabbit review --plain
 └── checkers/
     ├── lint.sh                 # 静的解析
-    ├── integrity.sh            # 整合性チェック
+    ├── integrity.sh            # 整合性チェック（playbook v2 の reviewed_by/evidence も検査）
     └── health.sh               # 健全性チェック
 ```
 
