@@ -253,7 +253,7 @@ snapshot.json: 廃止（.claude/ 配下は compact で削除されるため）
 
 | フィールド | 必須 | 用途 |
 |-----------|------|------|
-| resume_instruction | ✓ | 1行で「何を読むか」（例: "Read state.md then open plan/playbook-xxx.md"） |
+| resume_instruction | ✓ | 1行で「何を読むか」（例: "Read state.md then open play/<id>/plan.json and progress.json"） |
 | playbook | ✓ | 現在の playbook パス |
 | phase | ✓ | 現在の phase ID |
 | branch | - | 作業ブランチ（便利） |
@@ -284,7 +284,7 @@ snapshot.json: 廃止（.claude/ 配下は compact で削除されるため）
 ```
 .claude/hooks/prompt.sh
     └─→ .claude/events/user-prompt-submit/chain.sh
-            └─→ prompt-analyzer 呼び出しを指示（自動実行ではない）
+            └─→ instruction 検出時は playbook-init を自動指示（prompt-analyzer は playbook-init 内で自動実行可）
 ```
 
 ### 状態遷移
@@ -292,8 +292,8 @@ snapshot.json: 廃止（.claude/ 配下は compact で削除されるため）
 | Before | 処理 | After |
 |--------|------|-------|
 | プロンプト未処理 | State Injection | コンテキスト付加 |
-| playbook=null | playbook-init 提案表示 | ユーザーに案内表示 |
-| タスク依頼パターン検出 | understanding-check 必須通知 | 理解確認フロー開始 |
+| playbook=null | playbook-init 自動指示 | 自動フロー開始 |
+| タスク依頼パターン検出 | auto_approve 判定 | understanding-check 自動承認 or 確認 |
 
 ### 参照ファイル（読み取り）
 
@@ -310,7 +310,7 @@ snapshot.json: 廃止（.claude/ 配下は compact で削除されるため）
 Hook Unit の理想チェーンは `docs/core-feature-reclassification.md` に準拠。
 
 ```
-prompt-analyzer -> understanding-check -> playbook-init -> pm -> reviewer
+playbook-init -> prompt-analyzer -> understanding-check (auto-approve 可) -> pm -> reviewer
 ```
 
 ---
@@ -409,11 +409,11 @@ Claude は playbook 作成時に自動でブランチを切る。
             │
             ├─→ .claude/skills/playbook-gate/guards/depends-check.sh
             │       │
-            │       └─→ 参照: plan/playbook-*.md（depends_on）
+            │       └─→ 参照: play/<id>/plan.json（depends_on）
             │
             ├─→ .claude/skills/playbook-gate/guards/executor-guard.sh
             │       │
-            │       └─→ 参照: plan/playbook-*.md（executor）
+            │       └─→ 参照: play/<id>/plan.json（executor）
             │
             ├─→ .claude/skills/reward-guard/guards/critic-guard.sh
             │       │
@@ -422,7 +422,7 @@ Claude は playbook 作成時に自動でブランチを切る。
             ├─→ .claude/skills/reward-guard/guards/subtask-guard.sh
             │       │
             │       ├─→ - [ ] → - [x] 変更時に 3点検証確認
-            │       └─→ 参照: plan/template/playbook-format.md（validations）
+            │       └─→ 参照: play/template/plan.json（validation_plan）
             │
             ├─→ .claude/skills/reward-guard/guards/phase-status-guard.sh
             │       └─→ phase status 変更検出
@@ -450,7 +450,8 @@ Claude は playbook 作成時に自動でブランチを切る。
 | ファイル | 取得データ | チェック内容 |
 |----------|-----------|-------------|
 | state.md | playbook.active | playbook 存在 |
-| plan/playbook-*.md | reviewed, phases, subtasks | 各種ガードチェック |
+| play/<id>/plan.json | reviewed, phases, validation_plan | 各種ガードチェック |
+| play/<id>/progress.json | phases/subtasks/status/validations | reward-guard 判定 |
 | .claude/protected-files.txt | 保護リスト | 編集可否 |
 
 ---
@@ -498,7 +499,7 @@ Claude は playbook 作成時に自動でブランチを切る。
 | ファイル | 取得データ | チェック内容 |
 |----------|-----------|-------------|
 | state.md | playbook.active, goal | 整合性確認 |
-| plan/playbook-*.md | phases.status | 状態一致確認 |
+| play/<id>/progress.json | phases.status | 状態一致確認 |
 
 ---
 
@@ -531,7 +532,7 @@ Claude は playbook 作成時に自動でブランチを切る。
             │       │   1. 未コミット変更を自動コミット
             │       │   2. Push（PR 作成前に必須）
             │       │   3. PR 作成（create-pr.sh）
-            │       │   4. playbook アーカイブ（plan/archive/ へ移動）
+            │       │   4. playbook アーカイブ（play/archive/<id>/ へ移動）
             │       │   5. state.md 更新（playbook.active = null）
             │       │   6. アーカイブ変更をコミット
             │       │   7. 追加コミットを Push
@@ -540,7 +541,7 @@ Claude は playbook 作成時に自動でブランチを切る。
             │       │   10. pending ファイル作成（post-loop 強制用）
             │       │
             │       └─→ 書き込み:
-            │           ├─→ plan/archive/playbook-*.md
+            │           ├─→ play/archive/<id>/
             │           ├─→ state.md（playbook.active = null）
             │           └─→ .claude/session-state/post-loop-pending
             │
@@ -563,7 +564,7 @@ Claude は playbook 作成時に自動でブランチを切る。
 
 | ファイル | 書き込みデータ | 条件 |
 |----------|---------------|------|
-| plan/archive/playbook-*.md | アーカイブ済み playbook | 全 Phase done |
+| play/archive/<id>/ | アーカイブ済み playbook | 全 Phase done |
 | state.md | playbook.active = null, last_archived | アーカイブ時 |
 | .claude/session-state/post-loop-pending | status, playbook, timestamp | 自動処理完了時 |
 | tmp/ | ファイル削除 | playbook 完了時 |
@@ -571,6 +572,10 @@ Claude は playbook 作成時に自動でブランチを切る。
 ---
 
 ## 7. SubAgent 呼び出し（Task ツール）
+
+> Task は `.claude/agents/*.md` をサブエージェント登録ディレクトリとして参照する。
+> `.claude/skills/*/agents/` は正規定義（設計・参照元）なので、運用時は `.claude/agents/` に同期しておくこと。
+> `bash .claude/hooks/generate-repository-map.sh` が registry 同期も行う。
 
 ### pm SubAgent
 
@@ -580,12 +585,13 @@ Task(subagent_type='pm')
     ├─→ .claude/skills/golden-path/agents/pm.md
     │
     ├─→ 参照（読み取り）:
-    │   ├─→ plan/template/playbook-format.md（テンプレート）
-    │   ├─→ plan/template/planning-rules.md（計画ルール）
+    │   ├─→ play/template/plan.json（テンプレート）
+    │   ├─→ play/template/progress.json（テンプレート）
     │   └─→ .claude/skills/understanding-check/SKILL.md（理解確認）
     │
     ├─→ 書き込み:
-    │   ├─→ plan/playbook-{name}.md（新規 playbook）
+    │   ├─→ play/{id}/plan.json（新規 playbook）
+    │   ├─→ play/{id}/progress.json（進捗）
     │   └─→ state.md（playbook.active 更新）
     │
     └─→ 呼び出し:
@@ -614,7 +620,7 @@ Task(subagent_type='reviewer')
     │   └─→ .claude/frameworks/done-criteria-validation.md（done_criteria 評価）
     │
     └─→ 書き込み:
-        └─→ plan/playbook-*.md（reviewed: true に更新）
+        └─→ play/<id>/plan.json（reviewed: true に更新）
 ```
 
 ### critic SubAgent
@@ -633,14 +639,15 @@ Task(subagent_type='critic')
     │   ├─→ Q4: 完全性検証（completeness）
     │   └─→ +: 批判的思考（自己成果物を敵対的に評価）
     │
-    ├─→ validation_types 判定:
+    ├─→ validation_plan 判定:
     │   ├─→ automated: 自動で PASS/FAIL
     │   ├─→ manual: user 確認を強制
     │   └─→ hybrid: 自動検証 + user 確認
     │
     ├─→ 参照（読み取り）:
     │   ├─→ .claude/frameworks/done-criteria-validation.md（評価フレームワーク）
-    │   └─→ plan/playbook-*.md（subtasks, validations）
+    │   ├─→ play/<id>/plan.json（subtasks, validation_plan）
+    │   └─→ play/<id>/progress.json（validations, evidence）
     │
     ├─→ 呼び出し:
     │
@@ -689,10 +696,11 @@ Task(subagent_type='coderabbit-delegate')
         └─→ status: approved/needs_changes/rejected
 ```
 
-### prompt-analyzer SubAgent
+### prompt-analyzer Skill
 
 ```
-Task(subagent_type='prompt-analyzer')
+Skill(skill='prompt-analyzer')
+(Task(subagent_type='prompt-analyzer') が利用可能な環境では Task でも可)
     │
     ├─→ .claude/skills/prompt-analyzer/agents/prompt-analyzer.md
     │
@@ -826,15 +834,15 @@ Task(subagent_type='executor-resolver')
 ├── SKILL.md                    # Skill 定義
 ├── guards/
 │   ├── playbook-guard.sh       # playbook 必須チェック
-│   │   └─→ 参照: state.md, plan/playbook-*.md
+│   │   └─→ 参照: state.md, play/<id>/plan.json
 │   ├── depends-check.sh        # Phase 依存チェック
-│   │   └─→ 参照: plan/playbook-*.md（depends_on）
+│   │   └─→ 参照: play/<id>/plan.json（depends_on）
 │   ├── executor-guard.sh       # executor 制御
-│   │   └─→ 参照: plan/playbook-*.md（executor）
+│   │   └─→ 参照: play/<id>/plan.json（executor）
 │   └── role-resolver.sh        # executor 役割解決
 └── workflow/
     ├── archive-playbook.sh     # playbook アーカイブ
-    │   └─→ 書き込み: plan/archive/, state.md
+    │   └─→ 書き込み: play/archive/<id>/, state.md
     └── cleanup.sh              # tmp/ クリーンアップ
 ```
 
@@ -848,7 +856,7 @@ Task(subagent_type='executor-resolver')
 └── guards/
     ├── critic-guard.sh         # done 変更前チェック
     ├── subtask-guard.sh        # subtask 3検証
-    │   └─→ 参照: plan/template/playbook-format.md（validations）
+    │   └─→ 参照: play/<id>/progress.json（validations）
     ├── scope-guard.sh          # done_criteria 変更検出
     └── coherence.sh            # 整合性チェック
 ```
@@ -874,7 +882,7 @@ Task(subagent_type='executor-resolver')
 ├── SKILL.md                    # Skill 定義
 └── agents/
     ├── pm.md                   # pm SubAgent（エントリーポイント）
-    │   ├─→ 参照: plan/template/playbook-format.md
+    │   ├─→ 参照: play/template/plan.json, play/template/progress.json
     │   └─→ 呼び出し: understanding-check, reviewer
     └── codex-delegate.md       # codex-delegate SubAgent
 ```
@@ -943,12 +951,12 @@ Task(subagent_type='executor-resolver')
 
 ## 9. テンプレート・フレームワーク一覧
 
-### plan/template/（playbook 作成時参照）
+### play/template/（playbook 作成時参照）
 
 | ファイル | 用途 | 参照元 |
 |----------|------|--------|
-| playbook-format.md | playbook テンプレート（V16） | pm, subtask-guard |
-| planning-rules.md | 計画ルール | pm |
+| plan.json | playbook plan テンプレート | pm |
+| progress.json | playbook progress テンプレート | pm |
 
 ### .claude/frameworks/（検証時参照）
 
@@ -983,18 +991,20 @@ Skill(skill='playbook-init')
     │
     ▼
 pm SubAgent
-    ├─→ Read: plan/template/playbook-format.md
+    ├─→ Read: play/template/plan.json
+    ├─→ Read: play/template/progress.json
     ├─→ Read: .claude/skills/understanding-check/SKILL.md
     │       │
     │       └─→ 5W1H 分析 → AskUserQuestion
     │
-    ├─→ Write: plan/playbook-{name}.md
+    ├─→ Write: play/{id}/plan.json
+    ├─→ Write: play/{id}/progress.json
     │
     └─→ Task(subagent_type='reviewer')
             │
             ├─→ Read: .claude/frameworks/playbook-review-criteria.md
             │
-            ├─→ PASS → Edit: playbook.reviewed = true
+            ├─→ PASS → Edit: plan.json reviewed = true
             └─→ FAIL → pm に差し戻し（最大3回）
     │
     ▼
@@ -1077,7 +1087,7 @@ Skill(skill='post-loop')
 
 ```
 1. state.md          ← 最優先（現在状態）
-2. playbook          ← タスク定義・進捗
+2. playbook（play/<id>/plan.json + progress.json）← タスク定義・進捗
 3. チャット履歴      ← コンテキストリセットで消失
 ```
 
@@ -1085,7 +1095,7 @@ Skill(skill='post-loop')
 
 ```yaml
 playbook:
-  active: {path}          # 現在の playbook（null = なし）
+  active: {path}          # 現在の playbook（plan.json, null = なし）
   branch: {branch}        # 作業ブランチ
   last_archived: {path}   # 最後にアーカイブした playbook
 
@@ -1159,6 +1169,7 @@ scripts/
 
 ```
 .claude/
+├── agents/            # Task が参照する SubAgent 登録ディレクトリ
 ├── settings.json      # Claude Code 設定（Hooks 定義）
 ├── protected-files.txt # HARD_BLOCK 対象ファイルリスト
 └── .session-init/     # セッション初期化状態

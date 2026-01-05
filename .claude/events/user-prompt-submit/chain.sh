@@ -6,10 +6,50 @@ set +e
 
 EVENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || EVENT_DIR="."
 REPO_ROOT="$(cd "$EVENT_DIR/../../.." 2>/dev/null && pwd)" || REPO_ROOT="."
-MARKER_FILE="$REPO_ROOT/.claude/session-state/prompt-analyzer-called"
+SESSION_STATE_DIR="$REPO_ROOT/.claude/session-state"
+AUTO_APPROVE_FILE="$SESSION_STATE_DIR/auto-approve.enabled"
+LAST_PROMPT_FILE="$SESSION_STATE_DIR/last-user-prompt.txt"
+PROMPT_ANALYZER_MARKER="$SESSION_STATE_DIR/prompt-analyzer-called"
+PM_MARKER="$SESSION_STATE_DIR/pm-called"
 
-# New prompt resets analyzer marker
-rm -f "$MARKER_FILE" 2>/dev/null
+INPUT=$(cat)
+
+mkdir -p "$SESSION_STATE_DIR"
+rm -f "$PROMPT_ANALYZER_MARKER" 2>/dev/null
+rm -f "$PM_MARKER" 2>/dev/null
+
+# ユーザープロンプト抽出（UserPromptSubmit input）
+PROMPT=""
+if command -v jq &>/dev/null; then
+    PROMPT=$(echo "$INPUT" | jq -r '.prompt // empty' 2>/dev/null || echo "")
+fi
+
+if [[ -n "$PROMPT" ]]; then
+    printf "%s" "$PROMPT" > "$LAST_PROMPT_FILE"
+fi
+
+# 簡易判定（instruction / question / context）
+TASK_PATTERN='(作成|作っ|実装|修正|追加|変更|削除|作りたい|欲しい|ほしい|してほしい|して欲しい|お願い|create|build|implement|fix|add|remove|refactor)'
+AUTO_DISABLE_PATTERN='(確認したい|相談したい|質問したい|確認を取りたい|一度相談|確認してから)'
+
+IS_TASK_REQUEST=false
+if printf "%s" "$PROMPT" | grep -Eiq "$TASK_PATTERN"; then
+    IS_TASK_REQUEST=true
+fi
+
+AUTO_APPROVE=false
+if [[ "$IS_TASK_REQUEST" == "true" ]]; then
+    AUTO_APPROVE=true
+    if printf "%s" "$PROMPT" | grep -Eiq "$AUTO_DISABLE_PATTERN"; then
+        AUTO_APPROVE=false
+    fi
+fi
+
+if [[ "$AUTO_APPROVE" == "true" ]]; then
+    touch "$AUTO_APPROVE_FILE"
+else
+    rm -f "$AUTO_APPROVE_FILE" 2>/dev/null
+fi
 
 # state.md から情報を取得
 get_state_info() {
@@ -37,28 +77,34 @@ get_state_info() {
 
 # playbook の subtask 進捗を取得
 get_subtask_progress() {
-    local playbook_path="$1"
+    local plan_path="$1"
     local phase="$2"
 
-    if [[ ! -f "$playbook_path" ]] || [[ -z "$phase" ]] || [[ "$phase" == "unknown" ]] || [[ "$phase" == "null" ]]; then
+    if [[ ! -f "$plan_path" ]] || [[ -z "$phase" ]] || [[ "$phase" == "unknown" ]] || [[ "$phase" == "null" ]]; then
         return
     fi
 
-    # 現在 Phase のセクションを抽出
-    local phase_section
-    phase_section=$(awk "/^### ${phase}:/,/^---\$/" "$playbook_path" 2>/dev/null)
-
-    if [[ -z "$phase_section" ]]; then
+    local progress_path
+    progress_path="$(dirname "$plan_path")/progress.json"
+    if [[ ! -f "$progress_path" ]]; then
         return
     fi
 
-    # 完了/未完了をカウント
-    local completed incomplete total
-    completed=$(echo "$phase_section" | grep -c '\\- \\[x\\]' 2>/dev/null || echo "0")
-    completed=${completed:-0}
-    incomplete=$(echo "$phase_section" | grep -c '\\- \\[ \\]' 2>/dev/null || echo "0")
-    incomplete=${incomplete:-0}
-    total=$((completed + incomplete))
+    local total completed incomplete
+    total=$(jq -r --arg phase "$phase" '.phases[] | select(.id==$phase) | .subtasks | length' "$plan_path" 2>/dev/null || echo "0")
+    total=${total:-0}
+
+    completed=0
+    if [[ "$total" -gt 0 ]]; then
+        for subtask in $(jq -r --arg phase "$phase" '.phases[] | select(.id==$phase) | .subtasks[].id' "$plan_path" 2>/dev/null || echo ""); do
+            status=$(jq -r --arg id "$subtask" '.subtasks[$id].status // empty' "$progress_path" 2>/dev/null || echo "")
+            if [[ "$status" == "done" ]]; then
+                completed=$((completed + 1))
+            fi
+        done
+    fi
+
+    incomplete=$((total - completed))
 
     if [[ "$total" -gt 0 ]]; then
         echo "Phase $phase: $completed/$total subtask done ($incomplete remaining)"
@@ -75,19 +121,29 @@ generate_output() {
     echo "playbook.active = $playbook_active"
     echo "phase = $phase"
 
-    # 全プロンプトで prompt-analyzer を呼び出す指示
+    # 自動フロー指示
     echo ""
-    echo "--- Prompt Analysis Required ---"
+    echo "--- Auto Flow ---"
     echo ""
-    echo "1. prompt-analyzer を呼び出せ:"
-    echo "   Task(subagent_type='prompt-analyzer', prompt='ユーザープロンプト原文')"
+    echo "instruction_detected = $IS_TASK_REQUEST"
+    echo "auto_approve = $AUTO_APPROVE"
     echo ""
-    echo "2. prompt-analyzer の出力をそのままチャットに貼り付けろ（変換禁止）"
-    echo ""
-    echo "3. prompt-analyzer の next_action に従って分岐:"
-    echo "   playbook-init     -> Skill(skill='playbook-init')"
-    echo "   direct-answer     -> 直接回答"
-    echo "   integrate-context -> 現在のタスクに統合"
+    echo "next_action:"
+    if [[ "$playbook_active" == "null" ]] || [[ -z "$playbook_active" ]]; then
+        if [[ "$IS_TASK_REQUEST" == "true" ]]; then
+            echo "  - Skill(skill='playbook-init') を直ちに実行"
+            echo "  - playbook-init 内で prompt-analyzer を自動実行すること"
+            if [[ "$AUTO_APPROVE" == "true" ]]; then
+                echo "  - understanding-check は自動承認（AskUserQuestion をスキップ）"
+            else
+                echo "  - understanding-check は AskUserQuestion で確認"
+            fi
+        else
+            echo "  - 直接回答（question）または文脈統合（context）"
+        fi
+    else
+        echo "  - 既存 playbook に統合（integrate-context）"
+    fi
     echo ""
 
     if [[ "$playbook_active" == "null" ]] || [[ -z "$playbook_active" ]]; then
@@ -106,7 +162,7 @@ generate_output() {
             echo "--- Progress ---"
             echo "$progress"
             echo ""
-            echo "subtask 完了時: playbook を更新し、critic で検証してください"
+            echo "subtask 完了時: progress.json を更新し、critic で検証してください"
         fi
     fi
 }

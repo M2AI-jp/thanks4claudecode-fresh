@@ -10,8 +10,9 @@
 
 ```yaml
 active: null
+current_phase: null
 branch: null
-last_archived: plan/archive/playbook-ops-ssot.md
+last_archived: null
 review_pending: false
 ```
 
@@ -20,10 +21,10 @@ review_pending: false
 ## goal
 
 ```yaml
+self_complete: false
 milestone: null
 phase: null
 done_criteria: []
-self_complete: false
 status: idle
 ```
 
@@ -32,8 +33,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-05 04:33:55
-last_end: 2026-01-01 21:10:00
+last_start: 2026-01-06 00:14:41
+last_end: 2026-01-05 22:36:52
 last_clear: 2025-12-24 03:20:00
 ```
 

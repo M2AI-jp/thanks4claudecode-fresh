@@ -42,7 +42,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
 ```text
 1) ユーザー依頼
    -> UserPromptSubmit Unit が意図を解析
-   -> playbook を作成
+   -> playbook を作成（plan/progress のみ）
    -> reviewer が検証し、state.md に反映
 
 2) 実行
@@ -73,6 +73,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
 | coderabbit が差分ベースで動作 | user-prompt-submit / executor | 中 | レビュータイミングを「コミット前 or PR ベース」に再設計 |
 | git-workflow hook が発火しない | post-tool-edit | 低 | chain 側で PR/merge フローを強制化 |
 | playbook gate / reward-guard 未検証 | pre-tool-edit | 中 | health/integrity の検証項目として追加 |
+| playbook 生成中に実装が走る / reviewer が user で自己承認 / progress schema 逸脱 | user-prompt-submit / pre-tool-edit | 高 | planning-only で非playbook編集をブロック、reviewer 独立性と progress schema を強制 |
 
 ---
 
@@ -127,9 +128,14 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
   - `.claude/skills/playbook-init/SKILL.md`
   - `.claude/skills/golden-path/agents/pm.md`
   - `.claude/skills/quality-assurance/agents/reviewer.md`
-  - `plan/template/playbook-format.md`
-  - `plan/template/planning-rules.md`
+  - `.claude/agents/{pm,reviewer}.md`（Task が参照する登録ディレクトリ）
+  - `play/template/plan.json`
+  - `play/template/progress.json`
+  - `play/README.md`
   - `state.md`
+  - 方針: planning-only（plan/progress 以外の編集は禁止）
+  - 方針: reviewer は独立（user 不可、state.md の roles.reviewer と一致）
+  - 方針: progress.json は template 構造に準拠
 
 ### 実行前の安全性（Edit/Write）
 - Hook: PreToolUse(Edit/Write)
@@ -361,7 +367,7 @@ Format:
 ### user-prompt-submit
 - intent: 依頼の意図理解と playbook 生成
 - chain (ideal): prompt-analyzer -> understanding-check -> playbook-init -> pm -> reviewer
-- docs: plan/template/playbook-format.md, plan/template/planning-rules.md
+- docs: play/template/plan.json, play/template/progress.json, play/README.md
 - outputs: 解析結果 + playbook + reviewer verdict
 - status:
   - current: prompt-analyzer 経由だが unit validator/telemetry 未分離
@@ -563,7 +569,7 @@ Format:
 ├── .shellcheckrc
 ├── docs/
 ├── governance/
-├── plan/
+├── play/
 ├── scripts/
 ├── tmp/
 └── .claude/
@@ -573,6 +579,7 @@ Format:
 
 ```
 .claude/
+├── agents/  # Task registry (synced from .claude/skills/*/agents)
 ├── events/
 ├── hooks/
 ├── skills/
@@ -588,6 +595,7 @@ Format:
 
 ```
 .claude/
+├── agents/  # Task registry (synced from .claude/skills/*/agents)
 ├── hooks/
 │   ├── session.sh
 │   ├── prompt.sh
@@ -663,6 +671,7 @@ Docs (SSOT)
 - `docs/ARCHITECTURE.md`
 - `docs/core-feature-reclassification.md`
 - `docs/repository-map.yaml`
-- `plan/template/playbook-format.md`
-- `plan/template/planning-rules.md`
+- `play/template/plan.json`
+- `play/template/progress.json`
+- `play/README.md`
 - `governance/PROMPT_CHANGELOG.md`

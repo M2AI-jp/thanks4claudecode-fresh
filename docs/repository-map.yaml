@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-05 03:59:02"
+  generated: "2026-01-06 00:46:40"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 92
+  total_files: 122
 
 hooks:
   directory: .claude/hooks/
@@ -60,7 +60,8 @@ events:
 
 agents:
   directory: .claude/skills/*/agents/
-  note: "4QV+ アーキテクチャ: SubAgents は各 Skill 内に配置"
+  registry: .claude/agents/
+  note: "SubAgents の正規定義は skills 内、Task は .claude/agents を参照"
   count: 7
   files:
     - name: "executor-resolver"
@@ -103,7 +104,7 @@ skills:
     - name: "playbook-gate"
       description: "Core Contract #2: Playbook Gate"
     - name: "playbook-init"
-      description: "このSkillは prompt-analyzer の分析結果を受け取る。再分析しない。"
+      description: "基本は prompt-analyzer の分析結果を受け取る。AUTO_FLOW 時は不足分を自動分析�"
     - name: "post-loop"
       description: "POST_LOOP - playbook 完了後の後処理"
     - name: "prompt-analyzer"
@@ -135,17 +136,17 @@ docs:
     - name: "core-feature-reclassification.md"
       description: "> SSOT: Hook Unit catalog + dependency map (ideal -> current -> missing)."
 
-plan:
-  directory: plan/
+play:
+  directory: play/
   subdirectories:
     active:
-      description: "進行中の playbook"
+      description: "進行中の playbook（plan.json/progress.json/evidence）"
       count: 0
     archive:
-      description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
+      description: "完了した playbook のアーカイブ"
       count: 0
     template:
-      description: "playbook テンプレート"
+      description: "playbook v2 テンプレート"
       count: 2
 
 root:
@@ -202,64 +203,64 @@ hook_trigger_sequence:
       matchers:
         - matcher: "*"
           hooks:
-            - script: "session.sh"
-              description: "session.sh - SessionStart/End/PreCompact 導火線"
+            - script: "session.sh'"
+              description: ""
     - trigger: "UserPromptSubmit"
       description: "ユーザープロンプト送信時に発火"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "prompt.sh"
-              description: "prompt.sh - UserPromptSubmit Hook dispatcher"
+            - script: "prompt.sh'"
+              description: ""
     - trigger: "PreToolUse"
       description: "ツール実行前に発火（matcher でフィルタ可能）"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "pre-tool.sh"
-              description: "pre-tool.sh - PreToolUse(*) 導火線"
+            - script: "pre-tool.sh'"
+              description: ""
     - trigger: "PostToolUse"
       description: "ツール実行後に発火（matcher でフィルタ可能）"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "post-tool.sh"
-              description: "post-tool.sh - PostToolUse(*) 導火線"
+            - script: "post-tool.sh'"
+              description: ""
     - trigger: "Stop"
       description: "セッション中断時（Ctrl+C, /stop）に発火"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "chain.sh"
+            - script: "chain.sh'"
               description: ""
     - trigger: "PreCompact"
       description: "コンテキスト圧縮前に発火"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "chain.sh"
+            - script: "chain.sh'"
               description: ""
     - trigger: "SessionEnd"
       description: "セッション終了時に発火"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "chain.sh"
+            - script: "chain.sh'"
               description: ""
     - trigger: "Notification"
       description: "通知送信時に発火"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "chain.sh"
+            - script: "chain.sh'"
               description: ""
     - trigger: "SubagentStop"
       description: "サブエージェント（Task）応答完了時に発火"
       matchers:
         - matcher: "*"
           hooks:
-            - script: "subagent-stop.sh"
-              description: "subagent-stop.sh - SubagentStop Hook dispatcher"
+            - script: "subagent-stop.sh'"
+              description: ""
 
 # ==============================================================================
 # Workflows (M027)
@@ -340,7 +341,7 @@ workflows:
         skills: []
         claude_md: "POST_LOOP セクション → milestone 更新"
       output:
-        - "playbook アーカイブ（plan/archive/）"
+        - "playbook アーカイブ（play/archive/<id>/）"
         - "state.md 更新（playbook.active = null）"
         - "次 playbook（存在する場合）"
         - "/clear 推奨アナウンス"
@@ -382,6 +383,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-05 03:59:02"
+  - date: "2026-01-06 00:46:40"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

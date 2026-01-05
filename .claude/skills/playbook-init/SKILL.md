@@ -5,7 +5,7 @@ description: タスク開始フローのエントリーポイント。prompt-ana
 
 # playbook-init Skill
 
-> **このSkillは prompt-analyzer の分析結果を受け取る。再分析しない。**
+> **基本は prompt-analyzer の分析結果を受け取る。AUTO_FLOW 時は不足分を自動分析してよい。**
 >
 > **設計原則**: 分析は Hook チェーンで完了済み。この Skill は pm への橋渡しを担当。
 
@@ -14,7 +14,7 @@ description: タスク開始フローのエントリーポイント。prompt-ana
 ## Purpose
 
 Hook → prompt-analyzer → Skill → SubAgent チェーンの Skill 層を担当。
-**prompt-analyzer の分析結果を pm に受け渡す**（再分析しない）。
+**prompt-analyzer の分析結果を pm に受け渡す**（AUTO_FLOW 時は補完可）。
 
 ---
 
@@ -30,7 +30,7 @@ invocation:
   - /playbook-init
 
 前提条件:
-  - prompt-analyzer が既に呼び出され、分析結果が存在すること
+  - analysis_result が存在すること（AUTO_FLOW 時は playbook-init が生成可）
   - topic_type が instruction であること
 ```
 
@@ -43,23 +43,27 @@ invocation:
 ### Step 0: 前提チェック（自分で実行）
 
 ```bash
-echo "=== 前提チェック ===" && \
-echo "1. 既存 playbook:" && ls plan/playbook-*.md 2>/dev/null | head -3 || echo "(なし)" && \
-echo "2. git 状態:" && git status --short && \
-echo "3. ブランチ:" && git branch --show-current
+echo "=== 前提チェック ==="
+echo "1. 既存 playbook:"
+find play -maxdepth 2 -name "plan.json" -not -path "*/archive/*" -not -path "*/template/*" 2>/dev/null | head -3
+echo "（出力が空なら既存 playbook なし）"
+echo "2. git 状態:"
+git status --short
+echo "3. ブランチ:"
+git branch --show-current
 ```
 
 | 条件 | 対応 |
 |------|------|
-| 未コミット変更がある | ユーザーに確認 |
+| 未コミット変更がある | **必ずユーザー確認（AskUserQuestion）を実施し、了承が出るまで進行しない** |
 | main ブランチにいる | 作業ブランチを作成 |
 | 既存 playbook あり | ユーザーに上書き確認 |
 
 ---
 
-### Step 1: 分析結果の確認（Hook 経由で取得済み）
+### Step 1: 分析結果の確認（Hook 経由 or 自動取得）
 
-**prompt-analyzer は Hook チェーンで既に呼び出されている。再呼び出し禁止。**
+**prompt-analyzer は Hook チェーン経由が基本だが、AUTO_FLOW 時は playbook-init 内で自動実行してよい。**
 
 ```yaml
 入力:
@@ -73,7 +77,8 @@ echo "3. ブランチ:" && git branch --show-current
 
 分岐:
   analysis_result が存在しない場合:
-    → エラー: "prompt-analyzer が呼び出されていません"
+    → AUTO_FLOW（auto_approve=true など）の場合: prompt-analyzer を実行して analysis_result を生成
+    → それ以外: エラー "prompt-analyzer が呼び出されていません"
     → Hook チェーンを確認
 
   ready_for_playbook: false の場合:
@@ -154,9 +159,10 @@ echo "3. ブランチ:" && git branch --show-current
 
 ---
 
-### Step 2: understanding-check（ユーザー確認・★必須★）
+### Step 2: understanding-check（ユーザー確認 / 自動承認）
 
 **分析結果をユーザーに提示し、承認を得る。**
+**AUTO_FLOW（auto_approve=true）の場合は AskUserQuestion をスキップし、自動承認として記録する。**
 
 ```python
 # AskUserQuestion を使用して確認
@@ -173,6 +179,18 @@ AskUserQuestion({
     }
   ]
 })
+```
+
+**AUTO_FLOW の自動承認レコード例**:
+
+```yaml
+user_approved_understanding:
+  source: auto-approve
+  approved_at: "{timestamp}"
+  summary: "{analysis_result.5w1h の要約}"
+  approved_items:
+    - "AUTO_APPROVED"
+  technical_requirements_confirmed: []
 ```
 
 **ユーザーが「修正が必要」を選択した場合**:
@@ -200,9 +218,9 @@ Task(
   - 承認内容: {ユーザーが承認した内容}
 
   ■ 実行指示:
-  1. 上記の分析結果に基づいて playbook を作成（再解釈禁止）
+  1. 上記の分析結果に基づいて play/<id>/plan.json と progress.json を作成（再解釈禁止）
   2. reviewer 検証（PASS まで）
-  3. state.md 更新 & ブランチ作成
+  3. state.md 更新 & ブランチ作成（playbook.active は plan.json を指す）
 
   ★重要: pm は分析結果を再解釈しない。そのまま使用すること。
   '''
@@ -216,14 +234,14 @@ Task(
 ```yaml
 禁止:
   - Step 1 (prompt-analyzer) をスキップして pm を呼ぶ
-  - Step 2 (ユーザー確認) をスキップ
+  - Step 2 (ユーザー確認) をスキップ（AUTO_FLOW を除く）
   - pm に「解釈して」と指示する
   - 分析結果を改変して pm に渡す
 
 必須:
   - Step 1 → Step 2 → Step 3 の順序
   - 各ステップの出力を次のステップに渡す
-  - ユーザー承認を得てから pm を呼ぶ
+  - ユーザー承認（または auto-approve）を得てから pm を呼ぶ
 ```
 
 ---
@@ -233,24 +251,15 @@ Task(
 ```
 Hook(prompt.sh)
     │
-    │ 「全プロンプトで prompt-analyzer を呼べ」と指示
+    │ instruction 検出時は playbook-init を自動指示（prompt-analyzer 内包）
     │
-    ▼
-Task(prompt-analyzer)  ← ★全プロンプトで実行★
-    │
-    │ 分析結果 + topic_type を返す
-    │
-    ├─→ topic_type=instruction → Skill(playbook-init) を呼ぶ
-    ├─→ topic_type=question    → 直接回答（分析結果を活用）
-    └─→ topic_type=context     → 現在タスクに統合
-
     ▼ (instruction の場合)
 Skill(playbook-init)  ← このファイル
     │
-    │ 分析結果を受け取る（再分析しない）
+    │ 分析結果を受け取る（AUTO_FLOW 時は補完）
     │
     ├─→ Step 1: 分析結果の確認
-    ├─→ Step 2: AskUserQuestion（ユーザー確認）
+    ├─→ Step 2: AskUserQuestion / auto-approve
     │       ↓ ユーザー承認
     └─→ Step 3: Task(pm) ← 分析結果を渡す
             │
@@ -263,9 +272,9 @@ Skill(playbook-init)  ← このファイル
 ```
 問題: 質問/タスクの判定が LLM 任せで、分析がスキップされることがある
 
-解決: 全プロンプトで prompt-analyzer を呼ぶ
-     → primary_topic_type で分岐（instruction/question/context）
-     → playbook-init は分析結果を受け取るだけ（再分析しない）
+解決: instruction 検出時は playbook-init を自動実行
+     → playbook-init が prompt-analyzer を補完実行
+     → AUTO_FLOW 時は理解確認を自動承認
 ```
 
 ---

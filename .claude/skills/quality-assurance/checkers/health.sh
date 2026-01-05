@@ -84,6 +84,21 @@ if [ -d "$AGENTS_ROOT" ]; then
     done
 fi
 
+# Runtime registry check for Task discovery
+AGENT_REGISTRY=".claude/agents"
+if [ -d "$AGENT_REGISTRY" ]; then
+    EXPECTED_REGISTRY_AGENTS="critic pm reviewer prompt-analyzer executor-resolver codex-delegate coderabbit-delegate"
+    for agent in $EXPECTED_REGISTRY_AGENTS; do
+        if [ ! -f "$AGENT_REGISTRY/${agent}.md" ]; then
+            ISSUES="$ISSUES\n  - [WARN] SubAgent registry が見つかりません: .claude/agents/${agent}.md"
+            ISSUE_COUNT=$((ISSUE_COUNT + 1))
+        fi
+    done
+else
+    ISSUES="$ISSUES\n  - [WARN] SubAgent registry ディレクトリが見つかりません: .claude/agents"
+    ISSUE_COUNT=$((ISSUE_COUNT + 1))
+fi
+
 # ==============================================================================
 # 4. Skills ディレクトリのチェック
 # ==============================================================================
@@ -147,11 +162,11 @@ fi
 # ==============================================================================
 
 check_orphan_playbooks() {
-    local plan_dir="plan"
+    local play_dir="play"
     local state_file="state.md"
 
-    # plan ディレクトリが存在しない場合はスキップ
-    if [ ! -d "$plan_dir" ]; then
+    # play ディレクトリが存在しない場合はスキップ
+    if [ ! -d "$play_dir" ]; then
         return
     fi
 
@@ -161,30 +176,26 @@ check_orphan_playbooks() {
         active_playbook=$(grep -A5 "^## playbook" "$state_file" 2>/dev/null | grep "^active:" | head -1 | sed 's/active: *//' | tr -d ' \r' || echo "")
     fi
 
-    # plan/ 内の playbook-*.md を検索（archive は除外）
-    for playbook in "$plan_dir"/playbook-*.md; do
-        # ファイルが存在しない場合（glob がマッチしなかった）
+    # play/ 内の plan.json を検索（archive/template は除外）
+    for playbook in "$play_dir"/*/plan.json; do
         if [ ! -f "$playbook" ]; then
             continue
         fi
+        case "$playbook" in
+            */archive/*|*/template/*) continue ;;
+        esac
 
-        # archive 内のファイルは除外
-        if [[ "$playbook" == *"/archive/"* ]]; then
-            continue
-        fi
-
-        local playbook_path="$playbook"
+        local playbook_path="${playbook#$play_dir/}"
+        playbook_path="$play_dir/$playbook_path"
 
         # orphan 判定:
         # 1. playbook.active が null または空
         # 2. playbook.active が別のファイルを指している
         if [ -z "$active_playbook" ] || [ "$active_playbook" = "null" ]; then
-            # active が null なのに playbook ファイルがある = orphan
             ISSUES="$ISSUES\n  - [WARN] orphan playbook を検出: $playbook_path"
             ISSUES="$ISSUES\n          → pm で playbook.active を整理するか、不要ならアーカイブしてください"
             ISSUE_COUNT=$((ISSUE_COUNT + 1))
         elif [ "$active_playbook" != "$playbook_path" ]; then
-            # active が別のファイルを指している = orphan
             ISSUES="$ISSUES\n  - [WARN] orphan playbook を検出: $playbook_path (active=$active_playbook)"
             ISSUES="$ISSUES\n          → pm で playbook.active を整理するか、不要ならアーカイブしてください"
             ISSUE_COUNT=$((ISSUE_COUNT + 1))
