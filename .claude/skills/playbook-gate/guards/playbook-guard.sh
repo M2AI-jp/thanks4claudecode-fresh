@@ -61,6 +61,12 @@ if [[ "$FILE_PATH" == *"state.md" ]]; then
     exit 0
 fi
 
+# playbook v2 (JSON) の作成/更新は playbook=null でも許可
+# pm が plan/progress を生成できるようにする（デッドロック回避）
+if [[ "$FILE_PATH" == *"/play/"*"/plan.json" ]] || [[ "$FILE_PATH" == *"/play/"*"/progress.json" ]]; then
+    exit 0
+fi
+
 # --------------------------------------------------
 # ブートストラップ例外: playbook ファイル自体の作成/編集は許可
 # /playbook-init や pm が新規 playbook を作成できるようにする
@@ -152,7 +158,78 @@ EOF
     exit 2
 fi
 
-# reviewed フラグを取得
+# JSON playbook (v2) の場合は jq で検証
+if [[ "$PLAYBOOK" == *.json ]]; then
+    if ! command -v jq &> /dev/null; then
+        cat >&2 << 'EOF'
+========================================
+  ⛔ jq 未インストール - playbook 検証不可
+========================================
+
+JSON playbook の検証に jq が必要です。
+Install: brew install jq
+
+========================================
+EOF
+        exit 2
+    fi
+
+    if ! jq -e . "$PLAYBOOK" >/dev/null 2>&1; then
+        cat >&2 << EOF
+========================================
+  ⛔ playbook JSON が不正
+========================================
+
+  playbook: $PLAYBOOK
+  JSON として解析できません。
+
+========================================
+EOF
+        exit 2
+    fi
+
+    REVIEWED=$(jq -r '.meta.reviewed // false' "$PLAYBOOK")
+    HAS_CONTEXT=$(jq -e '.context' "$PLAYBOOK" >/dev/null && echo "true" || echo "")
+    REVIEWED_BY=$(jq -r '.meta.reviewed_by // ""' "$PLAYBOOK")
+
+    if [[ "$REVIEWED" != "true" ]] || [[ -z "$HAS_CONTEXT" ]]; then
+        cat >&2 << 'EOF'
+========================================
+  ⛔ playbook 未承認
+========================================
+
+  meta.reviewed: true と context が必要です。
+  実装を開始する前に以下が必要です：
+
+  1. 理解確認（Step 1.5）:
+     - 5W1H 分析を実行
+     - AskUserQuestion でユーザー承認を取得
+     - context に記録
+
+  2. Reviewer 検証（Step 6）:
+     - Task(subagent_type='reviewer') を呼び出し
+     - PASS 後に meta.reviewed: true に更新
+
+  対処法:
+    Skill(skill='playbook-init') を再実行
+
+========================================
+EOF
+        exit 2
+    fi
+
+    # reviewed_by が自己レビューに見える場合は警告のみ
+    if [[ -z "$REVIEWED_BY" ]] || [[ "$REVIEWED_BY" == *"pm"* ]] || [[ "$REVIEWED_BY" == *"self"* ]]; then
+        cat >&2 << EOF
+[WARN] reviewed_by が独立レビューに見えません: "$REVIEWED_BY"
+       reviewer SubAgent の結果で reviewed_by を更新してください。
+EOF
+    fi
+
+    exit 0
+fi
+
+# reviewed フラグを取得（legacy markdown）
 REVIEWED=$(grep -E "^\s*reviewed:" "$PLAYBOOK" 2>/dev/null | head -1 | sed 's/.*reviewed: *//' | sed 's/ *#.*//' | tr -d ' ')
 
 # context セクションの存在確認

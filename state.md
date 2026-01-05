@@ -11,9 +11,10 @@
 ```yaml
 active: null
 current_phase: null
-branch: null
-last_archived: null
+branch: feat/python-filesearch
+last_archived: play/archive/python-ext-counter
 review_pending: false
+
 ```
 
 ---
@@ -21,11 +22,15 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+self_complete: true
+milestone: python-ext-counter
+phase: done
+done_criteria:
+  - tmp/ext_counter.py が存在し、python tmp/ext_counter.py <path> で拡張子別件数と合計を表形式で出力する
+  - tmp/test_ext_counter.py が存在し、pytest tmp/test_ext_counter.py が exit 0 で終了する
+  - 本体コードは Python 標準ライブラリのみを使用している
+status: done
+
 ```
 
 ---
@@ -33,7 +38,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-06 00:14:41
+last_start: 2026-01-06 01:18:09
 last_end: 2026-01-05 22:36:52
 last_clear: 2025-12-24 03:20:00
 ```

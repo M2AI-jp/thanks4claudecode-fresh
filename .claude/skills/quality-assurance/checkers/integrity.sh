@@ -158,6 +158,56 @@ done
 echo ""
 
 # ============================================================
+# 6. Playbook v2 のレビュー/Evidence 整合性
+# ============================================================
+echo "[6/6] Checking playbook v2 review/evidence integrity..."
+
+if ! command -v jq &> /dev/null; then
+    log_warn "jq not installed - skipping playbook v2 integrity checks"
+else
+    # reviewed_by の独立性チェック
+    for plan in play/*/plan.json; do
+        [ -f "$plan" ] || continue
+        case "$plan" in
+            */archive/*|*/template/*) continue ;;
+        esac
+
+        reviewed=$(jq -r '.meta.reviewed // false' "$plan" 2>/dev/null || echo "false")
+        reviewed_by=$(jq -r '.meta.reviewed_by // ""' "$plan" 2>/dev/null || echo "")
+
+        if [ "$reviewed" = "true" ]; then
+            if [ -z "$reviewed_by" ] || echo "$reviewed_by" | grep -Eqi '(pm|self)'; then
+                log_warn "$(basename "$(dirname "$plan")") → reviewed_by が独立レビューに見えません: \"$reviewed_by\""
+            else
+                log_ok "$(basename "$(dirname "$plan")") → reviewed_by: $reviewed_by"
+            fi
+        fi
+    done
+
+    # evidence ファイルの存在チェック
+    for progress in play/*/progress.json; do
+        [ -f "$progress" ] || continue
+        case "$progress" in
+            */archive/*|*/template/*) continue ;;
+        esac
+
+        play_id=$(basename "$(dirname "$progress")")
+        evidence_dir="play/$play_id/evidence"
+        evidence_count=$(jq -r '[.. | objects | .evidence? | select(type=="array") | length] | add // 0' "$progress" 2>/dev/null || echo "0")
+
+        if [ "$evidence_count" -gt 0 ]; then
+            if [ ! -d "$evidence_dir" ] || [ -z "$(ls -A "$evidence_dir" 2>/dev/null)" ]; then
+                log_warn "$play_id → evidence 記録あり($evidence_count)だが evidence/ が空または不存在"
+            else
+                log_ok "$play_id → evidence files present"
+            fi
+        fi
+    done
+fi
+
+echo ""
+
+# ============================================================
 # Summary
 # ============================================================
 echo "========================================"

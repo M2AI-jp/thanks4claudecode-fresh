@@ -1,0 +1,109 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "python-ext-counter",
+    "plan_path": "play/archive/python-ext-counter/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": null,
+    "subtask": null
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-06"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-06"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "play/archive/python-ext-counter/evidence/ext_counter_tmp.txt"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "import 文: argparse, os, collections, pathlib のみ（全て標準ライブラリ）"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "CLI引数, 走査, 集計, 出力の4機能実装済み"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "play/archive/python-ext-counter/evidence/pytest_ext_counter.txt"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "テスト対象: count_extensions, format_table, NO_EXT_LABEL"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "空ディレクトリ, 拡張子なし, 正常ケースをカバー"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "play/archive/python-ext-counter/evidence/ext_counter_tmp.txt",
+            "play/archive/python-ext-counter/evidence/pytest_ext_counter.txt"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "標準ライブラリのみ使用"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "done_when 3項目全て検証済み"
+          ]
+        }
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "play/archive/python-ext-counter/evidence/ext_counter_tmp.txt",
+      "play/archive/python-ext-counter/evidence/pytest_ext_counter.txt"
+    ],
+    "notes": "2026-01-06 critic SubAgent による検証完了"
+  }
+}
