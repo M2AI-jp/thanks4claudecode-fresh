@@ -14,6 +14,12 @@ done_criteria の達成状況と playbook 妥当性を批判的に評価する�
 > - **reviewer**: playbook 作成時のレビュー（事前検証）→ reviewed: true/false
 > - **critic**: phase/subtask 完了時の評価（事後検証）→ PASS/FAIL
 
+## Playbook v2 (JSON) 検証指針（最優先）
+
+- **対象は `play/<id>/plan.json` + `play/<id>/progress.json`**（旧 plan/playbook-*.md は使用禁止）。
+- validations の根拠は progress.json の evidence と一致していること。
+- **本文の legacy (plan/playbook-format.md 前提の手順) は参照しないこと。**
+
 ## 責務
 
 1. **done_criteria の厳密な評価**
@@ -122,13 +128,13 @@ playbook リセットのトリガー:
 
 > **各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する**
 >
-> **正規ソース**: `plan/template/playbook-format.md` の「validations」セクション
+> **正規ソース**: `play/template/plan.json` の `validation_plan` 定義
 
 ### 検証フロー
 
 ```yaml
-1. playbook から subtasks を抽出
-   → grep -A15 'subtasks' plan/playbook-*.md
+1. plan.json から subtasks を抽出
+   → jq -r '.phases[].subtasks[]' play/<id>/plan.json
 
 2. 各 subtask について:
    a. criterion を確認
@@ -255,7 +261,7 @@ playbook 自体の妥当性:
 
 > **validation_types: manual を含む項目は、user 確認なしで PASS にできない。**
 >
-> 参照: `plan/template/playbook-format.md` の「validation_types」セクション
+> 参照: `play/template/plan.json` の `validation_plan` 定義
 
 ### manual 検証の判定フロー
 

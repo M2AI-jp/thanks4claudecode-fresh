@@ -63,36 +63,25 @@ fi
 
 # playbook v2 (JSON) の作成/更新は playbook=null でも許可
 # pm が plan/progress を生成できるようにする（デッドロック回避）
-if [[ "$FILE_PATH" == *"/play/"*"/plan.json" ]] || [[ "$FILE_PATH" == *"/play/"*"/progress.json" ]]; then
-    exit 0
-fi
-
-# --------------------------------------------------
-# ブートストラップ例外: playbook ファイル自体の作成/編集は許可
-# /playbook-init や pm が新規 playbook を作成できるようにする
-# 注: plan/active/ は廃止済み（2025-12-25）、plan/ 直下のみ許可
-# --------------------------------------------------
-if [[ "$FILE_PATH" == *"plan/playbook-"*.md ]]; then
-    # M090: Orphan playbook 検出（根本治療）
-    # 新規 playbook 作成時に、plan/ に他の playbook が残っていれば警告
-    TARGET_PLAYBOOK=$(basename "$FILE_PATH")
-    OTHER_PLAYBOOKS=$(find plan -maxdepth 1 -name "playbook-*.md" ! -name "$TARGET_PLAYBOOK" 2>/dev/null | head -5)
+if [[ "$FILE_PATH" == *"/play/"*"/plan.json" ]]; then
+    TARGET_DIR=$(dirname "$FILE_PATH")
+    OTHER_PLAYBOOKS=$(find play -maxdepth 2 -name "plan.json" \
+        ! -path "*/archive/*" ! -path "*/template/*" \
+        ! -path "$TARGET_DIR/plan.json" 2>/dev/null | head -5)
 
     if [[ -n "$OTHER_PLAYBOOKS" ]]; then
         cat >&2 << EOF
 ========================================
-  ⚠️ Orphan playbook 検出
+  ⚠️ 既存 playbook が残っています
 ========================================
 
   新規 playbook を作成しようとしていますが、
-  plan/ に他の playbook が残っています:
+  play/ に他の playbook が残っています:
 
 $(echo "$OTHER_PLAYBOOKS" | sed 's/^/    /')
 
   これらは以下のいずれかを実行してください:
-    1. 完了させてからアーカイブ:
-       全 Phase を done にして archive-playbook を発火
-
+    1. 完了させてからアーカイブ（play/archive/ へ移動）
     2. 不要であれば手動で削除/退避
 
   → 作成は許可しますが、orphan を放置しないでください。
@@ -101,6 +90,30 @@ $(echo "$OTHER_PLAYBOOKS" | sed 's/^/    /')
 EOF
     fi
     exit 0
+fi
+
+if [[ "$FILE_PATH" == *"/play/"*"/progress.json" ]]; then
+    exit 0
+fi
+
+# --------------------------------------------------
+# legacy playbook (plan/playbook-*.md) は禁止
+# --------------------------------------------------
+if [[ "$FILE_PATH" == *"plan/playbook-"*.md ]]; then
+    cat >&2 << 'EOF'
+========================================
+  ⛔ legacy playbook は使用禁止
+========================================
+
+  旧 plan/playbook-*.md は廃止されています。
+  play/<id>/plan.json + progress.json を使用してください。
+
+  対処法:
+    Skill(skill='playbook-init') で playbook v2 を生成
+
+========================================
+EOF
+    exit 2
 fi
 
 # --------------------------------------------------

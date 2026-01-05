@@ -84,30 +84,36 @@ if [[ ! -f "$PLAYBOOK_PATH" ]]; then
     exit 0
 fi
 
-# playbook から in_progress の Phase を探す
-# 形式: status: in_progress または **status**: in_progress
-IN_PROGRESS_LINE=$(grep -n -E "(status:|\\*\\*status\\*\\*:).*in_progress" "$PLAYBOOK_PATH" 2>/dev/null | head -1 || echo "")
-if [[ -z "$IN_PROGRESS_LINE" ]]; then
+PLAYBOOK_DIR=$(dirname "$PLAYBOOK_PATH")
+PROGRESS_PATH="$PLAYBOOK_DIR/progress.json"
+
+if [[ ! -f "$PROGRESS_PATH" ]]; then
     exit 0
 fi
 
-# その Phase の executor を取得（status: in_progress の前の行を遡る）
-LINE_NUM=$(echo "$IN_PROGRESS_LINE" | cut -d: -f1)
+# progress.json から active subtask を取得（fallback: in_progress を探索）
+ACTIVE_SUBTASK=$(jq -r '.active.subtask // empty' "$PROGRESS_PATH" 2>/dev/null || echo "")
+if [[ -z "$ACTIVE_SUBTASK" || "$ACTIVE_SUBTASK" == "null" ]]; then
+    ACTIVE_SUBTASK=$(jq -r '.subtasks | to_entries[] | select(.value.status == "in_progress") | .key' "$PROGRESS_PATH" 2>/dev/null | head -1 || echo "")
+fi
 
-# executor を探す（status 行より前の近い行を探す）
-EXECUTOR=""
-for i in $(seq "$LINE_NUM" -1 1); do
-    LINE=$(sed -n "${i}p" "$PLAYBOOK_PATH")
-    # M085 修正: "- executor:" 形式にも対応（YAML リストアイテム）
-    if [[ "$LINE" =~ ^[[:space:]]*-?[[:space:]]*executor:[[:space:]]*(.+)$ ]]; then
-        EXECUTOR=$(echo "${BASH_REMATCH[1]}" | tr -d ' ')
-        break
+# active.subtask が未設定なら active.phase から補完（単一 subtask のみ）
+if [[ -z "$ACTIVE_SUBTASK" ]]; then
+    ACTIVE_PHASE=$(jq -r '.active.phase // empty' "$PROGRESS_PATH" 2>/dev/null || echo "")
+    if [[ -n "$ACTIVE_PHASE" && "$ACTIVE_PHASE" != "null" ]]; then
+        ACTIVE_SUBTASK=$(jq -r --arg phase "$ACTIVE_PHASE" '.phases[] | select(.id == $phase) | .subtasks[] | .id' "$PLAYBOOK_PATH" 2>/dev/null | head -1 || echo "")
     fi
-    # id: に到達したら止める（Phase の境界）
-    if [[ "$LINE" =~ ^[[:space:]]*-[[:space:]]*id: ]]; then
-        break
-    fi
-done
+fi
+
+if [[ -z "$ACTIVE_SUBTASK" ]]; then
+    exit 0
+fi
+
+# plan.json から executor を取得
+EXECUTOR=$(jq -r --arg subtask "$ACTIVE_SUBTASK" '.phases[].subtasks[] | select(.id == $subtask) | .executor // empty' "$PLAYBOOK_PATH" 2>/dev/null || echo "")
+if [[ -z "$EXECUTOR" || "$EXECUTOR" == "null" ]]; then
+    exit 0
+fi
 
 # ==============================================================
 # role-resolver.sh で役割名を具体的な executor に解決
@@ -249,7 +255,7 @@ case "$EXECUTOR" in
             # max_iterations を playbook から取得
             MAX_ITER=5  # デフォルト
             if [[ -f "$PLAYBOOK_PATH" ]]; then
-                PLAYBOOK_MAX=$(grep "max_iterations:" "$PLAYBOOK_PATH" 2>/dev/null | head -1 | sed 's/.*max_iterations: *//' | tr -d ' ' || echo "")
+                PLAYBOOK_MAX=$(jq -r '.max_iterations // empty' "$PLAYBOOK_PATH" 2>/dev/null || echo "")
                 if [[ -n "$PLAYBOOK_MAX" && "$PLAYBOOK_MAX" =~ ^[0-9]+$ ]]; then
                     MAX_ITER=$PLAYBOOK_MAX
                 fi

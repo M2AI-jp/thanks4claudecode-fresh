@@ -37,7 +37,7 @@ invoke_event_chain() {
 }
 
 case "$TOOL_NAME" in
-    Edit)
+    Edit|Write)
         invoke_event_chain "post-tool-edit"
         ;;
     Task)

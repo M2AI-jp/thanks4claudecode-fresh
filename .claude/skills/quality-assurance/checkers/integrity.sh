@@ -134,26 +134,31 @@ fi
 echo ""
 
 # ============================================================
-# 5. Playbook の status チェック（全 Phase done なのにアーカイブ未済）
+# 5. Playbook v2 の status チェック（全 Phase done なのにアーカイブ未済）
 # ============================================================
-echo "[5/5] Checking for unarchived completed playbooks..."
+echo "[5/6] Checking for unarchived completed playbooks (v2)..."
 
-for playbook in plan/playbook-*.md; do
-    [ -f "$playbook" ] || continue
+if ! command -v jq &> /dev/null; then
+    log_warn "jq not installed - skipping playbook v2 completion checks"
+else
+    for progress in play/*/progress.json; do
+        [ -f "$progress" ] || continue
+        case "$progress" in
+            */archive/*|*/template/*) continue ;;
+        esac
 
-    PLAYBOOK_NAME=$(basename "$playbook")
+        play_id=$(basename "$(dirname "$progress")")
+        TOTAL_PHASES=$(jq '.phases | length' "$progress" 2>/dev/null || echo "0")
+        DONE_PHASES=$(jq '[.phases[] | select(.status == "done" or .status == "completed")] | length' "$progress" 2>/dev/null || echo "0")
 
-    # 全 Phase が done かチェック
-    TOTAL_PHASES=$(grep -c '^\*\*status\*\*:' "$playbook" 2>/dev/null) || TOTAL_PHASES=0
-    DONE_PHASES=$(grep -c '^\*\*status\*\*: done' "$playbook" 2>/dev/null) || DONE_PHASES=0
-
-    if [ "$TOTAL_PHASES" -gt 0 ] && [ "$TOTAL_PHASES" -eq "$DONE_PHASES" ]; then
-        log_warn "$PLAYBOOK_NAME → All phases done but not archived"
-        echo "       → Run: mv $playbook plan/archive/"
-    else
-        log_ok "$PLAYBOOK_NAME → $DONE_PHASES/$TOTAL_PHASES phases done"
-    fi
-done
+        if [ "$TOTAL_PHASES" -gt 0 ] && [ "$TOTAL_PHASES" -eq "$DONE_PHASES" ]; then
+            log_warn "$play_id → All phases done but not archived"
+            echo "       → Run: mv play/$play_id play/archive/"
+        else
+            log_ok "$play_id → $DONE_PHASES/$TOTAL_PHASES phases done"
+        fi
+    done
+fi
 
 echo ""
 

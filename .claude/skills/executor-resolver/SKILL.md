@@ -61,7 +61,7 @@ pm_flow:
 
 ---
 
-## Executor 定義（playbook-format.md 準拠）
+## Executor 定義（play/template/plan.json 準拠）
 
 ```yaml
 claudecode:
@@ -151,4 +151,4 @@ resolution:
 | .claude/skills/executor-resolver/agents/executor-resolver.md | SubAgent 定義 |
 | .claude/skills/prompt-analyzer/SKILL.md | プロンプト分析（連携元） |
 | .claude/skills/golden-path/agents/pm.md | pm SubAgent（呼び出し元） |
-| plan/template/playbook-format.md | executor 定義の原本 |
+| play/template/plan.json | executor 定義の原本 |

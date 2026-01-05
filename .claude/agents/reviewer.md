@@ -21,6 +21,16 @@ model: opus
 
 ---
 
+## Playbook v2 (JSON) レビュー指針（最優先）
+
+- **対象は `play/<id>/plan.json`**（旧 plan/playbook-*.md は使用禁止）。
+- 必須キー: `meta`, `goal.done_when`, `context`, `phases[].subtasks[]`.
+- `subtasks[].validation_plan` が 3 点検証（technical/consistency/completeness）を満たすか確認。
+- `meta.reviewed=true` は reviewer PASS 後に pm が更新する（reviewer は書き込み不可）。
+- **本文の legacy (plan/playbook-format.md 前提のコマンド) は参照しないこと。**
+
+---
+
 ## 責務
 
 1. **playbook レビュー**（主要責務）
@@ -201,7 +211,7 @@ Plus_批判的思考:
 ```
 /review src/index.ts
 /review .claude/hooks/
-/review plan/playbook-*.md
+/review play/<id>/plan.json
 ```
 
 ## 参照ファイル
@@ -210,6 +220,7 @@ Plus_批判的思考:
 - AGENTS.md - コーディング規約
 - state.md - 現在のコンテキスト
 - pm.md - 役割定義
+- play/template/plan.json - playbook v2 テンプレート
 
 ---
 
@@ -223,7 +234,7 @@ Plus_批判的思考:
 Q1_形式検証:
   目的: playbook の構造が正しいか
   チェック項目:
-    - playbook-format.md のテンプレートに準拠しているか
+    - play/template/plan.json のテンプレートに準拠しているか
     - 必須フィールド（meta, goal, phases, p_final, final_tasks）が存在するか
     - subtask 形式（- [ ] **p{N}.{M}**: criterion）が正しいか
 
@@ -424,11 +435,11 @@ review_result:
 
 ```yaml
 # レビュー実行
-Task(subagent_type="reviewer", prompt="plan/playbook-auth.md をレビュー")
+Task(subagent_type="reviewer", prompt="play/auth/plan.json をレビュー")
 
 # 出力例
 review_result:
-  playbook: "plan/playbook-auth.md"
+  playbook: "play/auth/plan.json"
   timestamp: "2026-01-01T12:00:00Z"
 
   Q1:

@@ -1,33 +1,15 @@
 #!/bin/bash
-# scope-guard.sh - done_criteria/done_when の無断変更を検出
+# scope-guard.sh - done_when/done_criteria の無断変更を検出（playbook v2）
 #
 # 目的: pm を経由せずにスコープを拡張することを防止
 # トリガー: PreToolUse(Edit), PreToolUse(Write)
-#
-# 設計思想（アクションベース Guards）:
-#   - Edit/Write 時に常にチェック
-#   - playbook のスコープ変更を検出
-#
-# 検出対象:
-#   - playbook ファイルの done_when/done_criteria セクション
-#
-# 動作:
-#   - 該当セクションの編集を検出したら警告
-#   - pm エージェント経由を促す
 
 set -euo pipefail
 
-# 環境変数で動作モードを制御
-# STRICT_MODE=true: exit 2 でブロック
-# STRICT_MODE=false (default): 警告のみ
 STRICT_MODE="${STRICT_MODE:-false}"
 
-STATE_FILE="${STATE_FILE:-state.md}"
-
-# stdin から JSON を読み込む
 INPUT=$(cat)
 
-# jq がない場合はブロック（Fail-closed）
 if ! command -v jq &> /dev/null; then
     cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -39,84 +21,110 @@ EOF
     exit 2
 fi
 
-# 編集対象ファイルを取得
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 if [[ -z "$FILE_PATH" ]]; then
     exit 0
 fi
 
-# 相対パスに変換
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-RELATIVE_PATH="${FILE_PATH#$PROJECT_DIR/}"
+case "$FILE_PATH" in
+    */play/*/plan.json) ;;
+    *) exit 0 ;;
+esac
 
-# playbook 以外は無視
-IS_PLAYBOOK=false
-
-if [[ "$RELATIVE_PATH" == plan/playbook-*.md ]] || [[ "$RELATIVE_PATH" == *playbook*.md ]]; then
-    IS_PLAYBOOK=true
-fi
-
-if [[ "$IS_PLAYBOOK" == false ]]; then
+if [[ "$FILE_PATH" == */archive/* ]] || [[ "$FILE_PATH" == */template/* ]]; then
     exit 0
 fi
 
-# 編集内容（old_string, new_string）を取得
-OLD_STRING=$(echo "$INPUT" | jq -r '.tool_input.old_string // ""')
-NEW_STRING=$(echo "$INPUT" | jq -r '.tool_input.new_string // ""')
+STRICT_MODE="$STRICT_MODE" printf '%s' "$INPUT" | python3 - "$FILE_PATH" << 'PY'
+import json
+import os
+import sys
+from pathlib import Path
 
-# done_when または done_criteria を含むか確認
-MODIFYING_SCOPE=false
+plan_path = Path(sys.argv[1])
+strict_mode = os.environ.get("STRICT_MODE", "false").lower() == "true"
 
-# 1. old_string に done_when/done_criteria が含まれている（既存の定義を変更）
-if [[ "$OLD_STRING" == *"done_when"* ]] || [[ "$OLD_STRING" == *"done_criteria"* ]]; then
-    MODIFYING_SCOPE=true
-fi
+try:
+    payload = json.load(sys.stdin)
+except json.JSONDecodeError:
+    sys.exit(0)
 
-# 2. new_string に done_when/done_criteria が追加されている（新規追加）
-if [[ "$NEW_STRING" == *"done_when"* ]] || [[ "$NEW_STRING" == *"done_criteria"* ]]; then
-    # old_string に含まれていない場合は追加
-    if [[ "$OLD_STRING" != *"done_when"* ]] && [[ "$NEW_STRING" == *"done_when"* ]]; then
-        MODIFYING_SCOPE=true
-    fi
-    if [[ "$OLD_STRING" != *"done_criteria"* ]] && [[ "$NEW_STRING" == *"done_criteria"* ]]; then
-        MODIFYING_SCOPE=true
-    fi
-fi
+tool_input = payload.get("tool_input", {})
+content = tool_input.get("content")
+old_string = tool_input.get("old_string")
+new_string = tool_input.get("new_string")
 
-# スコープ変更を検出したら警告（ブロックはしない）
-if [[ "$MODIFYING_SCOPE" == true ]]; then
-    cat >&2 << EOF
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ⚠️ スコープ変更を検出
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+try:
+    current_text = plan_path.read_text()
+except FileNotFoundError:
+    sys.exit(0)
 
-  done_when または done_criteria を変更しようとしています。
+try:
+    old_data = json.loads(current_text)
+except json.JSONDecodeError:
+    print("plan.json が不正な JSON です。修正してから再実行してください。", file=sys.stderr)
+    sys.exit(2)
 
-  確認事項:
-    - この変更はユーザーの承認を得ていますか？
-    - pm エージェントを経由しましたか？
-    - スコープクリープ（範囲の無断拡大）ではありませんか？
+if content:
+    new_text = content
+elif old_string and new_string:
+    if old_string not in current_text:
+        sys.exit(0)
+    new_text = current_text.replace(old_string, new_string, 1)
+else:
+    sys.exit(0)
 
-  正しい手順:
-    1. ユーザーに変更理由を説明
-    2. pm SubAgent 経由で playbook を更新
-       Task(subagent_type='pm')
-    3. 承認を得てから編集
+if new_text == current_text:
+    sys.exit(0)
 
-  スコープクリープの例（禁止）:
-    × 「ついでに〇〇も追加しよう」
-    × 「もっと良くするために△△も」
-    × ユーザーに聞かずに done_criteria を追加
+try:
+    new_data = json.loads(new_text)
+except json.JSONDecodeError:
+    print("plan.json の更新後内容が JSON として不正です。", file=sys.stderr)
+    sys.exit(2)
 
-  対象ファイル: $RELATIVE_PATH
+def normalized(value):
+    if value is None:
+        return []
+    return value
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EOF
+old_goal = old_data.get("goal", {}) or {}
+new_goal = new_data.get("goal", {}) or {}
 
-    if [[ "$STRICT_MODE" == "true" ]]; then
-        echo "  🚫 STRICT_MODE=true: この変更はブロックされます" >&2
-        exit 2
-    fi
-fi
+old_done_when = normalized(old_goal.get("done_when"))
+new_done_when = normalized(new_goal.get("done_when"))
+old_done_criteria = normalized(old_goal.get("done_criteria"))
+new_done_criteria = normalized(new_goal.get("done_criteria"))
 
-exit 0
+changed = old_done_when != new_done_when or old_done_criteria != new_done_criteria
+if not changed:
+    sys.exit(0)
+
+lines = [
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    "  ⚠️ スコープ変更を検出",
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    "",
+    "  done_when または done_criteria を変更しようとしています。",
+    "",
+    "  確認事項:",
+    "    - この変更はユーザーの承認を得ていますか？",
+    "    - pm エージェントを経由しましたか？",
+    "    - スコープクリープではありませんか？",
+    "",
+    "  正しい手順:",
+    "    1. ユーザーに変更理由を説明",
+    "    2. pm SubAgent 経由で playbook を更新",
+    "    3. 承認を得てから編集",
+    "",
+    f"  対象ファイル: {plan_path}",
+    "",
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+]
+
+print("\n".join(lines), file=sys.stderr)
+if strict_mode:
+    print("  🚫 STRICT_MODE=true: この変更はブロックされます", file=sys.stderr)
+    sys.exit(2)
+sys.exit(0)
+PY

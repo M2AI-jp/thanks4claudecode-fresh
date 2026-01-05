@@ -55,7 +55,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
    -> PASS のみ完了へ進む
 
 4) 完了
-   -> PostToolUse(Edit) Unit が整理・PRフロー・アーカイブを実施
+   -> PostToolUse(Edit/Write) Unit が整理・PRフロー・アーカイブを実施
    -> Stop/SessionEnd/Notification が状態を記録
 ```
 
@@ -163,7 +163,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
   - `scripts/contract.sh`
 
 ### 完了処理と PR/マージ自動化
-- Hook: PostToolUse(Edit)
+- Hook: PostToolUse(Edit/Write)
 - Files:
   - `.claude/hooks/post-tool.sh`
   - `.claude/events/post-tool-edit/chain.sh`
@@ -238,7 +238,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
 | reward-guard | 参照整合・逸脱検出 | core / keep |
 | quality-assurance (lint) | 変更品質 | conditional / keep |
 
-### PostToolUse(Edit)
+### PostToolUse(Edit/Write)
 | Skill | 非機能要件の役割 | 評価 |
 |---|---|---|
 | playbook-gate (archive/cleanup) | 完了処理 | core / keep |

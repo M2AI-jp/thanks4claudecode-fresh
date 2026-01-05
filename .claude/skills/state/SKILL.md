@@ -69,12 +69,12 @@ playbook 自体の妥当性: {問題なし|修正が必要}
   2. まず playbook を作成
 
 手順:
-  1. plan/template/playbook-format.md を読む
+  1. play/template/plan.json と play/template/progress.json を読む
   2. ユーザーにヒアリング:
      - 何を作るか（ゴール）
      - 完了条件は何か（done_criteria）
      - フェーズ分割
-  3. plan/playbook-{name}.md を作成
+  3. play/<id>/plan.json と play/<id>/progress.json を作成
   4. state.md の playbook.active を更新
   5. 作業開始
 
@@ -83,45 +83,7 @@ playbook 自体の妥当性: {問題なし|修正が必要}
   - 「計画なしで作業 → 自己報酬詐欺」の防止
 ```
 
-## playbook 作成テンプレート（V16 形式）
+## playbook 作成テンプレート（v2 JSON）
 
-```markdown
-# plan/playbook-{name}.md
-
-## meta
-
-```yaml
-project: {プロジェクト名}
-branch: {type}/{description}
-created: {今日の日付}
-derives_from: {project.milestone の ID}
-reviewed: false
-```
-
-## goal
-
-```yaml
-summary: {1行の目標}
-done_when:
-  - {最終完了条件1}
-  - {最終完了条件2}
-```
-
-## phases
-
-### p1: {フェーズ名}
-
-**goal**: {このフェーズの目標}
-
-#### subtasks
-
-- [ ] **p1.1**: {対象} が {状態} である
-  - executor: claudecode
-  - validations:
-    - technical: "{技術的に正しく動作するか}"
-    - consistency: "{他コンポーネントと整合性があるか}"
-    - completeness: "{必要な変更が全て完了しているか}"
-
-**status**: pending
-**max_iterations**: 5
-```
+- `play/template/plan.json`
+- `play/template/progress.json`

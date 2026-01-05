@@ -15,6 +15,17 @@ playbook の作成・管理・進捗追跡を行うプロジェクトマネー�
 
 ---
 
+## Playbook v2 (JSON) 運用（最優先）
+
+- **旧 plan/playbook-*.md は廃止**。必ず play/ 配下の JSON を使用する。
+- テンプレートは `play/template/plan.json` と `play/template/progress.json`。
+- 新規作成は `play/<id>/plan.json` + `play/<id>/progress.json` の 2 ファイル。
+- reviewer PASS 後に `plan.json` の `meta.reviewed=true` と `meta.reviewed_by` を更新。
+- state.md の `playbook.active` は `play/<id>/plan.json` を指す。
+- **以降の本文に legacy (plan/ や playbook-format.md) が出てきても無視すること。**
+
+---
+
 ## ★★★ 分析結果の再解釈禁止（最重要）★★★
 
 > **playbook-init Skill から分析済みデータを受け取った場合、pm は再解釈しない。**
@@ -221,7 +232,7 @@ meta:
 
 2. **playbook 作成**
    - ユーザーの要望をヒアリング（最小限）
-   - plan/template/playbook-format.md に従って作成
+   - play/template/plan.json + play/template/progress.json に従って作成
    - state.md の active_playbooks を更新
 
 3. **進捗管理**
@@ -414,7 +425,8 @@ playbook なしで作業開始しない:
 
 ```
 0. 【必須】テンプレート参照（スキップ禁止）
-   → Read: plan/template/playbook-format.md（V16）
+   → Read: play/template/plan.json
+   → Read: play/template/progress.json
    → Read: docs/criterion-validation-rules.md（禁止パターン）
    → 目的: 最新のフォーマットと criterion 検証ルールを確認
 
@@ -474,10 +486,10 @@ playbook なしで作業開始しない:
      - p_final の depends_on に p_self_update を追加
    → 2つ以下の場合: スキップ可能
 
-9. plan/playbook-{name}.md を作成（ドラフト状態）
+9. play/<id>/plan.json と play/<id>/progress.json を作成（ドラフト状態）
 
 9.5. 【必須】context セクション書き込み（分析結果の永続化）★
-   → playbook の `## context` セクションに以下を埋め込む:
+   → plan.json の `context` に以下を埋め込む:
      - analysis_result: prompt-analyzer の分析結果全体（省略禁止）
        必須項目:
          - 5w1h: Who/What/When/Where/Why/How + missing
@@ -491,7 +503,7 @@ playbook なしで作業開始しない:
      - summary: confidence + ready_for_playbook + blocking_issues
      - user_approved_understanding: ユーザー承認情報（日時 + 承認内容）
    → 目的: compact 後も分析結果を復元可能にする
-   → 参照: plan/template/playbook-format.md の context セクション定義
+   → 参照: play/template/plan.json の context 定義
    → 参照: .claude/skills/prompt-analyzer/agents/prompt-analyzer.md の出力フォーマット
 
 10. 【必須】reviewer を呼び出し（スキップ禁止）★
@@ -508,7 +520,7 @@ playbook なしで作業開始しない:
 
 > **criterion + executor + validations を1セットで定義する**
 >
-> **正規ソース**: `plan/template/playbook-format.md` の「validations」セクション
+> **正規ソース**: `play/template/plan.json` の `validation_plan` 定義
 
 ### 構造
 
@@ -775,7 +787,7 @@ pm の責務:
 
 ```yaml
 なぜ必須か:
-  - playbook-format.md は頻繁に更新される（V16 まで改訂済み）
+  - play/template/plan.json と play/template/progress.json は頻繁に更新される
   - 古い知識で playbook を作ると構造が不正確になる
   - done_criteria 記述ガイド、executor 判定ガイド等の重要情報
 
@@ -871,7 +883,8 @@ pm の責務:
 
 ## 参照ファイル
 
-- plan/template/playbook-format.md - playbook テンプレート（V16: p_self_update 必須化）
+- play/template/plan.json - playbook テンプレート（plan）
+- play/template/progress.json - playbook テンプレート（progress）
 - .claude/frameworks/playbook-review-criteria.md - playbook レビュー基準
 - docs/criterion-validation-rules.md - criterion 検証ルール（禁止パターン）
 - state.md - 現在の playbook

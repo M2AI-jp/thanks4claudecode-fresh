@@ -39,7 +39,7 @@ Single Source of Truth:
    -> PASS でのみ完了へ進む
 
 4) 完了
-   PostToolUse(Edit) Unit が整理・PRフロー・アーカイブを実施
+   PostToolUse(Edit/Write) Unit が整理・PRフロー・アーカイブを実施
    Stop/SessionEnd/Notification が状態を記録
 ```
 
@@ -99,7 +99,7 @@ The canonical mapping (ideal -> current -> missing) lives in
 | UserPromptSubmit | user-prompt-submit | `.claude/hooks/prompt.sh` | `.claude/events/user-prompt-submit/` |
 | PreToolUse (Edit/Write) | pre-tool-edit | `.claude/hooks/pre-tool.sh` | `.claude/events/pre-tool-edit/` |
 | PreToolUse (Bash) | pre-tool-bash | `.claude/hooks/pre-tool.sh` | `.claude/events/pre-tool-bash/` |
-| PostToolUse (Edit) | post-tool-edit | `.claude/hooks/post-tool.sh` | `.claude/events/post-tool-edit/` |
+| PostToolUse (Edit/Write) | post-tool-edit | `.claude/hooks/post-tool.sh` | `.claude/events/post-tool-edit/` |
 | SubagentStop | subagent-stop | `.claude/hooks/subagent-stop.sh` | `.claude/events/subagent-stop/` |
 | PreCompact | pre-compact | `.claude/events/pre-compact/chain.sh` | `.claude/events/pre-compact/` |
 | Stop | stop | `.claude/events/stop/chain.sh` | `.claude/events/stop/` |
@@ -512,11 +512,11 @@ Claude は playbook 作成時に自動でブランチを切る。
 
 ---
 
-## 6. PostToolUse:Edit（編集後）
+## 6. PostToolUse:Edit/Write（編集/書き込み後）
 
 ### 発火条件
 
-**Hook イベント**: `PostToolUse`（マッチャー: `Edit`）
+**Hook イベント**: `PostToolUse`（マッチャー: `Edit|Write`）
 
 ツール正常完了直後に発火。成功時のみ実行される。
 `tool_response` でツール実行結果を取得可能。
@@ -524,7 +524,7 @@ Claude は playbook 作成時に自動でブランチを切る。
 ```json
 // stdin で受け取る JSON
 {
-  "tool_name": "Edit",
+  "tool_name": "Edit | Write",
   "tool_input": { "file_path": "...", ... },
   "tool_response": { "filePath": "...", "success": true }
 }
@@ -1055,7 +1055,7 @@ Phase 完了判定
                                        - 手動対応
     │
     ▼
-[PostToolUse:Edit]
+[PostToolUse:Edit/Write]
     │ 全 Phase done?
     │
     ├─→ YES: archive-playbook.sh（自動実行）
@@ -1223,7 +1223,7 @@ scripts/
 | セクション | 設計 | 実装状態 |
 |-----------|------|---------|
 | Section 1 (SessionStart) | health.sh を SessionStart から自動呼び出し | ✅ 実装済み（session-manager/handlers/start.sh） |
-| Playbook v2 (golden-path) | play/<id>/plan.json + progress.json を使用 | ❌ pm が plan/playbook-*.md を生成（legacy） |
+| Playbook v2 (golden-path) | play/<id>/plan.json + progress.json を使用 | ✅ pm が play/<id>/plan.json + progress.json を生成 |
 
 ---
 
@@ -1232,6 +1232,7 @@ scripts/
 | 日時 | 内容 |
 |------|------|
 | 2026-01-06 | prompt-analyzer 強制条件の明文化・playbook v2/legacy 乖離を追記 |
+| 2026-01-06 | playbook v2(JSON) の guards/workflow/agents を更新 |
 | 2026-01-06 | SessionStart で health/integrity を自動実行 |
 | 2026-01-04 | repository-map 更新 |
 | 2026-01-02 | Section 14「既知の課題と未実装」追加（リポジトリ監査結果） |

@@ -37,7 +37,7 @@ skills: prompt-analyzer
 
 ---
 
-## Executor 定義（playbook-format.md 準拠）
+## Executor 定義（play/template/plan.json 準拠）
 
 ### claudecode
 
@@ -573,7 +573,7 @@ low:
   - 構造化された YAML 形式で出力すること
   - 少なくとも 1 つの代替案を提示すること（confidence が high でも）
   - subtask がある場合は全てにアサインすること
-  - playbook-format.md の executor 定義に準拠すること
+  - play/template/plan.json の executor 定義に準拠すること
 
 禁止:
   - ファイルの変更（Read-only）
@@ -646,4 +646,4 @@ task_analysis:
 | .claude/skills/executor-resolver/SKILL.md | Skill 定義 |
 | .claude/skills/prompt-analyzer/agents/prompt-analyzer.md | プロンプト分析（連携） |
 | .claude/skills/golden-path/agents/pm.md | pm SubAgent（呼び出し元） |
-| plan/template/playbook-format.md | executor 定義の原本 |
+| play/template/plan.json | executor 定義の原本 |
