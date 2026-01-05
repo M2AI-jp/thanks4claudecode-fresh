@@ -1200,7 +1200,6 @@ scripts/
 | failure-logger.sh | playbook-guard.sh から参照 | 未実装 | 実装または参照削除 |
 | doc-freshness-check.sh | 設計構想 | 未実装 | 要件定義後に検討 |
 | update-tracker.sh | 設計構想 | 未実装 | git diff で代替可能 |
-| health.sh 自動呼び出し | health.sh コメント | 未実装 | session.sh から呼び出し追加 |
 
 ### 14.3 Hook イベント（no-op chain）
 
@@ -1214,7 +1213,7 @@ scripts/
 
 | セクション | 設計 | 実装状態 |
 |-----------|------|---------|
-| Section 1 (SessionStart) | health.sh を SessionStart から自動呼び出し | ❌ 未実装（手動のみ） |
+| Section 1 (SessionStart) | health.sh を SessionStart から自動呼び出し | ✅ 実装済み（session-manager/handlers/start.sh） |
 
 ---
 
@@ -1222,6 +1221,7 @@ scripts/
 
 | 日時 | 内容 |
 |------|------|
+| 2026-01-06 | SessionStart で health/integrity を自動実行 |
 | 2026-01-04 | repository-map 更新 |
 | 2026-01-02 | Section 14「既知の課題と未実装」追加（リポジトリ監査結果） |
 | 2026-01-02 | Skills 全面追記: core skills 追加 |

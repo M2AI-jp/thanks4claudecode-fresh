@@ -55,6 +55,16 @@ run_health_check() {
 }
 
 # ==============================================================================
+# Session integrity check (auto)
+# ==============================================================================
+run_integrity_check() {
+    local integrity_script=".claude/skills/quality-assurance/checkers/integrity.sh"
+    if [ -x "$integrity_script" ] || [ -f "$integrity_script" ]; then
+        bash "$integrity_script" || true
+    fi
+}
+
+# ==============================================================================
 # repository-map.yaml 差分チェック関数
 # 実ファイル数と repository-map.yaml の count を比較し、乖離を検出
 # ==============================================================================
@@ -296,6 +306,9 @@ verify_hooks
 
 # === health.sh 自動実行 ===
 run_health_check
+
+# === integrity.sh 自動実行 ===
+run_integrity_check
 
 # === repository-map.yaml 差分チェック ===
 check_repository_map_drift

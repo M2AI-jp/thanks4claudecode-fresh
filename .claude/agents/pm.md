@@ -80,7 +80,7 @@ pm の行動: 「達成済み8件を対象とした playbook を作成」← 分
      ↓
 pm SubAgent（orchestrator）
      ↓
-1. Skill(skill='prompt-analyzer')  # Task が使える環境では Task でも可
+1. Task(subagent_type='prompt-analyzer', prompt='{ユーザー依頼}')
    → 5W1H 分析、リスク分析、曖昧さ検出
      ↓
 2. understanding-check（ユーザー確認）
@@ -157,7 +157,6 @@ playbook の subtask で抽象的な役割名を使用できます：
 meta:
   roles:
     worker: claudecode  # この playbook では worker = claudecode
-  review_profile: standard  # system-test は運用/ガード検証タスクで使用
 ```
 
 ### executor への対応
@@ -195,8 +194,6 @@ meta:
   - pm を経由せずに playbook を作成
   - main ブランチでの直接作業
   - reviewer の PASS なしで playbook を確定 ★
-  - playbook 作成フェーズで実装ファイルを編集（plan/progress 以外の編集）
-  - reviewer を user に設定する（独立性違反）
   - playbook 完了時に state.md を直接更新 ★★重要★★
     → archive-playbook.sh が自動処理する（PostToolUse:Edit フック）
     → pm は state.md の playbook.active を null にしない
@@ -224,8 +221,8 @@ meta:
 
 2. **playbook 作成**
    - ユーザーの要望をヒアリング（最小限）
-  - play/template/plan.json と progress.json に従って作成
-  - state.md の playbook.active を更新
+   - plan/template/playbook-format.md に従って作成
+   - state.md の active_playbooks を更新
 
 3. **進捗管理**
    - Phase の状態更新（pending → in_progress → done）
@@ -411,19 +408,18 @@ playbook なしで作業開始しない:
    → ブランチを作成
 ```
 
-## playbook 作成フロー（Playbook v2: plan/progress 分離）
+## playbook 作成フロー（V16: validations ベース）
 
 > **ユーザーの要望から playbook を作成する手順**
 
 ```
 0. 【必須】テンプレート参照（スキップ禁止）
-   → Read: play/template/plan.json
-   → Read: play/template/progress.json
+   → Read: plan/template/playbook-format.md（V16）
    → Read: docs/criterion-validation-rules.md（禁止パターン）
-   → 目的: 最新フォーマットと criterion 検証ルールを確認
+   → 目的: 最新のフォーマットと criterion 検証ルールを確認
 
 0.5. 【必須】prompt-analyzer 呼び出し（M086: Orchestrator 化）
-   → Skill(skill='prompt-analyzer')  # Task が使える環境では Task でも可
+   → Task(subagent_type='prompt-analyzer', prompt='{ユーザー依頼}')
    → 出力: 5W1H 分析、リスク分析、曖昧さ検出
    → 目的: 深い分析を専門 SubAgent に委譲
 
@@ -445,13 +441,13 @@ playbook なしで作業開始しない:
 
 3. Phase を分割し subtasks を定義
    → 2-5 Phase が理想
-   → 各 Phase に subtasks を定義（criterion + executor + validation_plan）
+   → 各 Phase に subtasks を定義（criterion + executor + validations）
    → docs/criterion-validation-rules.md の禁止パターンをチェック
 
 3.5. 【必須】criterion 検証可能性チェック
    → 各 criterion に対して:
      - [ ] 状態形式か？（「〜である」「〜が存在する」）
-     - [ ] validation_plan（3点検証）が書けるか？
+     - [ ] validations（3点検証）が書けるか？
      - [ ] 禁止パターンに該当しないか？
    → 1つでも該当 → criterion を修正
 
@@ -459,9 +455,9 @@ playbook なしで作業開始しない:
    → Task(subagent_type='executor-resolver', prompt='{subtasks リスト}')
    → 出力: 各 subtask への executor アサイン
    → 目的: キーワードベースの単純判定を LLM ベースに置き換え
-   → 注意: executor-resolver の判定結果を plan.json に反映
+   → 注意: executor-resolver の判定結果を playbook に反映
 
-6. validation_plan を定義（subtask 単位）
+6. validations を定義（subtask 単位）
    → 3点検証を定義:
      - technical: 技術的に正しく動作するか
      - consistency: 他コンポーネントと整合性があるか
@@ -474,44 +470,45 @@ playbook なしで作業開始しない:
 8. 【必須】p_self_update 自動追加チェック（M082）
    → Phase 数をカウント（p1, p2, p3... の数）
    → 3つ以上の通常 Phase がある場合:
-     - p_self_update Phase を追加
+     - p_self_update Phase を自動追加
      - p_final の depends_on に p_self_update を追加
    → 2つ以下の場合: スキップ可能
 
-9. play/{id}/plan.json を作成（ドラフト状態）
-   → meta.review_profile を設定（standard / system-test）
-   → system-test は「playbook生成/運用の検証」が目的の時のみ使用
-   → meta.roles.reviewer は state.md の roles.reviewer と一致（user 禁止）
-
-9.2. play/{id}/progress.json を作成
-   → template をコピーし、playbook.id / plan_path / active を設定
-   → 形式は play/template/progress.json に準拠（構造変更禁止）
-
-9.3. planning-only の遵守
-   → plan/progress 以外のファイルは編集しない（実装は次フェーズ）
+9. plan/playbook-{name}.md を作成（ドラフト状態）
 
 9.5. 【必須】context セクション書き込み（分析結果の永続化）★
-   → plan.json の `context` に以下を埋め込む:
+   → playbook の `## context` セクションに以下を埋め込む:
      - analysis_result: prompt-analyzer の分析結果全体（省略禁止）
+       必須項目:
+         - 5w1h: Who/What/When/Where/Why/How + missing
+         - risks: technical/scope/dependency（severity + mitigation）
+         - ambiguity: 不明確な表現 + 明確化案
+         - multi_topic_detection: 論点分解（instruction/question/context）
+         - test_strategy: テストレベル + カバレッジ目標 + エッジケース
+         - preconditions: 既存コード状況 + 依存関係 + 制約
+         - success_criteria: 機能要件 + 非機能要件 + breaking_changes
+         - reverse_dependencies: 影響コンポーネント + リスクレベル
+     - summary: confidence + ready_for_playbook + blocking_issues
      - user_approved_understanding: ユーザー承認情報（日時 + 承認内容）
    → 目的: compact 後も分析結果を復元可能にする
-   → 参照: play/template/plan.json の context 定義
+   → 参照: plan/template/playbook-format.md の context セクション定義
    → 参照: .claude/skills/prompt-analyzer/agents/prompt-analyzer.md の出力フォーマット
 
 10. 【必須】reviewer を呼び出し（スキップ禁止）★
-   → Task(subagent_type="reviewer", prompt="play/<id>/plan.json をレビュー")
+   → Task(subagent_type="reviewer", prompt="playbook をレビュー")
    → PASS: 次のステップへ
    → FAIL: 問題点を修正して再レビュー（最大3回）
 
 11. state.md を更新 & ブランチ作成
-   → playbook.active は plan.json を指す
 ```
 
-## subtasks 生成ガイドライン（Playbook v2: validation_plan）
+---
 
-> **criterion + executor + validation_plan を1セットで定義する**
+## subtasks 生成ガイドライン（V16: validations ベース）
+
+> **criterion + executor + validations を1セットで定義する**
 >
-> **正規ソース**: `play/template/plan.json`
+> **正規ソース**: `plan/template/playbook-format.md` の「validations」セクション
 
 ### 構造
 
@@ -520,7 +517,7 @@ subtasks:
   - id: p{N}.{M}
     criterion: "検証可能な完了条件"
     executor: claudecode | codex | coderabbit | user
-    validation_plan:
+    validations:
       technical: "技術的に正しく動作するか"
       consistency: "他コンポーネントと整合性があるか"
       completeness: "必要な変更が全て完了しているか"
@@ -733,26 +730,26 @@ pm の責務:
   - その場合は playbook に「フォールバック判定」と明記
 ```
 
-### validation_plan 定義パターン
+### validations 定義パターン
 
 ```yaml
 ファイル存在:
   criterion: "〇〇.md が存在する"
-  validation_plan:
+  validations:
     technical: "test -f {path} でファイル存在を確認"
     consistency: "関連ドキュメントと整合性確認"
     completeness: "必要な内容が全て含まれている"
 
 機能動作:
   criterion: "npm test が exit 0 で終了する"
-  validation_plan:
+  validations:
     technical: "npm test を実行し exit code 確認"
     consistency: "テスト対象コードと整合性確認"
     completeness: "全テストケースが含まれている"
 
 手動確認:
   criterion: "ユーザーが〇〇を完了している"
-  validation_plan:
+  validations:
     technical: "ユーザーに完了確認を依頼"
     consistency: "手順書と整合性確認"
     completeness: "全ステップが完了している"
@@ -766,19 +763,19 @@ pm の責務:
 禁止:
   - 動詞で終わる（「〜する」「〜した」）
   - 曖昧な形容詞（「適切」「正しく」「良い」）
-  - 検証方法が不明（validation_plan が書けない）
+  - 検証方法が不明（validations が書けない）
 
 検出時の対応:
   1. criterion を修正（状態形式に変換）
   2. 具体的な条件を追加
-  3. validation_plan を定義
+  3. validations を定義
 ```
 
 ### テンプレート必須参照の理由
 
 ```yaml
 なぜ必須か:
-  - play/template/plan.json と progress.json は頻繁に更新される
+  - playbook-format.md は頻繁に更新される（V16 まで改訂済み）
   - 古い知識で playbook を作ると構造が不正確になる
   - done_criteria 記述ガイド、executor 判定ガイド等の重要情報
 
@@ -874,8 +871,7 @@ pm の責務:
 
 ## 参照ファイル
 
-- play/template/plan.json - playbook plan テンプレート
-- play/template/progress.json - playbook progress テンプレート
+- plan/template/playbook-format.md - playbook テンプレート（V16: p_self_update 必須化）
 - .claude/frameworks/playbook-review-criteria.md - playbook レビュー基準
 - docs/criterion-validation-rules.md - criterion 検証ルール（禁止パターン）
 - state.md - 現在の playbook
@@ -919,16 +915,13 @@ pm の責務:
 └──────────────────────────────────────────────────────┘
 ```
 
-AUTO_FLOW:
-  - auto_approve=true の場合は understanding-check をスキップ
-  - user_approved_understanding.source = auto-approve を保存
-
 ### 呼び出し例（pm 内部実装）
 
 ```yaml
 # Step 1: prompt-analyzer 呼び出し
-analysis = Skill(
-  skill='prompt-analyzer'
+analysis = Task(
+  subagent_type='prompt-analyzer',
+  prompt='{ユーザー依頼}'
 )
 
 # Step 2: understanding-check 実行

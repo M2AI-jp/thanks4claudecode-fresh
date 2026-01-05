@@ -1,0 +1,68 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "example",
+    "plan_path": "play/example/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "p1",
+    "subtask": "p1.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "pending",
+      "updated_at": ""
+    },
+    "p_final": {
+      "status": "pending",
+      "updated_at": ""
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "pending",
+      "validated_at": "",
+      "validations": {
+        "technical": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PENDING",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "pending",
+      "validated_at": "",
+      "validations": {
+        "technical": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PENDING",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PENDING",
+    "evidence": [],
+    "notes": ""
+  }
+}

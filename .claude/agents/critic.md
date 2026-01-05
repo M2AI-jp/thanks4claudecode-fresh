@@ -118,67 +118,55 @@ playbook リセットのトリガー:
   - 新しいセッションで動作確認
 ```
 
-## subtasks 検証ロジック（Playbook v2: plan/progress 分離）
+## subtasks 検証ロジック（V16: validations ベース）
 
-> **plan.json の validation_plan と progress.json の validations を突き合わせて判定する**
+> **各 subtask の validations（3点検証）を評価し、PASS/FAIL を判定する**
 >
-> **正規ソース**:
-> - play/<id>/plan.json（criterion / validation_plan）
-> - play/<id>/progress.json（validations / evidence）
+> **正規ソース**: `plan/template/playbook-format.md` の「validations」セクション
 
 ### 検証フロー
 
 ```yaml
-1. plan.json から subtasks を抽出
-   → jq -r '.phases[].subtasks[] | [.id,.criterion] | @tsv' plan.json
+1. playbook から subtasks を抽出
+   → grep -A15 'subtasks' plan/playbook-*.md
 
-2. progress.json から validations 結果を取得
-   → jq -r '.subtasks["p1.1"].validations' progress.json
-
-3. 各 subtask について:
-   a. criterion を確認（plan.json）
-   b. validation_plan と validations の整合性を確認
-   c. validations の 3 点を評価:
+2. 各 subtask について:
+   a. criterion を確認
+   b. validations の 3 点を評価:
       - technical: 技術的に正しく動作するか
       - consistency: 他コンポーネントと整合性があるか
       - completeness: 必要な変更が全て完了しているか
-   d. 3 点全て PASS + evidence あり → subtask PASS
+   c. 3 点全て PASS なら subtask PASS
 
-4. 判定ルール:
+3. 判定ルール:
    → 1つでも FAIL の subtask があれば phase を FAIL にする
    → 全て PASS で phase を PASS
    → 「疑わしきは FAIL」原則を適用
 
-5. 疑わしきは FAIL の具体例:
+4. 疑わしきは FAIL の具体例:
    → 証拠が不十分（「動いているはず」は FAIL）
    → 部分的成功（「一部のテストが通った」は FAIL）
    → 副作用未確認（「他への影響は確認していない」は FAIL）
    → エラー握り潰し（「警告が出たが動く」は FAIL）
    → 目視のみ確認（コマンド実行可能なのにしていない = FAIL）
 
-6. executor: user の場合:
+5. executor: user の場合:
    → ユーザー確認が必要と報告（DEFERRED）
 ```
 
 ### validations 評価例
 
 ```yaml
-plan.json:
+ファイル存在:
   criterion: "README.md が存在する"
-  validation_plan:
-    technical: test -f README.md
+  validations:
+    technical: test -f README.md で確認
     consistency: 関連ドキュメントとの整合性を確認
     completeness: 必要な内容が含まれているか確認
 
-progress.json:
-  validations:
-    technical: PASS - "test -f README.md"
-    consistency: PASS - "docs/ を確認"
-    completeness: PASS - "README.md の該当箇所を確認"
-
 機能動作:
   criterion: "npm test が exit 0 で終了する"
-  validation_plan:
+  validations:
     technical: npm test を実行して exit code 確認
     consistency: テスト対象コードと整合性確認
     completeness: 全テストケースが含まれているか確認
@@ -196,9 +184,6 @@ progress.json:
 
 ```
 [CRITIQUE]
-
-plan: "play/<id>/plan.json"
-progress: "play/<id>/progress.json"
 
 subtasks 達成状況:
   - p{N}.1: {PASS|FAIL|DEFERRED}
@@ -220,9 +205,9 @@ subtask サマリー:
   FAIL: {N}個
   DEFERRED: {N}個
 
-plan 自体の妥当性:
+playbook 自体の妥当性:
   - criterion の検証可能性: {OK|要改善}
-  - validation_plan / validations の具体性: {OK|要改善}
+  - validations の具体性: {OK|要改善}
   - 漏れている要件: {なし|{要件リスト}}
 
 総合判定: {PASS|FAIL}
@@ -268,15 +253,15 @@ plan 自体の妥当性:
 
 ## manual 検証の強制確認（M088）
 
-> **validation_plan に manual 系の要求が含まれる項目は、user 確認なしで PASS にできない。**
+> **validation_types: manual を含む項目は、user 確認なしで PASS にできない。**
 >
-> 参照: `play/template/plan.json` の validation_plan
+> 参照: `plan/template/playbook-format.md` の「validation_types」セクション
 
 ### manual 検証の判定フロー
 
 ```yaml
-1. validation_plan から manual タイプを検出:
-   - "manual" などのプレフィックスがある項目
+1. validations から manual タイプを検出:
+   - "manual -" プレフィックスがある項目
    - "ブラウザで", "目視で", "ユーザーが" などのキーワード
    - executor: user の subtask
 

@@ -361,8 +361,8 @@ Format:
 - docs: state.md, docs/repository-map.yaml, docs/ARCHITECTURE.md
 - outputs: 初期状態の警告/ドリフト報告
 - status:
-  - current: chain.sh + session-manager/start のみ
-  - missing: guardrail/telemetry 分離, health/integrity の明示統合
+  - current: chain.sh + session-manager/start + quality-assurance(health/integrity)
+  - missing: guardrail/telemetry 分離
 
 ### user-prompt-submit
 - intent: 依頼の意図理解と playbook 生成

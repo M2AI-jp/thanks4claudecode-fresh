@@ -1,0 +1,86 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "example",
+    "branch": "feat/example",
+    "created": "YYYY-MM-DD",
+    "status": "draft",
+    "review_profile": "standard",
+    "reviewed": false,
+    "reviewed_by": "",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Short description of the objective.",
+    "done_when": [
+      "Condition 1 is objectively verifiable.",
+      "Condition 2 is objectively verifiable."
+    ],
+    "scope": {
+      "includes": [],
+      "excludes": []
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {}
+    },
+    "user_approved_understanding": {
+      "source": "",
+      "approved_at": "",
+      "summary": "",
+      "approved_items": [],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Phase 1",
+      "description": "Describe the phase goal.",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "Clear, verifiable completion condition.",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "How to verify technically.",
+            "consistency": "How to verify consistency.",
+            "completeness": "How to verify completeness."
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": [
+        "p1"
+      ],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

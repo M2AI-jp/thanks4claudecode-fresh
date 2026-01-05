@@ -108,8 +108,8 @@ if [ -d "$SKILLS_DIR" ]; then
     for skill_dir in "$SKILLS_DIR"/*/; do
         if [ -d "$skill_dir" ]; then
             skill_name=$(basename "$skill_dir")
-            if [ ! -f "${skill_dir}skill.md" ]; then
-                ISSUES="$ISSUES\n  - [WARN] Skill 定義が見つかりません: ${skill_dir}skill.md"
+            if [ ! -f "${skill_dir}SKILL.md" ] && [ ! -f "${skill_dir}skill.md" ]; then
+                ISSUES="$ISSUES\n  - [WARN] Skill 定義が見つかりません: ${skill_dir}SKILL.md"
                 ISSUE_COUNT=$((ISSUE_COUNT + 1))
             fi
         fi

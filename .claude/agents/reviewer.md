@@ -42,23 +42,6 @@ model: opus
    - 言語・フレームワーク固有のベストプラクティス
    - パフォーマンス・セキュリティの考慮
 
-## review_profile 対応
-
-playbook.meta.review_profile に応じてレビュー深度を切り替える。
-
-```yaml
-standard:
-  - 4QV+ を通常通り実行
-  - 内容の妥当性まで評価する
-
-system-test:
-  - 形式/連鎖/スコープの「存在確認」に限定
-  - ドメイン内容の正当性・最適化は評価しない
-  - chain_compliance の結果を必ず記録する
-  - reviewer 独立性（roles.reviewer / reviewed_by が user でないこと）を確認
-  - progress.json が template 構造に準拠していることを確認
-```
-
 ## レビュー観点
 
 ### 1. コードレビュー観点
@@ -181,17 +164,6 @@ Plus_批判的思考:
   判定: 問題なし → PASS、懸念あり → FAIL + 具体的指摘
 ```
 
-system-test の場合:
-
-```yaml
-適用範囲:
-  - Q1: 構造チェックのみ
-  - Q2: criterion/validation_plan の存在確認のみ
-  - Q3: state.md / toolstack / executor の整合性のみ
-  - Q4: Phase/validation_plan の欠落有無のみ
-  - Plus: チェーン切断リスクの指摘のみ
-```
-
 ### 従来の手順（4QV+ に統合）
 
 1. **対象ファイルの読み込み**（Q1 の準備）
@@ -229,7 +201,7 @@ system-test の場合:
 ```
 /review src/index.ts
 /review .claude/hooks/
-/review play/<id>/plan.json
+/review plan/playbook-*.md
 ```
 
 ## 参照ファイル
@@ -249,35 +221,29 @@ system-test の場合:
 
 ```yaml
 Q1_形式検証:
-  目的: plan.json の構造が正しいか
+  目的: playbook の構造が正しいか
   チェック項目:
-    - format_version / meta / goal / context / phases / final_tasks が存在するか
-    - meta.id, meta.branch, meta.created, meta.status, meta.roles が埋まっているか
-    - goal.summary, goal.done_when が定義されているか
-    - phases[].subtasks[].id/criterion/executor/validation_plan が存在するか
-    - p_final Phase が存在するか
+    - playbook-format.md のテンプレートに準拠しているか
+    - 必須フィールド（meta, goal, phases, p_final, final_tasks）が存在するか
+    - subtask 形式（- [ ] **p{N}.{M}**: criterion）が正しいか
 
   検証コマンド:
-    必須キー:
-      command: jq -e '.format_version and .meta and .goal and .context and .phases and .final_tasks' {plan}
-      expected: exit 0
-
-    meta/goal:
-      command: jq -e '.meta.id and .meta.branch and .meta.created and .meta.status and .meta.roles and .goal.summary and (.goal.done_when|length>0)' {plan}
-      expected: exit 0
+    必須セクション:
+      command: grep -E '^## (meta|goal|phases|final_tasks)' {playbook}
+      expected: 4 行以上
 
     p_final 存在:
-      command: jq -e '.phases[] | select(.id=="p_final")' {plan}
-      expected: exit 0
+      command: grep -E '^### p_final' {playbook}
+      expected: 1 行以上
 
-    subtask 構造:
-      command: jq -e '.phases[].subtasks[] | select(.id and .criterion and .executor and .validation_plan)' {plan}
-      expected: exit 0
+    subtask 形式:
+      command: grep -E '^\- \[ \] \*\*p[0-9]+\.[0-9]+\*\*:' {playbook}
+      expected: 1 行以上
 
   PASS条件:
-    - 必須キーが存在する
+    - 全必須セクションが存在する
     - p_final Phase が存在する
-    - subtask に必要項目が揃っている
+    - subtask 形式が正しい
 ```
 
 ### Q2: 禁止パターン検証
@@ -288,25 +254,25 @@ Q2_禁止パターン:
   チェック項目:
     - criterion が動詞で終わっていないか
     - 曖昧な形容詞（適切、正しく、良い）が含まれていないか
-    - validation_plan が全 subtask に定義されているか
+    - validations が定義されているか
 
   検証コマンド:
     動詞終わり:
-      command: jq -r '.phases[].subtasks[].criterion' {plan} | rg -n '(する|した|している)$'
+      command: grep -E '\*\*:.*[するしたてる]$' {playbook}
       expected: 0 行（該当なし）
 
     曖昧形容詞:
-      command: jq -r '.phases[].subtasks[].criterion' {plan} | rg -n '(適切|正しく|良い|うまく)'
+      command: grep -E '\*\*:.*(適切|正しく|良い|うまく)' {playbook}
       expected: 0 行（該当なし）
 
-    validation_plan 存在:
-      command: jq -e '.phases[].subtasks[] | select(.validation_plan.technical and .validation_plan.consistency and .validation_plan.completeness)' {plan}
-      expected: exit 0
+    validations 存在:
+      command: grep -E 'validations:' {playbook} | wc -l
+      comparison: subtask 数以上
 
   PASS条件:
     - 動詞で終わる criterion がない
     - 曖昧な形容詞を含む criterion がない
-    - 全 subtask に validation_plan が定義されている
+    - 全 subtask に validations が定義されている
 ```
 
 ### Q3: 依存関係検証
@@ -322,14 +288,14 @@ Q3_依存関係:
   検証コマンド:
     depends_on 参照先:
       command: |
-        PHASES=$(jq -r '.phases[].id' {plan} | sort -u)
-        DEPS=$(jq -r '.phases[].depends_on[]?' {plan} | sort -u)
-        comm -13 <(echo "$PHASES") <(echo "$DEPS")
-      expected: 空（参照漏れなし）
+        # depends_on で参照している Phase ID を抽出
+        grep 'depends_on:' {playbook} | grep -oE 'p[0-9]+' | sort -u
+      check: 全 ID が playbook 内に存在
 
     循環依存:
-      command: 依存関係を目視で確認（A -> B -> A がないか）
-      expected: 循環なし
+      command: |
+        # 手動確認: A -> B -> A のパターン
+      check: 循環がない
 
   PASS条件:
     - depends_on で指定された全 Phase が存在する
@@ -343,25 +309,29 @@ Q4_完全性:
   目的: playbook が完全か
   チェック項目:
     - p_final が存在するか
-    - done_when の項目数と p_final subtask 数が整合するか
-    - final_tasks が定義されているか（空配列は許容）
+    - done_when の項目数と p_final subtask 数が一致するか
+    - final_tasks が定義されているか
 
   検証コマンド:
+    p_final 存在:
+      command: grep -c '### p_final' {playbook}
+      expected: 1
+
     done_when 項目数:
-      command: jq -r '.goal.done_when | length' {plan}
+      command: grep -A100 'done_when:' {playbook} | grep -E '^\s+- ' | wc -l
       output: {N}
 
     p_final subtask 数:
-      command: jq -r '.phases[] | select(.id=="p_final") | .subtasks | length' {plan}
-      output: {M}
+      command: grep -E '^\- \[ \] \*\*p_final\.[0-9]+\*\*:' {playbook} | wc -l
+      comparison: done_when 項目数と一致
 
-    final_tasks:
-      command: jq -e '.final_tasks' {plan}
-      expected: exit 0
+    final_tasks 存在:
+      command: grep -c '## final_tasks' {playbook}
+      expected: 1
 
   PASS条件:
     - p_final が存在する
-    - done_when と p_final subtask の数が大きく乖離しない
+    - done_when の項目数と p_final subtask 数が一致（または近い）
     - final_tasks が定義されている
 ```
 
@@ -371,27 +341,27 @@ Q4_完全性:
 Plus_報酬詐欺:
   目的: 報酬詐欺の兆候がないか
   チェック項目:
-    - validation_plan が全 subtask に存在するか
+    - validations が全 subtask に存在するか
     - executor が全 subtask に指定されているか
     - 曖昧な完了条件がないか
 
   検証コマンド:
-    validation_plan 網羅:
+    validations 網羅:
       command: |
-        SUBTASK_COUNT=$(jq -r '.phases[].subtasks[] | .id' {plan} | wc -l | tr -d ' ')
-        PLAN_COUNT=$(jq -r '.phases[].subtasks[] | select(.validation_plan.technical and .validation_plan.consistency and .validation_plan.completeness) | .id' {plan} | wc -l | tr -d ' ')
-        [ "$PLAN_COUNT" -ge "$SUBTASK_COUNT" ] && echo "PASS" || echo "FAIL"
+        SUBTASK_COUNT=$(grep -cE '^\- \[ \] \*\*p[0-9]+\.[0-9]+\*\*:' {playbook})
+        VALIDATION_COUNT=$(grep -c 'validations:' {playbook})
+        [ "$VALIDATION_COUNT" -ge "$SUBTASK_COUNT" ] && echo "PASS" || echo "FAIL"
       expected: PASS
 
     executor 網羅:
       command: |
-        SUBTASK_COUNT=$(jq -r '.phases[].subtasks[] | .id' {plan} | wc -l | tr -d ' ')
-        EXECUTOR_COUNT=$(jq -r '.phases[].subtasks[] | select(.executor!="") | .id' {plan} | wc -l | tr -d ' ')
+        SUBTASK_COUNT=$(grep -cE '^\- \[ \] \*\*p[0-9]+\.[0-9]+\*\*:' {playbook})
+        EXECUTOR_COUNT=$(grep -c 'executor:' {playbook})
         [ "$EXECUTOR_COUNT" -ge "$SUBTASK_COUNT" ] && echo "PASS" || echo "FAIL"
       expected: PASS
 
   PASS条件:
-    - 全 subtask に validation_plan が存在する
+    - 全 subtask に validations が存在する
     - 全 subtask に executor が指定されている
     - 報酬詐欺の兆候がない
 ```
@@ -400,44 +370,45 @@ Plus_報酬詐欺:
 
 ```yaml
 review_result:
-  plan: "{plan パス}"
+  playbook: "{playbook パス}"
   timestamp: "{レビュー日時}"
 
   Q1:
     status: PASS | FAIL
     evidence:
-      required_keys: "{jq 結果}"
+      必須セクション: "{grep 結果}"
       p_final: "{存在確認結果}"
-      subtask_schema: "{検証結果}"
+      subtask形式: "{形式確認結果}"
     details: "{詳細（FAIL の場合）}"
 
   Q2:
     status: PASS | FAIL
     evidence:
-      verb_endings: "{rg 結果（該当行数）}"
-      ambiguous_terms: "{rg 結果（該当行数）}"
-      validation_plan: "{検証結果}"
+      動詞終わり: "{grep 結果（該当行数）}"
+      曖昧形容詞: "{grep 結果（該当行数）}"
+      validations: "{カウント結果}"
     details: "{詳細（FAIL の場合）}"
 
   Q3:
     status: PASS | FAIL
     evidence:
-      depends_on_refs: ["{参照漏れ Phase}" ]
+      depends_on_refs: ["{参照先 Phase}"]
       circular_check: "循環なし | {循環パターン}"
     details: "{詳細（FAIL の場合）}"
 
   Q4:
     status: PASS | FAIL
     evidence:
+      p_final_exists: true | false
       done_when_count: {N}
       p_final_subtask_count: {M}
-      final_tasks_defined: true | false
+      final_tasks_exists: true | false
     details: "{詳細（FAIL の場合）}"
 
   Plus:
     status: PASS | FAIL
     evidence:
-      validation_plan_coverage: "{カバレッジ %}"
+      validations_coverage: "{カバレッジ %}"
       executor_coverage: "{カバレッジ %}"
       fraud_indicators: ["{検出された兆候}"]
     details: "{詳細（FAIL の場合）}"
@@ -453,45 +424,46 @@ review_result:
 
 ```yaml
 # レビュー実行
-Task(subagent_type="reviewer", prompt="play/<id>/plan.json をレビュー")
+Task(subagent_type="reviewer", prompt="plan/playbook-auth.md をレビュー")
 
 # 出力例
 review_result:
-  plan: "play/example/plan.json"
+  playbook: "plan/playbook-auth.md"
   timestamp: "2026-01-01T12:00:00Z"
 
   Q1:
     status: PASS
     evidence:
-      required_keys: "meta/goal/phases/final_tasks OK"
+      必須セクション: "meta, goal, phases, final_tasks - 全て存在"
       p_final: "存在"
-      subtask_schema: "8 subtasks - OK"
+      subtask形式: "8 subtasks - 全て正しい形式"
 
   Q2:
     status: FAIL
     evidence:
-      verb_endings: "0 件"
-      ambiguous_terms: "1 件: p2.1 に『適切に』"
-      validation_plan: "8/8"
-    details: "p2.1 の criterion に曖昧な表現『適切に』が含まれる"
+      動詞終わり: "0 件"
+      曖昧形容詞: "1 件: p2.1 に「適切に」"
+      validations: "8/8"
+    details: "p2.1 の criterion に曖昧な表現「適切に」が含まれる"
 
   Q3:
     status: PASS
     evidence:
-      depends_on_refs: []
+      depends_on_refs: ["p1", "p2"]
       circular_check: "循環なし"
 
   Q4:
     status: PASS
     evidence:
+      p_final_exists: true
       done_when_count: 4
       p_final_subtask_count: 4
-      final_tasks_defined: true
+      final_tasks_exists: true
 
   Plus:
     status: PASS
     evidence:
-      validation_plan_coverage: "100%"
+      validations_coverage: "100%"
       executor_coverage: "100%"
       fraud_indicators: []
 
@@ -499,7 +471,7 @@ review_result:
     status: FAIL
     pass_count: "4/5"
     blocking_issues:
-      - "Q2 FAIL: p2.1 の『適切に』を具体的な基準に変更必要"
+      - "Q2 FAIL: p2.1 の「適切に」を具体的な基準に変更必要"
     recommendations:
-      - "p2.1: 『適切に設定する』→『JWT_SECRET が 32 文字以上である』に変更"
+      - "p2.1: 「適切に設定する」→「JWT_SECRET が 32 文字以上である」に変更"
 ```
