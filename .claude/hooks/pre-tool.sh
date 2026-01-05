@@ -28,40 +28,56 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 # === prompt-analyzer 強制ガード ===
 # マーカーがない場合、prompt-analyzer 以外をブロック（読み取り系は例外）
 if [[ ! -f "$MARKER_FILE" ]]; then
-    if [[ "$TOOL_NAME" == "Task" ]]; then
-        SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // empty')
-        if [[ "$SUBAGENT_TYPE" == "prompt-analyzer" ]]; then
-            # prompt-analyzer → マーカー作成して許可
-            touch "$MARKER_FILE"
-        else
-            echo "BLOCK: prompt-analyzer を先に呼び出してください (tool=Task, subagent=$SUBAGENT_TYPE)" >&2
-            exit 2
-        fi
-    else
-        ALLOW_WITHOUT_ANALYZER=false
-        case "$TOOL_NAME" in
-            Read|Grep|Glob)
-                ALLOW_WITHOUT_ANALYZER=true
-                ;;
-            Bash)
-                # 変更系 Bash を防ぐため、契約チェックで read-only を判定
-                COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
-                if [[ -f "$CONTRACT_SCRIPT" ]]; then
-                    # shellcheck source=../../scripts/contract.sh
-                    source "$CONTRACT_SCRIPT"
-                    if contract_check_bash "$COMMAND"; then
-                        ALLOW_WITHOUT_ANALYZER=true
-                    else
-                        exit 2
-                    fi
-                fi
-                ;;
-        esac
+    ALLOW_WITHOUT_ANALYZER=false
+    BLOCK_DETAIL=""
 
-        if [[ "$ALLOW_WITHOUT_ANALYZER" != "true" ]]; then
+    case "$TOOL_NAME" in
+        Task)
+            SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // empty')
+            BLOCK_DETAIL="subagent=$SUBAGENT_TYPE"
+            if [[ "$SUBAGENT_TYPE" == "prompt-analyzer" ]]; then
+                # prompt-analyzer → マーカー作成して許可
+                touch "$MARKER_FILE"
+                ALLOW_WITHOUT_ANALYZER=true
+            fi
+            ;;
+        Skill)
+            SKILL_NAME=$(echo "$INPUT" | jq -r '.tool_input.skill // .tool_input.name // .tool_input.skill_name // empty')
+            BLOCK_DETAIL="skill=$SKILL_NAME"
+            if [[ "$SKILL_NAME" == "prompt-analyzer" ]]; then
+                # Skill(prompt-analyzer) → マーカー作成して許可
+                touch "$MARKER_FILE"
+                ALLOW_WITHOUT_ANALYZER=true
+            elif [[ "$SKILL_NAME" == "playbook-init" ]]; then
+                # playbook-init は prompt-analyzer を内包するため許可
+                ALLOW_WITHOUT_ANALYZER=true
+            fi
+            ;;
+        Read|Grep|Glob)
+            ALLOW_WITHOUT_ANALYZER=true
+            ;;
+        Bash)
+            # 変更系 Bash を防ぐため、契約チェックで read-only を判定
+            COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
+            if [[ -f "$CONTRACT_SCRIPT" ]]; then
+                # shellcheck source=../../scripts/contract.sh
+                source "$CONTRACT_SCRIPT"
+                if contract_check_bash "$COMMAND"; then
+                    ALLOW_WITHOUT_ANALYZER=true
+                else
+                    exit 2
+                fi
+            fi
+            ;;
+    esac
+
+    if [[ "$ALLOW_WITHOUT_ANALYZER" != "true" ]]; then
+        if [[ -n "$BLOCK_DETAIL" ]]; then
+            echo "BLOCK: prompt-analyzer を先に呼び出してください (tool=$TOOL_NAME, $BLOCK_DETAIL)" >&2
+        else
             echo "BLOCK: prompt-analyzer を先に呼び出してください (tool=$TOOL_NAME)" >&2
-            exit 2
         fi
+        exit 2
     fi
 fi
 

@@ -347,6 +347,15 @@ Claude がツール名と入力パラメータを決定した後、実際の実�
             └─→ .claude/events/pre-tool-bash/chain.sh (Bash)
 ```
 
+### prompt-analyzer 強制
+
+prompt-analyzer が未実行の状態では、以下のみ許可する:
+
+- Read/Grep/Glob
+- Skill(prompt-analyzer)
+- Task(subagent_type='prompt-analyzer')
+- Skill(playbook-init)（playbook-init 内で prompt-analyzer を実行するため）
+
 ### 状態遷移
 
 | Before | 処理 | After |
@@ -1214,6 +1223,7 @@ scripts/
 | セクション | 設計 | 実装状態 |
 |-----------|------|---------|
 | Section 1 (SessionStart) | health.sh を SessionStart から自動呼び出し | ✅ 実装済み（session-manager/handlers/start.sh） |
+| Playbook v2 (golden-path) | play/<id>/plan.json + progress.json を使用 | ❌ pm が plan/playbook-*.md を生成（legacy） |
 
 ---
 
@@ -1221,6 +1231,7 @@ scripts/
 
 | 日時 | 内容 |
 |------|------|
+| 2026-01-06 | prompt-analyzer 強制条件の明文化・playbook v2/legacy 乖離を追記 |
 | 2026-01-06 | SessionStart で health/integrity を自動実行 |
 | 2026-01-04 | repository-map 更新 |
 | 2026-01-02 | Section 14「既知の課題と未実装」追加（リポジトリ監査結果） |
