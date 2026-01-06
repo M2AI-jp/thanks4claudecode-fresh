@@ -23,6 +23,7 @@
     "p1.1": {
       "status": "pending",
       "validated_at": "",
+      "validated_by": "",
       "validations": {
         "technical": {
           "status": "PENDING",
@@ -42,6 +43,7 @@
     "p_final.1": {
       "status": "pending",
       "validated_at": "",
+      "validated_by": "",
       "validations": {
         "technical": {
           "status": "PENDING",

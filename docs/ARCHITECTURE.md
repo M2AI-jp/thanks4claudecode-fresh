@@ -1129,6 +1129,274 @@ config:
 
 ---
 
+## 11.5 progress.json 更新フロー（責務定義）
+
+> **問題**: progress.json の更新責務が Claude/SubAgent/Hook のどれに属するか不明確だった
+>
+> **解決**: 以下のフローで責務を明確化
+
+### 更新責務
+
+```yaml
+progress.json の更新責務:
+  orchestrator: Claude 本体（claudecode）
+  timing: SubAgent 完了後、次の操作前
+
+禁止:
+  - SubAgent が progress.json を直接更新する
+  - Hook が progress.json を自動更新する（読み取りのみ）
+
+理由:
+  - SubAgent はツール制限で Edit 権限がない場合がある
+  - Hook は情報を提供するが、状態変更は Claude の責務
+  - Claude が orchestrator として状態管理を担当
+```
+
+### 更新タイミング
+
+```yaml
+1. subtask 作業開始時:
+   Claude が subtasks[id].status を "in_progress" に更新
+
+2. subtask 作業完了時:
+   a. Claude が validations (technical/consistency/completeness) を記録
+   b. Claude が critic SubAgent を呼び出し
+   c. critic が PASS → Claude が validated_by: "critic" を設定
+   d. Claude が subtasks[id].status を "done" に更新
+   e. subtask-guard.sh が validated_by をチェック（ブロック機構）
+
+3. phase 完了時:
+   a. 全 subtask が done になったことを確認
+   b. Claude が phases[id].status を "done" に更新
+   c. 次 phase に進む or 全 phase done なら Post-Loop へ
+
+4. playbook 完了時:
+   a. SubagentStop または PostToolUse で検出
+   b. archive-playbook.sh が自動実行（Post-Loop）
+```
+
+### 更新内容の詳細
+
+```yaml
+subtasks[id]:
+  status: "pending" | "in_progress" | "done"
+  validated_at: "{ISO8601 timestamp}"  # critic PASS 時に設定
+  validated_by: "critic"               # critic PASS 時に設定
+  validations:
+    technical:
+      status: "PASS" | "FAIL" | "PENDING"
+      evidence: ["検証コマンドの出力", "..."]
+    consistency:
+      status: "PASS" | "FAIL" | "PENDING"
+      evidence: ["整合性確認の結果", "..."]
+    completeness:
+      status: "PASS" | "FAIL" | "PENDING"
+      evidence: ["完全性確認の結果", "..."]
+  notes: "作業メモ"
+
+phases[id]:
+  status: "pending" | "in_progress" | "done"
+  updated_at: "{ISO8601 timestamp}"
+```
+
+### SubagentStop 後のリマインダー
+
+```yaml
+SubagentStop Hook の役割:
+  - SubAgent 完了を検出
+  - Claude に progress.json 更新をリマインド（systemMessage）
+  - 全 Phase done なら archive-playbook.sh を呼び出し
+
+リマインダー内容:
+  "SubAgent が完了しました。progress.json を更新してください:
+   - subtasks[{id}].validations に結果を記録
+   - critic PASS なら validated_by: 'critic' を設定
+   - status を更新"
+```
+
+---
+
+## 11.6 reviewer 検証記録フロー（playbook 確定）
+
+> **設計思想**: reviewer SubAgent は playbook の品質を保証し、検証結果を plan.json に記録する。
+> critic が subtask 完了を検証するのに対し、reviewer は playbook 全体の品質を検証する。
+
+### reviewer の役割
+
+```yaml
+対象: playbook (plan.json)
+タイミング: playbook 作成直後（pm が呼び出し）
+検証内容:
+  - 4QV+ 検証（形式・内容・整合性・完全性・批判的思考）
+  - criterion の検証可能性
+  - validation_plan の具体性
+  - 報酬詐欺の可能性
+```
+
+### 検証記録フロー
+
+```
+1. pm が playbook 作成後、reviewer を呼び出し:
+   Task(subagent_type='reviewer', prompt='play/<id>/plan.json を検証')
+
+2. reviewer が 4QV+ 検証を実行:
+   ├─→ Q1: 形式検証（JSON 構造、必須フィールド）
+   ├─→ Q2: 内容検証（criterion が検証可能か）
+   ├─→ Q3: 整合性検証（state.md との整合）
+   ├─→ Q4: 完全性検証（done_when に漏れがないか）
+   └─→ +: 批判的思考（報酬詐欺の可能性）
+
+3. reviewer が PASS 判定した場合:
+   a. plan.json の meta.reviewed を true に更新
+   b. plan.json の meta.reviewed_by を "reviewer" に更新
+   c. PASS 結果を返却
+
+4. reviewer が FAIL 判定した場合:
+   a. 問題点と修正案を Claude に返却
+   b. Claude が修正後、再度 reviewer を呼び出し
+   c. PASS するまでループ
+```
+
+### plan.json への記録
+
+```yaml
+meta:
+  id: "example"
+  branch: "feat/example"
+  created: "YYYY-MM-DD"
+  status: "active"           # draft -> active（reviewer PASS 後）
+  review_profile: "standard"
+  reviewed: true             # reviewer PASS 後に true
+  reviewed_by: "reviewer"    # reviewer PASS 後に設定
+  roles:
+    orchestrator: "claudecode"
+    worker: "codex"
+    reviewer: "coderabbit"
+    human: "user"
+```
+
+### reviewer Gate（enforcement）
+
+```yaml
+playbook-gate:
+  condition: meta.reviewed == false
+  action:
+    - playbook に基づく作業をブロック
+    - reviewer 検証を強制
+  メカニズム:
+    - pm が reviewer を呼び出すまで playbook は draft
+    - reviewed: true でなければ playbook は確定しない
+```
+
+### critic との違い
+
+| 項目 | reviewer | critic |
+|------|----------|--------|
+| 対象 | playbook (plan.json) | subtask 完了 (progress.json) |
+| タイミング | playbook 作成直後 | subtask 完了時 |
+| 記録先 | plan.json meta | progress.json subtasks |
+| フィールド | reviewed, reviewed_by | validated_at, validated_by |
+| 目的 | playbook 品質保証 | 成果物品質保証 |
+
+---
+
+## 11.7 Post-Loop 自動発火（playbook 完了時）
+
+> **設計思想**: playbook の全 Phase が done になったら、自動的に archive → PR → merge → 次タスク導出を実行する。
+> 手動介入なしで playbook サイクルを完結させる。
+
+### 発火条件
+
+```yaml
+トリガー: PostToolUse:Edit (progress.json 更新時)
+発火条件:
+  - progress.json の全 phases[].status が "done"
+  - progress.json の全 subtasks[].status が "done"
+  - critic.status が "PASS"
+  - final_tasks が存在する場合は全て done または skipped
+
+ブロック条件（exit 2）:
+  - 未完了の subtask がある場合
+  - critic.status が PASS でない場合
+```
+
+### 処理順序（archive-playbook.sh）
+
+```
+1. 自動コミット（未コミット変更がある場合）
+2. Push（PR 作成前に必要）
+3. PR 作成（create-pr.sh）
+3.5. バックグラウンドタスク クリーンアップ
+4. Playbook アーカイブ（play/archive/ へ移動）
+5. アーカイブのコミット
+6. Push（アーカイブ分）
+7. state.md 更新（playbook.active = null, goal セクションリセット）
+8. state.md 更新のコミット
+9. Push（state.md 分）
+10. PR マージ（merge-pr.sh）
+11. main 同期（checkout main && pull）
+12. pending ファイル作成（post-loop-pending）
+```
+
+### pending ファイルの役割
+
+```yaml
+ファイル: .claude/session-state/post-loop-pending
+目的: post-loop Skill の呼び出しを強制
+
+内容:
+  {
+    "playbook": "example-v1",
+    "archived_at": "2026-01-07T12:00:00+09:00",
+    "status": "success",
+    "branch": "feat/example-v1"
+  }
+
+使用フロー:
+  1. archive-playbook.sh が pending ファイルを作成
+  2. systemMessage で Claude に post-loop 呼び出しを指示
+  3. Claude が Skill(skill='post-loop') を実行
+  4. post-loop が pending ファイルを削除
+  5. post-loop が次タスクを導出
+```
+
+### systemMessage による自動呼び出し
+
+```yaml
+archive-playbook.sh の出力:
+  {
+    "status": "success",
+    "message": "自動処理完了",
+    "systemMessage": "今すぐ Skill(skill='post-loop') を呼び出すこと"
+  }
+
+Claude の動作:
+  - systemMessage を受け取り、post-loop Skill を自動実行
+  - ユーザーに確認を求めない（自動実行）
+```
+
+### post-loop Skill の責務
+
+```yaml
+入力: pending ファイル
+出力:
+  - pending ファイル削除
+  - 次タスクの導出（以下のいずれか）:
+    - 新しいタスクの提案
+    - 完了報告
+    - 待機状態への遷移
+```
+
+### ファイルパス
+
+| ファイル | 役割 |
+|----------|------|
+| .claude/skills/playbook-gate/workflow/archive-playbook.sh | Post-Loop 自動発火 |
+| .claude/skills/post-loop/SKILL.md | post-loop Skill |
+| .claude/session-state/post-loop-pending | pending ファイル |
+
+---
+
 ## 12. コア契約（回避不可）
 
 ### Golden Path（タスク開始）

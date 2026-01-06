@@ -1,9 +1,17 @@
 #!/bin/bash
 # ==============================================================================
-# subtask-guard.sh - subtask 完了時の 3 検証を強制（playbook v2 / progress.json）
+# subtask-guard.sh - subtask 完了時の critic 検証を強制（playbook v2 / progress.json）
 # ==============================================================================
-# 目的: progress.json で subtask の status が done に変わる際に
-#       validations(technical/consistency/completeness) と validated_at を要求
+# 目的: progress.json で subtask の status が done に変わる際に以下を要求:
+#       1. validations(technical/consistency/completeness) の status が全て PASS
+#       2. validated_by: "critic" が設定されていること（自己報酬詐欺防止）
+#       3. validated_at が設定されていること
+#
+# 設計思想:
+#   - Claude が自分で validations を埋めて done にすることを防止
+#   - critic SubAgent が PASS 判定した証拠として validated_by を要求
+#   - Hook Unit = 強制の入口（exit 2 でブロック）
+#
 # トリガー: PreToolUse(Edit/Write)
 # ==============================================================================
 
@@ -36,15 +44,19 @@ if [[ "$FILE_PATH" == */archive/* ]] || [[ "$FILE_PATH" == */template/* ]]; then
     exit 0
 fi
 
-printf '%s' "$INPUT" | python3 - "$FILE_PATH" << 'PY'
+# 環境変数経由で payload を渡す（HEREDOC と stdin の競合を回避）
+export SUBTASK_GUARD_PAYLOAD="$INPUT"
+
+python3 - "$FILE_PATH" << 'PY'
 import json
 import sys
+import os
 from pathlib import Path
 
 file_path = sys.argv[1]
 
 try:
-    payload = json.load(sys.stdin)
+    payload = json.loads(os.environ.get("SUBTASK_GUARD_PAYLOAD", "{}"))
 except json.JSONDecodeError:
     sys.exit(0)
 
@@ -100,6 +112,10 @@ for subtask_id, new_entry in new_subtasks.items():
                 missing.append(key)
         if not new_entry.get("validated_at"):
             missing.append("validated_at")
+        # validated_by: "critic" のチェック（自己報酬詐欺防止）
+        validated_by = new_entry.get("validated_by", "")
+        if validated_by != "critic":
+            missing.append("validated_by: critic")
         if missing:
             errors.append((subtask_id, missing))
 
@@ -108,7 +124,7 @@ if not errors:
 
 lines = [
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-    "  ⛔ subtask 完了には validations が必須です",
+    "  ⛔ subtask 完了には critic 検証が必須です",
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
     "",
 ]
@@ -124,6 +140,12 @@ lines.extend(
         "  - validations.technical/consistency/completeness の status = PASS",
         "  - 各 validation の evidence が1件以上",
         "  - validated_at を設定",
+        "  - validated_by: 'critic' を設定（自己報酬詐欺防止）",
+        "",
+        "対処法:",
+        "  1. Task(subagent_type='critic') で検証を実行",
+        "  2. critic が PASS を返したら validated_by: 'critic' を設定",
+        "  3. 再度 status: done に変更",
         "",
         f"対象ファイル: {file_path}",
         "",

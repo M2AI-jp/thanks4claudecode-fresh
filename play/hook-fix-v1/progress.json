@@ -6,205 +6,212 @@
     "status": "active"
   },
   "active": {
-    "phase": "p1",
-    "subtask": "p1.1"
+    "phase": "p_final",
+    "subtask": "p_final.1"
   },
   "phases": {
     "p1": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-07T02:15:00Z"
     },
     "p2": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-07T02:30:00Z"
     },
     "p3": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-07T02:35:00Z"
     },
     "p4": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-07T02:40:00Z"
     },
     "p5": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-07T02:45:00Z"
     },
     "p6": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-07T02:55:00Z"
     },
     "p_final": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-07T03:00:00Z"
     }
   },
   "subtasks": {
     "p1.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-07T02:15:00Z",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["grep -n 'progress.json 更新フロー' docs/ARCHITECTURE.md → 1132:## 11.5 progress.json 更新フロー（責務定義）"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["play/template/progress.json に validated_by フィールド追加済み（行 26, 46）"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["状態遷移 pending/in_progress/done が Section 11.5（行 1158-1175）に網羅"]
         }
       },
-      "notes": ""
+      "notes": "docs/ARCHITECTURE.md に Section 11.5 追加、template に validated_by 追加"
     },
     "p2.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-07T02:30:00Z",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["grep 結果: 行 116-118 に validated_by チェックロジック存在"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["play/template/progress.json に validated_by フィールド存在（行 26, 46）"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["シミュレーション: critic なし -> BLOCK (exit code 2), critic あり -> PASS (exit code 0)"]
         }
       },
-      "notes": ""
+      "notes": "validated_by チェック追加 + HEREDOC/stdin 競合バグ修正"
     },
     "p3.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-07T02:35:00Z",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["grep 結果: ARCHITECTURE.md:1219 に '## 11.6 reviewer 検証記録フロー' 存在"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["play/template/plan.json の meta.reviewed/reviewed_by とドキュメント記述が整合"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["行1249-1252 で 'reviewer PASS -> reviewed: true' フローが明記"]
         }
       },
-      "notes": ""
+      "notes": "docs/ARCHITECTURE.md に Section 11.6 追加"
     },
     "p4.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-07T02:40:00Z",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["coderabbit case (行 290-308) で cat << EOF による JSON 出力を確認"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["codex/coderabbit 両方に同じトップレベルフィールド: continue, decision, reason, hookSpecificOutput, systemMessage"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["stdout 出力（>&2 なし）、exit 2 で block 動作"]
         }
       },
-      "notes": ""
+      "notes": "既に JSON 形式で stdout 出力されていた（修正不要）"
     },
     "p5.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-07T02:45:00Z",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["grep 'Post-Loop' docs/ARCHITECTURE.md で Section 11.7 を確認（行 1303）"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["archive-playbook.sh の Step 1-12 とドキュメント手順 1-12 が完全一致"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["発火条件、処理順序、pending ファイル役割が全て記載"]
         }
       },
-      "notes": ""
+      "notes": "docs/ARCHITECTURE.md に Section 11.7 追加"
     },
     "p6.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-07T02:50:00Z",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["Test 1: validated_by なし -> exit code 2, Test 2: validated_by: critic -> exit code 0"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["エラーメッセージに 'missing validated_by: critic' 表示"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["BLOCK 時 exit code 2, PASS 時 exit code 0"]
         }
       },
-      "notes": ""
+      "notes": "シミュレーション PASS"
     },
     "p6.2": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-07T02:55:00Z",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["coderabbit case で JSON が stdout に出力（cat << EOF、>&2 なし）"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["JSON is valid、jq でパース成功"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["hookSpecificOutput exists: true、exit code: 2"]
         }
       },
-      "notes": ""
+      "notes": "シミュレーション PASS"
     },
     "p_final.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-07T03:00:00Z",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["reviewer が 6 done_when を grep/確認コマンドで検証完了"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["全 Phase 成果物と done_when が整合"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["done_when 6 項目全て PASS、4QV+ 検証も全項目 PASS"]
         }
       },
-      "notes": ""
+      "notes": "reviewer + critic による最終検証 PASS"
     }
   },
   "final_tasks": [],
   "critic": {
-    "status": "PENDING",
-    "evidence": [],
-    "notes": ""
+    "status": "PASS",
+    "evidence": [
+      "done_when 1: docs/ARCHITECTURE.md 行 1132 に progress.json 更新フロー",
+      "done_when 2: subtask-guard.sh 行 115-118 に validated_by チェック",
+      "done_when 3: docs/ARCHITECTURE.md 行 1219 に reviewer 検証記録フロー",
+      "done_when 4: executor-guard.sh 行 290-305 に coderabbit JSON 出力",
+      "done_when 5: docs/ARCHITECTURE.md 行 1303 に Post-Loop 自動発火",
+      "done_when 6: p6.1/p6.2 シミュレーション PASS（validated_by: critic）"
+    ],
+    "notes": "全 7 Phase 完了、全 9 subtask validated_by: critic"
   }
 }
