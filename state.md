@@ -9,10 +9,10 @@
 ## playbook
 
 ```yaml
-active: play/loop-enforcement/plan.json
-current_phase: p1
-branch: feat/loop-enforcement
-last_archived: play/archive/hook-fix-v1
+active: null
+current_phase: null
+branch: null
+last_archived: play/archive/loop-enforcement
 review_pending: false
 
 ```
@@ -23,13 +23,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: loop-enforcement
-phase: p1
-done_criteria:
-  - PostToolUse Hook に progress.json 更新リマインダーが追加されている
-  - Stop Hook に未完了 subtask の検出ロジックが追加されている
-  - テスト（hello-world 同等のタスク）で progress.json 更新が強制される
-status: active
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
