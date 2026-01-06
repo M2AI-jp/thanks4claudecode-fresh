@@ -1,0 +1,185 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "loop-enforcement",
+    "plan_path": "play/loop-enforcement/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-07T04:30:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-07T04:30:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-07T04:30:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-07T04:40:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T04:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f .claude/skills/reward-guard/guards/progress-reminder.sh で存在確認"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["post-tool-edit/chain.sh 23行目で invoke_skill パターンにより呼び出し"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["playbook.active 存在時のみ発火（52行目 if 条件）"]
+        }
+      },
+      "notes": "progress-reminder.sh 作成完了"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T04:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -q 'progress-reminder' .claude/events/post-tool-edit/chain.sh"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["既存の invoke_skill パターンと同じ形式（23行目）"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["archive-playbook.sh（26行目）の前に呼び出される順序"]
+        }
+      },
+      "notes": "chain.sh に追加完了"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T04:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f .claude/skills/reward-guard/guards/completion-check.sh で存在確認"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["subtask-guard.sh と同様の構造（set -euo pipefail、jq チェック、state.md 参照）"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["progress.json の全 subtask の status をチェック（55-56行目 jq クエリ）、exit 1 でブロック"]
+        }
+      },
+      "notes": "completion-check.sh 作成完了（exit 1 ブロック実装）"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T04:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -q 'completion-check' .claude/events/stop/chain.sh"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["exit code を伝播させる設計（17-19行目）で意図的に || true を削除"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["no-op から実装済みに変更、exit code 伝播確認（chain.sh 経由で exit 1）"]
+        }
+      },
+      "notes": "stop/chain.sh に追加完了（exit code 伝播実装）"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T04:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -q 'progress-reminder' docs/ARCHITECTURE.md（538行目）"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Section 6 の既存構造（Hook チェーン図、状態遷移表）に合わせた記載"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["発火条件、処理内容（systemMessage 注入）、書き込み先が明記"]
+        }
+      },
+      "notes": "ARCHITECTURE.md に progress-reminder 記載完了"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T04:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -q 'completion-check' docs/ARCHITECTURE.md（603, 620, 628-629, 1535行目）"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Section 6.5 として他の Hook セクションと同じフォーマット"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["発火条件、検出ロジック、exit 1 ブロックが明記"]
+        }
+      },
+      "notes": "ARCHITECTURE.md に completion-check 記載完了"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T04:40:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["4QV+ フレームワークで全項目 PASS 確認"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["plan.json と実装の整合性確認、ARCHITECTURE.md との一貫性確認"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["done_when 3条件全て検証完了、ブロック機能テスト確認"]
+        }
+      },
+      "notes": "reviewer 検証 PASS"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "progress-reminder.sh: 87行、playbook.active チェック、systemMessage 出力",
+      "completion-check.sh: 97行、全 subtask status チェック、exit 1 ブロック",
+      "chain.sh（post-tool-edit）: 23行目で progress-reminder 呼び出し",
+      "chain.sh（stop）: exit code 伝播あり（17-19行目）",
+      "ARCHITECTURE.md: Section 6.4（538行目）と Section 6.5（591-630行目）に記載",
+      "テスト結果: 未完了時に exit 1 が返ることを確認"
+    ],
+    "notes": "done_when 3条件全て PASS。p_final.1 は reviewer 検証待ち。"
+  }
+}

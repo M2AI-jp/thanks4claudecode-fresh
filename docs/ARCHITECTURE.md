@@ -535,6 +535,13 @@ Claude は playbook 作成時に自動でブランチを切る。
 ```
 .claude/hooks/post-tool.sh
     └─→ .claude/events/post-tool-edit/chain.sh
+            ├─→ .claude/skills/reward-guard/guards/progress-reminder.sh
+            │       │
+            │       ├─→ playbook.active 存在チェック
+            │       ├─→ progress.json 以外のファイル編集を検出
+            │       └─→ systemMessage でリマインダー注入:
+            │           「progress.json を更新してください」
+            │
             ├─→ .claude/skills/playbook-gate/workflow/archive-playbook.sh
             │       │
             │       ├─→ 全 Phase done 検出
@@ -578,6 +585,48 @@ Claude は playbook 作成時に自動でブランチを切る。
 | state.md | playbook.active = null, last_archived | アーカイブ時 |
 | .claude/session-state/post-loop-pending | status, playbook, timestamp | 自動処理完了時 |
 | tmp/ | ファイル削除 | playbook 完了時 |
+
+---
+
+## 6.5. Stop（応答完了時）
+
+### 発火条件
+
+**Hook イベント**: `Stop`
+
+メイン Claude エージェントの応答完了時に発火。
+会話終了前の最終チェックポイントとして機能。
+
+### Hook チェーン
+```
+.claude/events/stop/chain.sh
+    └─→ .claude/skills/reward-guard/guards/completion-check.sh
+            │
+            ├─→ state.md から playbook.active を取得
+            ├─→ progress.json の全 subtask の status をチェック
+            ├─→ 未完了 subtask があれば exit 1 でブロック:
+            │   「未完了の subtask があります - 応答をブロック」
+            │
+            └─→ 目的: subtask-guard バイパス対策（報酬詐欺防止）
+                    Claude が progress.json を更新せずに
+                    完了宣言することを強制的に防止
+```
+
+### 設計意図
+
+subtask-guard は受動的（progress.json 編集時のみ発火）なため、
+Claude が progress.json を更新せずに作業を完了できてしまう脆弱性があった。
+
+completion-check.sh は能動的に Stop 時点でチェックし、
+未完了 subtask があれば exit 1 で応答をブロックする。
+報酬詐欺防止のため「強制」が必要。
+
+### 状態遷移
+
+| Before | 処理 | After |
+|--------|------|-------|
+| 未完了 subtask あり | completion-check | exit 1（応答ブロック） |
+| 全 subtask done | completion-check | 正常終了（出力なし） |
 
 ---
 
@@ -1483,7 +1532,7 @@ scripts/
 
 | Hook | 状態 | 理由 |
 |------|------|------|
-| Stop | 登録済み | 連携先が未実装のため no-op |
+| Stop | ✅ 実装済み | completion-check.sh で未完了 subtask 検出 |
 | SessionEnd | 登録済み | 連携先が未実装のため no-op |
 | Notification | 登録済み | 連携先が未実装のため no-op |
 

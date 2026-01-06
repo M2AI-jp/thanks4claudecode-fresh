@@ -12,7 +12,7 @@
 active: null
 current_phase: null
 branch: null
-last_archived: play/archive/hook-fix-v1
+last_archived: play/archive/loop-enforcement
 review_pending: false
 
 ```
@@ -35,8 +35,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 03:00:13
-last_end: 2026-01-06 19:55:42
+last_start: 2026-01-07 03:40:33
+last_end: 2026-01-07 03:25:21
 last_clear: 2025-12-24 03:20:00
 ```
 

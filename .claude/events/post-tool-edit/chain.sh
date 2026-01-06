@@ -19,6 +19,9 @@ invoke_skill() {
     fi
 }
 
+# progress.json 更新リマインダー（subtask-guard バイパス対策）
+invoke_skill "reward-guard" "guards/progress-reminder.sh"
+
 # playbook 完了チェック・アーカイブ
 invoke_skill "playbook-gate" "workflow/archive-playbook.sh"
 # クリーンアップ

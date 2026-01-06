@@ -1,0 +1,225 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "loop-enforcement",
+    "branch": "feat/loop-enforcement",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "subtask-guard のバイパス問題を修正。Claude が progress.json を更新せずに完了宣言できる脆弱性を Hook レベルで解決する。",
+    "done_when": [
+      "PostToolUse Hook に progress.json 更新リマインダーが追加されている",
+      "Stop Hook に未完了 subtask の検出ロジックが追加されている",
+      "テスト（hello-world 同等のタスク）で progress.json 更新が強制される"
+    ],
+    "scope": {
+      "includes": [
+        "PostToolUse Hook の拡張",
+        "Stop Hook の実装",
+        "docs/ARCHITECTURE.md への設計追記"
+      ],
+      "excludes": [
+        "CLAUDE.md の変更（FROZEN）",
+        "既存の subtask-guard.sh の修正"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "who": "Claude Code ユーザー",
+          "what": "subtask-guard のバイパス問題を修正",
+          "when": "今回のセッション",
+          "where": ".claude/hooks/, .claude/events/, docs/ARCHITECTURE.md",
+          "why": "Claude が progress.json を更新せずに完了宣言できる脆弱性",
+          "how": "PostToolUse Hook でリマインダー注入、Stop Hook で完了検出",
+          "missing": []
+        },
+        "risks": {
+          "technical": {
+            "description": "Hook の増加による複雑性",
+            "severity": "medium",
+            "mitigation": "既存の chain.sh 構造を活用し、最小限の追加で実装"
+          },
+          "scope": {
+            "description": "既存 Hook との干渉",
+            "severity": "low",
+            "mitigation": "既存 Hook のロジックを変更せず、追加のみ行う"
+          }
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "instruction": "subtask-guard バイパス問題の修正",
+          "question": null,
+          "context": "テストで発覚した問題の詳細説明"
+        },
+        "test_strategy": {
+          "level": "integration",
+          "coverage_target": "PostToolUse と Stop Hook の動作確認",
+          "edge_cases": [
+            "progress.json が存在しない場合",
+            "playbook.active が null の場合"
+          ]
+        },
+        "preconditions": {
+          "existing_code": "subtask-guard.sh は progress.json 編集時にトリガーされる受動的設計",
+          "dependencies": "jq, python3",
+          "constraints": "CLAUDE.md は FROZEN で変更不可"
+        },
+        "success_criteria": {
+          "functional": [
+            "criterion に関連するファイル編集後に progress.json 更新リマインダーが表示される",
+            "Claude が完了宣言しようとした時に未完了 subtask があれば警告される"
+          ],
+          "non_functional": [],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": {
+          "components": [
+            ".claude/events/post-tool-edit/chain.sh",
+            ".claude/events/stop/chain.sh"
+          ],
+          "risk_level": "low"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "分析結果に基づいて playbook を作成",
+      "approved_items": [
+        "PostToolUse Hook でリマインダー注入",
+        "Stop Hook で完了検出"
+      ],
+      "technical_requirements_confirmed": [
+        "Hook レベルでの強制（Skill/Agent の指示変更ではない）",
+        "CLAUDE.md は変更しない"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "PostToolUse Hook 拡張",
+      "description": "Edit/Write 完了後に progress.json 更新リマインダーを注入する仕組みを追加",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": ".claude/skills/reward-guard/guards/progress-reminder.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "test -f .claude/skills/reward-guard/guards/progress-reminder.sh",
+            "consistency": "post-tool-edit/chain.sh から呼び出されることを確認",
+            "completeness": "playbook.active 存在時のみ発火する条件分岐がある"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": ".claude/events/post-tool-edit/chain.sh に progress-reminder.sh の呼び出しが追加されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "grep -q 'progress-reminder' .claude/events/post-tool-edit/chain.sh",
+            "consistency": "既存の invoke_skill 呼び出しと同じパターンを使用",
+            "completeness": "archive-playbook.sh の前に呼び出される順序"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Stop Hook 実装",
+      "description": "Claude が会話を終了しようとした時に未完了 subtask を検出して警告",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": ".claude/skills/reward-guard/guards/completion-check.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "test -f .claude/skills/reward-guard/guards/completion-check.sh",
+            "consistency": "subtask-guard.sh と同様の構造",
+            "completeness": "progress.json の全 subtask の status をチェックするロジックがある"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": ".claude/events/stop/chain.sh に completion-check.sh の呼び出しが追加されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "grep -q 'completion-check' .claude/events/stop/chain.sh",
+            "consistency": "他の chain.sh と同じ invoke_skill パターンを使用",
+            "completeness": "no-op から実装済みに変更"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "ARCHITECTURE.md 更新",
+      "description": "設計ドキュメントに新しい Hook の動作を追記",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "docs/ARCHITECTURE.md に PostToolUse Hook のリマインダー機能が記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q 'progress-reminder' docs/ARCHITECTURE.md",
+            "consistency": "既存の Section 6 (PostToolUse) の構造に合わせた記載",
+            "completeness": "発火条件、処理内容、書き込み先が明記"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "docs/ARCHITECTURE.md に Stop Hook の completion-check 機能が記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q 'completion-check' docs/ARCHITECTURE.md",
+            "consistency": "他の Hook セクションと同じフォーマット",
+            "completeness": "発火条件、検出ロジック、警告内容が明記"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "全 done_when の独立検証",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "各 done_when 条件を手動で検証",
+            "consistency": "plan.json と実装の整合性確認",
+            "completeness": "全 done_when 項目がカバーされていることを確認"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
