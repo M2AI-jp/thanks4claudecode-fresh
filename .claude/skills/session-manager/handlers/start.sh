@@ -40,6 +40,30 @@ cleanup_stale_pending() {
 # First: cleanup stale pending to prevent deadlock
 cleanup_stale_pending
 
+# Ensure session-state directory exists for downstream hooks/skills.
+SESSION_STATE_DIR=".claude/session-state"
+mkdir -p "$SESSION_STATE_DIR"
+
+# ==============================================================================
+# Session health check (auto)
+# ==============================================================================
+run_health_check() {
+    local health_script=".claude/skills/quality-assurance/checkers/health.sh"
+    if [ -x "$health_script" ] || [ -f "$health_script" ]; then
+        bash "$health_script" || true
+    fi
+}
+
+# ==============================================================================
+# Session integrity check (auto)
+# ==============================================================================
+run_integrity_check() {
+    local integrity_script=".claude/skills/quality-assurance/checkers/integrity.sh"
+    if [ -x "$integrity_script" ] || [ -f "$integrity_script" ]; then
+        bash "$integrity_script" || true
+    fi
+}
+
 # ==============================================================================
 # repository-map.yaml 差分チェック関数
 # 実ファイル数と repository-map.yaml の count を比較し、乖離を検出
@@ -279,6 +303,12 @@ echo "$PLAYBOOK" > "$INIT_DIR/required_playbook"
 
 # === Hook 検証（settings.json の全 Hook を自動検証） ===
 verify_hooks
+
+# === health.sh 自動実行 ===
+run_health_check
+
+# === integrity.sh 自動実行 ===
+run_integrity_check
 
 # === repository-map.yaml 差分チェック ===
 check_repository_map_drift

@@ -16,6 +16,26 @@ MARKER_DIR="$(dirname "$MARKER_FILE")"
 # セッション状態ディレクトリを確保
 mkdir -p "$MARKER_DIR"
 
+get_playbook_active() {
+    local state_file="$REPO_ROOT/state.md"
+    if [[ ! -f "$state_file" ]]; then
+        echo "null"
+        return
+    fi
+
+    local value
+    value=$(grep -A5 "^## playbook" "$state_file" 2>/dev/null | \
+        grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//' | tr -d '\r ')
+    value=${value:-null}
+    if [[ -z "$value" ]]; then
+        echo "null"
+        return
+    fi
+    echo "$value"
+}
+
+PLAYBOOK_ACTIVE=$(get_playbook_active)
+
 # 共通ライブラリ読み込み
 if [[ -f "$LIB_DIR/common.sh" ]]; then
     source "$LIB_DIR/common.sh"
@@ -28,18 +48,36 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 # === prompt-analyzer 強制ガード ===
 # マーカーがない場合、prompt-analyzer 以外をブロック（読み取り系は例外）
 if [[ ! -f "$MARKER_FILE" ]]; then
-    if [[ "$TOOL_NAME" == "Task" ]]; then
-        SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // empty')
-        if [[ "$SUBAGENT_TYPE" == "prompt-analyzer" ]]; then
-            # prompt-analyzer → マーカー作成して許可
-            touch "$MARKER_FILE"
-        else
-            echo "BLOCK: prompt-analyzer を先に呼び出してください (tool=Task, subagent=$SUBAGENT_TYPE)" >&2
-            exit 2
-        fi
+    ALLOW_WITHOUT_ANALYZER=false
+    BLOCK_DETAIL=""
+    SHOULD_SET_MARKER=false
+
+    if [[ -n "$PLAYBOOK_ACTIVE" && "$PLAYBOOK_ACTIVE" != "null" ]]; then
+        ALLOW_WITHOUT_ANALYZER=true
+        SHOULD_SET_MARKER=true
     else
-        ALLOW_WITHOUT_ANALYZER=false
         case "$TOOL_NAME" in
+            Task)
+                SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // empty')
+                BLOCK_DETAIL="subagent=$SUBAGENT_TYPE"
+                if [[ "$SUBAGENT_TYPE" == "prompt-analyzer" ]]; then
+                    # prompt-analyzer → マーカー作成して許可
+                    SHOULD_SET_MARKER=true
+                    ALLOW_WITHOUT_ANALYZER=true
+                fi
+                ;;
+            Skill)
+                SKILL_NAME=$(echo "$INPUT" | jq -r '.tool_input.skill // .tool_input.name // .tool_input.skill_name // empty')
+                BLOCK_DETAIL="skill=$SKILL_NAME"
+                if [[ "$SKILL_NAME" == "prompt-analyzer" ]]; then
+                    # Skill(prompt-analyzer) → マーカー作成して許可
+                    SHOULD_SET_MARKER=true
+                    ALLOW_WITHOUT_ANALYZER=true
+                elif [[ "$SKILL_NAME" == "playbook-init" ]]; then
+                    # playbook-init は prompt-analyzer を内包するため許可
+                    ALLOW_WITHOUT_ANALYZER=true
+                fi
+                ;;
             Read|Grep|Glob)
                 ALLOW_WITHOUT_ANALYZER=true
                 ;;
@@ -57,11 +95,19 @@ if [[ ! -f "$MARKER_FILE" ]]; then
                 fi
                 ;;
         esac
+    fi
 
-        if [[ "$ALLOW_WITHOUT_ANALYZER" != "true" ]]; then
+    if [[ "$ALLOW_WITHOUT_ANALYZER" == "true" && "$SHOULD_SET_MARKER" == "true" ]]; then
+        touch "$MARKER_FILE"
+    fi
+
+    if [[ "$ALLOW_WITHOUT_ANALYZER" != "true" ]]; then
+        if [[ -n "$BLOCK_DETAIL" ]]; then
+            echo "BLOCK: prompt-analyzer を先に呼び出してください (tool=$TOOL_NAME, $BLOCK_DETAIL)" >&2
+        else
             echo "BLOCK: prompt-analyzer を先に呼び出してください (tool=$TOOL_NAME)" >&2
-            exit 2
         fi
+        exit 2
     fi
 fi
 

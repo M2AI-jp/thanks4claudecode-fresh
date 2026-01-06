@@ -58,7 +58,7 @@ archive-playbook.sh（PostToolUse:Edit フック）が以下を自動実行済�
 
 4. 残タスクあり:
    - ブランチ作成: `git checkout -b feat/{next-task}`
-   - pm が playbook 作成: plan/playbook-{next-task}.md
+   - pm が playbook 作成: play/{id}/plan.json + play/{id}/progress.json
    - pm が state.md 更新: playbook.active を更新
    - 即座に LOOP に入る
 
@@ -98,7 +98,7 @@ Step 3: PR 作成:
   - create-pr.sh を実行
 
 Step 4-6: 自動アーカイブ（state.md 更新前）:
-  - mkdir -p plan/archive && mv plan/playbook-*.md plan/archive/
+  - mkdir -p play/archive && mv play/{id} play/archive/
   - アーカイブのコミット（playbook 移動のみ）
   - Push（アーカイブ分）
 
@@ -126,7 +126,7 @@ purpose: Edit/Write ブロック制御
 
 content_example:
   status: success  # または partial
-  playbook: playbook-example.md
+  playbook: playbook-example
   timestamp: 2025-12-25T10:00:00Z
 
 lifecycle:

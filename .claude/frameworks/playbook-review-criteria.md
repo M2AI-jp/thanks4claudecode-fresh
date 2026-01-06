@@ -111,6 +111,14 @@ common_omissions:
   - 設定変更後の「影響範囲の確認」
   - 新機能追加後の「既存機能との整合性確認」
   - 中間成果物の「削除またはアーカイブ」
+
+playbook_specific:
+  - [ ] ユーザーが「git push まで」を要求しても Phase に追加していない
+  - [ ] git push は final_tasks のみに記載（archive-playbook が実行する前提）
+  - [ ] tmp/ 配下の成果物が必要な場合、.gitignore の除外状況を確認している
+  - [ ] tmp/* が無視されるなら .gitignore 更新の subtask がある
+  - [ ] "./tmp/xxx.py" 実行要求がある場合は chmod +x を subtask に含める
+  - [ ] 実行要求がない場合は python 実行を criterion/done_when の基準にする
 ```
 
 ### 5. スコープの明確性（Scope Clarity）

@@ -12,8 +12,12 @@
 
 set -e
 
-SESSION_STATE_DIR=".claude/session-state"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+SESSION_STATE_DIR="$REPO_ROOT/.claude/session-state"
 PENDING_FILE="$SESSION_STATE_DIR/post-loop-pending"
+
+mkdir -p "$SESSION_STATE_DIR"
 
 # 色定義
 GREEN='\033[0;32m'

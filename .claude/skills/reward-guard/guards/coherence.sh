@@ -9,7 +9,11 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${SCRIPT_DIR}/../../../.."
 
-source "${REPO_ROOT}/.claude/schema/state-schema.sh"
+STATE_SCHEMA_FILE="${REPO_ROOT}/.claude/schema/state-schema.sh"
+if [[ -f "$STATE_SCHEMA_FILE" ]]; then
+    # shellcheck source=../../../schema/state-schema.sh
+    source "$STATE_SCHEMA_FILE"
+fi
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -41,10 +45,23 @@ if [ -z "$ACTIVE_PLAYBOOKS" ] || [ "$ACTIVE_PLAYBOOKS" = "null" ]; then
 else
     echo -e "    Playbook: $ACTIVE_PLAYBOOKS"
     if [ -f "$ACTIVE_PLAYBOOKS" ]; then
-        DONE_COUNT=$(grep -E "status: done" "$ACTIVE_PLAYBOOKS" 2>/dev/null | wc -l | tr -d ' ')
-        PENDING_COUNT=$(grep -E "status: pending" "$ACTIVE_PLAYBOOKS" 2>/dev/null | wc -l | tr -d ' ')
-        IN_PROGRESS_COUNT=$(grep -E "status: in_progress" "$ACTIVE_PLAYBOOKS" 2>/dev/null | wc -l | tr -d ' ')
-        echo -e "      Phases: done=$DONE_COUNT, in_progress=$IN_PROGRESS_COUNT, pending=$PENDING_COUNT"
+        if [[ "$ACTIVE_PLAYBOOKS" == *.json ]] && command -v jq &> /dev/null; then
+            PROGRESS_PATH="$(dirname "$ACTIVE_PLAYBOOKS")/progress.json"
+            if [ -f "$PROGRESS_PATH" ]; then
+                DONE_COUNT=$(jq '[.phases[] | select(.status == "done" or .status == "completed")] | length' "$PROGRESS_PATH" 2>/dev/null || echo "0")
+                IN_PROGRESS_COUNT=$(jq '[.phases[] | select(.status == "in_progress")] | length' "$PROGRESS_PATH" 2>/dev/null || echo "0")
+                PENDING_COUNT=$(jq '[.phases[] | select(.status == "pending")] | length' "$PROGRESS_PATH" 2>/dev/null || echo "0")
+                echo -e "      Phases: done=$DONE_COUNT, in_progress=$IN_PROGRESS_COUNT, pending=$PENDING_COUNT"
+            else
+                echo -e "      ${YELLOW}[WARN]${NC} progress.json not found: $PROGRESS_PATH"
+                WARNINGS=$((WARNINGS + 1))
+            fi
+        else
+            DONE_COUNT=$(grep -E "status: done" "$ACTIVE_PLAYBOOKS" 2>/dev/null | wc -l | tr -d ' ')
+            PENDING_COUNT=$(grep -E "status: pending" "$ACTIVE_PLAYBOOKS" 2>/dev/null | wc -l | tr -d ' ')
+            IN_PROGRESS_COUNT=$(grep -E "status: in_progress" "$ACTIVE_PLAYBOOKS" 2>/dev/null | wc -l | tr -d ' ')
+            echo -e "      Phases: done=$DONE_COUNT, in_progress=$IN_PROGRESS_COUNT, pending=$PENDING_COUNT"
+        fi
     else
         echo -e "      ${YELLOW}[WARN]${NC} Playbook file not found: $ACTIVE_PLAYBOOKS"
         WARNINGS=$((WARNINGS + 1))
@@ -89,7 +106,23 @@ if [ -n "$STRAY_PLAYBOOKS" ]; then
     done
     WARNINGS=$((WARNINGS + 1))
 else
-    echo -e "    ${GREEN}[OK]${NC} No stray playbooks"
+    echo -e "    ${GREEN}[OK]${NC} No stray legacy playbooks"
+fi
+
+V2_PLAYBOOKS=$(find play -maxdepth 2 -name "plan.json" ! -path "*/archive/*" ! -path "*/template/*" 2>/dev/null || echo "")
+if [ -n "$V2_PLAYBOOKS" ]; then
+    if [ -z "$ACTIVE_PLAYBOOKS" ] || [ "$ACTIVE_PLAYBOOKS" = "null" ]; then
+        echo -e "    ${YELLOW}[WARN]${NC} Active playbook is null but play/ has drafts:"
+        echo "$V2_PLAYBOOKS" | sed 's/^/      - /'
+        WARNINGS=$((WARNINGS + 1))
+    else
+        ORPHANS=$(echo "$V2_PLAYBOOKS" | grep -v "$ACTIVE_PLAYBOOKS" || true)
+        if [ -n "$ORPHANS" ]; then
+            echo -e "    ${YELLOW}[WARN]${NC} Found additional playbooks in play/:"
+            echo "$ORPHANS" | sed 's/^/      - /'
+            WARNINGS=$((WARNINGS + 1))
+        fi
+    fi
 fi
 echo ""
 

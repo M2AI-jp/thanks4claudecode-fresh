@@ -1,0 +1,7 @@
+Extension  Count
+---------  -----
+.py            2
+.pyc           2
+.md            1
+---------  -----
+Total          5

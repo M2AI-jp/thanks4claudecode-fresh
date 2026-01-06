@@ -42,7 +42,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
 ```text
 1) ユーザー依頼
    -> UserPromptSubmit Unit が意図を解析
-   -> playbook を作成
+   -> playbook を作成（plan/progress のみ）
    -> reviewer が検証し、state.md に反映
 
 2) 実行
@@ -55,7 +55,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
    -> PASS のみ完了へ進む
 
 4) 完了
-   -> PostToolUse(Edit) Unit が整理・PRフロー・アーカイブを実施
+   -> PostToolUse(Edit/Write) Unit が整理・PRフロー・アーカイブを実施
    -> Stop/SessionEnd/Notification が状態を記録
 ```
 
@@ -67,12 +67,13 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
 
 | 所見 | 対応する Hook Unit | 影響 | 設計上の対応 |
 |---|---|---|---|
-| prompt-analyzer 強制は正常動作 | user-prompt-submit | 維持 | 強制フローを維持、unit validator/telemetry を追加 |
+| prompt-analyzer 強制は playbook=null 時に限定して維持 | user-prompt-submit | 維持 | 強制フローを playbook=null のみに限定、unit validator/telemetry を追加 |
 | main ブランチ保護が正常動作 | pre-tool-edit | 維持 | access-control を guardrail 中核に固定 |
 | critic が呼ばれず自己完了し得る | pre-tool-edit / reward-guard | 高 | Phase 完了時の critic 強制（guardrail 増設） |
 | coderabbit が差分ベースで動作 | user-prompt-submit / executor | 中 | レビュータイミングを「コミット前 or PR ベース」に再設計 |
 | git-workflow hook が発火しない | post-tool-edit | 低 | chain 側で PR/merge フローを強制化 |
 | playbook gate / reward-guard 未検証 | pre-tool-edit | 中 | health/integrity の検証項目として追加 |
+| playbook 生成中に実装が走る / reviewer が user で自己承認 / progress schema 逸脱 | user-prompt-submit / pre-tool-edit | 高 | planning-only で非playbook編集をブロック、reviewer 独立性と progress schema を強制 |
 
 ---
 
@@ -127,9 +128,14 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
   - `.claude/skills/playbook-init/SKILL.md`
   - `.claude/skills/golden-path/agents/pm.md`
   - `.claude/skills/quality-assurance/agents/reviewer.md`
-  - `plan/template/playbook-format.md`
-  - `plan/template/planning-rules.md`
+  - `.claude/agents/{pm,reviewer}.md`（Task が参照する登録ディレクトリ）
+  - `play/template/plan.json`
+  - `play/template/progress.json`
+  - `play/README.md`
   - `state.md`
+  - 方針: planning-only（plan/progress 以外の編集は禁止）
+  - 方針: reviewer は独立（user 不可、state.md の roles.reviewer と一致）
+  - 方針: progress.json は template 構造に準拠
 
 ### 実行前の安全性（Edit/Write）
 - Hook: PreToolUse(Edit/Write)
@@ -157,7 +163,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
   - `scripts/contract.sh`
 
 ### 完了処理と PR/マージ自動化
-- Hook: PostToolUse(Edit)
+- Hook: PostToolUse(Edit/Write)
 - Files:
   - `.claude/hooks/post-tool.sh`
   - `.claude/events/post-tool-edit/chain.sh`
@@ -232,7 +238,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
 | reward-guard | 参照整合・逸脱検出 | core / keep |
 | quality-assurance (lint) | 変更品質 | conditional / keep |
 
-### PostToolUse(Edit)
+### PostToolUse(Edit/Write)
 | Skill | 非機能要件の役割 | 評価 |
 |---|---|---|
 | playbook-gate (archive/cleanup) | 完了処理 | core / keep |
@@ -355,13 +361,13 @@ Format:
 - docs: state.md, docs/repository-map.yaml, docs/ARCHITECTURE.md
 - outputs: 初期状態の警告/ドリフト報告
 - status:
-  - current: chain.sh + session-manager/start のみ
-  - missing: guardrail/telemetry 分離, health/integrity の明示統合
+  - current: chain.sh + session-manager/start + quality-assurance(health/integrity)
+  - missing: guardrail/telemetry 分離
 
 ### user-prompt-submit
 - intent: 依頼の意図理解と playbook 生成
 - chain (ideal): prompt-analyzer -> understanding-check -> playbook-init -> pm -> reviewer
-- docs: plan/template/playbook-format.md, plan/template/planning-rules.md
+- docs: play/template/plan.json, play/template/progress.json, play/README.md
 - outputs: 解析結果 + playbook + reviewer verdict
 - status:
   - current: prompt-analyzer 経由だが unit validator/telemetry 未分離
@@ -563,7 +569,7 @@ Format:
 ├── .shellcheckrc
 ├── docs/
 ├── governance/
-├── plan/
+├── play/
 ├── scripts/
 ├── tmp/
 └── .claude/
@@ -573,6 +579,7 @@ Format:
 
 ```
 .claude/
+├── agents/  # Task registry (synced from .claude/skills/*/agents)
 ├── events/
 ├── hooks/
 ├── skills/
@@ -588,6 +595,7 @@ Format:
 
 ```
 .claude/
+├── agents/  # Task registry (synced from .claude/skills/*/agents)
 ├── hooks/
 │   ├── session.sh
 │   ├── prompt.sh
@@ -663,6 +671,7 @@ Docs (SSOT)
 - `docs/ARCHITECTURE.md`
 - `docs/core-feature-reclassification.md`
 - `docs/repository-map.yaml`
-- `plan/template/playbook-format.md`
-- `plan/template/planning-rules.md`
+- `play/template/plan.json`
+- `play/template/progress.json`
+- `play/README.md`
 - `governance/PROMPT_CHANGELOG.md`

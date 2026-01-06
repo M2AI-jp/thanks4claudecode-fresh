@@ -1,0 +1,23 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /Users/amano/.asdf/installs/python/3.13.5/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/amano/Desktop/thanks4claudecode-v2
+plugins: anyio-4.11.0
+collecting ... collected 14 items
+
+tmp/test_dir_snapshot.py::TestFormatSize::test_bytes PASSED              [  7%]
+tmp/test_dir_snapshot.py::TestFormatSize::test_kilobytes PASSED          [ 14%]
+tmp/test_dir_snapshot.py::TestFormatSize::test_megabytes PASSED          [ 21%]
+tmp/test_dir_snapshot.py::TestFormatSize::test_zero PASSED               [ 28%]
+tmp/test_dir_snapshot.py::TestFormatDatetime::test_format PASSED         [ 35%]
+tmp/test_dir_snapshot.py::TestGetEntryType::test_directory PASSED        [ 42%]
+tmp/test_dir_snapshot.py::TestGetEntryType::test_file PASSED             [ 50%]
+tmp/test_dir_snapshot.py::TestGetEntries::test_empty_directory PASSED    [ 57%]
+tmp/test_dir_snapshot.py::TestGetEntries::test_with_files PASSED         [ 64%]
+tmp/test_dir_snapshot.py::TestGetEntries::test_with_subdirectory PASSED  [ 71%]
+tmp/test_dir_snapshot.py::TestMain::test_nonexistent_path PASSED         [ 78%]
+tmp/test_dir_snapshot.py::TestMain::test_file_instead_of_directory PASSED [ 85%]
+tmp/test_dir_snapshot.py::TestMain::test_empty_directory PASSED          [ 92%]
+tmp/test_dir_snapshot.py::TestMain::test_valid_directory PASSED          [100%]
+
+============================== 14 passed in 0.04s ==============================

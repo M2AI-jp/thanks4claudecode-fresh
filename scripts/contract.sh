@@ -20,6 +20,7 @@
 # ==============================================================================
 
 STATE_FILE="${STATE_FILE:-state.md}"
+REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 # HARD_BLOCK ファイル（admin でも回避不可）
 HARD_BLOCK_FILES=(
@@ -35,8 +36,10 @@ HARD_BLOCK_FILES=(
 # Maintenance ホワイトリスト（admin + playbook=null で許可）
 MAINTENANCE_WHITELIST=(
     "state.md"
-    "plan/playbook-*.md"
-    "plan/archive/*"
+    "play/*/plan.json"
+    "play/*/progress.json"
+    "play/*/evidence/*"
+    "play/archive/*"
 )
 
 # 変更系 Git コマンド（read-only の status/diff/log/show/branch/remote -v 等は除外）
@@ -133,7 +136,7 @@ get_state_value() {
 # パスが HARD_BLOCK か判定
 is_hard_block() {
     local path="$1"
-    local relative_path="${path#$PWD/}"
+    local relative_path="${path#$REPO_ROOT/}"
 
     for blocked in "${HARD_BLOCK_FILES[@]}"; do
         if [[ "$relative_path" == "$blocked" ]]; then
@@ -146,7 +149,7 @@ is_hard_block() {
 # パスが Maintenance ホワイトリスト内か判定
 is_maintenance_allowed() {
     local path="$1"
-    local relative_path="${path#$PWD/}"
+    local relative_path="${path#$REPO_ROOT/}"
 
     for pattern in "${MAINTENANCE_WHITELIST[@]}"; do
         # shellcheck disable=SC2053
@@ -158,10 +161,10 @@ is_maintenance_allowed() {
 }
 
 # パスが playbook ファイルか判定（Bootstrap 例外）
-# 注: plan/active/ は廃止済み（2025-12-25）、plan/ 直下のみ許可
+# 注: plan/active/ は廃止済み（2025-12-25）、play/ 直下のみ許可
 is_playbook_file() {
     local path="$1"
-    [[ "$path" == *"plan/playbook-"*.md ]]
+    [[ "$path" == *"play/"*"/plan.json" ]]
 }
 
 # パスが state.md か判定
@@ -179,7 +182,7 @@ is_state_file() {
 # Outputs: エラー/警告メッセージを stderr に出力
 contract_check_edit() {
     local file_path="$1"
-    local relative_path="${file_path#$PWD/}"
+    local relative_path="${file_path#$REPO_ROOT/}"
 
     # Fail-closed: state.md が存在しない場合
     if [[ ! -f "$STATE_FILE" ]]; then
@@ -242,7 +245,7 @@ EOF
   playbook=null の状態では編集できません。
 
   対処法:
-    Task(subagent_type='pm', prompt='playbook を作成')
+    Task(subagent_type='pm', prompt='play/ 新フォーマットで playbook を作成')
 
 ========================================
 EOF
@@ -256,16 +259,16 @@ EOF
 # Admin Maintenance 許可パターン（全体一致 ^...$ で判定）
 # 注意: 複合コマンドは Bootstrap 例外チェックで別途処理
 ADMIN_MAINTENANCE_PATTERNS=(
-    # mkdir -p plan/archive（オプション付きも許可）
-    '^mkdir[[:space:]]+(-p[[:space:]]+)?plan/archive/?$'
-    # mv plan/playbook-*.md plan/archive/（1ファイルのみ）
-    '^mv[[:space:]]+plan/playbook-[^[:space:]]+\.md[[:space:]]+plan/archive/?$'
+    # mkdir -p play/archive（オプション付きも許可）
+    '^mkdir[[:space:]]+(-p[[:space:]]+)?play/archive/?$'
+    # mv play/<id> play/archive/（1ディレクトリのみ）
+    '^mv[[:space:]]+play/[^[:space:]]+[[:space:]]+play/archive/?$'
     # git add state.md（単独）
     '^git[[:space:]]+add[[:space:]]+state\.md$'
-    # git add plan/archive/（単独またはファイル指定）
-    '^git[[:space:]]+add[[:space:]]+plan/archive(/[^[:space:]]*)?$'
-    # git add state.md plan/archive/（2つ同時）
-    '^git[[:space:]]+add[[:space:]]+state\.md[[:space:]]+plan/archive/?$'
+    # git add play/archive/（単独またはファイル指定）
+    '^git[[:space:]]+add[[:space:]]+play/archive(/[^[:space:]]*)?$'
+    # git add state.md play/archive/（2つ同時）
+    '^git[[:space:]]+add[[:space:]]+state\.md[[:space:]]+play/archive/?$'
     # git commit -m "..." (maintenance メッセージ)
     '^git[[:space:]]+commit[[:space:]]+-m[[:space:]]+'
 )
@@ -378,7 +381,7 @@ EOF
     # 5. playbook=null の場合
     if [[ -z "$playbook" || "$playbook" == "null" ]]; then
         # 5a. 複合コマンドは admin でも禁止（注入対策）
-        # ただし Bootstrap 例外: state.md と plan/ のみの git 操作は許可
+        # ただし Bootstrap 例外: state.md と play/ のみの git 操作は許可
         if is_compound_command "$command"; then
             # Bootstrap 例外チェック: 複合コマンドパターンに一致するか
             if [[ "$security" == "admin" ]]; then
@@ -403,7 +406,7 @@ EOF
 
   対処法:
     コマンドを分割して個別に実行するか、
-    playbook を作成してください。
+    play/ 新フォーマットで playbook を作成してください。
 
 ========================================
 EOF
@@ -424,7 +427,7 @@ EOF
   （/dev/null へのリダイレクトは許可）
 
   対処法:
-    playbook を作成してください。
+    play/ 新フォーマットで playbook を作成してください。
 
 ========================================
 EOF
@@ -457,7 +460,7 @@ EOF
   playbook=null の状態では変更系コマンドは実行できません。
 
   対処法:
-    Task(subagent_type='pm', prompt='playbook を作成')
+    Task(subagent_type='pm', prompt='play/ 新フォーマットで playbook を作成')
 
 ========================================
 EOF

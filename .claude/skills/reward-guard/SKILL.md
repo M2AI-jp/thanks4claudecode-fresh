@@ -92,4 +92,5 @@ pre-tool.sh が Edit 検出時に state.md 変更をチェック
 |----------|------|
 | CLAUDE.md | Core Contract 定義 |
 | state.md | goal.phase の確認元 |
-| playbook-*.md | done_when/subtasks の確認元 |
+| play/<id>/plan.json | done_when/subtasks の確認元 |
+| play/<id>/progress.json | validations/evidence の確認元 |

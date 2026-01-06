@@ -15,7 +15,7 @@
 #   2. push（PR 作成前に必要）
 #   3. PR 作成（create-pr.sh - playbook.active が必要）
 #   3.5. バックグラウンドタスク クリーンアップ（M088）
-#   4. playbook アーカイブ（plan/archive/ へ移動）
+#   4. playbook アーカイブ（play/archive/ へ移動）
 #   5. アーカイブのコミット（playbook 移動のみ）
 #   6. push（アーカイブ分）
 #   7. state.md 更新（playbook.active = null）
@@ -124,137 +124,96 @@ if [[ -z "$FILE_PATH" ]]; then
     exit 0
 fi
 
-# playbook ファイル以外は無視
-if [[ "$FILE_PATH" != *playbook*.md ]]; then
+# progress.json 以外は無視
+case "$FILE_PATH" in
+    */play/*/progress.json) ;;
+    *) exit 0 ;;
+esac
+
+if [[ "$FILE_PATH" == */archive/* ]] || [[ "$FILE_PATH" == */template/* ]]; then
     exit 0
 fi
 
-# playbook ファイルが存在しない場合はスキップ
 if [ ! -f "$FILE_PATH" ]; then
     exit 0
 fi
 
-# playbook 内の Phase status を確認
-# 全ての status: が done であるかチェック
-# M085 修正: Markdown bold 形式（**status**: done）に対応
-TOTAL_PHASES=$(grep -c '^\*\*status\*\*:' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
-DONE_PHASES=$(grep -c '^\*\*status\*\*: done' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
-# 空の場合は 0 に設定
+if ! jq -e . "$FILE_PATH" >/dev/null 2>&1; then
+    exit 0
+fi
+
+# 全 Phase が done であるかチェック
+TOTAL_PHASES=$(jq '.phases | length' "$FILE_PATH" 2>/dev/null || echo "0")
+DONE_PHASES=$(jq '[.phases[] | select(.status == "done" or .status == "completed")] | length' "$FILE_PATH" 2>/dev/null || echo "0")
 TOTAL_PHASES=${TOTAL_PHASES:-0}
 DONE_PHASES=${DONE_PHASES:-0}
 
-# Phase がない場合はスキップ
 if [ "$TOTAL_PHASES" -eq 0 ]; then
     exit 0
 fi
 
-# 全 Phase が done でない場合はスキップ
 if [ "$DONE_PHASES" -ne "$TOTAL_PHASES" ]; then
     exit 0
 fi
 
-# ==============================================================================
-# V12: チェックボックス形式の完了判定（報酬詐欺防止強化）
-# ==============================================================================
-CHECKED_COUNT=$(grep -c '\- \[x\]' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
-UNCHECKED_COUNT=$(grep -c '\- \[ \]' "$FILE_PATH" 2>/dev/null | head -1 | tr -d ' \n' || echo "0")
-CHECKED_COUNT=${CHECKED_COUNT:-0}
-UNCHECKED_COUNT=${UNCHECKED_COUNT:-0}
-TOTAL_CHECKBOX=$((CHECKED_COUNT + UNCHECKED_COUNT))
+# 全 subtask 完了チェック
+INCOMPLETE_COUNT=$(jq '[.subtasks[] | select(.status != "done")] | length' "$FILE_PATH" 2>/dev/null || echo "0")
+INCOMPLETE_COUNT=${INCOMPLETE_COUNT:-0}
 
-if [ "$TOTAL_CHECKBOX" -gt 0 ]; then
-    if [ "$UNCHECKED_COUNT" -gt 0 ]; then
-        echo "" >&2
-        echo "$SEP" >&2
-        echo "  ⛔ BLOCKED: 未完了の subtask があります" >&2
-        echo "$SEP" >&2
-        echo "  完了: $CHECKED_COUNT / 未完了: $UNCHECKED_COUNT" >&2
-        echo "" >&2
-        # Phase 単位で未完了 subtask を表示
-        echo "  【未完了 subtask 一覧（Phase 別）】" >&2
-        current_phase=""
-        while IFS= read -r line; do
-            if [[ "$line" =~ ^###\ (p[0-9_a-z]+): ]]; then
-                current_phase="${BASH_REMATCH[1]}"
-            elif [[ "$line" =~ ^\-\ \[\ \]\ \*\*([^*]+)\*\* ]]; then
-                subtask_id="${BASH_REMATCH[1]}"
-                echo "    - ${current_phase}: ${subtask_id}" >&2
-            fi
-        done < "$FILE_PATH"
-        echo "" >&2
-        echo "  【必要な対応】" >&2
-        echo "    1. 各 subtask の作業を完了する" >&2
-        echo "    2. Skill(skill='crit') または /crit で検証" >&2
-        echo "    3. チェックボックスを [x] に変更" >&2
-        echo "    4. validations と validated を記入" >&2
-        echo "" >&2
-        echo "  アーカイブは全 subtask 完了後に自動実行されます。" >&2
-        echo "$SEP" >&2
-        exit 2  # 未完了があればブロック
-    fi
+if [ "$INCOMPLETE_COUNT" -gt 0 ]; then
+    INCOMPLETE_LIST=$(jq -r '.subtasks | to_entries[] | select(.value.status != "done") | .key' "$FILE_PATH" 2>/dev/null | head -5 || true)
+    echo "" >&2
+    echo "$SEP" >&2
+    echo "  ⛔ BLOCKED: 未完了の subtask があります" >&2
+    echo "$SEP" >&2
+    echo "  未完了: $INCOMPLETE_COUNT" >&2
+    echo "  【未完了 subtask（最大5件）】" >&2
+    echo "$INCOMPLETE_LIST" | sed 's/^/    - /' >&2
+    echo "" >&2
+    echo "  アーカイブは全 subtask 完了後に自動実行されます。" >&2
+    echo "$SEP" >&2
+    exit 2
 fi
 
-# M019: final_tasks チェック
-if grep -q "^## final_tasks" "$FILE_PATH" 2>/dev/null; then
-    TOTAL_FINAL_TASKS=$(grep -A 100 "^## final_tasks" "$FILE_PATH" | grep -c '\- \[.\] \*\*ft' 2>/dev/null || echo "0")
-    DONE_FINAL_TASKS=$(grep -A 100 "^## final_tasks" "$FILE_PATH" | grep -c '\- \[x\] \*\*ft' 2>/dev/null || echo "0")
-
-    if [ "$TOTAL_FINAL_TASKS" -eq 0 ]; then
-        TOTAL_FINAL_TASKS=$(awk '/^final_tasks:/,/^[a-z_]+:/' "$FILE_PATH" | grep -c "^ *- " 2>/dev/null || echo "0")
-        DONE_FINAL_TASKS=$(awk '/^final_tasks:/,/^[a-z_]+:/' "$FILE_PATH" | grep -c "status: done" 2>/dev/null || echo "0")
-    fi
-
-    if [ "$TOTAL_FINAL_TASKS" -gt 0 ] && [ "$DONE_FINAL_TASKS" -lt "$TOTAL_FINAL_TASKS" ]; then
-        echo ""
-        echo "$SEP"
-        echo "  ⚠️ final_tasks が未完了です"
-        echo "$SEP"
-        echo "  完了: $DONE_FINAL_TASKS / $TOTAL_FINAL_TASKS"
-        echo "  → final_tasks を全て完了してからアーカイブしてください"
-        echo "$SEP"
-        exit 0
-    fi
+# critic PASS 必須
+CRITIC_STATUS=$(jq -r '.critic.status // empty' "$FILE_PATH" 2>/dev/null || echo "")
+if [ "$CRITIC_STATUS" != "PASS" ]; then
+    echo "" >&2
+    echo "$SEP" >&2
+    echo "  ⛔ BLOCKED: critic PASS が必要です" >&2
+    echo "$SEP" >&2
+    echo "  critic.status: ${CRITIC_STATUS:-PENDING}" >&2
+    echo "  /crit または Task(subagent_type='critic') を実行してください。" >&2
+    echo "$SEP" >&2
+    exit 2
 fi
 
-# M056: done_when 再検証（報酬詐欺防止）
-DONE_WHEN_SECTION=$(sed -n '/^done_when:/,/^[a-z_]*:/p' "$FILE_PATH" 2>/dev/null | grep "^  - " | head -10)
-DONE_WHEN_COUNT=$(echo "$DONE_WHEN_SECTION" | grep -c "^  - " 2>/dev/null) || DONE_WHEN_COUNT=0
+# final_tasks チェック（警告のみ）
+TOTAL_FINAL_TASKS=$(jq '.final_tasks | length' "$FILE_PATH" 2>/dev/null || echo "0")
+DONE_FINAL_TASKS=$(jq '[.final_tasks[] | select(type=="object" and (.status == "done" or .status == "skipped"))] | length' "$FILE_PATH" 2>/dev/null || echo "0")
 
-if [ "$DONE_WHEN_COUNT" -gt 0 ]; then
-    # p_final Phase の status チェック
-    P_FINAL_STATUS=$(grep -A 30 "p_final" "$FILE_PATH" 2>/dev/null | grep "^\*\*status\*\*:" | head -1 | sed 's/\*\*status\*\*: *//')
-    if [ -n "$P_FINAL_STATUS" ] && [ "$P_FINAL_STATUS" != "done" ]; then
-        echo ""
-        echo "$SEP"
-        echo "  ❌ p_final（完了検証）が未完了です"
-        echo "$SEP"
-        echo "  done_when の検証: status = $P_FINAL_STATUS"
-        echo "  p_final を完了させてからアーカイブしてください。"
-        echo "$SEP"
-        exit 2  # done_when 未検証でブロック
-    fi
-
-    # p_final の subtask 完了チェック
-    P_FINAL_SECTION=$(grep -A 100 "p_final" "$FILE_PATH" 2>/dev/null | head -100)
-    INCOMPLETE_SUBTASKS=$(echo "$P_FINAL_SECTION" | grep -c '\- \[ \]' 2>/dev/null) || INCOMPLETE_SUBTASKS=0
-
-    if [ "$INCOMPLETE_SUBTASKS" -gt 0 ]; then
-        echo ""
-        echo "$SEP"
-        echo "  ❌ p_final の subtasks が未完了です"
-        echo "$SEP"
-        echo "  アーカイブをブロックします。"
-        echo "$SEP"
-        exit 2
-    fi
+if [ "$TOTAL_FINAL_TASKS" -gt 0 ] && [ "$DONE_FINAL_TASKS" -lt "$TOTAL_FINAL_TASKS" ]; then
+    echo ""
+    echo "$SEP"
+    echo "  ⚠️ final_tasks が未完了です"
+    echo "$SEP"
+    echo "  完了: $DONE_FINAL_TASKS / $TOTAL_FINAL_TASKS"
+    echo "  → final_tasks を全て完了してからアーカイブしてください"
+    echo "$SEP"
+    exit 0
 fi
 
 # ==============================================================================
 # ここから自動処理開始
 # ==============================================================================
 
-PLAYBOOK_NAME=$(basename "$FILE_PATH")
-ARCHIVE_DIR="plan/archive"
+PLAYBOOK_DIR=$(dirname "$FILE_PATH")
+PLAYBOOK_ID=$(jq -r '.playbook.id // empty' "$FILE_PATH" 2>/dev/null || echo "")
+if [ -z "$PLAYBOOK_ID" ] || [ "$PLAYBOOK_ID" = "null" ]; then
+    PLAYBOOK_ID=$(basename "$PLAYBOOK_DIR")
+fi
+PLAYBOOK_NAME="$PLAYBOOK_ID"
+ARCHIVE_DIR="play/archive"
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 
 echo ""
@@ -262,7 +221,7 @@ echo "$SEP"
 echo "  📦 Playbook 完了検出 → 自動処理開始"
 echo "$SEP"
 echo ""
-echo "  Playbook: $FILE_PATH"
+echo "  Playbook: $PLAYBOOK_ID"
 echo "  Status: 全 $TOTAL_PHASES Phase が done"
 echo "  Branch: $CURRENT_BRANCH"
 echo ""
@@ -277,7 +236,7 @@ echo "$SEP"
 if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
     log_info "未コミット変更を検出。コミットします..."
     git add -A
-    git commit -m "feat(${PLAYBOOK_NAME%.md}): playbook 完了
+    git commit -m "feat(${PLAYBOOK_NAME}): playbook 完了
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -341,7 +300,7 @@ echo "  Step 4: Playbook アーカイブ"
 echo "$SEP"
 
 mkdir -p "$ARCHIVE_DIR"
-if mv "$FILE_PATH" "$ARCHIVE_DIR/" 2>/dev/null; then
+if mv "$PLAYBOOK_DIR" "$ARCHIVE_DIR/" 2>/dev/null; then
     log_info "アーカイブ完了: $ARCHIVE_DIR/$PLAYBOOK_NAME"
 else
     log_error "アーカイブに失敗しました"
@@ -357,7 +316,7 @@ echo "$SEP"
 
 if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
     git add -A
-    git commit -m "chore: archive ${PLAYBOOK_NAME%.md}
+    git commit -m "chore: archive ${PLAYBOOK_NAME}
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -392,13 +351,15 @@ STATE_FILE="state.md"
 if [ -f "$STATE_FILE" ]; then
     # === playbook セクション ===
     sed -i '' 's/^active: .*/active: null/' "$STATE_FILE" 2>/dev/null || true
+    sed -i '' 's/^current_phase: .*/current_phase: null/' "$STATE_FILE" 2>/dev/null || true
     sed -i '' 's/^branch: .*/branch: null/' "$STATE_FILE" 2>/dev/null || true
     sed -i '' "s|^last_archived: .*|last_archived: $ARCHIVE_DIR/$PLAYBOOK_NAME|" "$STATE_FILE" 2>/dev/null || true
 
     # === goal セクション（neutral 状態にリセット）===
+    sed -i '' 's/^self_complete: .*/self_complete: false/' "$STATE_FILE" 2>/dev/null || true
     sed -i '' 's/^milestone: .*/milestone: null/' "$STATE_FILE" 2>/dev/null || true
     sed -i '' 's/^phase: .*/phase: null/' "$STATE_FILE" 2>/dev/null || true
-    sed -i '' 's/^status: in_progress/status: null/' "$STATE_FILE" 2>/dev/null || true
+    sed -i '' 's/^status: .*/status: idle/' "$STATE_FILE" 2>/dev/null || true
     # done_criteria を空配列にリセット（複数行対応）
     awk '
         /^done_criteria:/ { in_dc = 1; print "done_criteria: []"; next }
@@ -422,7 +383,7 @@ echo "$SEP"
 
 if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
     git add -A
-    git commit -m "chore: reset state.md after archive ${PLAYBOOK_NAME%.md}
+    git commit -m "chore: reset state.md after archive ${PLAYBOOK_NAME}
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 

@@ -1,0 +1,196 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "dir-snapshot",
+    "plan_path": "play/archive/dir-snapshot/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": null,
+    "subtask": null
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-06"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-06"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-06"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "play/dir-snapshot/evidence/dir_snapshot_checks.txt"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "imports: argparse, datetime, pathlib (standard library)"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "shebang present; argparse/pathlib/datetime imports confirmed"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "play/dir-snapshot/evidence/dir_snapshot_tmp.txt"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "table columns: Name, Type, Size, Modified"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "summary shows Total, Max size, Latest modification"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "rg -n \"dir_snapshot.py\" .gitignore で例外確認"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "tmp/* が無視されつつ dir_snapshot 系のみ例外"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "dir_snapshot.py と test_dir_snapshot.py の両方を追跡"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "play/dir-snapshot/evidence/import_test_dir_snapshot.txt"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "tmp/test_dir_snapshot.py imports dir_snapshot via sys.path"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "tests cover empty directory and nonexistent path"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "play/dir-snapshot/evidence/pytest_dir_snapshot.txt"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "pytest: 14 passed"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "pytest output has no FAILED"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "./tmp/dir_snapshot.py tmp/ 実行でテーブルとサマリー表示を確認",
+            "pytest tmp/test_dir_snapshot.py -v: 14 passed in 0.03s",
+            "git push -u origin feat/python-filesearch"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "done_when 5項目を順に検証"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "実行可能・一覧表示・件数/最大/最新・pytest・push を確認"
+          ]
+        }
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [
+    {
+      "id": "ft1",
+      "status": "done",
+      "notes": "git push -u origin feat/python-filesearch"
+    }
+  ],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "./tmp/dir_snapshot.py tmp/ 実行で一覧+サマリー表示を確認",
+      "pytest tmp/test_dir_snapshot.py -v: 14 passed in 0.03s",
+      "git push -u origin feat/python-filesearch"
+    ],
+    "notes": "done_when 全項目を確認"
+  }
+}

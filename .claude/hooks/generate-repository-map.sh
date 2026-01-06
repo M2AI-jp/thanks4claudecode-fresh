@@ -366,7 +366,7 @@ workflows:
         skills: []
         claude_md: "POST_LOOP セクション → milestone 更新"
       output:
-        - "playbook アーカイブ（plan/archive/）"
+        - "playbook アーカイブ（play/archive/<id>/）"
         - "state.md 更新（playbook.active = null）"
         - "次 playbook（存在する場合）"
         - "/clear 推奨アナウンス"
@@ -736,7 +736,8 @@ cat >> "$TEMP_FILE" << EOF
 
 agents:
   directory: .claude/skills/*/agents/
-  note: "4QV+ アーキテクチャ: SubAgents は各 Skill 内に配置"
+  registry: .claude/agents/
+  note: "SubAgents の正規定義は skills 内、Task は .claude/agents を参照"
   count: $AGENTS_COUNT
   files:
 EOF
@@ -753,6 +754,17 @@ if [[ -d "$SKILLS_DIR_AGENTS" ]]; then
       skill: "$skill"
       description: "$desc"
 EOF
+    done
+fi
+
+# Sync runtime agent registry for Task discovery.
+AGENT_REGISTRY_DIR="$PROJECT_ROOT/.claude/agents"
+if [[ -d "$SKILLS_DIR_AGENTS" ]]; then
+    mkdir -p "$AGENT_REGISTRY_DIR"
+    for agent in $(find "$SKILLS_DIR_AGENTS" -path '*/agents/*.md' -type f 2>/dev/null | sort); do
+        [[ -f "$agent" ]] || continue
+        name=$(basename "$agent")
+        cp "$agent" "$AGENT_REGISTRY_DIR/$name"
     done
 fi
 
@@ -868,22 +880,22 @@ EOF
 fi
 
 # ==============================================================================
-# Plan
+# Play (Playbook v2)
 # ==============================================================================
-echo "  Scanning plan..."
-PLAN_DIR="$PROJECT_ROOT/plan"
+echo "  Scanning play..."
+PLAY_DIR="$PROJECT_ROOT/play"
 
 cat >> "$TEMP_FILE" << EOF
 
-plan:
-  directory: plan/
+play:
+  directory: play/
   subdirectories:
     active:
-      description: "進行中の playbook"
+      description: "進行中の playbook（plan.json/progress.json/evidence）"
 EOF
 
-if [[ -d "$PLAN_DIR/active" ]]; then
-    ACTIVE_COUNT=$(find "$PLAN_DIR/active" -maxdepth 1 -name "playbook-*.md" 2>/dev/null | wc -l | tr -d ' ')
+if [[ -d "$PLAY_DIR" ]]; then
+    ACTIVE_COUNT=$(find "$PLAY_DIR" -maxdepth 2 -name "plan.json" -not -path "*/archive/*" -not -path "*/template/*" 2>/dev/null | wc -l | tr -d ' ')
 else
     ACTIVE_COUNT=0
 fi
@@ -891,11 +903,11 @@ echo "      count: $ACTIVE_COUNT" >> "$TEMP_FILE"
 
 cat >> "$TEMP_FILE" << EOF
     archive:
-      description: "完了した playbook のアーカイブ（4QV+: 削除済み、git履歴で参照）"
+      description: "完了した playbook のアーカイブ"
 EOF
 
-if [[ -d "$PLAN_DIR/archive" ]]; then
-    ARCHIVE_COUNT=$(find "$PLAN_DIR/archive" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+if [[ -d "$PLAY_DIR/archive" ]]; then
+    ARCHIVE_COUNT=$(find "$PLAY_DIR/archive" -maxdepth 2 -name "plan.json" 2>/dev/null | wc -l | tr -d ' ')
 else
     ARCHIVE_COUNT=0
 fi
@@ -903,10 +915,10 @@ echo "      count: $ARCHIVE_COUNT" >> "$TEMP_FILE"
 
 cat >> "$TEMP_FILE" << EOF
     template:
-      description: "playbook テンプレート"
+      description: "playbook v2 テンプレート"
 EOF
 
-TEMPLATE_COUNT=$(count_files "$PLAN_DIR/template" "*.md")
+TEMPLATE_COUNT=$(count_files "$PLAY_DIR/template" "*.json")
 echo "      count: $TEMPLATE_COUNT" >> "$TEMP_FILE"
 
 # ==============================================================================

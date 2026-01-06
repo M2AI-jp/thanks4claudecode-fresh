@@ -1,200 +1,158 @@
 #!/bin/bash
 # ==============================================================================
-# subtask-guard.sh - subtask の 3 検証を強制（V12: チェックボックス形式対応）
+# subtask-guard.sh - subtask 完了時の critic 検証を強制（playbook v2 / progress.json）
 # ==============================================================================
-# 目的: subtask の完了変更時に 3 つの検証を実行
-# トリガー: PreToolUse(Edit)
+# 目的: progress.json で subtask の status が done に変わる際に以下を要求:
+#       1. validations(technical/consistency/completeness) の status が全て PASS
+#       2. validated_by: "critic" が設定されていること（自己報酬詐欺防止）
+#       3. validated_at が設定されていること
 #
-# 【単一責任原則 (SRP)】
-# このスクリプトは「subtask 検証」のみを担当
+# 設計思想:
+#   - Claude が自分で validations を埋めて done にすることを防止
+#   - critic SubAgent が PASS 判定した証拠として validated_by を要求
+#   - Hook Unit = 強制の入口（exit 2 でブロック）
 #
-# 3 つの検証:
-#   1. technical: 技術的に正しく動作するか
-#   2. consistency: 他のコンポーネントと整合性があるか
-#   3. completeness: 必要な変更が全て完了しているか
-#
-# V12 対応:
-#   - `- [ ]` → `- [x]` の変更を検出
-#   - final_tasks のチェックボックス変更はスキップ
-#
-# M056: final_tasks の変更は許可（スキップ）
+# トリガー: PreToolUse(Edit/Write)
 # ==============================================================================
 
 set -euo pipefail
 
-# 入力 JSON を読み取り
 INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
-TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // {}')
 
-
-# playbook ファイルへの編集のみチェック
-FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty')
-if [[ "$FILE_PATH" != *"playbook-"* ]]; then
-    exit 0
-fi
-
-# old_string / new_string を取得
-OLD_STRING=$(echo "$TOOL_INPUT" | jq -r '.old_string // empty')
-NEW_STRING=$(echo "$TOOL_INPUT" | jq -r '.new_string // empty')
-
-# ==============================================================================
-# M056: final_tasks セクションの変更は許可（スキップ）
-# ==============================================================================
-# final_tasks は subtasks とは異なり、単純なチェックリストなので
-# validations は不要。変更を許可する。
-# 判定: old_string に "final_tasks" または "**ft" が含まれていれば final_tasks
-# ==============================================================================
-if [[ "$OLD_STRING" == *"final_tasks"* ]] || [[ "$OLD_STRING" == *"**ft"* ]] || [[ "$OLD_STRING" == *"- id: ft"* ]]; then
-    # final_tasks の変更 → 許可（bypass）
-    exit 0
-fi
-
-# ==============================================================================
-# V12: チェックボックス形式 `- [ ]` → `- [x]` の変更を検出
-# ==============================================================================
-CHECKBOX_CHANGE=false
-
-# パターン 1: `- [ ]` → `- [x]` の変更
-if [[ "$OLD_STRING" == *"- [ ]"* ]] && [[ "$NEW_STRING" == *"- [x]"* ]]; then
-    CHECKBOX_CHANGE=true
-fi
-
-# パターン 2: V11 形式（旧）status: pending/in_progress → status: done
-if [[ "$OLD_STRING" == *"status: pending"* || "$OLD_STRING" == *"status: in_progress"* ]]; then
-    if [[ "$NEW_STRING" == *"status: done"* ]]; then
-        CHECKBOX_CHANGE=true
-    fi
-fi
-
-# パターン 3: status: PASS への変更（旧形式の互換性）
-if [[ "$NEW_STRING" == *"status: PASS"* ]]; then
-    CHECKBOX_CHANGE=true
-fi
-
-# ==============================================================================
-# Phase status 変更の検出とスキップ
-# ==============================================================================
-# Phase status 変更 (**status**: pending/in_progress → done) は
-# phase-status-guard.sh が担当するため、このスクリプトではスキップ
-# 参照: .claude/skills/reward-guard/guards/phase-status-guard.sh
-# ==============================================================================
-if [[ "$OLD_STRING" == *"**status**: pending"* || "$OLD_STRING" == *"**status**: in_progress"* ]]; then
-    if [[ "$NEW_STRING" == *"**status**: done"* || "$NEW_STRING" == *"**status**: completed"* ]]; then
-        # Phase status 変更は phase-status-guard.sh に委譲
-        exit 0
-    fi
-fi
-
-# チェックボックス/status 変更がない場合はパス
-if [[ "$CHECKBOX_CHANGE" == "false" ]]; then
-    exit 0
-fi
-
-# ==============================================================================
-# validations チェック
-# ==============================================================================
-# V12 形式: - [x] の後に validations ブロックがあるか
-# V11 形式: status: done の後に validations があるか
-# ==============================================================================
-# validations の存在と内容をチェック
-# - validations: がない → ブロック
-# - validations: はあるが technical/consistency/completeness が null → ブロック
-# ==============================================================================
-if [[ "$NEW_STRING" != *"validations:"* ]]; then
-    # validations がない場合はブロック
+if ! command -v jq &> /dev/null; then
     cat >&2 << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ⛔ subtask 完了には validations が必須です
+  ⛔ jq 未インストール - セキュリティチェック不可
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  以下の 3 検証を追加してください:
-
-  - [x] **p1.1**: criterion が満たされている ✓
-    - validations:
-      - technical: "PASS - 技術的に正しい"
-      - consistency: "PASS - 整合性がある"
-      - completeness: "PASS - 完全に実装"
-    - validated: 2025-12-24T00:00:00
-
-  または Skill(skill='crit') / /crit を呼び出して検証を実行
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+jq はセキュリティガードに必須です。
+Install: brew install jq
 EOF
     exit 2
 fi
 
-# validations があっても値が null の場合はブロック
-if [[ "$NEW_STRING" == *"technical: null"* ]] || \
-   [[ "$NEW_STRING" == *"consistency: null"* ]] || \
-   [[ "$NEW_STRING" == *"completeness: null"* ]]; then
-    cat >&2 << 'EOF'
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ⛔ validations の値が null です
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  3 つの検証すべてに具体的な値を入力してください:
-
-  - validations:
-    - technical: "PASS - (技術的な検証結果)"
-    - consistency: "PASS - (整合性の検証結果)"
-    - completeness: "PASS - (完全性の検証結果)"
-
-  または Skill(skill='crit') / /crit を呼び出して検証を実行
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EOF
-    exit 2
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+if [[ -z "$FILE_PATH" ]]; then
+    exit 0
 fi
 
-# ==============================================================================
-# critic 呼び出しの構造的強制（報酬詐欺防止）
-# ==============================================================================
-# subtask 完了時に critic SubAgent 呼び出しを必須として指示
-# validations がある場合でも、Phase 完了前に critic 検証を要求
-# ==============================================================================
+case "$FILE_PATH" in
+    */play/*/progress.json) ;;
+    *) exit 0 ;;
+esac
 
-# subtask ID を抽出
-SUBTASK_ID=$(echo "$NEW_STRING" | grep -oE 'p[0-9]+\.[0-9]+|p_[a-z_]+\.[0-9]+' | head -1 || echo "unknown")
-
-# Phase ID を抽出
-PHASE_ID=$(echo "$SUBTASK_ID" | sed 's/\.[0-9]*$//')
-
-# 残り subtask 数を計算（該当 Phase 内）
-REMAINING_SUBTASKS=0
-if [[ -f "$FILE_PATH" && -n "$PHASE_ID" ]]; then
-    PHASE_SECTION=$(awk "/^### ${PHASE_ID}:/,/^---\$/" "$FILE_PATH" 2>/dev/null)
-    REMAINING_SUBTASKS=$(echo "$PHASE_SECTION" | grep -c '\- \[ \]' 2>/dev/null || echo "0")
-    REMAINING_SUBTASKS=$((REMAINING_SUBTASKS - 1))  # 現在完了中の分を引く
-    if [[ "$REMAINING_SUBTASKS" -lt 0 ]]; then
-        REMAINING_SUBTASKS=0
-    fi
+if [[ "$FILE_PATH" == */archive/* ]] || [[ "$FILE_PATH" == */template/* ]]; then
+    exit 0
 fi
 
-# 最後の subtask かどうかで警告レベルを変更
-if [[ "$REMAINING_SUBTASKS" -eq 0 ]]; then
-    # 最後の subtask → critic 必須を強調
-    CRITIC_MESSAGE="  ⚠️ これが Phase ${PHASE_ID} の最後の subtask です\\n\\n  【critic 呼び出し必須】\\n  Phase を done にする前に必ず以下を実行してください:\\n\\n    Skill(skill='crit') または /crit\\n\\n  critic SubAgent が done_criteria を検証します。\\n  critic なしで Phase を done にすると報酬詐欺となります。"
-else
-    # まだ subtask が残っている
-    CRITIC_MESSAGE="  【critic 呼び出しについて】\\n  Phase 完了前に必ず以下を実行してください:\\n\\n    Skill(skill='crit') または /crit\\n\\n  残り subtask: ${REMAINING_SUBTASKS} 個"
-fi
+# 環境変数経由で payload を渡す（HEREDOC と stdin の競合を回避）
+export SUBTASK_GUARD_PAYLOAD="$INPUT"
 
-# validations がある場合は許可しつつ、critic 発動を指示
-cat << EOF
-{
-  "continue": true,
-  "decision": "allow",
-  "reason": "subtask $SUBTASK_ID の validations が記入されています",
-  "hookSpecificOutput": {
-    "action": "require_critic",
-    "subtask_id": "$SUBTASK_ID",
-    "phase_id": "$PHASE_ID",
-    "remaining_subtasks": $REMAINING_SUBTASKS,
-    "message": "Phase 完了前に critic 呼び出しが必須です"
-  },
-  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  ✅ subtask $SUBTASK_ID の validations を確認\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n$CRITIC_MESSAGE\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-}
-EOF
+python3 - "$FILE_PATH" << 'PY'
+import json
+import sys
+import os
+from pathlib import Path
 
-exit 0
+file_path = sys.argv[1]
+
+try:
+    payload = json.loads(os.environ.get("SUBTASK_GUARD_PAYLOAD", "{}"))
+except json.JSONDecodeError:
+    sys.exit(0)
+
+tool_input = payload.get("tool_input", {})
+content = tool_input.get("content")
+old_string = tool_input.get("old_string")
+new_string = tool_input.get("new_string")
+
+try:
+    current_text = Path(file_path).read_text()
+except FileNotFoundError:
+    sys.exit(0)
+
+try:
+    old_data = json.loads(current_text)
+except json.JSONDecodeError:
+    print("progress.json が不正な JSON です。修正してから再実行してください。", file=sys.stderr)
+    sys.exit(2)
+
+if content:
+    new_text = content
+elif old_string and new_string:
+    if old_string not in current_text:
+        sys.exit(0)
+    new_text = current_text.replace(old_string, new_string, 1)
+else:
+    sys.exit(0)
+
+if new_text == current_text:
+    sys.exit(0)
+
+try:
+    new_data = json.loads(new_text)
+except json.JSONDecodeError:
+    print("progress.json の更新後内容が JSON として不正です。", file=sys.stderr)
+    sys.exit(2)
+
+old_subtasks = old_data.get("subtasks", {}) or {}
+new_subtasks = new_data.get("subtasks", {}) or {}
+
+errors = []
+for subtask_id, new_entry in new_subtasks.items():
+    old_status = old_subtasks.get(subtask_id, {}).get("status")
+    new_status = new_entry.get("status")
+    if old_status != "done" and new_status == "done":
+        missing = []
+        validations = new_entry.get("validations", {}) or {}
+        for key in ("technical", "consistency", "completeness"):
+            v = validations.get(key, {}) or {}
+            status = v.get("status")
+            evidence = v.get("evidence", [])
+            if status != "PASS" or not isinstance(evidence, list) or not evidence:
+                missing.append(key)
+        if not new_entry.get("validated_at"):
+            missing.append("validated_at")
+        # validated_by: "critic" のチェック（自己報酬詐欺防止）
+        validated_by = new_entry.get("validated_by", "")
+        if validated_by != "critic":
+            missing.append("validated_by: critic")
+        if missing:
+            errors.append((subtask_id, missing))
+
+if not errors:
+    sys.exit(0)
+
+lines = [
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    "  ⛔ subtask 完了には critic 検証が必須です",
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    "",
+]
+for subtask_id, missing in errors[:3]:
+    lines.append(f"  - {subtask_id}: missing {', '.join(missing)}")
+if len(errors) > 3:
+    lines.append(f"  ... and {len(errors) - 3} more")
+
+lines.extend(
+    [
+        "",
+        "必要条件:",
+        "  - validations.technical/consistency/completeness の status = PASS",
+        "  - 各 validation の evidence が1件以上",
+        "  - validated_at を設定",
+        "  - validated_by: 'critic' を設定（自己報酬詐欺防止）",
+        "",
+        "対処法:",
+        "  1. Task(subagent_type='critic') で検証を実行",
+        "  2. critic が PASS を返したら validated_by: 'critic' を設定",
+        "  3. 再度 status: done に変更",
+        "",
+        f"対象ファイル: {file_path}",
+        "",
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    ]
+)
+
+print("\n".join(lines), file=sys.stderr)
+sys.exit(2)
+PY

@@ -1,0 +1,172 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "python-ext-counter",
+    "branch": "feat/python-filesearch",
+    "created": "2026-01-06",
+    "status": "done",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "pm-self-review",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "拡張子別ファイル件数を集計する Python CLI ツールを tmp/ に作成する",
+    "done_when": [
+      "tmp/ext_counter.py が存在し、python tmp/ext_counter.py <path> で拡張子別件数と合計を表形式で出力する",
+      "tmp/test_ext_counter.py が存在し、pytest tmp/test_ext_counter.py が exit 0 で終了する",
+      "本体コードは Python 標準ライブラリのみを使用している"
+    ],
+    "scope": {
+      "includes": [
+        "CLI ツール本体（tmp/ext_counter.py）",
+        "pytest テスト（tmp/test_ext_counter.py）"
+      ],
+      "excludes": [
+        "GUI",
+        "外部ライブラリ依存",
+        "pip パッケージ化"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "開発者（ユーザー自身）",
+          "what": "拡張子別ファイル件数を集計するPython CLIツールの作成",
+          "when": "明示なし（即時）",
+          "where": "tmp/ ディレクトリ",
+          "why": "手元フォルダの拡張子分布を素早く確認するため",
+          "how": "標準ライブラリのみ使用、pytestでテスト付与",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "大規模ディレクトリでのパフォーマンス",
+              "severity": "low",
+              "mitigation": "os.walk で効率的に走査"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "出力形式の詳細が未定義",
+              "severity": "low",
+              "mitigation": "シンプルなテーブル形式で実装"
+            }
+          ],
+          "dependency": [
+            {
+              "risk": "pytest は標準ライブラリ外",
+              "severity": "medium",
+              "mitigation": "テスト実行時のみ pytest 必要と明記（本体は標準ライブラリのみ）"
+            }
+          ]
+        },
+        "test_strategy": {
+          "test_types": [
+            "unit"
+          ],
+          "coverage_target": "minimal",
+          "edge_cases": [
+            "空ディレクトリ",
+            "拡張子なしファイル",
+            "隠しファイル（.で始まる）",
+            "存在しないパス指定"
+          ]
+        },
+        "success_criteria": {
+          "functional": [
+            "CLI引数でパスを指定できる",
+            "拡張子ごとのファイル件数を表示",
+            "合計件数を表示",
+            "表形式で見やすく出力"
+          ],
+          "non_functional": {
+            "performance": "1000ファイル程度なら1秒以内",
+            "maintainability": "シンプルな単一ファイル構成"
+          }
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "auto-approve",
+      "approved_at": "2026-01-06",
+      "summary": "拡張子別ファイル件数を集計する Python CLI ツールを tmp/ に作成。標準ライブラリのみ使用、pytest でテスト付き。",
+      "approved_items": [
+        "tmp/ext_counter.py を作成",
+        "tmp/test_ext_counter.py を作成",
+        "標準ライブラリのみ使用（pytest はテスト用）"
+      ],
+      "technical_requirements_confirmed": [
+        "os.walk でディレクトリ走査",
+        "argparse で CLI 引数処理",
+        "collections.Counter で集計"
+      ]
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "CLI ツール実装",
+      "description": "ext_counter.py 本体とテストを実装する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "tmp/ext_counter.py が存在し、argparse による CLI 引数処理、os.walk によるディレクトリ走査、拡張子別カウント、表形式出力の機能を持つ",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "python tmp/ext_counter.py . を実行し、表形式出力を確認",
+            "consistency": "標準ライブラリのみ使用していることを import 文で確認",
+            "completeness": "CLI 引数、走査、集計、出力の4機能が実装されている"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "tmp/test_ext_counter.py が存在し、空ディレクトリ・拡張子なしファイル・正常ケースのテストを含む",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "pytest tmp/test_ext_counter.py が exit 0 で終了",
+            "consistency": "テスト対象関数と ext_counter.py の関数が一致",
+            "completeness": "edge_cases（空ディレクトリ、拡張子なし、正常）をカバー"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "全ての done_when を独立検証する",
+      "depends_on": [
+        "p1"
+      ],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "全 done_when 条件が検証コマンドで PASS している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "python tmp/ext_counter.py . && pytest tmp/test_ext_counter.py を実行",
+            "consistency": "import 文に標準ライブラリ以外がないことを確認",
+            "completeness": "done_when 3項目全てを検証"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

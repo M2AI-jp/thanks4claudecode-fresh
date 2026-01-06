@@ -35,27 +35,32 @@ if [[ -z "$FILE_PATH" ]]; then
     exit 0
 fi
 
-# playbook ファイル以外は無視
-if [[ "$FILE_PATH" != *playbook*.md ]]; then
+# progress.json 以外は無視
+case "$FILE_PATH" in
+    */play/*/progress.json) ;;
+    *) exit 0 ;;
+esac
+
+if [[ "$FILE_PATH" == */archive/* ]] || [[ "$FILE_PATH" == */template/* ]]; then
     exit 0
 fi
 
-# playbook ファイルが存在しない場合はスキップ
+# progress.json が存在しない場合はスキップ
 if [ ! -f "$FILE_PATH" ]; then
     exit 0
 fi
 
-# playbook 内の Phase status を確認
-# 全ての status: が done であるかチェック
-TOTAL_PHASES=$(grep -c "^  status:" "$FILE_PATH" 2>/dev/null || echo "0")
-DONE_PHASES=$(grep -c "^  status: done" "$FILE_PATH" 2>/dev/null || echo "0")
+if ! jq -e . "$FILE_PATH" >/dev/null 2>&1; then
+    exit 0
+fi
 
-# Phase がない場合はスキップ
+TOTAL_PHASES=$(jq '.phases | length' "$FILE_PATH" 2>/dev/null || echo "0")
+DONE_PHASES=$(jq '[.phases[] | select(.status == "done" or .status == "completed")] | length' "$FILE_PATH" 2>/dev/null || echo "0")
+
 if [ "$TOTAL_PHASES" -eq 0 ]; then
     exit 0
 fi
 
-# 全 Phase が done でない場合はスキップ
 if [ "$DONE_PHASES" -ne "$TOTAL_PHASES" ]; then
     exit 0
 fi
@@ -81,7 +86,7 @@ find tmp -type d -empty -delete 2>/dev/null || true
 
 # リポジトリマップを自動更新
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-MAP_SCRIPT="$SCRIPT_DIR/generate-repository-map.sh"
+MAP_SCRIPT="$SCRIPT_DIR/../../../hooks/generate-repository-map.sh"
 MAP_RESULT=""
 if [ -x "$MAP_SCRIPT" ]; then
     MAP_RESULT=$(bash "$MAP_SCRIPT" 2>&1 || true)
@@ -92,13 +97,18 @@ TOTAL_MILESTONES="N/A"
 ACHIEVED_MILESTONES="N/A"
 
 # 通知を出力
+PLAYBOOK_ID=$(jq -r '.playbook.id // empty' "$FILE_PATH" 2>/dev/null || echo "")
+if [ -z "$PLAYBOOK_ID" ] || [ "$PLAYBOOK_ID" = "null" ]; then
+    PLAYBOOK_ID=$(basename "$(dirname "$FILE_PATH")")
+fi
+
 cat << EOF
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🎉 Playbook 完了: $(basename "$FILE_PATH")
+  🎉 Playbook 完了: $PLAYBOOK_ID
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  📊 Playbook: $(basename "$FILE_PATH") completed
+  📊 Playbook: $PLAYBOOK_ID completed
 
   [1] テンポラリファイル クリーンアップ
       削除ファイル数: $TMP_FILES
