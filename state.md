@@ -9,10 +9,10 @@
 ## playbook
 
 ```yaml
-active: play/hook-fix-v1/plan.json
-current_phase: p1
-branch: feat/hook-fix-v1
-last_archived: play/archive/python-filesearch
+active: null
+current_phase: null
+branch: null
+last_archived: play/archive/hook-fix-v1
 review_pending: false
 
 ```
@@ -23,16 +23,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: hook-fix-v1
-phase: p1
-done_criteria:
-  - progress.json 更新フローがドキュメントに明文化されている
-  - subtask-guard.sh に validated_by: critic チェックが追加されている
-  - reviewer 検証記録フローがドキュメントに明文化されている
-  - executor-guard.sh の coderabbit 委譲が stdout に JSON 出力する形式になっている
-  - Post-Loop 自動発火の条件と手順がドキュメントに明文化されている
-  - 全修正の動作シミュレーションが PASS している
-status: in_progress
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
