@@ -2,12 +2,12 @@
   "format_version": "2.0",
   "playbook": {
     "id": "dir-snapshot",
-    "plan_path": "play/dir-snapshot/plan.json",
-    "status": "active"
+    "plan_path": "play/archive/dir-snapshot/plan.json",
+    "status": "done"
   },
   "active": {
-    "phase": "p_final",
-    "subtask": "p_final.1"
+    "phase": null,
+    "subtask": null
   },
   "phases": {
     "p1": {
@@ -19,8 +19,8 @@
       "updated_at": "2026-01-06"
     },
     "p_final": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-06"
     }
   },
   "subtasks": {
@@ -69,6 +69,31 @@
           "status": "PASS",
           "evidence": [
             "summary shows Total, Max size, Latest modification"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-06",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "rg -n \"dir_snapshot.py\" .gitignore で例外確認"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "tmp/* が無視されつつ dir_snapshot 系のみ例外"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "dir_snapshot.py と test_dir_snapshot.py の両方を追跡"
           ]
         }
       },
@@ -125,35 +150,47 @@
       "notes": ""
     },
     "p_final.1": {
-      "status": "pending",
-      "validated_at": "",
+      "status": "done",
+      "validated_at": "2026-01-06",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "./tmp/dir_snapshot.py tmp/ 実行でテーブルとサマリー表示を確認",
+            "pytest tmp/test_dir_snapshot.py -v: 14 passed in 0.03s",
+            "git push -u origin feat/python-filesearch"
+          ]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "done_when 5項目を順に検証"
+          ]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "実行可能・一覧表示・件数/最大/最新・pytest・push を確認"
+          ]
         }
       },
-      "notes": "git push 未実施のため critic 未実行"
+      "notes": ""
     }
   },
   "final_tasks": [
     {
       "id": "ft1",
-      "status": "pending",
-      "notes": "git push 未実施"
+      "status": "done",
+      "notes": "git push -u origin feat/python-filesearch"
     }
   ],
   "critic": {
-    "status": "PENDING",
-    "evidence": [],
-    "notes": "git push 未実施のため未実行"
+    "status": "PASS",
+    "evidence": [
+      "./tmp/dir_snapshot.py tmp/ 実行で一覧+サマリー表示を確認",
+      "pytest tmp/test_dir_snapshot.py -v: 14 passed in 0.03s",
+      "git push -u origin feat/python-filesearch"
+    ],
+    "notes": "done_when 全項目を確認"
   }
 }

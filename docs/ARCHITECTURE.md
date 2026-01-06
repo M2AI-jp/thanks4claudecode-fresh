@@ -349,7 +349,8 @@ Claude がツール名と入力パラメータを決定した後、実際の実�
 
 ### prompt-analyzer 強制
 
-prompt-analyzer が未実行の状態では、以下のみ許可する:
+prompt-analyzer が未実行の状態では、以下のみ許可する。
+ただし **playbook.active が null の場合のみ強制** し、active の場合は既存タスク継続として許可する:
 
 - Read/Grep/Glob
 - Skill(prompt-analyzer)

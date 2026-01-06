@@ -67,7 +67,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
 
 | 所見 | 対応する Hook Unit | 影響 | 設計上の対応 |
 |---|---|---|---|
-| prompt-analyzer 強制は正常動作 | user-prompt-submit | 維持 | 強制フローを維持、unit validator/telemetry を追加 |
+| prompt-analyzer 強制は playbook=null 時に限定して維持 | user-prompt-submit | 維持 | 強制フローを playbook=null のみに限定、unit validator/telemetry を追加 |
 | main ブランチ保護が正常動作 | pre-tool-edit | 維持 | access-control を guardrail 中核に固定 |
 | critic が呼ばれず自己完了し得る | pre-tool-edit / reward-guard | 高 | Phase 完了時の critic 強制（guardrail 増設） |
 | coderabbit が差分ベースで動作 | user-prompt-submit / executor | 中 | レビュータイミングを「コミット前 or PR ベース」に再設計 |

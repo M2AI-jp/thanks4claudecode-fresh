@@ -15,8 +15,18 @@ PM_MARKER="$SESSION_STATE_DIR/pm-called"
 INPUT=$(cat)
 
 mkdir -p "$SESSION_STATE_DIR"
-rm -f "$PROMPT_ANALYZER_MARKER" 2>/dev/null
-rm -f "$PM_MARKER" 2>/dev/null
+
+PLAYBOOK_ACTIVE="null"
+if [[ -f "$REPO_ROOT/state.md" ]]; then
+    PLAYBOOK_ACTIVE=$(grep -A5 "^## playbook" "$REPO_ROOT/state.md" 2>/dev/null | \
+        grep "active:" | head -1 | sed 's/.*active: *//' | tr -d '\r ')
+    PLAYBOOK_ACTIVE=${PLAYBOOK_ACTIVE:-null}
+fi
+
+if [[ -z "$PLAYBOOK_ACTIVE" || "$PLAYBOOK_ACTIVE" == "null" ]]; then
+    rm -f "$PROMPT_ANALYZER_MARKER" 2>/dev/null
+    rm -f "$PM_MARKER" 2>/dev/null
+fi
 
 # ユーザープロンプト抽出（UserPromptSubmit input）
 PROMPT=""

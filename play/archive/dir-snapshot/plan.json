@@ -4,7 +4,7 @@
     "id": "dir-snapshot",
     "branch": "feat/python-filesearch",
     "created": "2026-01-06",
-    "status": "active",
+    "status": "done",
     "review_profile": "standard",
     "reviewed": true,
     "reviewed_by": "coderabbit",
@@ -30,6 +30,7 @@
         "tmp/test_dir_snapshot.py の作成",
         "標準ライブラリのみ使用",
         "1階層のみ表示",
+        ".gitignore に tmp 追跡例外を追加",
         "git push"
       ],
       "excludes": [
@@ -123,6 +124,17 @@
             "technical": "./tmp/dir_snapshot.py . を実行し、出力にテーブルヘッダーが含まれる",
             "consistency": "ファイル名、サイズ、更新日時、タイプが表示される",
             "completeness": "件数合計、最大サイズ、更新日時のサマリーが出力末尾に表示される"
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "tmp 配下の成果物が追跡できるよう .gitignore に例外を追加する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "rg -n \"dir_snapshot.py\" .gitignore に例外が含まれる",
+            "consistency": "tmp/* の無視設定と矛盾しない",
+            "completeness": "dir_snapshot.py と test_dir_snapshot.py の両方が対象"
           }
         }
       ]

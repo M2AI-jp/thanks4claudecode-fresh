@@ -9,10 +9,10 @@
 ## playbook
 
 ```yaml
-active: play/dir-snapshot/plan.json
-current_phase: p_final
-branch: feat/python-filesearch
-last_archived: play/archive/python-ext-counter
+active: null
+current_phase: null
+branch: null
+last_archived: play/archive/dir-snapshot
 review_pending: false
 
 ```
@@ -23,15 +23,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: dir-snapshot
-phase: p_final
-done_criteria:
-  - tmp/dir_snapshot.py が存在し、./tmp/dir_snapshot.py <path> で実行可能
-  - 指定パスの一覧（ファイル/ディレクトリ）がテーブル形式で表示される
-  - 件数合計、最大サイズ、更新日時が表示される
-  - tmp/test_dir_snapshot.py が存在し、pytest が PASS する
-  - git push が完了している
-status: active
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
