@@ -11,7 +11,11 @@ set -euo pipefail
 # ==============================================================================
 # state-schema.sh を source して state.md のスキーマを参照
 # ==============================================================================
-source .claude/schema/state-schema.sh
+STATE_SCHEMA_FILE=".claude/schema/state-schema.sh"
+if [[ -f "$STATE_SCHEMA_FILE" ]]; then
+    # shellcheck source=../../schema/state-schema.sh
+    source "$STATE_SCHEMA_FILE"
+fi
 
 # 状態管理ディレクトリ
 INIT_DIR=".claude/.session-init"

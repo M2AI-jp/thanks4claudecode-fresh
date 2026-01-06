@@ -516,6 +516,27 @@ playbook なしで作業開始しない:
 
 ---
 
+## 特記事項（必須）
+
+```yaml
+git_push_request:
+  - ユーザーが「git push まで」と要求した場合でも Phase を作らない
+  - final_tasks に追加し、archive-playbook.sh が自動処理する前提で記録
+  - 例:
+      plan.json: final_tasks に {id, description, command, auto:true} を追加
+      progress.json: final_tasks に {id, status: "skipped", notes: "auto by archive-playbook"} を追加
+
+tmp_tracking:
+  - 生成物が tmp/ に入る場合は .gitignore を必ず確認
+  - tmp/* で無視されるなら .gitignore 更新を subtask に含める
+
+cli_executable:
+  - ユーザーが実行権限を要求していない限り、criterion は "python tmp/xxx.py" を基準にする
+  - "./tmp/xxx.py" を要求された場合のみ chmod +x を subtask に含める
+```
+
+---
+
 ## subtasks 生成ガイドライン（V16: validations ベース）
 
 > **criterion + executor + validations を1セットで定義する**

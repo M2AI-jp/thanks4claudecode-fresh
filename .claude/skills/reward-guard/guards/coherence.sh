@@ -9,7 +9,11 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${SCRIPT_DIR}/../../../.."
 
-source "${REPO_ROOT}/.claude/schema/state-schema.sh"
+STATE_SCHEMA_FILE="${REPO_ROOT}/.claude/schema/state-schema.sh"
+if [[ -f "$STATE_SCHEMA_FILE" ]]; then
+    # shellcheck source=../../../schema/state-schema.sh
+    source "$STATE_SCHEMA_FILE"
+fi
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
