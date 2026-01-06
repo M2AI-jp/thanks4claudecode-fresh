@@ -1,0 +1,208 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "dir-brief",
+    "branch": "feat/python-filesearch",
+    "created": "2026-01-06",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "pm-reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Python CLI ツール dir_brief.py を作成し、指定パスの1階層一覧、件数合計、最大サイズ、最新更新日時を ASCII テーブル形式で表示する。pytest テスト付き。git push まで完了。",
+    "done_when": [
+      "./tmp/dir_brief.py <path> で実行可能である",
+      "1階層一覧（ファイル/ディレクトリ）が表示される",
+      "件数合計・最大サイズ・最新更新日時がサマリーとして表示される",
+      "空ディレクトリでもサマリーが表示される",
+      "出力が ASCII テーブル形式である",
+      "標準ライブラリのみ使用している",
+      "tmp/test_dir_brief.py の pytest テストが全て PASS する",
+      "git push が完了している"
+    ],
+    "scope": {
+      "includes": [
+        "tmp/dir_brief.py の新規作成",
+        "tmp/test_dir_brief.py の新規作成",
+        "実行権限付与",
+        "git push"
+      ],
+      "excludes": [
+        "再帰的なディレクトリ探索",
+        "GUI",
+        "外部ライブラリの使用"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "開発者（ユーザー自身）",
+          "what": "Python CLI ツール dir_brief.py の新規作成 - 指定パスの1階層一覧表示、件数・最大サイズ・最新更新日時のサマリー出力、pytest テスト作成、git push",
+          "when": "即時",
+          "where": "tmp/dir_brief.py, tmp/test_dir_brief.py",
+          "why": "手元のフォルダをざっと確認できる軽量ツールが欲しい",
+          "how": "標準ライブラリのみ使用、ASCII テーブル形式出力、pytest でテスト",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "既存の類似ツール dir_snapshot.py との機能重複",
+              "severity": "low",
+              "mitigation": "ユーザーが明示的に別名を指定"
+            }
+          ],
+          "dependency": [
+            {
+              "risk": "git push は現在のブランチ feat/python-filesearch に対して行われる",
+              "severity": "medium"
+            }
+          ]
+        },
+        "test_strategy": {
+          "test_types": ["unit"],
+          "coverage_target": "standard",
+          "edge_cases": [
+            "空ディレクトリでのサマリー表示",
+            "存在しないパス指定時のエラー",
+            "ファイルパス指定時のエラー"
+          ]
+        },
+        "preconditions": {
+          "existing_code": {
+            "status": "新規作成",
+            "patterns": [
+              "既存の tmp/dir_snapshot.py が参考パターンとして利用可能"
+            ]
+          }
+        },
+        "success_criteria": {
+          "functional": [
+            "./tmp/dir_brief.py <path> で実行可能",
+            "1階層一覧（ファイル/ディレクトリ）を表示",
+            "件数合計・最大サイズ・最新更新日時を表示",
+            "空ディレクトリでもサマリーを表示",
+            "ASCII テーブル形式出力",
+            "pytest テスト全 PASS",
+            "git push 完了"
+          ],
+          "breaking_changes": false
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_APPROVED",
+      "approved_at": "2026-01-06",
+      "summary": "Python CLI ツール dir_brief.py を tmp/ に作成。指定パスの1階層一覧、件数合計、最大サイズ、最新更新日時を ASCII テーブル形式で表示。標準ライブラリのみ使用。pytest テスト付き。git push まで完了。",
+      "approved_items": [
+        "ツール名: tmp/dir_brief.py",
+        "テスト: tmp/test_dir_brief.py",
+        "実行形式: ./tmp/dir_brief.py <path>",
+        "出力形式: ASCII テーブル",
+        "空ディレクトリでもサマリー表示必須"
+      ],
+      "technical_requirements_confirmed": [
+        "標準ライブラリのみ",
+        "1階層一覧（再帰なし）",
+        "pytest でテスト"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "CLI ツール実装",
+      "description": "dir_brief.py と test_dir_brief.py を作成し、実行権限を付与する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "tmp/dir_brief.py が存在し、指定パスの1階層一覧・件数合計・最大サイズ・最新更新日時を ASCII テーブル形式で出力する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "python tmp/dir_brief.py /tmp で実行し、ASCII テーブル出力を確認",
+            "consistency": "既存の tmp/dir_snapshot.py と出力スタイルに大きな矛盾がないこと",
+            "completeness": "件数合計、最大サイズ、最新更新日時の3項目がサマリーに含まれる"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "tmp/test_dir_brief.py が存在し、pytest 実行で全テストが PASS する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "pytest tmp/test_dir_brief.py で exit 0 を確認",
+            "consistency": "テストが dir_brief.py の主要機能をカバーしている",
+            "completeness": "空ディレクトリ、存在しないパス、ファイル指定のエッジケースがテストされている"
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "tmp/dir_brief.py に実行権限が付与され、./tmp/dir_brief.py <path> で実行可能である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "./tmp/dir_brief.py /tmp が実行可能であることを確認",
+            "consistency": "shebang 行が #!/usr/bin/env python3 であること",
+            "completeness": "chmod +x が適用されていること"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Git Push",
+      "description": "変更を git push する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "git push が完了し、リモートに変更が反映されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "git push の exit 0 を確認",
+            "consistency": "ブランチ feat/python-filesearch にプッシュされている",
+            "completeness": "tmp/dir_brief.py と tmp/test_dir_brief.py がリモートに存在する"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

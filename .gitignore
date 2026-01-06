@@ -48,6 +48,8 @@ tmp/*
 !tmp/test_filesearch.py
 !tmp/dir_snapshot.py
 !tmp/test_dir_snapshot.py
+!tmp/dir_brief.py
+!tmp/test_dir_brief.py
 
 # Coverage
 coverage/
