@@ -8,17 +8,21 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${SCRIPT_DIR}/../../../.."
+STATE_FILE="${STATE_FILE:-$REPO_ROOT/state.md}"
+
 # ==============================================================================
 # state-schema.sh を source して state.md のスキーマを参照
 # ==============================================================================
-STATE_SCHEMA_FILE=".claude/schema/state-schema.sh"
+STATE_SCHEMA_FILE="${REPO_ROOT}/.claude/schema/state-schema.sh"
 if [[ -f "$STATE_SCHEMA_FILE" ]]; then
     # shellcheck source=../../schema/state-schema.sh
     source "$STATE_SCHEMA_FILE"
 fi
 
 # 状態管理ディレクトリ
-INIT_DIR=".claude/.session-init"
+INIT_DIR="${REPO_ROOT}/.claude/.session-init"
 PENDING_FILE="$INIT_DIR/pending"
 READ_DIR="$INIT_DIR/read"
 
@@ -31,8 +35,8 @@ TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // {}')
 # security チェック（admin モードはバイパス）
 # --------------------------------------------------
 SECURITY_MODE=""
-if [[ -f "state.md" ]]; then
-      SECURITY_MODE=$(grep "^security:" state.md | head -1 | sed 's/security: *//' | sed 's/ *#.*//' | tr -d ' ')
+if [[ -f "$STATE_FILE" ]]; then
+      SECURITY_MODE=$(grep "^security:" "$STATE_FILE" | head -1 | sed 's/security: *//' | sed 's/ *#.*//' | tr -d ' ')
 fi
 
 # admin モードでも playbook チェックは維持（2025-12-14 修正）
@@ -48,7 +52,7 @@ fi
 
 # 必須ファイル: state.md
 REQUIRED_FILES=(
-    "state.md"
+    "$STATE_FILE"
 )
 
 # playbook は state.md から動的に取得（session-start.sh で設定済み）
@@ -56,6 +60,9 @@ REQUIRED_FILES=(
 if [[ -f "$INIT_DIR/required_playbook" ]]; then
     PLAYBOOK=$(cat "$INIT_DIR/required_playbook")
     if [[ -n "$PLAYBOOK" && "$PLAYBOOK" != "null" ]]; then
+        if [[ "$PLAYBOOK" != /* ]]; then
+            PLAYBOOK="${REPO_ROOT}/${PLAYBOOK}"
+        fi
         if [[ -f "$PLAYBOOK" ]]; then
             REQUIRED_FILES+=("$PLAYBOOK")
         else

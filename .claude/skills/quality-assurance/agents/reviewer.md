@@ -28,6 +28,7 @@ model: opus
 - `subtasks[].validation_plan` が 3 点検証（technical/consistency/completeness）を満たすか確認。
 - `meta.reviewed=true` は reviewer PASS 後に pm が更新する（reviewer は書き込み不可）。
 - **本文の legacy (plan/playbook-format.md 前提のコマンド) は参照しないこと。**
+- `.claude/frameworks/playbook-review-criteria.md` の playbook_specific も必ず確認する。
 
 ---
 
