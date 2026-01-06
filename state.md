@@ -9,10 +9,10 @@
 ## playbook
 
 ```yaml
-active: play/dir-brief/plan.json
-current_phase: p1
-branch: feat/python-filesearch
-last_archived: play/archive/dir-snapshot
+active: null
+current_phase: null
+branch: null
+last_archived: play/archive/dir-brief
 review_pending: false
 
 ```
@@ -22,19 +22,11 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: false
+self_complete: true
 milestone: dir-brief
-phase: p1
-done_criteria:
-  - "./tmp/dir_brief.py <path> で実行可能である"
-  - "1階層一覧（ファイル/ディレクトリ）が表示される"
-  - "件数合計・最大サイズ・最新更新日時がサマリーとして表示される"
-  - "空ディレクトリでもサマリーが表示される"
-  - "出力が ASCII テーブル形式である"
-  - "標準ライブラリのみ使用している"
-  - "tmp/test_dir_brief.py の pytest テストが全て PASS する"
-  - "git push が完了している"
-status: active
+phase: completed
+done_criteria: []
+status: completed
 
 ```
 
