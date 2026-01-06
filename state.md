@@ -9,10 +9,10 @@
 ## playbook
 
 ```yaml
-active: play/python-filesearch/plan.json
-current_phase: p1
+active: null
+current_phase: null
 branch: feat/python-filesearch
-last_archived: play/archive/dir-brief
+last_archived: play/archive/python-filesearch
 review_pending: false
 
 ```
@@ -22,9 +22,9 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: false
+self_complete: true
 milestone: python-filesearch
-phase: p1
+phase: done
 done_criteria:
   - ./tmp/dir_brief.py <path> で実行可能である
   - 1階層一覧（ファイル/ディレクトリ）が表示される
@@ -35,7 +35,7 @@ done_criteria:
   - 出力が ASCII テーブル形式である
   - pytest tmp/test_dir_brief.py が全 PASS である
   - git push が完了している
-status: active
+status: done
 
 ```
 
