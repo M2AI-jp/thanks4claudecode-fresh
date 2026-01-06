@@ -21,6 +21,7 @@ playbook の作成・管理・進捗追跡を行うプロジェクトマネー�
 - テンプレートは `play/template/plan.json` と `play/template/progress.json`。
 - 新規作成は `play/<id>/plan.json` + `play/<id>/progress.json` の 2 ファイル。
 - reviewer PASS 後に `plan.json` の `meta.reviewed=true` と `meta.reviewed_by` を更新。
+  - `meta.reviewed_by` は reviewer の結果として記録する（例: `meta.roles.reviewer`）。pm/self を記載しない。
 - state.md の `playbook.active` は `play/<id>/plan.json` を指す。
 - **以降の本文に legacy (plan/ や playbook-format.md) が出てきても無視すること。**
 

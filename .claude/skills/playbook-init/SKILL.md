@@ -63,7 +63,7 @@ git branch --show-current
 
 ### Step 1: 分析結果の確認（Hook 経由 or 自動取得）
 
-**prompt-analyzer は Hook チェーン経由が基本だが、AUTO_FLOW 時は playbook-init 内で自動実行してよい。**
+**prompt-analyzer は Hook チェーン経由が基本だが、AUTO_FLOW 時も必ず prompt-analyzer ツールを実行する（分析はツール経由で完了させる）。**
 
 ```yaml
 入力:
@@ -77,13 +77,23 @@ git branch --show-current
 
 分岐:
   analysis_result が存在しない場合:
-    → AUTO_FLOW（auto_approve=true など）の場合: prompt-analyzer を実行して analysis_result を生成
+    → AUTO_FLOW（auto_approve=true など）の場合: **必ず prompt-analyzer ツールを実行**して analysis_result を生成
     → それ以外: エラー "prompt-analyzer が呼び出されていません"
     → Hook チェーンを確認
 
   ready_for_playbook: false の場合:
     → blocking_issues を解決してから次へ
     → ユーザーに確認が必要
+
+**prompt-analyzer の実行（必須）**:
+
+```python
+# analysis_result が無い場合は必ず呼ぶ（AUTO_FLOW 含む）
+Task(
+  subagent_type='prompt-analyzer',
+  prompt='{ユーザープロンプト原文}'
+)
+```
 ```
 
 **★チャット上に分析結果を表示（必須）★**:

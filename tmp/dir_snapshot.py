@@ -6,8 +6,6 @@ Usage: ./tmp/dir_snapshot.py <path>
 """
 
 import argparse
-import os
-import stat
 from datetime import datetime
 from pathlib import Path
 
@@ -85,8 +83,8 @@ def print_summary(entries: list[dict]) -> None:
 
     print(f"Total: {total} items ({len(files)} files, {len(dirs)} directories)")
     print(f"Max size: {format_size(max_size)}")
-    if latest_mtime > 0:
-        print(f"Latest modification: {format_datetime(latest_mtime)}")
+    latest_label = format_datetime(latest_mtime) if latest_mtime > 0 else "-"
+    print(f"Latest modification: {latest_label}")
 
 
 def main() -> int:
@@ -107,10 +105,6 @@ def main() -> int:
         return 1
 
     entries = get_entries(target)
-
-    if not entries:
-        print(f"Directory '{target}' is empty.")
-        return 0
 
     print_table(entries)
     print_summary(entries)

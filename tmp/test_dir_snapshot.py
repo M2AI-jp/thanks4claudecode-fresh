@@ -119,7 +119,9 @@ class TestMain:
             result = main()
             assert result == 0
             captured = capsys.readouterr()
-            assert "empty" in captured.out
+            assert "Total:" in captured.out
+            assert "Max size:" in captured.out
+            assert "Latest modification:" in captured.out
 
     def test_valid_directory(self, monkeypatch, capsys):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -131,3 +133,4 @@ class TestMain:
             assert "test.txt" in captured.out
             assert "Total:" in captured.out
             assert "Max size:" in captured.out
+            assert "Latest modification:" in captured.out

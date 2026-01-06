@@ -10,7 +10,7 @@
 
 ```yaml
 active: play/dir-snapshot/plan.json
-current_phase: p1
+current_phase: p_final
 branch: feat/python-filesearch
 last_archived: play/archive/python-ext-counter
 review_pending: false
@@ -24,7 +24,7 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: dir-snapshot
-phase: p1
+phase: p_final
 done_criteria:
   - tmp/dir_snapshot.py が存在し、./tmp/dir_snapshot.py <path> で実行可能
   - 指定パスの一覧（ファイル/ディレクトリ）がテーブル形式で表示される
@@ -40,8 +40,8 @@ status: active
 ## session
 
 ```yaml
-last_start: 2026-01-06 17:01:49
-last_end: 2026-01-06 03:47:20
+last_start: 2026-01-06 17:19:04
+last_end: 2026-01-06 17:19:03
 last_clear: 2025-12-24 03:20:00
 ```
 

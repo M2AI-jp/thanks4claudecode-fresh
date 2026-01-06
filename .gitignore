@@ -46,6 +46,8 @@ tmp/*
 !tmp/transform.ts
 !tmp/filesearch.py
 !tmp/test_filesearch.py
+!tmp/dir_snapshot.py
+!tmp/test_dir_snapshot.py
 
 # Coverage
 coverage/

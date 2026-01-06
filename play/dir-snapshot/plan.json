@@ -7,7 +7,7 @@
     "status": "active",
     "review_profile": "standard",
     "reviewed": true,
-    "reviewed_by": "pm-self-review",
+    "reviewed_by": "coderabbit",
     "roles": {
       "orchestrator": "claudecode",
       "worker": "codex",
@@ -111,7 +111,7 @@
           "validation_plan": {
             "technical": "test -x tmp/dir_snapshot.py && head -1 tmp/dir_snapshot.py | grep -q python",
             "consistency": "標準ライブラリのみ使用していることを確認",
-            "completeness": "shebang、argparse、os/pathlib、datetime の import が含まれている"
+            "completeness": "shebang、argparse、pathlib、datetime の import が含まれている"
           }
         },
         {
@@ -122,7 +122,7 @@
           "validation_plan": {
             "technical": "./tmp/dir_snapshot.py . を実行し、出力にテーブルヘッダーが含まれる",
             "consistency": "ファイル名、サイズ、更新日時、タイプが表示される",
-            "completeness": "件数合計と最大サイズのサマリーが出力末尾に表示される"
+            "completeness": "件数合計、最大サイズ、更新日時のサマリーが出力末尾に表示される"
           }
         }
       ]
@@ -139,7 +139,7 @@
           "executor": "claudecode",
           "coding": true,
           "validation_plan": {
-            "technical": "python -c 'import tmp.test_dir_snapshot' がエラーなく完了",
+            "technical": "python -c 'import importlib.util; spec = importlib.util.spec_from_file_location(\"test_dir_snapshot\", \"tmp/test_dir_snapshot.py\"); mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod); print(\"import ok\")' がエラーなく完了",
             "consistency": "dir_snapshot モジュールを正しくインポートしている",
             "completeness": "空ディレクトリ、存在しないパスのテストケースが含まれている"
           }

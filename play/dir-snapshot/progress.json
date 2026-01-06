@@ -6,17 +6,17 @@
     "status": "active"
   },
   "active": {
-    "phase": "p1",
-    "subtask": "p1.1"
+    "phase": "p_final",
+    "subtask": "p_final.1"
   },
   "phases": {
     "p1": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-06"
     },
     "p2": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-06"
     },
     "p_final": {
       "status": "pending",
@@ -25,77 +25,101 @@
   },
   "subtasks": {
     "p1.1": {
-      "status": "pending",
-      "validated_at": "",
+      "status": "done",
+      "validated_at": "2026-01-06",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "play/dir-snapshot/evidence/dir_snapshot_checks.txt"
+          ]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "imports: argparse, datetime, pathlib (standard library)"
+          ]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "shebang present; argparse/pathlib/datetime imports confirmed"
+          ]
         }
       },
       "notes": ""
     },
     "p1.2": {
-      "status": "pending",
-      "validated_at": "",
+      "status": "done",
+      "validated_at": "2026-01-06",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "play/dir-snapshot/evidence/dir_snapshot_tmp.txt"
+          ]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "table columns: Name, Type, Size, Modified"
+          ]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "summary shows Total, Max size, Latest modification"
+          ]
         }
       },
       "notes": ""
     },
     "p2.1": {
-      "status": "pending",
-      "validated_at": "",
+      "status": "done",
+      "validated_at": "2026-01-06",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "play/dir-snapshot/evidence/import_test_dir_snapshot.txt"
+          ]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "tmp/test_dir_snapshot.py imports dir_snapshot via sys.path"
+          ]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "tests cover empty directory and nonexistent path"
+          ]
         }
       },
       "notes": ""
     },
     "p2.2": {
-      "status": "pending",
-      "validated_at": "",
+      "status": "done",
+      "validated_at": "2026-01-06",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "play/dir-snapshot/evidence/pytest_dir_snapshot.txt"
+          ]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "pytest: 14 passed"
+          ]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "pytest output has no FAILED"
+          ]
         }
       },
       "notes": ""
@@ -117,19 +141,19 @@
           "evidence": []
         }
       },
-      "notes": ""
+      "notes": "git push 未実施のため critic 未実行"
     }
   },
   "final_tasks": [
     {
       "id": "ft1",
       "status": "pending",
-      "notes": ""
+      "notes": "git push 未実施"
     }
   ],
   "critic": {
     "status": "PENDING",
     "evidence": [],
-    "notes": ""
+    "notes": "git push 未実施のため未実行"
   }
 }

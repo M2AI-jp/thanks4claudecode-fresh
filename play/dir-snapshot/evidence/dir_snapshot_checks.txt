@@ -1,0 +1,8 @@
+test -x tmp/dir_snapshot.py
+OK
+head -1 tmp/dir_snapshot.py
+#!/usr/bin/env python3
+imports
+8:import argparse
+9:from datetime import datetime
+10:from pathlib import Path
