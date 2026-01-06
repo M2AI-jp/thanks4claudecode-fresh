@@ -1,0 +1,188 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "dir-snapshot",
+    "branch": "feat/python-filesearch",
+    "created": "2026-01-06",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "pm-self-review",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "フォルダ確認用 Python CLI ツール tmp/dir_snapshot.py とテスト tmp/test_dir_snapshot.py を作成し、git push まで完了する",
+    "done_when": [
+      "tmp/dir_snapshot.py が存在し、./tmp/dir_snapshot.py <path> で実行可能",
+      "指定パスの一覧（ファイル/ディレクトリ）がテーブル形式で表示される",
+      "件数合計、最大サイズ、更新日時が表示される",
+      "tmp/test_dir_snapshot.py が存在し、pytest が PASS する",
+      "git push が完了している"
+    ],
+    "scope": {
+      "includes": [
+        "tmp/dir_snapshot.py の作成",
+        "tmp/test_dir_snapshot.py の作成",
+        "標準ライブラリのみ使用",
+        "1階層のみ表示",
+        "git push"
+      ],
+      "excludes": [
+        "再帰的なディレクトリ走査",
+        "外部ライブラリの使用",
+        "GUI 対応"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "開発者（Claude Code）",
+          "what": "フォルダ確認用 Python CLI ツールの作成（ファイル一覧、件数合計、最大サイズ、更新日時をテーブル表示）+ pytest テスト",
+          "when": "即時",
+          "where": "tmp/dir_snapshot.py, tmp/test_dir_snapshot.py",
+          "why": "手元のフォルダをざっと確認できる便利ツールが欲しい",
+          "how": "標準ライブラリのみ、1階層のみ表示、テーブル形式出力",
+          "missing": []
+        },
+        "test_strategy": {
+          "test_types": ["unit"],
+          "coverage_target": "standard",
+          "edge_cases": [
+            "空ディレクトリ",
+            "存在しないパス"
+          ]
+        },
+        "success_criteria": {
+          "functional": [
+            "指定パスの一覧（ファイル/ディレクトリ）を表示",
+            "件数合計を表示",
+            "最大サイズを表示",
+            "更新日時を表示",
+            "テーブル形式で出力",
+            "./tmp/dir_snapshot.py <path> で実行可能",
+            "pytest テストが通る",
+            "git push 完了"
+          ]
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "auto_approve",
+      "approved_at": "2026-01-06",
+      "summary": "手元のフォルダをざっと確認できる小さな Python CLI ツールを作成。指定パスの一覧、件数合計、最大サイズ、更新日時をテーブル形式で表示。1階層のみ、標準ライブラリのみ。pytest テスト付き。",
+      "approved_items": [
+        "tmp/dir_snapshot.py の作成",
+        "tmp/test_dir_snapshot.py の作成",
+        "./tmp/dir_snapshot.py <path> での実行形式",
+        "git push まで実行"
+      ],
+      "technical_requirements_confirmed": [
+        "標準ライブラリのみ使用",
+        "1階層のみ表示",
+        "テーブル形式出力"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "CLI ツール実装",
+      "description": "tmp/dir_snapshot.py を作成し、実行権限を付与する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "tmp/dir_snapshot.py が存在し、shebang 行と実行権限が設定されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "test -x tmp/dir_snapshot.py && head -1 tmp/dir_snapshot.py | grep -q python",
+            "consistency": "標準ライブラリのみ使用していることを確認",
+            "completeness": "shebang、argparse、os/pathlib、datetime の import が含まれている"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "./tmp/dir_snapshot.py . を実行するとテーブル形式で一覧が表示される",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "./tmp/dir_snapshot.py . を実行し、出力にテーブルヘッダーが含まれる",
+            "consistency": "ファイル名、サイズ、更新日時、タイプが表示される",
+            "completeness": "件数合計と最大サイズのサマリーが出力末尾に表示される"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "テスト作成",
+      "description": "tmp/test_dir_snapshot.py を作成し、pytest を実行する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "tmp/test_dir_snapshot.py が存在し、pytest でインポートエラーなく実行できる",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "python -c 'import tmp.test_dir_snapshot' がエラーなく完了",
+            "consistency": "dir_snapshot モジュールを正しくインポートしている",
+            "completeness": "空ディレクトリ、存在しないパスのテストケースが含まれている"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "pytest tmp/test_dir_snapshot.py が exit 0 で終了する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "pytest tmp/test_dir_snapshot.py の exit code が 0",
+            "consistency": "全テストケースが PASSED",
+            "completeness": "テスト出力に FAILED が含まれない"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "全 done_when の検証と git push",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "critic 検証が全 done_when 項目に対して PASS",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "各 done_when を順に検証コマンドで確認",
+            "consistency": "全項目が整合している",
+            "completeness": "5項目全てが PASS"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": [
+    {
+      "id": "ft1",
+      "description": "git push を実行",
+      "command": "git push -u origin feat/python-filesearch",
+      "auto": true
+    }
+  ]
+}

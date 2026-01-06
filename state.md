@@ -9,7 +9,7 @@
 ## playbook
 
 ```yaml
-active: play/python-filesearch/plan.json
+active: play/dir-snapshot/plan.json
 current_phase: p1
 branch: feat/python-filesearch
 last_archived: play/archive/python-ext-counter
@@ -23,18 +23,14 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: python-filesearch
+milestone: dir-snapshot
 phase: p1
 done_criteria:
-  - tmp/filesearch.py exists and is executable as CLI
-  - CLI displays file/directory list for given path
-  - CLI displays total entry count
-  - CLI displays maximum file size
-  - CLI displays modification timestamps
-  - Uses only Python standard library
-  - tmp/test_filesearch.py exists with pytest tests
-  - pytest passes all tests
-  - Changes are committed and pushed to remote
+  - tmp/dir_snapshot.py が存在し、./tmp/dir_snapshot.py <path> で実行可能
+  - 指定パスの一覧（ファイル/ディレクトリ）がテーブル形式で表示される
+  - 件数合計、最大サイズ、更新日時が表示される
+  - tmp/test_dir_snapshot.py が存在し、pytest が PASS する
+  - git push が完了している
 status: active
 
 ```
@@ -44,7 +40,7 @@ status: active
 ## session
 
 ```yaml
-last_start: 2026-01-06 03:47:22
+last_start: 2026-01-06 17:01:49
 last_end: 2026-01-06 03:47:20
 last_clear: 2025-12-24 03:20:00
 ```
