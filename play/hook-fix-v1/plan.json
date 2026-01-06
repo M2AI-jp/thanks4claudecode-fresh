@@ -1,0 +1,281 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "hook-fix-v1",
+    "branch": "feat/hook-fix-v1",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "reviewer",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Hook -> Skills -> SubAgent の設計思想に基づき、発生した問題を1つずつ確実に修正する",
+    "done_when": [
+      "progress.json 更新フローがドキュメントに明文化されている",
+      "subtask-guard.sh に validated_by: critic チェックが追加されている",
+      "reviewer 検証記録フローがドキュメントに明文化されている",
+      "executor-guard.sh の coderabbit 委譲が stdout に JSON 出力する形式になっている",
+      "Post-Loop 自動発火の条件と手順がドキュメントに明文化されている",
+      "全修正の動作シミュレーションが PASS している"
+    ],
+    "scope": {
+      "includes": [
+        "progress.json 更新フローの明確化",
+        "subtask-guard.sh の修正",
+        "reviewer 検証記録フローの確立",
+        "executor-guard.sh の修正",
+        "Post-Loop 自動発火の明文化",
+        "動作シミュレーション"
+      ],
+      "excludes": [
+        "新機能の追加",
+        "既存機能の大幅な変更",
+        "テストコードの追加"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "who": "Claude Code (pm SubAgent)",
+          "what": "Hook -> Skills -> SubAgent の設計思想に基づく問題修正",
+          "when": "今回のセッション",
+          "where": ".claude/skills/ 配下のガードスクリプト、docs/ 配下のドキュメント",
+          "why": "先の修正で新しい問題が発生したため、対処療法ではなく設計思想を理解した上での修正",
+          "how": "1つずつ確実に、丁寧に修正を行う",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "既存機能への影響",
+              "severity": "medium",
+              "mitigation": "各修正後に動作シミュレーションを実施"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "修正範囲の拡大",
+              "severity": "low",
+              "mitigation": "分析結果の6項目に限定"
+            }
+          ],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "topic_count": 6,
+          "instructions": [
+            "progress.json 更新フローの明確化",
+            "critic が subtask 単位で呼ばれる修正",
+            "reviewer 検証記録フローの確立",
+            "coderabbit-delegate 委譲修正",
+            "Post-Loop 自動発火修正",
+            "動作シミュレーション"
+          ],
+          "questions": [],
+          "context": []
+        },
+        "test_strategy": {
+          "level": "integration",
+          "coverage_target": "各ガードスクリプトの動作確認",
+          "edge_cases": ["playbook がない状態", "critic 未実行状態"]
+        },
+        "preconditions": {
+          "existing_code": "subtask-guard.sh, executor-guard.sh, reviewer.md が存在",
+          "dependencies": ["jq", "bash"],
+          "constraints": ["playbook v2 (JSON) フォーマット"]
+        },
+        "success_criteria": {
+          "functional": [
+            "各ガードが正しく動作する",
+            "ドキュメントが設計思想を反映している"
+          ],
+          "non_functional": [],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": {
+          "affected_components": [
+            "pre-tool-edit/chain.sh",
+            "post-tool-edit/chain.sh"
+          ],
+          "risk_level": "low"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "AUTO_APPROVED - 分析結果に基づく6 Phase 構成の playbook 作成",
+      "approved_items": [
+        "progress.json 更新フローの明確化",
+        "subtask-guard.sh に validated_by: critic チェック追加",
+        "reviewer 検証記録フローの確立",
+        "executor-guard.sh の stdout 出力修正",
+        "Post-Loop 自動発火修正",
+        "動作シミュレーション"
+      ],
+      "technical_requirements_confirmed": [
+        "claudecode が修正を担当",
+        "reviewer が playbook を検証"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "progress.json 更新フローの明確化",
+      "description": "progress.json の更新タイミングと方法をドキュメントに明文化する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "docs/ARCHITECTURE.md に progress.json 更新フローのセクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep 'progress.json' docs/ARCHITECTURE.md で該当セクションを確認",
+            "consistency": "play/template/progress.json の構造と整合性を確認",
+            "completeness": "subtask/phase 状態遷移が全て記載されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "subtask-guard.sh に validated_by: critic チェック追加",
+      "description": "subtask 完了時に critic による検証が行われたことを確認するチェックを追加",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "subtask-guard.sh に validated_by フィールドのチェックロジックが存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "grep 'validated_by' subtask-guard.sh で該当コードを確認",
+            "consistency": "progress.json の subtasks[].validated_by フィールドと整合",
+            "completeness": "critic PASS なしで done に変更できないことを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "reviewer 検証記録フローの確立",
+      "description": "reviewer が playbook を検証した結果を plan.json に記録するフローを明文化",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "docs/ARCHITECTURE.md に reviewer 検証記録フローのセクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep 'reviewer' docs/ARCHITECTURE.md で該当セクションを確認",
+            "consistency": "play/template/plan.json の meta.reviewed, meta.reviewed_by と整合",
+            "completeness": "reviewer PASS -> reviewed: true の流れが記載されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "executor-guard.sh coderabbit 委譲修正",
+      "description": "executor-guard.sh の coderabbit 委譲で stdout に JSON 出力する形式に修正",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "executor-guard.sh の coderabbit case が codex case と同じ JSON 出力形式になっている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "grep -A30 'coderabbit)' executor-guard.sh で JSON 出力を確認",
+            "consistency": "codex case の JSON 出力形式と一致",
+            "completeness": "hookSpecificOutput, systemMessage が含まれている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "Post-Loop 自動発火の明文化",
+      "description": "Post-Loop の自動発火条件と手順をドキュメントに明文化",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "docs/ARCHITECTURE.md に Post-Loop 自動発火セクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep 'Post-Loop' docs/ARCHITECTURE.md で該当セクションを確認",
+            "consistency": "archive-playbook.sh の処理順序と整合",
+            "completeness": "発火条件、処理順序、pending ファイルの役割が記載されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p6",
+      "name": "動作シミュレーション",
+      "description": "全修正の動作を確認するシミュレーションを実施",
+      "depends_on": ["p2", "p3", "p4", "p5"],
+      "subtasks": [
+        {
+          "id": "p6.1",
+          "criterion": "subtask-guard.sh が validated_by なしで done 変更をブロックする",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "テスト用 JSON を stdin に渡してシミュレーション",
+            "consistency": "エラーメッセージが適切",
+            "completeness": "ブロック時の exit code が 2"
+          }
+        },
+        {
+          "id": "p6.2",
+          "criterion": "executor-guard.sh が coderabbit 委譲時に JSON を stdout に出力する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "テスト用 JSON を stdin に渡してシミュレーション",
+            "consistency": "JSON が valid",
+            "completeness": "hookSpecificOutput が含まれている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "done_when の全項目を独立検証",
+      "depends_on": ["p6"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "reviewer による done_when 全項目の検証が PASS している",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "reviewer が各 done_when を検証コマンドで確認",
+            "consistency": "全 Phase の成果物と done_when が整合",
+            "completeness": "done_when の 6 項目全てが PASS"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
