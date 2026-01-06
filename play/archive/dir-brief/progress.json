@@ -2,128 +2,143 @@
   "format_version": "2.0",
   "playbook": {
     "id": "dir-brief",
-    "plan_path": "play/dir-brief/plan.json",
-    "status": "active"
+    "plan_path": "play/archive/dir-brief/plan.json",
+    "status": "done"
   },
   "active": {
-    "phase": "p1",
-    "subtask": "p1.1"
+    "phase": null,
+    "subtask": null
   },
   "phases": {
     "p1": {
-      "status": "pending",
-      "updated_at": ""
-    },
-    "p2": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-06"
     },
     "p_final": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-06"
     }
   },
   "subtasks": {
     "p1.1": {
-      "status": "pending",
-      "validated_at": "",
+      "status": "done",
+      "validated_at": "2026-01-06",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "./tmp/dir_brief.py tmp/ 実行で ASCII テーブルとサマリー表示を確認"
+          ]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "出力列: Name/Type/Size/Modified の構成を確認"
+          ]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "Total/Max size/Latest modification のサマリー確認"
+          ]
         }
       },
       "notes": ""
     },
     "p1.2": {
-      "status": "pending",
-      "validated_at": "",
+      "status": "done",
+      "validated_at": "2026-01-06",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "pytest tmp/test_dir_brief.py -v: 22 passed in 0.05s"
+          ]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "空ディレクトリ/存在しないパス/ファイル指定のテストを含む"
+          ]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "テーブル表示/サマリー/エントリ項目のテストを含む"
+          ]
         }
       },
       "notes": ""
     },
     "p1.3": {
-      "status": "pending",
-      "validated_at": "",
+      "status": "done",
+      "validated_at": "2026-01-06",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "test -x tmp/dir_brief.py で実行権限確認"
+          ]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "shebang が #!/usr/bin/env python3 であることを確認"
+          ]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
-        }
-      },
-      "notes": ""
-    },
-    "p2.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validations": {
-        "technical": {
-          "status": "PENDING",
-          "evidence": []
-        },
-        "consistency": {
-          "status": "PENDING",
-          "evidence": []
-        },
-        "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "./tmp/dir_brief.py <path> 形式で実行可能"
+          ]
         }
       },
       "notes": ""
     },
     "p_final.1": {
-      "status": "pending",
-      "validated_at": "",
+      "status": "done",
+      "validated_at": "2026-01-06",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "./tmp/dir_brief.py tmp/ 実行で一覧/サマリー表示を確認",
+            "pytest tmp/test_dir_brief.py -v: 22 passed in 0.05s",
+            "rg '^import|^from' tmp/dir_brief.py: argparse/datetime/pathlib",
+            "git push -u origin feat/python-filesearch"
+          ]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "done_when 8項目を順に検証"
+          ]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": [
+            "1階層一覧/ASCII/サマリー/空dir/標準ライブラリ/pytest/push を確認"
+          ]
         }
       },
       "notes": ""
     }
   },
-  "final_tasks": [],
+  "final_tasks": [
+    {
+      "id": "ft1",
+      "status": "done",
+      "notes": "git push -u origin feat/python-filesearch"
+    }
+  ],
   "critic": {
-    "status": "PENDING",
-    "evidence": [],
-    "notes": ""
+    "status": "PASS",
+    "evidence": [
+      "./tmp/dir_brief.py tmp/ 実行で一覧+サマリー表示を確認",
+      "pytest tmp/test_dir_brief.py -v: 22 passed in 0.05s",
+      "rg '^import|^from' tmp/dir_brief.py: argparse/datetime/pathlib",
+      "git push -u origin feat/python-filesearch"
+    ],
+    "notes": "done_when 全項目を確認"
   }
 }

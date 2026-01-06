@@ -4,10 +4,10 @@
     "id": "dir-brief",
     "branch": "feat/python-filesearch",
     "created": "2026-01-06",
-    "status": "active",
+    "status": "done",
     "review_profile": "standard",
     "reviewed": true,
-    "reviewed_by": "pm-reviewer",
+    "reviewed_by": "coderabbit",
     "roles": {
       "orchestrator": "claudecode",
       "worker": "codex",
@@ -32,6 +32,7 @@
         "tmp/dir_brief.py の新規作成",
         "tmp/test_dir_brief.py の新規作成",
         "実行権限付与",
+        ".gitignore に tmp 追跡例外を追加",
         "git push"
       ],
       "excludes": [
@@ -166,29 +167,10 @@
       ]
     },
     {
-      "id": "p2",
-      "name": "Git Push",
-      "description": "変更を git push する",
-      "depends_on": ["p1"],
-      "subtasks": [
-        {
-          "id": "p2.1",
-          "criterion": "git push が完了し、リモートに変更が反映されている",
-          "executor": "claudecode",
-          "coding": false,
-          "validation_plan": {
-            "technical": "git push の exit 0 を確認",
-            "consistency": "ブランチ feat/python-filesearch にプッシュされている",
-            "completeness": "tmp/dir_brief.py と tmp/test_dir_brief.py がリモートに存在する"
-          }
-        }
-      ]
-    },
-    {
       "id": "p_final",
       "name": "Final review",
       "description": "Independent verification of done_when.",
-      "depends_on": ["p2"],
+      "depends_on": ["p1"],
       "subtasks": [
         {
           "id": "p_final.1",
@@ -204,5 +186,12 @@
       ]
     }
   ],
-  "final_tasks": []
+  "final_tasks": [
+    {
+      "id": "ft1",
+      "description": "git push を実行",
+      "command": "git push -u origin feat/python-filesearch",
+      "auto": true
+    }
+  ]
 }
