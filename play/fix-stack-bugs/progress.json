@@ -1,0 +1,127 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "fix-stack-bugs",
+    "plan_path": "play/fix-stack-bugs/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-07T22:10:00+09:00"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-07T22:15:00+09:00"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T22:10:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "bash -lc 'command' → '-lc' を検出しスキップ（オプション検出）",
+            "bash script.sh → 'script.sh' を正しく抽出（パス抽出）",
+            "bash -c 'echo hello' → '-c' を検出しスキップ（オプション検出）"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Hook -> Skill チェーン維持: verify_hooks は session-manager/handlers/start.sh 内の関数",
+            "ARCHITECTURE.md の設計に影響なし: バグ修正のみで新機能追加なし"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "空文字列ケース: sed 出力が空 → continue でスキップ",
+            "オプション付きケース: -lc, -c など → [[ == -* ]] でスキップ",
+            "通常ケース: script.sh → パス抽出成功"
+          ]
+        }
+      },
+      "notes": "修正: start.sh 行211-212 にオプションスキップロジック追加"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T22:10:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "playbook-init 分岐に SHOULD_SET_MARKER=true を追加（行78）",
+            "マーカー作成条件: ALLOW_WITHOUT_ANALYZER=true && SHOULD_SET_MARKER=true"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "prompt-analyzer 分岐（行72-75）と同じパターン: SHOULD_SET_MARKER=true + ALLOW_WITHOUT_ANALYZER=true",
+            "Hook -> Skill チェーン維持: pre-tool.sh は Hook dispatcher、Skill ロジックは変更なし"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "ALLOW_WITHOUT_ANALYZER=true: 既存（変更なし）",
+            "SHOULD_SET_MARKER=true: 追加（マーカー作成を有効化）",
+            "マーカー作成ロジック（行101-103）は既存のまま動作"
+          ]
+        }
+      },
+      "notes": "修正: pre-tool.sh 行78 に SHOULD_SET_MARKER=true 追加"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T22:15:00+09:00",
+      "validated_by": "reviewer",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "done_when_1: bash -lc 形式を正しくスキップ（行212のオプション検出）",
+            "done_when_2: bash script.sh 形式から正しくパス抽出",
+            "done_when_3: playbook-init でマーカー作成（行78 SHOULD_SET_MARKER=true）",
+            "done_when_4: マーカー存在時は後続ツール許可"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "ARCHITECTURE.md Section 3 の設計と整合",
+            "Hook -> Skill -> SubAgent チェーン維持",
+            "Skill(playbook-init) が許可リストに明記"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "全 done_when 項目（4/4）が PASS",
+            "修正ファイル: start.sh（行211-212）、pre-tool.sh（行78）"
+          ]
+        }
+      },
+      "notes": "reviewer SubAgent による最終検証完了"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "p1.1 PASS: verify_hooks の正規表現バグ修正（技術的/整合性/完全性）",
+      "p1.2 PASS: playbook-init でのマーカー作成追加（技術的/整合性/完全性）",
+      "p_final.1 PASS: 全 done_when 項目（4/4）が検証通過"
+    ],
+    "notes": "critic SubAgent + reviewer SubAgent による独立検証完了"
+  }
+}
