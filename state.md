@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: play/projects/design-validation/project.json
+active: null
 current_milestone: m1
-status: active
+status: idle
 ```
 
 ---
@@ -19,11 +19,11 @@ status: active
 ## playbook
 
 ```yaml
-active: play/projects/design-validation/playbooks/gap-analysis/plan.json
-parent_project: play/projects/design-validation/project.json
-current_phase: p1
-branch: feat/design-validation
-last_archived: play/archive/standalone/fix-playbook-guard-macos
+active: null
+parent_project: null
+current_phase: null
+branch: null
+last_archived: play/archive/projects/play/projects/design-validation/project.json/playbooks/gap-analysis
 review_pending: false
 
 ```
@@ -34,14 +34,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: m1
-phase: p1
-done_criteria:
-  - docs/ARCHITECTURE.md と実装の乖離が全てリスト化されている
-  - docs/core-feature-reclassification.md と実装の乖離が全てリスト化されている
-  - 乖離項目に優先度（high/medium/low）が付与されている
-  - play/projects/design-validation/reports/gap-report.md が存在する
-status: active
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
