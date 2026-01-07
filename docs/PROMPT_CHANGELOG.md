@@ -156,7 +156,7 @@ Core Contract を CLAUDE.md に明記し、admin モードでも回避不可の�
 - Removed volatile content (specific milestones, tool details)
 
 ### Governance Added
-- `governance/PROMPT_CHANGELOG.md` (this file)
+- `docs/PROMPT_CHANGELOG.md` (this file)
 - `scripts/lint_prompts.py` for automated validation
 - `.github/workflows/prompt-lint.yml` for CI enforcement
 

@@ -438,7 +438,26 @@ if [ "$CURRENT_AFTER" != "main" ] && [ "$CURRENT_AFTER" != "master" ]; then
     if git checkout main 2>/dev/null; then
         log_info "main へ checkout 完了"
     else
-        log_warn "main への checkout に失敗しました（未コミット変更がある可能性）"
+        # 未コミット変更がある場合は stash を使用
+        log_warn "checkout 失敗 → stash を試行します"
+        if git stash 2>/dev/null; then
+            log_info "stash 完了"
+            if git checkout main 2>/dev/null; then
+                log_info "main へ checkout 完了"
+                # stash を pop（失敗しても続行）
+                if git stash pop 2>/dev/null; then
+                    log_info "stash pop 完了"
+                else
+                    log_warn "stash pop に失敗（conflict の可能性）。git stash list で確認してください"
+                fi
+            else
+                log_warn "stash 後も checkout に失敗しました"
+                # stash を戻す
+                git stash pop 2>/dev/null || true
+            fi
+        else
+            log_warn "stash に失敗しました（未コミット変更を手動で処理してください）"
+        fi
     fi
 fi
 

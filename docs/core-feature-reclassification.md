@@ -160,7 +160,7 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
   - `.claude/skills/access-control/guards/bash-check.sh`
   - `.claude/skills/reward-guard/guards/coherence.sh`
   - `.claude/skills/quality-assurance/checkers/lint.sh`
-  - `scripts/contract.sh`
+  - `.claude/lib/contract.sh`
 
 ### 完了処理と PR/マージ自動化
 - Hook: PostToolUse(Edit/Write)
@@ -390,7 +390,7 @@ Format:
 ### pre-tool-bash
 - intent: 破壊的コマンドの遮断と契約チェック
 - chain (ideal): access-control/bash-check -> reward-guard/coherence -> quality-assurance/lint
-- docs: state.md, scripts/contract.sh
+- docs: state.md, .claude/lib/contract.sh
 - outputs: allow/block + 理由
 - status:
   - current: guardrail 集中、retry/telemetry 未分離
@@ -568,9 +568,7 @@ Format:
 ├── .env.example
 ├── .shellcheckrc
 ├── docs/
-├── governance/
 ├── play/
-├── scripts/
 ├── tmp/
 └── .claude/
 ```
@@ -674,4 +672,4 @@ Docs (SSOT)
 - `play/template/plan.json`
 - `play/template/progress.json`
 - `play/README.md`
-- `governance/PROMPT_CHANGELOG.md`
+- `docs/PROMPT_CHANGELOG.md`

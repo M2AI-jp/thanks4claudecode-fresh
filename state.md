@@ -9,10 +9,10 @@
 ## playbook
 
 ```yaml
-active: null
-current_phase: null
-branch: null
-last_archived: play/archive/loop-enforcement
+active: play/git-state-sync/plan.json
+current_phase: p3
+branch: feat/loop-enforcement
+last_archived: play/archive/dir-cleanup
 review_pending: false
 
 ```
@@ -35,8 +35,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 03:40:33
-last_end: 2026-01-07 03:25:21
+last_start: 2026-01-07 12:44:40
+last_end: 2026-01-07 04:36:27
 last_clear: 2025-12-24 03:20:00
 ```
 

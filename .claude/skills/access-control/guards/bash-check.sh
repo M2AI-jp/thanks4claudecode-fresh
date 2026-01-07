@@ -2,7 +2,7 @@
 # pre-bash-check.sh - Bash コマンド実行前の契約チェック
 #
 # PreToolUse(Bash) フックとして実行される。
-# 契約判定は scripts/contract.sh に集約。
+# 契約判定は .claude/lib/contract.sh に集約。
 
 set -e
 
@@ -13,7 +13,7 @@ NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${SCRIPT_DIR}/../../../.."
-CONTRACT_SCRIPT="${REPO_ROOT}/scripts/contract.sh"
+CONTRACT_SCRIPT="${REPO_ROOT}/.claude/lib/contract.sh"
 STATE_FILE="state.md"
 
 # stdin から JSON を読み込む
@@ -31,7 +31,7 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 # contract.sh が存在する場合は使用（新アーキテクチャ）
 USE_CONTRACT=false
 if [[ -f "$CONTRACT_SCRIPT" ]]; then
-    # shellcheck source=../../scripts/contract.sh
+    # shellcheck source=../../../../.claude/lib/contract.sh
     source "$CONTRACT_SCRIPT"
 
     # 契約チェック実行

@@ -22,7 +22,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${SCRIPT_DIR}/../../../.."
-CONTRACT_SCRIPT="${REPO_ROOT}/scripts/contract.sh"
+CONTRACT_SCRIPT="${REPO_ROOT}/.claude/lib/contract.sh"
 
 # 現在のブランチを取得
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
@@ -103,7 +103,7 @@ if [ "$TOOL_NAME" = "Bash" ]; then
 
     # 読み取り専用 Bash は許可（契約チェックに従う）
     if [[ -f "$CONTRACT_SCRIPT" ]]; then
-        # shellcheck source=../../scripts/contract.sh
+        # shellcheck source=../../../../.claude/lib/contract.sh
         source "$CONTRACT_SCRIPT"
         if contract_check_bash "$COMMAND" >/dev/null 2>&1; then
             exit 0
