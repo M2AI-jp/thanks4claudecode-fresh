@@ -1,0 +1,104 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "m1-protected-files",
+    "type": "playbook",
+    "branch": "project/context-cleanup",
+    "created": "2026-01-08",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "parent_project": "context-cleanup",
+    "milestone": "m1",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "protected-files.txt の保護レベルを HARD_BLOCK と BLOCK の2種類に統一（WARN を廃止）",
+    "done_when": [
+      "protected-files.txt 内に WARN: で始まる行が存在しない",
+      "RUNBOOK.md が BLOCK:RUNBOOK.md として登録されている",
+      "ヘッダーコメントから WARN の説明が削除されている"
+    ],
+    "scope": {
+      "includes": [
+        ".claude/protected-files.txt の編集"
+      ],
+      "excludes": [
+        "HARD_BLOCK の廃止",
+        "他ファイルの変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high"
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_FLOW",
+      "approved_at": "2026-01-08"
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "WARN を BLOCK に変更",
+      "description": "protected-files.txt 内の WARN エントリを BLOCK に変更し、コメントを更新",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "protected-files.txt 内の WARN:RUNBOOK.md が BLOCK:RUNBOOK.md に変更されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -c 'WARN:' .claude/protected-files.txt が 0 を返す",
+            "consistency": "grep 'BLOCK:RUNBOOK.md' .claude/protected-files.txt が成功する",
+            "completeness": "HARD_BLOCK と BLOCK の2種類のみ存在することを確認"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "protected-files.txt のヘッダーコメントから WARN の説明行が削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -c 'WARN:path' .claude/protected-files.txt が 0 を返す",
+            "consistency": "HARD_BLOCK と BLOCK の説明が正確であることを確認",
+            "completeness": "コメントとして保護レベルの定義が明記されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "全 done_when 条件の独立検証",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "critic による全 done_when 項目の検証が PASS している",
+          "executor": "critic",
+          "coding": false,
+          "validation_plan": {
+            "technical": "critic が各 done_when を検証コマンドで確認",
+            "consistency": "protected-files.txt のフォーマットが正しい",
+            "completeness": "全 done_when 項目が達成されている"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: null
-status: idle
+active: play/projects/context-cleanup/project.json
+current_milestone: m1
+status: active
 ```
 
 ---
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
-parent_project: null
-current_phase: null
-branch: null
+active: play/projects/context-cleanup/playbooks/m1-protected-files/plan.json
+parent_project: context-cleanup
+current_phase: p1
+branch: project/context-cleanup
 last_archived: play/archive/refactor-play-structure
 review_pending: false
 
@@ -34,10 +34,13 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: m1
+phase: p1
+done_criteria:
+  - protected-files.txt 内に WARN: で始まる行が存在しない
+  - RUNBOOK.md が BLOCK:RUNBOOK.md として登録されている
+  - ヘッダーコメントから WARN の説明が削除されている
+status: active
 
 ```
 
@@ -46,8 +49,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-08 01:38:34
-last_end: 2026-01-08 00:42:31
+last_start: 2026-01-08 01:57:35
+last_end: 2026-01-08 01:57:34
 last_clear: 2025-12-24 03:20:00
 ```
 
