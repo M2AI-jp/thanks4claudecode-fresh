@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/fix-stack-bugs/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: fix/stack-bugs
-last_archived: play/archive/standalone/project-close
+current_phase: null
+branch: null
+last_archived: play/archive/standalone/fix-stack-bugs
 review_pending: false
 
 ```
@@ -35,13 +35,9 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: p1
-done_criteria:
-  - "verify_hooks が `bash -lc 'command'` 形式を正しくスキップする"
-  - "verify_hooks が `bash script.sh` 形式から正しくパスを抽出する"
-  - "playbook-init 実行後にマーカーファイルが作成される"
-  - "マーカー作成後は後続ツール（Edit/Write/Bash）が許可される"
-status: active
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
