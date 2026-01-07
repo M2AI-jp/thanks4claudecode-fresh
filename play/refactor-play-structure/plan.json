@@ -1,0 +1,269 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "refactor-play-structure",
+    "branch": "refactor/play-structure",
+    "created": "2026-01-08",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "reviewer",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "play/ 構造を理想系にリファクタリングし、関連する docs 3 ファイルと archive-playbook.sh を更新する",
+    "done_when": [
+      "play/ 直下に単発 playbook が配置される構造になっている（standalone/ 削除）",
+      "play/template/ にテンプレートが統合されている（projects/template/ 削除）",
+      "play/archive/ 直下に単発アーカイブが配置される（archive/standalone/ 削除）",
+      "play/projects/{id}/{pb}/ 構造になっている（playbooks/ 階層削除）",
+      "archive-playbook.sh が新構造に対応している",
+      "docs/ARCHITECTURE.md が新構造を反映している",
+      "docs/core-feature-reclassification.md が新構造を反映している",
+      "docs/repository-map.yaml が新構造を反映している"
+    ],
+    "scope": {
+      "includes": [
+        "play/ ディレクトリ構造の変更",
+        "archive-playbook.sh の修正",
+        "docs 3 ファイルの更新"
+      ],
+      "excludes": [
+        "playbook の内容変更",
+        "他の機能追加"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "what": "play/ ディレクトリ構造を理想系にリファクタリング",
+          "why": "冗長なネスト（standalone/, playbooks/）を削除し、DRY 原則に従ってテンプレートを統合",
+          "who": "Claude Code（pm が orchestrator として実行）",
+          "when": "今回のセッションで完了",
+          "where": "play/ ディレクトリ、archive-playbook.sh、docs/ARCHITECTURE.md、docs/core-feature-reclassification.md、docs/repository-map.yaml",
+          "how": "ディレクトリ移動、ファイル削除、スクリプト修正、ドキュメント更新",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "archive-playbook.sh が旧パスを参照している箇所の見落とし",
+              "severity": "high",
+              "mitigation": "grep でパスパターンを網羅的に検索してから修正"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "既存アーカイブの整合性が崩れる可能性",
+              "severity": "medium",
+              "mitigation": "既存アーカイブは移動のみ、内容は変更しない"
+            }
+          ],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "instruction": [
+            "play/ 構造のリファクタリング",
+            "docs 3 ファイルの更新"
+          ],
+          "question": [],
+          "context": [
+            "理想系の構造定義（ユーザー確定済み）"
+          ]
+        },
+        "test_strategy": {
+          "level": "manual",
+          "coverage": "構造変更後のパス検証",
+          "edge_cases": [
+            "既存アーカイブのパス整合性",
+            "archive-playbook.sh の動作"
+          ]
+        },
+        "preconditions": {
+          "existing_code": "現在 play/standalone/, play/archive/standalone/, play/projects/template/ が存在",
+          "dependencies": [],
+          "constraints": [
+            "既存 playbook の内容は変更しない"
+          ]
+        },
+        "success_criteria": {
+          "functional": [
+            "新構造でディレクトリが配置されている",
+            "archive-playbook.sh が新構造で動作する"
+          ],
+          "non_functional": [],
+          "breaking_changes": [
+            "旧パス（play/standalone/, play/archive/standalone/）は削除される"
+          ]
+        },
+        "reverse_dependencies": {
+          "components": [
+            "archive-playbook.sh",
+            "generate-repository-map.sh",
+            "pm.md（playbook 作成時のパス）"
+          ],
+          "risk_level": "medium"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init-input",
+      "approved_at": "2026-01-08T02:00:00+09:00",
+      "summary": "理想系でリファクタリング実行（AUTO_APPROVED）",
+      "approved_items": [
+        "standalone/ を play/ 直下に移動",
+        "projects/template/ を template/ に統合",
+        "archive/standalone/ を archive/ 直下に移動",
+        "projects/{id}/playbooks/{pb}/ を projects/{id}/{pb}/ に変更"
+      ],
+      "technical_requirements_confirmed": [
+        "archive-playbook.sh の修正が必要",
+        "docs 3 ファイルの更新が必要"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "構造変更",
+      "description": "play/ ディレクトリ構造を理想系に変更する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "play/standalone/ の内容が play/ 直下に移動され、standalone/ ディレクトリが削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "ls play/ で直下に playbook がなく .gitkeep のみ、standalone/ が存在しないことを確認",
+            "consistency": "play/template/ が存在し、テンプレートファイルがあることを確認",
+            "completeness": "play/standalone/ が削除されていることを確認"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "play/projects/template/ の内容が play/template/ に統合され、projects/template/ が削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "ls play/template/ で plan.json, progress.json, project.json が存在することを確認",
+            "consistency": "play/projects/template/ が存在しないことを確認",
+            "completeness": "テンプレートファイルの内容が保持されていることを確認"
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "play/archive/standalone/ の内容が play/archive/ 直下に移動され、archive/standalone/ ディレクトリが削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "ls play/archive/ でアーカイブ済み playbook が直下にあることを確認",
+            "consistency": "play/archive/standalone/ が存在しないことを確認",
+            "completeness": "既存アーカイブの全ディレクトリが移動されていることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "archive-playbook.sh 修正",
+      "description": "新構造に対応するよう archive-playbook.sh を修正する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "archive-playbook.sh の ARCHIVE_DIR 判定ロジックが新構造（play/archive/ 直下、play/archive/projects/{id}/）に対応している",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "archive-playbook.sh の内容を grep して standalone への参照がないことを確認",
+            "consistency": "アーカイブ先パスが新構造と一致することを確認",
+            "completeness": "単発/project 両方のケースが正しく処理されることを確認"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "archive-playbook.sh の playbook 検索パスが新構造に対応している",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "PLAYBOOK_DIR の判定ロジックが play/{id}/ と play/projects/{project-id}/{pb-id}/ を認識することを確認",
+            "consistency": "既存のチェックポイント復元ロジックが更新されていることを確認",
+            "completeness": "全ての playbook パス判定箇所が更新されていることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "docs 更新",
+      "description": "docs/ARCHITECTURE.md, docs/core-feature-reclassification.md, docs/repository-map.yaml を新構造に合わせて更新する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "docs/ARCHITECTURE.md の play/ 関連記述が新構造を反映している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep で ARCHITECTURE.md 内の play/ パスが新構造と一致することを確認",
+            "consistency": "playbook 作成・アーカイブのフロー説明が新構造と整合することを確認",
+            "completeness": "全ての play/ パス記述が更新されていることを確認"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "docs/core-feature-reclassification.md の play/ 関連記述が新構造を反映している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep で core-feature-reclassification.md 内の play/ パスが新構造と一致することを確認",
+            "consistency": "Hook Unit 依存マップが新構造と整合することを確認",
+            "completeness": "全ての play/ パス記述が更新されていることを確認"
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "docs/repository-map.yaml の play セクションが新構造を反映している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "repository-map.yaml の play セクションが新ディレクトリ構造を記述していることを確認",
+            "consistency": "subdirectories の説明が新構造と整合することを確認",
+            "completeness": "active/archive/template の説明が全て更新されていることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "全ての done_when を検証する",
+      "depends_on": ["p1", "p2", "p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "新構造でディレクトリが正しく配置されていることを確認",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "ls -la play/ と ls -la play/archive/ で構造を確認",
+            "consistency": "done_when の全条件と照合",
+            "completeness": "全ての変更が完了していることを確認"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

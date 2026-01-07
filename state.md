@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/refactor-play-structure/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: refactor/play-structure
 last_archived: play/archive/standalone/project-lifecycle
 review_pending: false
 
@@ -35,9 +35,14 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - play/ 直下に単発 playbook が配置される構造になっている
+  - play/template/ にテンプレートが統合されている
+  - play/archive/ 直下に単発アーカイブが配置される
+  - archive-playbook.sh が新構造に対応している
+  - docs 3 ファイルが新構造を反映している
+status: active
 
 ```
 
@@ -46,7 +51,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-08 01:12:03
+last_start: 2026-01-08 01:38:34
 last_end: 2026-01-08 00:42:31
 last_clear: 2025-12-24 03:20:00
 ```
