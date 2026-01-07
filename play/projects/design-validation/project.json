@@ -44,7 +44,7 @@
         {
           "id": "audit-verification",
           "title": "Playbook/Project Audit Mechanism Verification",
-          "status": "active",
+          "status": "done",
           "path": "play/projects/design-validation/playbooks/audit-verification/plan.json"
         }
       ]
@@ -60,9 +60,9 @@
   ],
   "progress": {
     "total_playbooks": 1,
-    "completed_playbooks": 0,
+    "completed_playbooks": 1,
     "current_milestone": "m1",
-    "current_playbook": "gap-analysis"
+    "current_playbook": null
   },
   "context": {
     "analysis_result": {
@@ -74,7 +74,13 @@
           "who": "Claude Code (orchestrator)",
           "what": "設計図と実装の乖離確認 + project 階層の本番実装",
           "when": "乖離確認後に project 作成へ移行",
-          "where": ["docs/", ".claude/events/", ".claude/skills/", "play/projects/", "state.md"],
+          "where": [
+            "docs/",
+            ".claude/events/",
+            ".claude/skills/",
+            "play/projects/",
+            "state.md"
+          ],
           "why": "playbook 生成と運用が設計図通り稼働しているか確認・完成",
           "how": "2段階: (1) 乖離確認 (2) project 作成と検証サイクル"
         },
