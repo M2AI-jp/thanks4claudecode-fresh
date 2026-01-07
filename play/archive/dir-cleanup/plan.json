@@ -1,0 +1,250 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "dir-cleanup",
+    "branch": "feat/dir-cleanup",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "governance/, plan/, scripts/ を統廃合し、legacy ファイルを完全削除する",
+    "done_when": [
+      "governance/ ディレクトリが存在しない",
+      "plan/ ディレクトリが存在しない",
+      "scripts/ ディレクトリが存在しない",
+      "docs/PROMPT_CHANGELOG.md が存在する",
+      ".claude/lib/contract.sh が存在する",
+      "4つの Hook ファイルが .claude/lib/contract.sh を参照している",
+      "docs/core-feature-reclassification.md の参照パスが更新されている"
+    ],
+    "scope": {
+      "includes": [
+        "governance/PROMPT_CHANGELOG.md の移動",
+        "scripts/contract.sh の移動",
+        "plan/ の削除（template/ 含む）",
+        "scripts/.pytest_cache/ の削除",
+        "参照パスの更新（Hook ファイル + ドキュメント）",
+        "空ディレクトリの削除"
+      ],
+      "excludes": [
+        "play/ 配下の変更",
+        "CLAUDE.md の変更（PROMPT_CHANGELOG.md を更新しない場合）"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "what": "governance/, plan/, scripts/ の統廃合と legacy 削除",
+          "why": "ディレクトリ構造の簡素化と不要ファイルの削除",
+          "who": "Claude Code（claudecode executor）",
+          "when": "このセッションで完了",
+          "where": "リポジトリルート直下のディレクトリ",
+          "how": "ファイル移動 + 参照更新 + ディレクトリ削除"
+        },
+        "risks": [
+          {
+            "risk": "contract.sh の参照先更新漏れで Hook が壊れる",
+            "severity": "high",
+            "mitigation": "4つの Hook ファイルを全て確認・更新"
+          },
+          {
+            "risk": "PROMPT_CHANGELOG.md の移動で CLAUDE.md の参照が壊れる",
+            "severity": "medium",
+            "mitigation": "CLAUDE.md の参照箇所を確認"
+          }
+        ],
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "instruction": "ディレクトリ統廃合",
+          "question": null,
+          "context": "prompt-analyzer 分析済み"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user-prompt",
+      "approved_at": "2026-01-07",
+      "summary": "governance/, plan/, scripts/ を統廃合。legacy は一切不要。",
+      "approved_items": [
+        "governance/PROMPT_CHANGELOG.md を docs/ に移動",
+        "plan/ を完全削除",
+        "scripts/contract.sh を .claude/lib/ に移動",
+        "参照パスを更新",
+        "空フォルダを削除"
+      ],
+      "technical_requirements_confirmed": [
+        "contract.sh は 4つの Hook から source されている",
+        "plan/template/ は既に legacy 扱い"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "ファイル移動",
+      "description": "必要なファイルを新しい場所に移動する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "docs/PROMPT_CHANGELOG.md が存在し、governance/PROMPT_CHANGELOG.md と同内容である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f docs/PROMPT_CHANGELOG.md && diff governance/PROMPT_CHANGELOG.md docs/PROMPT_CHANGELOG.md",
+            "consistency": "governance/PROMPT_CHANGELOG.md の内容が完全に保持されている",
+            "completeness": "ファイル移動が完了している"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": ".claude/lib/contract.sh が存在し、scripts/contract.sh と同内容である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f .claude/lib/contract.sh && diff scripts/contract.sh .claude/lib/contract.sh",
+            "consistency": "scripts/contract.sh の内容が完全に保持されている",
+            "completeness": "ファイル移動が完了している"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "参照パス更新",
+      "description": "contract.sh への参照パスを全て更新する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": ".claude/hooks/pre-tool.sh が .claude/lib/contract.sh を参照している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q '.claude/lib/contract.sh' .claude/hooks/pre-tool.sh",
+            "consistency": "旧パス scripts/contract.sh への参照が存在しない",
+            "completeness": "shellcheck source コメントも更新されている"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": ".claude/skills/access-control/guards/main-branch.sh が .claude/lib/contract.sh を参照している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q '.claude/lib/contract.sh' .claude/skills/access-control/guards/main-branch.sh",
+            "consistency": "旧パス scripts/contract.sh への参照が存在しない",
+            "completeness": "shellcheck source コメントも更新されている"
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": ".claude/skills/access-control/guards/bash-check.sh が .claude/lib/contract.sh を参照している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q '.claude/lib/contract.sh' .claude/skills/access-control/guards/bash-check.sh",
+            "consistency": "旧パス scripts/contract.sh への参照が存在しない",
+            "completeness": "shellcheck source コメントも更新されている"
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": ".claude/skills/access-control/guards/protected-edit.sh が .claude/lib/contract.sh を参照している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q '.claude/lib/contract.sh' .claude/skills/access-control/guards/protected-edit.sh",
+            "consistency": "旧パス scripts/contract.sh への参照が存在しない",
+            "completeness": "shellcheck source コメントも更新されている"
+          }
+        },
+        {
+          "id": "p2.5",
+          "criterion": "docs/core-feature-reclassification.md の contract.sh 参照パスが .claude/lib/contract.sh に更新されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q '.claude/lib/contract.sh' docs/core-feature-reclassification.md",
+            "consistency": "旧パス scripts/contract.sh への参照が存在しない",
+            "completeness": "全ての参照箇所が更新されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "旧ディレクトリ削除",
+      "description": "不要になったディレクトリを完全削除する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "governance/ ディレクトリが存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test ! -d governance",
+            "consistency": "governance/ 内のファイルは全て移動済み",
+            "completeness": "ディレクトリが完全に削除されている"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "plan/ ディレクトリが存在しない（template/ 含む全削除）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test ! -d plan",
+            "consistency": "plan/template/ は legacy として不要（play/template/ が正）",
+            "completeness": "ディレクトリが完全に削除されている"
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "scripts/ ディレクトリが存在しない（.pytest_cache/ 含む全削除）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test ! -d scripts",
+            "consistency": "scripts/contract.sh は .claude/lib/ に移動済み",
+            "completeness": "ディレクトリが完全に削除されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

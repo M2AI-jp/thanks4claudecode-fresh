@@ -4,7 +4,7 @@
 # PreToolUse(Edit/Write) フックとして実行される。
 # stdin から JSON を受け取り、保護対象ファイルなら BLOCK を返す。
 #
-# 契約判定は scripts/contract.sh に委譲（新アーキテクチャ）
+# 契約判定は .claude/lib/contract.sh に委譲（新アーキテクチャ）
 #
 # 保護レベル:
 #   HARD_BLOCK - 絶対守護（security_mode に関係なく常にブロック）
@@ -20,11 +20,11 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${SCRIPT_DIR}/../../../.."
-CONTRACT_SCRIPT="${REPO_ROOT}/scripts/contract.sh"
+CONTRACT_SCRIPT="${REPO_ROOT}/.claude/lib/contract.sh"
 
 # contract.sh が存在する場合は source
 if [[ -f "$CONTRACT_SCRIPT" ]]; then
-    # shellcheck source=../../scripts/contract.sh
+    # shellcheck source=../../../../.claude/lib/contract.sh
     source "$CONTRACT_SCRIPT"
 fi
 

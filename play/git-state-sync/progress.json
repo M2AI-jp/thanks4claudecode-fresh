@@ -1,0 +1,138 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "git-state-sync",
+    "plan_path": "play/git-state-sync/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "p3",
+    "subtask": "p3.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-07T13:05:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-07T13:10:00Z"
+    },
+    "p3": {
+      "status": "pending",
+      "updated_at": ""
+    },
+    "p_final": {
+      "status": "pending",
+      "updated_at": ""
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T13:05:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -n 'git\\[.*stash' contract.sh -> 301:'^git[[:space:]]+stash'"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["他の BOOTSTRAP_SINGLE_PATTERNS と同じ形式（'^git[[:space:]]+xxx'）"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["git stash は stash/stash pop/stash list/stash drop 全てにマッチ"]
+        }
+      },
+      "notes": "L300-301 に追加完了"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T13:10:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -n stash archive-playbook.sh で L441-460 に stash 処理を確認"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["既存の log_warn/log_info パターンと整合"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["stash 失敗、checkout 失敗（stash 後）、pop 失敗の各ケースに対応"]
+        }
+      },
+      "notes": "L440-461 に stash フォールバック処理を追加"
+    },
+    "p3.1": {
+      "status": "pending",
+      "validated_at": "",
+      "validated_by": "",
+      "validations": {
+        "technical": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PENDING",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p3.2": {
+      "status": "pending",
+      "validated_at": "",
+      "validated_by": "",
+      "validations": {
+        "technical": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PENDING",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "pending",
+      "validated_at": "",
+      "validated_by": "",
+      "validations": {
+        "technical": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PENDING",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PENDING",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PENDING",
+    "evidence": [],
+    "notes": ""
+  }
+}

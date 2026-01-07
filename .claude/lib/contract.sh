@@ -4,7 +4,7 @@
 # 全ての契約判定を集約。Hooks はこのスクリプトを呼び出すだけ。
 #
 # Usage:
-#   source scripts/contract.sh
+#   source .claude/lib/contract.sh
 #   contract_check_edit "/path/to/file"   # Edit/Write 用
 #   contract_check_bash "command string"  # Bash 用
 #
@@ -297,6 +297,8 @@ BOOTSTRAP_SINGLE_PATTERNS=(
     '^git[[:space:]]+merge'
     # git checkout（ブランチ切り替え用）
     '^git[[:space:]]+checkout'
+    # git stash（ニュートラル化・作業中断用）
+    '^git[[:space:]]+stash'
     # gh pr create（PR 作成用）
     '^gh[[:space:]]+pr[[:space:]]+create'
     # gh pr merge（PR マージ用）

@@ -9,7 +9,7 @@ SKILLS_DIR="$SCRIPT_DIR/../skills"
 EVENTS_DIR="$SCRIPT_DIR/../events"
 LIB_DIR="$SCRIPT_DIR/../lib"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-CONTRACT_SCRIPT="$REPO_ROOT/scripts/contract.sh"
+CONTRACT_SCRIPT="$REPO_ROOT/.claude/lib/contract.sh"
 MARKER_FILE="$SCRIPT_DIR/../session-state/prompt-analyzer-called"
 MARKER_DIR="$(dirname "$MARKER_FILE")"
 
@@ -85,7 +85,7 @@ if [[ ! -f "$MARKER_FILE" ]]; then
                 # 変更系 Bash を防ぐため、契約チェックで read-only を判定
                 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
                 if [[ -f "$CONTRACT_SCRIPT" ]]; then
-                    # shellcheck source=../../scripts/contract.sh
+                    # shellcheck source=../lib/contract.sh
                     source "$CONTRACT_SCRIPT"
                     if contract_check_bash "$COMMAND"; then
                         ALLOW_WITHOUT_ANALYZER=true

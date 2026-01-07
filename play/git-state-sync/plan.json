@@ -1,0 +1,207 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "git-state-sync",
+    "branch": "feat/loop-enforcement",
+    "created": "2026-01-07",
+    "status": "draft",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "git と state.md の連動によるニュートラル移行問題を根本解決する",
+    "done_when": [
+      "BOOTSTRAP_SINGLE_PATTERNS に 'git stash' パターンが含まれている",
+      "archive-playbook.sh の Step 11 で checkout main 失敗時に stash を使用する処理が追加されている",
+      "state.md がニュートラル状態である（playbook.active = null, branch = null）",
+      "現在のブランチが main である"
+    ],
+    "scope": {
+      "includes": [
+        ".claude/lib/contract.sh の BOOTSTRAP_SINGLE_PATTERNS 修正",
+        ".claude/skills/playbook-gate/workflow/archive-playbook.sh の Step 11 修正",
+        "state.md のニュートラル化",
+        "main ブランチへの移行"
+      ],
+      "excludes": [
+        "他のスクリプトや Hook の修正",
+        "新機能の追加"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "next_action": "playbook-init",
+        "5w1h": {
+          "who": "Claude Code / LLM",
+          "what": "状態をニュートラル化 + git stash を BOOTSTRAP_SINGLE_PATTERNS に追加 + main ブランチ移行 + archive-playbook.sh の連動処理修正",
+          "when": "即時",
+          "where": [
+            ".claude/lib/contract.sh",
+            "state.md",
+            ".claude/skills/playbook-gate/workflow/archive-playbook.sh"
+          ],
+          "why": "post-loop 完了後に git と state が連動してニュートラル移行できない問題を解消",
+          "how": "契約ファイルにパターン追加 + 手動でのブランチ/state 操作 + archive-playbook.sh の見直し",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "git stash の追加により意図しないコマンドが許可される可能性",
+              "severity": "low",
+              "mitigation": "git stash のみを限定的に許可"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "archive-playbook.sh の修正範囲",
+              "severity": "medium",
+              "mitigation": "Step 11 の checkout main 失敗時に stash を使う処理を追加"
+            }
+          ]
+        },
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 3,
+          "topics": [
+            {
+              "id": 1,
+              "summary": "git stash を BOOTSTRAP_SINGLE_PATTERNS に追加",
+              "type": "instruction"
+            },
+            {
+              "id": 2,
+              "summary": "main ブランチに戻して state.md をニュートラル化（即時対応）",
+              "type": "instruction"
+            },
+            {
+              "id": 3,
+              "summary": "archive-playbook.sh の main 同期処理で stash を使う修正",
+              "type": "instruction"
+            }
+          ],
+          "decomposition_needed": false
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "AUTO_APPROVED（auto_approve=true）",
+      "approved_items": [
+        "git stash を BOOTSTRAP_SINGLE_PATTERNS に追加",
+        "main ブランチ移行と state.md ニュートラル化",
+        "archive-playbook.sh の Step 11 修正"
+      ],
+      "technical_requirements_confirmed": [
+        "BOOTSTRAP_SINGLE_PATTERNS への '^git[[:space:]]+stash' 追加",
+        "archive-playbook.sh Step 11 で stash pop 処理"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "contract.sh 修正",
+      "description": "BOOTSTRAP_SINGLE_PATTERNS に git stash パターンを追加",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "BOOTSTRAP_SINGLE_PATTERNS 配列に '^git[[:space:]]+stash' パターンが含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep で '^git[[:space:]]+stash' パターンが存在することを確認",
+            "consistency": "他の BOOTSTRAP_SINGLE_PATTERNS と同じ形式であることを確認",
+            "completeness": "git stash の基本操作（stash, stash pop, stash list）がカバーされることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "archive-playbook.sh 修正",
+      "description": "Step 11 の main checkout 失敗時に stash を使用する処理を追加",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "archive-playbook.sh の Step 11 で checkout main 失敗時に git stash && git checkout main && git stash pop を実行する処理が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "archive-playbook.sh を読んで該当処理が存在することを確認",
+            "consistency": "既存のエラーハンドリングパターン（log_warn）と整合していることを確認",
+            "completeness": "stash 失敗、checkout 失敗、pop 失敗の各ケースに対応していることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "ニュートラル化と main 移行",
+      "description": "state.md をニュートラル化し main ブランチへ移行",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "現在のブランチが main である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "git branch --show-current の出力が 'main' であることを確認",
+            "consistency": "state.md の branch フィールドと一致していることを確認",
+            "completeness": "未コミット変更がないことを確認"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "state.md が playbook.active = null, branch = null のニュートラル状態である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "state.md を読んで playbook.active と branch が null であることを確認",
+            "consistency": "goal セクションも idle 状態であることを確認",
+            "completeness": "playbook, goal, session の全セクションがニュートラルであることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
