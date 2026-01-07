@@ -4,7 +4,9 @@
     "id": "example-project",
     "title": "Project Title",
     "created": "YYYY-MM-DD",
-    "status": "active",
+    "status": "draft",
+    "reviewed": false,
+    "reviewed_by": "",
     "closed_at": null,
     "closed_by": null
   },

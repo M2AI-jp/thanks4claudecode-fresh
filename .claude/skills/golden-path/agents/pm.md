@@ -85,6 +85,10 @@ playbook:
 4. project 作成時:
    - play/projects/template/project.json をテンプレートとして使用
    - milestone と playbook リストを定義
+   - **【必須】reviewer を呼び出し（playbook と同等のチェック）★**
+     → Task(subagent_type="reviewer", prompt="project をレビュー")
+     → PASS: meta.reviewed = true, meta.reviewed_by = "reviewer" を設定
+     → FAIL: 問題点を修正して再レビュー（最大3回）
    - state.md の project セクションを更新
 ```
 
@@ -94,7 +98,7 @@ playbook:
 参照: play/projects/template/project.json
 
 構造:
-  - meta: id, title, created, status, closed_at, closed_by
+  - meta: id, title, created, status, reviewed, reviewed_by, closed_at, closed_by
   - goal: summary, done_when
   - milestones[]: id, title, order, status, playbooks[]
   - progress: total_playbooks, completed_playbooks, current_milestone, current_playbook

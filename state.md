@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: m1
+current_milestone: m2
 status: idle
 ```
 
@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/projects/play/projects/design-validation/project.json/playbooks/gap-analysis
+last_archived: play/archive/projects/design-validation/playbooks/audit-verification
 review_pending: false
 
 ```
