@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/fix-archive-resume/plan.json
+active: null
 parent_project: null
-current_phase: p3
-branch: fix/archive-resume
-last_archived: play/archive/standalone/fix-projects-cleanup
+current_phase: null
+branch: null
+last_archived: play/archive/standalone/fix-archive-resume
 review_pending: false
 
 ```
@@ -33,14 +33,11 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: true
+self_complete: false
 milestone: null
-phase: p2
-done_criteria:
-  - "--resume オプションが動作する"
-  - "チェックポイントから状態が復元される"
-  - "失敗ステップから再開される"
-status: active
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
