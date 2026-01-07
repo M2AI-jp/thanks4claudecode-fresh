@@ -11,7 +11,7 @@
 ```yaml
 active: null
 current_milestone: null
-status: null
+status: idle
 ```
 
 ---
@@ -19,11 +19,11 @@ status: null
 ## playbook
 
 ```yaml
-active: play/fix-playbook-guard-macos/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: fix/playbook-guard-macos
-last_archived: play/archive/dir-cleanup
+current_phase: null
+branch: null
+last_archived: play/archive/standalone/fix-playbook-guard-macos
 review_pending: false
 
 ```
