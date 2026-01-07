@@ -1,0 +1,210 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "fix-projects-cleanup",
+    "branch": "fix/projects-cleanup",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "play/projects フォルダの不正な構造を修正し、milestone ファイルの生成内容が新テンプレート形式に準拠しているか確認・修正する",
+    "done_when": [
+      "play/archive/projects/ 配下に不正なネストディレクトリが存在しない",
+      "全 milestone.playbooks[].path が実在するファイルを参照している",
+      "closed 状態の project では全 milestone が done または明示的にスキップされている",
+      "milestones の構造が template と整合している"
+    ],
+    "scope": {
+      "includes": [
+        "play/archive/projects/play/ 配下の不正ディレクトリ削除",
+        "design-validation/project.json の path 参照修正",
+        "project.json の状態整合性修正（closed と pending の矛盾解消）",
+        "template/project.json との形式整合性確認"
+      ],
+      "excludes": [
+        "新規 project の作成",
+        "playbook の内容変更",
+        "テンプレート自体の変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "detected_issues": [
+          {
+            "id": 1,
+            "category": "directory_structure",
+            "severity": "high",
+            "description": "不正なディレクトリ構造",
+            "detail": "play/archive/projects/play/projects/design-validation/project.json/playbooks/gap-analysis/ は明らかに誤ったネスト構造",
+            "expected_path": "play/archive/projects/design-validation/playbooks/gap-analysis/",
+            "action": "delete_or_move"
+          },
+          {
+            "id": 2,
+            "category": "path_reference",
+            "severity": "medium",
+            "description": "参照パス不整合",
+            "detail": "design-validation/project.json の m1.playbooks[gap-analysis].path が存在しないパスを参照",
+            "current_value": "play/projects/design-validation/playbooks/gap-analysis/plan.json",
+            "should_be": "play/archive/projects/design-validation/playbooks/gap-analysis/plan.json",
+            "action": "update_path"
+          },
+          {
+            "id": 3,
+            "category": "state_consistency",
+            "severity": "high",
+            "description": "状態論理矛盾",
+            "detail": "project.json は status: 'closed' だが m3 は status: 'pending'",
+            "action": "resolve_contradiction"
+          },
+          {
+            "id": 4,
+            "category": "template_compliance",
+            "severity": "medium",
+            "description": "テンプレート形式の確認",
+            "detail": "milestones の構造が template/project.json と整合しているか検証",
+            "action": "verify_compliance"
+          }
+        ],
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 4,
+          "recommendation": "Phase 1: 不正ディレクトリ修正, Phase 2: パス参照修正, Phase 3: 状態整合性修正, Phase 4: テンプレート準拠検証"
+        },
+        "success_criteria": {
+          "functional": [
+            "play/archive/projects/ 配下に不正なネストディレクトリが存在しない",
+            "全 milestone.playbooks[].path が実在するファイルを参照している",
+            "closed 状態の project では全 milestone が done または明示的にスキップされている",
+            "milestones の構造が template と整合している"
+          ]
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "AUTO_APPROVED (auto_approve=true)",
+      "approved_items": [
+        "不正ディレクトリ構造の削除",
+        "パス参照の修正",
+        "状態整合性の修正",
+        "テンプレート準拠の検証"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Invalid Directory Structure Cleanup",
+      "description": "不正なネストディレクトリを削除する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "play/archive/projects/play/ ディレクトリが存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test ! -d play/archive/projects/play/ で確認",
+            "consistency": "git status で削除が反映されていることを確認",
+            "completeness": "play/archive/projects/play/ 配下の全ファイルが削除されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Path Reference Fix",
+      "description": "project.json の playbooks[].path が実在するファイルを参照するよう修正",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "design-validation/project.json の全 playbooks[].path が実在するファイルを参照している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "全 path に対して test -f で存在確認",
+            "consistency": "アーカイブ済み playbook は play/archive/projects/ 配下を参照",
+            "completeness": "m1, m2 の全 playbook について path が検証されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "State Consistency Fix",
+      "description": "project status と milestone status の整合性を修正",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "design-validation/project.json で status: 'closed' の場合、全 milestone が done または skipped である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq で meta.status と milestones[].status を検証",
+            "consistency": "closed project では pending milestone が存在しない",
+            "completeness": "m1, m2, m3 全ての status が確認されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "Template Compliance Verification",
+      "description": "milestones の構造が template/project.json と整合しているか検証",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "design-validation/project.json の milestones 構造が template/project.json と同じフィールドを持つ",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "template と比較して必須フィールド（id, title, order, status, playbooks）が存在する",
+            "consistency": "playbooks[].* のフィールドも template と一致する（id, title, status, path）",
+            "completeness": "全 milestone について検証されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification",
+      "description": "done_when の全項目を独立検証",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer が全 done_when 項目を検証し PASS している",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "各 done_when 項目に対する検証コマンドを実行",
+            "consistency": "全 Phase の成果物と整合性がある",
+            "completeness": "4つの done_when 全てが PASS している"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
