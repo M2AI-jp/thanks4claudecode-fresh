@@ -48,6 +48,15 @@ log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; OVERALL_STATUS="partial"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; OVERALL_STATUS="partial"; }
 
+# デバッグログ（SubagentStop 経由のデバッグ用）
+CLAUDE_DIR="${CLAUDE_DIR:-.claude}"
+DEBUG_LOG="${CLAUDE_DIR}/logs/archive-playbook.log"
+log_debug() {
+    local msg="$1"
+    mkdir -p "$(dirname "$DEBUG_LOG")"
+    echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] $msg" >> "$DEBUG_LOG"
+}
+
 # ==============================================================================
 # M088: バックグラウンドタスクのクリーンアップ（Phase 完了時）
 # ==============================================================================
@@ -107,6 +116,7 @@ cleanup_background_tasks_for_phase() {
 
 # state.md が存在しない場合はスキップ
 if [ ! -f "state.md" ]; then
+    log_debug "SKIP: state.md not found"
     exit 0
 fi
 
@@ -115,30 +125,38 @@ INPUT=$(cat)
 
 # jq がない場合はスキップ
 if ! command -v jq &> /dev/null; then
+    log_debug "SKIP: jq not found"
     exit 0
 fi
 
 # 編集対象ファイルを取得
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
 if [[ -z "$FILE_PATH" ]]; then
+    log_debug "SKIP: file_path is empty"
     exit 0
 fi
 
 # progress.json 以外は無視
 case "$FILE_PATH" in
     */play/*/progress.json) ;;
-    *) exit 0 ;;
+    *)
+        log_debug "SKIP: not a progress.json: $FILE_PATH"
+        exit 0
+        ;;
 esac
 
 if [[ "$FILE_PATH" == */archive/* ]] || [[ "$FILE_PATH" == */template/* ]]; then
+    log_debug "SKIP: archive or template path: $FILE_PATH"
     exit 0
 fi
 
 if [ ! -f "$FILE_PATH" ]; then
+    log_debug "SKIP: file not found: $FILE_PATH"
     exit 0
 fi
 
 if ! jq -e . "$FILE_PATH" >/dev/null 2>&1; then
+    log_debug "SKIP: invalid JSON: $FILE_PATH"
     exit 0
 fi
 
@@ -149,10 +167,12 @@ TOTAL_PHASES=${TOTAL_PHASES:-0}
 DONE_PHASES=${DONE_PHASES:-0}
 
 if [ "$TOTAL_PHASES" -eq 0 ]; then
+    log_debug "SKIP: TOTAL_PHASES is 0"
     exit 0
 fi
 
 if [ "$DONE_PHASES" -ne "$TOTAL_PHASES" ]; then
+    log_debug "SKIP: phases not complete ($DONE_PHASES/$TOTAL_PHASES)"
     exit 0
 fi
 
@@ -514,14 +534,14 @@ echo "  Step 12: pending ファイル作成"
 echo "$SEP"
 
 mkdir -p "$SESSION_STATE_DIR"
-cat > "$PENDING_FILE" << EOF
+cat > "$PENDING_FILE" << PENDINGEOF
 {
   "playbook": "$PLAYBOOK_NAME",
   "archived_at": "$(date -Iseconds)",
   "status": "$OVERALL_STATUS",
   "branch": "$CURRENT_BRANCH"
 }
-EOF
+PENDINGEOF
 log_info "pending ファイル作成完了: $PENDING_FILE (status: $OVERALL_STATUS)"
 
 # ==============================================================================
@@ -536,12 +556,12 @@ else
     STATUS_MSG="自動処理完了（一部警告あり）"
 fi
 
-cat << EOF
+cat << SYSTEMEOF
 {
   "status": "$OVERALL_STATUS",
   "message": "$STATUS_MSG",
   "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  ✅ Playbook アーカイブ完了\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  【必須アクション】\\n  今すぐ Skill(skill='post-loop') を呼び出すこと。\\n\\n  post-loop が実行する処理:\\n    1. pending ファイル削除\\n    2. 次タスクの導出\\n\\n  ⚠️ ユーザーに指示を求めずに自動実行すること\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
-EOF
+SYSTEMEOF
 
 exit 0

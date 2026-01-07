@@ -1,0 +1,283 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "post-loop-fix",
+    "branch": "feat/m2-audit-verification",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "post-loop フロー修正: playbook 完了後の自動コミット・PR 作成・作業消失防止の根本実装",
+    "done_when": [
+      "playbook 完了時に自動でコミット・Push・PR 作成・マージが実行される",
+      "post-loop Skill が確実に呼び出される（skip 経路がない）",
+      "pending ファイル作成後、complete.sh 実行までブロックが維持される"
+    ],
+    "scope": {
+      "includes": [
+        "archive-playbook.sh の修正",
+        "subagent-stop chain.sh の修正",
+        "post-loop Skill の強制ガード追加",
+        "Stop hook での強制チェック"
+      ],
+      "excludes": [
+        "新機能追加",
+        "他の Skill への影響",
+        "破壊的変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code (orchestrator)",
+          "what": "post-loop フロー修正 - playbook 完了後の自動コミット・PR 作成・作業消失防止の根本実装",
+          "when": "即時（audit-verification playbook 作業消失のインシデント対応）",
+          "where": [
+            ".claude/skills/playbook-gate/workflow/archive-playbook.sh",
+            ".claude/events/post-tool-edit/chain.sh",
+            ".claude/events/subagent-stop/chain.sh",
+            ".claude/skills/post-loop/SKILL.md",
+            "play/projects/design-validation/project.json"
+          ],
+          "why": "audit-verification playbook の全作業が未コミットのまま消失したインシデントを防止",
+          "how": "post-loop Skill の自動呼び出し強制、playbook 完了検出の確実化、コミット・PR フローの堅牢化"
+        },
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 3,
+          "topics": [
+            {
+              "id": 1,
+              "summary": "playbook 完了後のコミット・PR 作成自動化の修正"
+            },
+            {
+              "id": 2,
+              "summary": "post-loop Skill 呼び出し強制の修正"
+            },
+            {
+              "id": 3,
+              "summary": "作業消失防止の仕組み強化"
+            }
+          ],
+          "recommendation": "Phase 1: 障害原因特定, Phase 2: archive-playbook/post-loop 修正, Phase 3: 消失防止ガード追加"
+        },
+        "success_criteria": {
+          "functional": [
+            "playbook 完了時に自動でコミット・Push・PR 作成・マージが実行される",
+            "post-loop Skill が確実に呼び出される（skip 経路がない）",
+            "pending ファイルが作成され、Edit/Write がブロックされる",
+            "complete.sh 実行までブロックが維持される"
+          ]
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "既存フローへの副作用",
+              "severity": "medium",
+              "mitigation": "変更前後で動作確認テスト実施"
+            }
+          ],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "test_strategy": {
+          "level": "integration",
+          "coverage_goal": "全失敗経路をカバー",
+          "edge_cases": [
+            "SubAgent 内での Edit 完了",
+            "Hook 発火しない経路"
+          ]
+        },
+        "preconditions": {
+          "existing_code": "archive-playbook.sh, subagent-stop chain.sh, pending-guard.sh 存在",
+          "dependencies": [],
+          "constraints": []
+        },
+        "reverse_dependencies": {
+          "affected_components": [
+            "PostToolUse:Edit Hook",
+            "SubagentStop Hook",
+            "Stop Hook"
+          ],
+          "risk_level": "medium"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "根本からの修正から進めてください - はい、進めてください",
+      "approved_items": [
+        "障害原因特定（ログ分析、失敗経路の特定）",
+        "archive-playbook.sh / subagent-stop chain.sh の修正",
+        "post-loop 強制ガード追加（Stop hook での強制チェック）",
+        "検証とドキュメント更新"
+      ],
+      "technical_requirements_confirmed": [
+        "playbook 完了時に自動でコミット・Push・PR 作成・マージが実行される",
+        "post-loop Skill が確実に呼び出される（skip 経路がない）"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "障害原因特定",
+      "description": "ログ分析、失敗経路の特定、根本原因の特定",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "archive-playbook.sh の失敗経路が特定されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "コードレビューで失敗経路を列挙",
+            "consistency": "他の関連スクリプトと照合",
+            "completeness": "全ての exit パスを確認"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "SubAgent 内 Edit が PostToolUse:Edit Hook を発火させない問題が確認されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "subagent-stop chain.sh の M089 コメントで確認",
+            "consistency": "Claude Code 公式仕様と照合",
+            "completeness": "問題の再現条件を文書化"
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "post-loop Skill 呼び出しがスキップされる経路が特定されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "pending-guard.sh の許可リストを確認",
+            "consistency": "SKILL.md のフローと照合",
+            "completeness": "スキップ経路を列挙"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "archive-playbook.sh / subagent-stop chain.sh 修正",
+      "description": "特定した問題を修正し、フローを堅牢化",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "subagent-stop chain.sh が playbook 完了時に確実にアーカイブ処理を呼び出す",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "bash -n でシンタックスチェック",
+            "consistency": "archive-playbook.sh との連携を確認",
+            "completeness": "SubAgent 終了時のフローが完結"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "archive-playbook.sh が失敗時に明確なエラーメッセージを出力する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "エラー出力が stderr に出ることを確認",
+            "consistency": "他のスクリプトのエラー形式と統一",
+            "completeness": "全失敗パスでエラーメッセージあり"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "post-loop 強制ガード追加",
+      "description": "Stop hook での強制チェックを追加し、post-loop スキップを防止",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "Stop hook が pending ファイル存在時に post-loop 呼び出しを強制する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": ".claude/events/stop/chain.sh に pending チェックが存在",
+            "consistency": "pending-guard.sh と同じロジック",
+            "completeness": "Stop 時に post-loop スキップ不可"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "pending-guard.sh が SubAgent 終了後も機能する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "SubAgent 終了後に Edit を試行しブロックされることを確認",
+            "consistency": "main ブランチ例外が正しく機能",
+            "completeness": "全経路でブロック動作を確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "検証とドキュメント更新",
+      "description": "全フローの動作確認とドキュメント更新",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "修正後のフローが正常に動作する（手動シミュレーション）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "フロー図を作成し各ステップを確認",
+            "consistency": "SKILL.md と実装が一致",
+            "completeness": "全フローが文書化されている"
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "post-loop/SKILL.md に修正内容が反映されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "SKILL.md の更新箇所を確認",
+            "consistency": "実装と文書の整合性",
+            "completeness": "全変更点が文書化されている"
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "reviewer による最終検証が PASS している",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "reviewer が全 done_when を検証",
+            "consistency": "playbook の scope と成果物の一致",
+            "completeness": "全 subtask の完了を確認"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

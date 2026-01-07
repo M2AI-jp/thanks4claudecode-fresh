@@ -11,7 +11,7 @@ description: playbook 完了後のブロック解除と次タスク導出を実�
 
 ## トリガー
 
-pending-guard.sh によるブロック（Edit/Write が BLOCK された時）
+### 1. pending-guard.sh によるブロック（Edit/Write が BLOCK された時）
 
 ```
 🚨 post-loop 未実行 - Edit/Write ブロック中
@@ -19,11 +19,26 @@ pending-guard.sh によるブロック（Edit/Write が BLOCK された時）
     Skill(skill='post-loop') を呼び出してください。
 ```
 
+### 2. Stop Hook によるブロック（Stop が BLOCK された時）
+
+```
+🛑 Stop ブロック: post-loop 未実行
+  必須アクション:
+    Skill(skill='post-loop') を今すぐ呼び出してください。
+```
+
+> **Note**: Stop Hook でのブロックは 2026-01-07 に追加されました（post-loop-fix playbook）。
+> これにより、Claude が post-loop を呼ばずに終了することが防止されます。
+
 ---
 
 ## 前提条件
 
-archive-playbook.sh（PostToolUse:Edit フック）が以下を自動実行済み:
+archive-playbook.sh（PostToolUse:Edit フック または SubagentStop 経由）が以下を自動実行済み:
+
+> **Note**: SubAgent 内での Edit は PostToolUse:Edit Hook を発火させないため、
+> SubagentStop Hook (M089) で archive-playbook.sh を補完呼び出しします。
+> デバッグログ: `.claude/logs/archive-playbook.log`
 - 自動コミット（最終 Phase 分）
 - Push & PR 作成
 - playbook アーカイブ + コミット + Push（state.md 更新前）
