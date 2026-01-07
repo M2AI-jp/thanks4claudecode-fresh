@@ -1,0 +1,136 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "insert-m25",
+    "branch": "feat/insert-m25",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "m2.5 マイルストーンを m2 と m3 の間に挿入し、/clear 動作検証用のマーカーとする",
+    "done_when": [
+      "m2.5 マイルストーンが milestones 配列内に存在する",
+      "m2.5 が m2 と m3 の間に配置されている（order: 2.5）",
+      "project.json が有効な JSON としてパース可能"
+    ],
+    "scope": {
+      "includes": [
+        "play/projects/design-validation/project.json の編集"
+      ],
+      "excludes": [
+        "他のファイルの変更",
+        "m2.5 の playbook 作成"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code (orchestrator)",
+          "what": "milestones 配列に m2.5 マイルストーンを m2 と m3 の間に挿入",
+          "when": "即時",
+          "where": "play/projects/design-validation/project.json",
+          "why": "/clear 動作検証用のマーカーとして m1・m2 のクリア判断を明確化",
+          "how": "project.json の milestones 配列を編集",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "order フィールドの整合性破壊",
+              "severity": "low",
+              "mitigation": "m2.5 に order: 2.5 を設定"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "検証マーカーとしての役割が曖昧",
+              "severity": "low",
+              "mitigation": "description に明確な目的を記載"
+            }
+          ]
+        },
+        "ambiguity": [],
+        "ready_for_playbook": true,
+        "blocking_issues": [],
+        "success_criteria": {
+          "functional": [
+            "m2.5 マイルストーンが milestones 配列内に存在する",
+            "m2.5 が m2 と m3 の間に配置されている",
+            "project.json が有効な JSON としてパース可能"
+          ]
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "AUTO_APPROVED（ユーザーが明示的に playbook 必要と指示）",
+      "approved_items": [
+        "m2.5 マイルストーンを m2 と m3 の間に挿入",
+        "/clear 動作検証用マーカーとして使用"
+      ],
+      "technical_requirements_confirmed": [
+        "order: 2.5 で位置を指定",
+        "status: pending で初期化"
+      ]
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Insert m2.5 Milestone",
+      "description": "project.json の milestones 配列に m2.5 を挿入する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "m2.5 マイルストーンが milestones 配列の m2 と m3 の間に存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq で project.json をパースし、m2.5 の存在と order 値を確認",
+            "consistency": "milestones 配列内で order 順にソートされていることを確認",
+            "completeness": "m2.5 に必要な全フィールド（id, title, order, status, description, playbooks）が存在"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": [
+        "p1"
+      ],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

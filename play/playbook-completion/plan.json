@@ -1,0 +1,468 @@
+{
+  "format_version": "2.1",
+  "meta": {
+    "id": "playbook-completion",
+    "branch": "feat/playbook-completion",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer (4QV+ PASS)",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "playbook 運用システムを完成させる: 設計図と実装の乖離解消、project 階層の本番運用、検証サイクル完走",
+    "done_when": [
+      "設計図と実装の Critical Gap が全て解消されている",
+      "project 生成時に reviewer 検証が必須になっている",
+      "playbook 運用の検証サイクルが 1 回以上完走している"
+    ],
+    "scope": {
+      "includes": [
+        "Critical/High severity の Gap 解消",
+        "project 階層の reviewer 検証ロジック実装",
+        "Hook Unit component 分割（Critical のみ）",
+        "検証サイクル 1 回完走"
+      ],
+      "excludes": [
+        "Medium/Low severity の Gap",
+        "Hook Unit の全面リファクタリング",
+        "新規機能追加"
+      ]
+    }
+  },
+  "urf": {
+    "_comment": "Unified Rigor Framework - see .claude/frameworks/unified-rigor-framework.md",
+    "identity": {
+      "id": "playbook-completion",
+      "title": "Complete playbook operation system with design-implementation alignment",
+      "level": "playbook"
+    },
+    "definition": {
+      "who": "Claude Code (orchestrator) + codex (worker) + coderabbit (reviewer)",
+      "what": "playbook 運用システムを完成させる: 1. 設計図と実装の乖離解消 2. project 階層の本番運用開始 3. 検証サイクルを回して安定稼働を達成",
+      "when": "既存の design-validation project（m2 in_progress）の延長として実施",
+      "where": [
+        "docs/ARCHITECTURE.md",
+        "docs/core-feature-reclassification.md",
+        ".claude/events/**/chain.sh",
+        ".claude/skills/**/*",
+        "play/projects/",
+        "state.md"
+      ],
+      "why": "安定した自律運用基盤を構築するため",
+      "how": "1. 既存 Gap を再評価 2. project 階層の未実装機能を実装 3. Hook Unit の component 分割を段階的に実施 4. 検証サイクルを完走",
+      "scope": {
+        "in": [
+          "Critical/High severity Gap の解消",
+          "project reviewer 検証ロジック",
+          "検証サイクル完走"
+        ],
+        "out": [
+          "Medium/Low severity Gap",
+          "全面リファクタリング"
+        ]
+      }
+    },
+    "analysis": {
+      "risks": {
+        "technical": [
+          {
+            "risk": "Hook Unit component 分割による既存動作への影響",
+            "severity": "high",
+            "mitigation": "段階的移行 + validator/telemetry 監視"
+          }
+        ],
+        "scope": [
+          {
+            "risk": "設計図と実装の乖離解消がスコープ肥大化",
+            "severity": "high",
+            "mitigation": "Critical/High のみ対応"
+          }
+        ],
+        "dependency": []
+      },
+      "ambiguity": [
+        {
+          "phrase": "優先度の明確化",
+          "clarification": "Critical/High severity のみを対象とする"
+        },
+        {
+          "phrase": "検証サイクルの具体的回数",
+          "clarification": "最低 1 回の完走を目標とする"
+        },
+        {
+          "phrase": "安定稼働の定量的基準",
+          "clarification": "検証サイクル完走 + Critical Gap 解消をもって安定稼働とする"
+        }
+      ],
+      "preconditions": {
+        "existing_code": {
+          "status": "design-validation project m2 in_progress",
+          "files": [
+            "play/projects/design-validation/project.json"
+          ],
+          "patterns": [
+            "Hook Unit architecture",
+            "play/template/ structure"
+          ]
+        },
+        "dependencies": {
+          "installed": [],
+          "required": [],
+          "external": []
+        },
+        "constraints": {
+          "technical": [
+            "既存 Hook 動作の維持"
+          ],
+          "security": [],
+          "performance": []
+        }
+      }
+    },
+    "completion": {
+      "done_when": [
+        "設計図と実装の Critical Gap が全て解消されている",
+        "project 生成時に reviewer 検証が必須になっている",
+        "playbook 運用の検証サイクルが 1 回以上完走している"
+      ],
+      "deliverables": [
+        "Gap 再評価レポート",
+        "project reviewer 検証ロジック",
+        "検証サイクル完走記録"
+      ],
+      "acceptance_test": {
+        "command": "git log --oneline | head -20 && ls play/projects/design-validation/",
+        "expected": "検証サイクル完走を示すコミット履歴"
+      }
+    },
+    "validation": {
+      "reviewer": {
+        "reviewed": true,
+        "reviewed_by": "reviewer (4QV+ PASS)",
+        "reviewed_at": "2026-01-07T00:00:00Z"
+      },
+      "critic": {
+        "validated": false,
+        "validated_by": "",
+        "validated_at": ""
+      }
+    },
+    "dependencies": {
+      "depends_on": [
+        "design-validation project m1 (done)"
+      ],
+      "blocks": [],
+      "external": []
+    },
+    "status": {
+      "current": "active",
+      "blocking_issues": []
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "next_action": "playbook-init",
+        "5w1h": {
+          "who": "Claude Code (orchestrator) + codex (worker) + coderabbit (reviewer)",
+          "what": "playbook 運用システムを完成させるプロジェクトの作成: 1. 設計図と実装の乖離解消 2. project 階層の本番運用開始 3. 検証サイクルを回して安定稼働を達成",
+          "when": "既存の design-validation project（m2 in_progress）の延長または新規 project として実施",
+          "where": [
+            "docs/ARCHITECTURE.md",
+            "docs/core-feature-reclassification.md",
+            ".claude/events/**/chain.sh",
+            ".claude/skills/**/*",
+            "play/projects/",
+            "state.md"
+          ],
+          "why": "安定した自律運用基盤を構築するため",
+          "how": "1. 既存 Gap を再評価 2. project 階層の未実装機能を実装 3. Hook Unit の component 分割を段階的に実施 4. 検証サイクルを完走",
+          "missing": [
+            "優先度の明確化",
+            "検証サイクルの具体的回数",
+            "安定稼働の定量的基準"
+          ]
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "Hook Unit component 分割による既存動作への影響",
+              "severity": "high",
+              "mitigation": "段階的移行 + validator/telemetry 監視"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "設計図と実装の乖離解消がスコープ肥大化",
+              "severity": "high",
+              "mitigation": "Critical/High のみ対応"
+            }
+          ]
+        },
+        "multi_topic_detection": {
+          "detected": true,
+          "topics": [
+            {
+              "id": 1,
+              "summary": "設計図と実装の乖離解消"
+            },
+            {
+              "id": 2,
+              "summary": "project 階層の本番運用開始"
+            },
+            {
+              "id": 3,
+              "summary": "検証サイクルを回して安定稼働"
+            }
+          ],
+          "recommendation": "M1: Gap 再評価と優先度決定, M2: project 階層の完成, M3: Hook Unit component 分割（Critical のみ）, M4: 検証サイクル完走, M5: 安定稼働確認"
+        },
+        "success_criteria": {
+          "functional": [
+            "設計図と実装の Critical Gap が全て解消されている",
+            "project 生成時に reviewer 検証が必須になっている",
+            "playbook 運用の検証サイクルが 1 回以上完走している"
+          ],
+          "breaking_changes": true
+        },
+        "existing_project_status": {
+          "design_validation": {
+            "id": "design-validation",
+            "status": "active",
+            "current_milestone": "m2",
+            "confirmed_gaps": [
+              {
+                "category": "Hook Unit Component",
+                "gap": "validator/context-injector/telemetry/guardrail 分割が未実装",
+                "severity": "medium"
+              },
+              {
+                "category": "Project Hierarchy",
+                "gap": "project 運用ロジック未実装",
+                "severity": "high"
+              }
+            ]
+          }
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07T00:00:00Z",
+      "summary": "AUTO_APPROVED（ultrathink 指定により自動承認）",
+      "approved_items": [
+        "設計図と実装の乖離解消（Critical/High のみ）",
+        "project 階層の本番運用開始",
+        "検証サイクル 1 回完走で安定稼働とする"
+      ],
+      "technical_requirements_confirmed": [
+        "段階的移行 + validator/telemetry 監視",
+        "Critical/High severity のみ対応"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Gap Re-evaluation and Prioritization",
+      "description": "既存 Gap を再評価し、Critical/High を特定する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "docs/ARCHITECTURE.md と .claude/events/ の乖離リストが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "乖離リストファイルが存在し、項目が列挙されている",
+            "consistency": "design-validation project の既存分析と整合性がある",
+            "completeness": "Critical/High/Medium/Low の分類が全項目に付与されている"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "Critical/High severity の Gap が優先リストとして整理されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "優先リストに severity と対応方針が記載されている",
+            "consistency": "p1.1 の乖離リストと整合性がある",
+            "completeness": "全 Critical/High 項目が含まれている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Project Hierarchy Completion",
+      "description": "project 階層の未実装機能（reviewer 検証ロジック）を実装する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "project 生成時に reviewer 検証を強制するロジックが実装されている",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "reviewer 検証なしで project 確定ができないことを確認",
+            "consistency": "play/template/plan.json の reviewer 検証フローと整合性がある",
+            "completeness": "project 生成の全パスで reviewer 検証が強制される"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "project.json の reviewed/reviewed_by フィールドが正しく更新される",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "reviewer PASS 後に reviewed=true, reviewed_by が設定される",
+            "consistency": "playbook の reviewed フィールド更新ロジックと整合性がある",
+            "completeness": "reviewed/reviewed_by/reviewed_at が全て更新される"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Hook Unit Component Split (Critical Only)",
+      "description": "Hook Unit の component 分割を Critical 項目のみ実施する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "Critical severity の Hook Unit component 分割が完了している",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "分割された component が正しく動作する",
+            "consistency": "docs/ARCHITECTURE.md の設計と整合性がある",
+            "completeness": "Critical severity の全項目が分割されている"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "既存 Hook の動作が維持されている（リグレッションなし）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "主要 Hook（session-start, pre-tool-edit）が動作する",
+            "consistency": "変更前後で Hook の振る舞いが同一である",
+            "completeness": "全 Hook のスモークテストが PASS する"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "Verification Cycle Execution",
+      "description": "playbook 運用の検証サイクルを 1 回完走させる",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "テスト playbook を作成し、全 Phase を完走させた記録が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "playbook が done 状態でアーカイブされている",
+            "consistency": "playbook フロー（pm -> reviewer -> LOOP -> POST_LOOP）が設計通り",
+            "completeness": "全 Phase の done_criteria が達成されている"
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "検証中に発見された問題が記録されている（問題なしでも記録）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "問題記録ファイルが存在する",
+            "consistency": "発見された問題と対応状況が整合している",
+            "completeness": "検証中の全ステップでの観察が記録されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "Stable Operation Confirmation",
+      "description": "安定稼働を確認し、done_when を達成する",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "Critical Gap が全て解消されている（チェックリストで確認）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "p1.2 の優先リストの全 Critical 項目が解消済み",
+            "consistency": "解消内容が設計図と整合している",
+            "completeness": "全 Critical 項目がチェック済み"
+          }
+        },
+        {
+          "id": "p5.2",
+          "criterion": "design-validation project の done_when が全て達成されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "project.json の done_when 3 項目が全て達成",
+            "consistency": "本 playbook の done_when と project の done_when が整合",
+            "completeness": "docs/ 乖離解消、reviewer 検証必須化、検証サイクル完走が全て達成"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_self_update",
+      "name": "Self Update",
+      "description": "playbook 実行中に発見した改善点を反映する",
+      "depends_on": ["p5"],
+      "subtasks": [
+        {
+          "id": "p_self_update.1",
+          "criterion": "playbook 実行中に発見した改善点が記録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "改善点リストが存在する",
+            "consistency": "p4.2 の問題記録と整合している",
+            "completeness": "技術的改善点と運用改善点が分類されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Review",
+      "description": "done_when の独立検証を行う",
+      "depends_on": ["p_self_update"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands",
+            "consistency": "Reviewer checks consistency across outputs",
+            "completeness": "Reviewer validates all done_when items"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
