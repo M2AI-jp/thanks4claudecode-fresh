@@ -131,9 +131,10 @@ Claude Code 公式の Hook は「イベントで発火できる入口」を提�
   - `.claude/agents/{pm,reviewer}.md`（Task が参照する登録ディレクトリ）
   - `play/template/plan.json`
   - `play/template/progress.json`
+  - `play/template/project.json`
   - `play/README.md`
   - `state.md`
-  - 方針: planning-only（plan/progress 以外の編集は禁止）
+  - 方針: planning-only（plan/progress/project 以外の編集は禁止）
   - 方針: reviewer は独立（user 不可、state.md の roles.reviewer と一致）
   - 方針: progress.json は template 構造に準拠
 
@@ -671,5 +672,6 @@ Docs (SSOT)
 - `docs/repository-map.yaml`
 - `play/template/plan.json`
 - `play/template/progress.json`
+- `play/template/project.json`
 - `play/README.md`
 - `docs/PROMPT_CHANGELOG.md`

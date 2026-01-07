@@ -286,9 +286,9 @@ if [[ "$RESUME_MODE" == true ]]; then
         PLAYBOOK_DIR="play/playbooks/$PLAYBOOK_ID"
     elif [[ -d "play/$PLAYBOOK_ID" ]]; then
         PLAYBOOK_DIR="play/$PLAYBOOK_ID"
-    elif [[ -d "play/archive/standalone/$PLAYBOOK_ID" ]]; then
-        PLAYBOOK_DIR="play/archive/standalone/$PLAYBOOK_ID"
-        ARCHIVE_DIR="play/archive/standalone"
+    elif [[ -d "play/archive/$PLAYBOOK_ID" ]]; then
+        PLAYBOOK_DIR="play/archive/$PLAYBOOK_ID"
+        ARCHIVE_DIR="play/archive"
     else
         # project 配下を検索
         FOUND_DIR=$(find play -type d -name "$PLAYBOOK_ID" 2>/dev/null | head -1)
@@ -309,9 +309,9 @@ if [[ "$RESUME_MODE" == true ]]; then
         fi
         
         if [ -n "$PARENT_PROJECT" ] && [ "$PARENT_PROJECT" != "null" ]; then
-            ARCHIVE_DIR="play/archive/projects/$PARENT_PROJECT/playbooks"
+            ARCHIVE_DIR="play/archive/projects/$PARENT_PROJECT"
         else
-            ARCHIVE_DIR="play/archive/standalone"
+            ARCHIVE_DIR="play/archive"
         fi
     fi
     
@@ -429,10 +429,10 @@ if [[ "$RESUME_FROM_CHECKPOINT" != true ]]; then
 
     # ==============================================================================
     # M090: Project 階層判定
-    # playbook が project 配下か standalone かを判定し、アーカイブ先を決定
+    # playbook が project 配下か単発かを判定し、アーカイブ先を決定
     # ==============================================================================
     PARENT_PROJECT=""
-    ARCHIVE_DIR="play/archive/standalone"  # デフォルトは standalone
+    ARCHIVE_DIR="play/archive"  # デフォルトは play/archive/ 直下
 
     # state.md から parent_project を取得
     if [ -f "state.md" ]; then
@@ -441,18 +441,18 @@ if [[ "$RESUME_FROM_CHECKPOINT" != true ]]; then
 
     # playbook パスから project を判定（state.md の情報がない場合のフォールバック）
     if [ -z "$PARENT_PROJECT" ] || [ "$PARENT_PROJECT" = "null" ]; then
-        # パスが play/projects/<project-id>/playbooks/<playbook-id>/ の形式か確認
-        if echo "$PLAYBOOK_DIR" | grep -q "play/projects/.*/playbooks/"; then
-            PARENT_PROJECT=$(echo "$PLAYBOOK_DIR" | sed 's|play/projects/\([^/]*\)/playbooks/.*|\1|')
+        # パスが play/projects/<project-id>/<playbook-id>/ の形式か確認
+        if echo "$PLAYBOOK_DIR" | grep -q "play/projects/[^/]*/[^/]*$"; then
+            PARENT_PROJECT=$(echo "$PLAYBOOK_DIR" | sed 's|play/projects/\([^/]*\)/.*|\1|')
         fi
     fi
 
     # アーカイブ先の決定
     if [ -n "$PARENT_PROJECT" ] && [ "$PARENT_PROJECT" != "null" ]; then
-        ARCHIVE_DIR="play/archive/projects/$PARENT_PROJECT/playbooks"
+        ARCHIVE_DIR="play/archive/projects/$PARENT_PROJECT"
         log_info "Project 配下の playbook を検出: $PARENT_PROJECT"
     else
-        ARCHIVE_DIR="play/archive/standalone"
+        ARCHIVE_DIR="play/archive"
         log_info "単発 playbook を検出"
     fi
 

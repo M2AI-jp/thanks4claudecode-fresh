@@ -1022,6 +1022,43 @@ Task(subagent_type='executor-resolver')
 
 ---
 
+## 8.5. play/ ディレクトリ構造
+
+```
+play/
+├── {playbook-id}/              # 単発 playbook（進行中）
+│   ├── plan.json
+│   └── progress.json
+│
+├── projects/
+│   └── {project-id}/           # project
+│       ├── project.json
+│       └── {playbook-id}/      # project 配下の playbook
+│           ├── plan.json
+│           └── progress.json
+│
+├── archive/                    # 完了したもの
+│   ├── {playbook-id}/          # 単発アーカイブ（フラット）
+│   └── projects/
+│       └── {project-id}/       # project アーカイブ
+│
+└── template/                   # テンプレート（1箇所に集約）
+    ├── plan.json               # playbook plan テンプレート
+    ├── progress.json           # playbook progress テンプレート
+    └── project.json            # project テンプレート
+```
+
+### 設計原則
+
+| 原則 | 説明 |
+|------|------|
+| 単発 playbook | play/ 直下に配置（デフォルト） |
+| project 配下 | play/projects/{project-id}/{playbook-id}/ |
+| archive 構造 | 同じ構造を維持（単発はフラット、project は projects/ 配下） |
+| template | 1箇所に集約（play/template/） |
+
+---
+
 ## 9. テンプレート・フレームワーク一覧
 
 ### play/template/（playbook 作成時参照）
@@ -1030,6 +1067,7 @@ Task(subagent_type='executor-resolver')
 |----------|------|--------|
 | plan.json | playbook plan テンプレート | pm |
 | progress.json | playbook progress テンプレート | pm |
+| project.json | project テンプレート | pm |
 
 ### .claude/frameworks/（検証時参照）
 

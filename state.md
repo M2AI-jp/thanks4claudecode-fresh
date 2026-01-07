@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/standalone/project-lifecycle
+last_archived: play/archive/refactor-play-structure
 review_pending: false
 
 ```
@@ -46,7 +46,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-08 01:12:03
+last_start: 2026-01-08 01:38:34
 last_end: 2026-01-08 00:42:31
 last_clear: 2025-12-24 03:20:00
 ```
