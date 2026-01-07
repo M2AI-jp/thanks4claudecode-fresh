@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/playbook-completion/plan.json
-parent_project: design-validation
-current_phase: p1
-branch: feat/playbook-completion
-last_archived: play/archive/projects/design-validation/playbooks/post-loop-fix
+active: null
+parent_project: null
+current_phase: null
+branch: null
+last_archived: play/archive/projects/design-validation/playbooks/playbook-completion
 review_pending: false
 
 ```
@@ -34,13 +34,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: m2
-phase: p1
-done_criteria:
-  - 設計図と実装の Critical Gap が全て解消されている
-  - project 生成時に reviewer 検証が必須になっている
-  - playbook 運用の検証サイクルが 1 回以上完走している
-status: active
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
