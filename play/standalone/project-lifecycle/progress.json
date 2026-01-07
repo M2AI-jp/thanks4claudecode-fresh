@@ -6,8 +6,8 @@
     "status": "active"
   },
   "active": {
-    "phase": "p4",
-    "subtask": "p4.1"
+    "phase": "p_final",
+    "subtask": "p_final.1"
   },
   "phases": {
     "p1": {
@@ -23,12 +23,12 @@
       "updated_at": "2026-01-08T02:15:00+09:00"
     },
     "p4": {
-      "status": "in_progress",
-      "updated_at": "2026-01-08T02:16:00+09:00"
+      "status": "done",
+      "updated_at": "2026-01-08T02:20:00+09:00"
     },
     "p_final": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-08T02:25:00+09:00"
     }
   },
   "subtasks": {
@@ -153,44 +153,44 @@
       "notes": "archive-playbook.sh に Step 14 追加。条件付き呼び出し実装済み。"
     },
     "p4.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T02:20:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["test -d play/archive/projects/design-validation → PASS", "! test -d play/projects/design-validation → PASS"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["meta.status = closed 維持", "closed_at/closed_by 設定済み"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["git commit eb0a66b で移動確認", "playbooks パス参照が archive パスに更新"]
         }
       },
-      "notes": ""
+      "notes": "archive-project.sh で移動完了。design-validation は play/archive/projects/ に存在。"
     },
     "p_final.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T02:25:00+09:00",
+      "validated_by": "reviewer",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["全 6 done_when 項目の技術検証 PASS"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["設計書と実装の整合性確認済み（7 Steps 一致）"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["エッジケース（7件）全てカバー", "git 履歴に証跡あり"]
         }
       },
-      "notes": ""
+      "notes": "reviewer により全 done_when 項目が PASS (6/6)。playbook 完了。"
     }
   },
   "final_tasks": [],
