@@ -60,7 +60,7 @@
         {
           "id": "m3-cleanup",
           "title": "Cleanup Execution",
-          "status": "pending",
+          "status": "done",
           "path": "play/projects/context-cleanup/playbooks/m3-cleanup/plan.json"
         }
       ]
@@ -68,7 +68,7 @@
   ],
   "progress": {
     "total_playbooks": 3,
-    "completed_playbooks": 2,
+    "completed_playbooks": 3,
     "current_milestone": "m2",
     "current_playbook": null
   },

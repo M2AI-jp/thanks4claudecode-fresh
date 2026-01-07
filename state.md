@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: play/projects/context-cleanup/project.json
+active: null
 current_milestone: m3
-status: active
+status: idle
 ```
 
 ---
@@ -19,11 +19,11 @@ status: active
 ## playbook
 
 ```yaml
-active: play/projects/context-cleanup/playbooks/m3-cleanup/plan.json
-parent_project: context-cleanup
-current_phase: p1
-branch: project/context-cleanup
-last_archived: play/archive/projects/context-cleanup/m2-file-inventory
+active: null
+parent_project: null
+current_phase: null
+branch: null
+last_archived: play/archive/projects/context-cleanup/m3-cleanup
 review_pending: false
 
 ```
@@ -34,14 +34,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: m3
-phase: p1
-done_criteria:
-  - .DS_Store が存在しない
-  - .gitignore に .DS_Store が含まれている
-  - 2日以上前のセッションログが削除されている
-  - play/template/project.json（legacy）が削除されている
-status: active
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
