@@ -24,6 +24,7 @@
 #   11. PR マージ（merge-pr.sh、旧 Step 10）
 #   12. main 同期（旧 Step 11）
 #   13. pending ファイル作成（旧 Step 12）
+#   14. Project 完了チェック（M090 連携 - archive-project.sh 呼び出し）
 #
 
 set -e
@@ -833,6 +834,48 @@ PENDINGEOF
     log_info "pending ファイル作成完了: $PENDING_FILE (status: $OVERALL_STATUS)"
 
     update_checkpoint_complete 13
+fi
+
+# ==============================================================================
+# Step 14: Project 完了チェック（M090 連携）
+# ==============================================================================
+if should_run_step 14; then
+    echo ""
+    echo "$SEP"
+    echo "  Step 14: Project 完了チェック"
+    echo "$SEP"
+
+    update_checkpoint_start 14
+
+    if [ -n "$PARENT_PROJECT" ] && [ "$PARENT_PROJECT" != "null" ]; then
+        PROJECT_FILE="play/projects/$PARENT_PROJECT/project.json"
+
+        if [ -f "$PROJECT_FILE" ]; then
+            # 残り playbook をチェック
+            REMAINING=$(jq '[.milestones[].playbooks[] | select(.status != "done")] | length' "$PROJECT_FILE" 2>/dev/null || echo "-1")
+
+            if [ "$REMAINING" = "0" ]; then
+                log_info "全 playbook 完了。Project をアーカイブします..."
+                ARCHIVE_PROJECT_SCRIPT="$SKILLS_DIR/playbook-gate/workflow/archive-project.sh"
+
+                if [ -x "$ARCHIVE_PROJECT_SCRIPT" ]; then
+                    bash "$ARCHIVE_PROJECT_SCRIPT" "$PARENT_PROJECT" || log_warn "Project アーカイブに失敗しました"
+                else
+                    log_warn "archive-project.sh が見つからないか実行権限がありません: $ARCHIVE_PROJECT_SCRIPT"
+                fi
+            elif [ "$REMAINING" = "-1" ]; then
+                log_warn "project.json の解析に失敗しました"
+            else
+                log_info "残り playbook: $REMAINING 件（Project は継続）"
+            fi
+        else
+            log_info "Project 配下ですが project.json が見つかりません: $PROJECT_FILE"
+        fi
+    else
+        log_info "単発 playbook のため Project チェックをスキップ"
+    fi
+
+    update_checkpoint_complete 14
 fi
 
 # 正常完了時にチェックポイント削除

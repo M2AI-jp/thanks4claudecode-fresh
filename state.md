@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: m2
+current_milestone: null
 status: idle
 ```
 
@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/standalone/fix-archive-resume
+last_archived: play/archive/standalone/project-lifecycle
 review_pending: false
 
 ```
@@ -46,8 +46,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 23:45:53
-last_end: 2026-01-07 23:44:54
+last_start: 2026-01-08 01:12:03
+last_end: 2026-01-08 00:42:31
 last_clear: 2025-12-24 03:20:00
 ```
 

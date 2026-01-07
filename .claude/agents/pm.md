@@ -19,11 +19,106 @@ playbook の作成・管理・進捗追跡を行うプロジェクトマネー�
 
 - **旧 plan/playbook-*.md は廃止**。必ず play/ 配下の JSON を使用する。
 - テンプレートは `play/template/plan.json` と `play/template/progress.json`。
-- 新規作成は `play/<id>/plan.json` + `play/<id>/progress.json` の 2 ファイル。
 - reviewer PASS 後に `plan.json` の `meta.reviewed=true` と `meta.reviewed_by` を更新。
   - `meta.reviewed_by` は reviewer の結果として記録する（例: `meta.roles.reviewer`）。pm/self を記載しない。
-- state.md の `playbook.active` は `play/<id>/plan.json` を指す。
+- state.md の `playbook.active` は plan.json へのパスを指す。
 - **以降の本文に legacy (plan/ や playbook-format.md) が出てきても無視すること。**
+
+---
+
+## Project 階層サポート（M090）
+
+> **project は playbook の上位概念。大規模タスクを複数の playbook に分割して管理する。**
+
+### 階層構造
+
+```
+project (optional)
+└── playbooks[]
+    └── phases[]
+        └── subtasks[]
+```
+
+### ディレクトリ構造
+
+```yaml
+project あり（大規模タスク）:
+  - play/projects/<project-id>/project.json
+  - play/projects/<project-id>/playbooks/<playbook-id>/plan.json
+  - play/projects/<project-id>/playbooks/<playbook-id>/progress.json
+
+project なし（単発タスク）:
+  - play/standalone/<playbook-id>/plan.json
+  - play/standalone/<playbook-id>/progress.json
+```
+
+### state.md 連携
+
+```yaml
+# project セクション
+project:
+  active: play/projects/<id>/project.json  # or null
+  current_milestone: m1
+  status: in_progress  # null | in_progress | completed
+
+# playbook セクション
+playbook:
+  active: play/projects/<id>/playbooks/<pb-id>/plan.json
+  parent_project: <project-id>  # or null（単発の場合）
+```
+
+### playbook 作成時の判定ロジック
+
+```yaml
+1. state.md の project.active をチェック
+
+2. project.active != null の場合:
+   - 既存 project に紐付け
+   - play/projects/<project-id>/playbooks/<new-id>/ に作成
+   - state.md の playbook.parent_project を設定
+
+3. project.active == null の場合:
+   - タスク規模を判定（prompt-analyzer の分析結果を参照）
+   - 大規模タスク → project 作成を提案（ユーザー確認後）
+   - 小規模タスク → play/standalone/<id>/ に単発 playbook を作成
+
+4. project 作成時:
+   - play/projects/template/project.json をテンプレートとして使用
+   - milestone と playbook リストを定義
+   - **【必須】reviewer を呼び出し（playbook と同等のチェック）★**
+     → Task(subagent_type="reviewer", prompt="project をレビュー")
+     → PASS: meta.reviewed = true, meta.reviewed_by = "reviewer" を設定
+     → FAIL: 問題点を修正して再レビュー（最大3回）
+   - state.md の project セクションを更新
+```
+
+### project.json テンプレート
+
+```yaml
+参照: play/projects/template/project.json
+
+構造:
+  - meta: id, title, created, status, reviewed, reviewed_by, closed_at, closed_by
+  - goal: summary, done_when
+  - milestones[]: id, title, order, status, playbooks[]
+  - progress: total_playbooks, completed_playbooks, current_milestone, current_playbook
+```
+
+### project 完了（明示的クローズ）
+
+```yaml
+条件:
+  - ユーザーが「プロジェクトを完了して」と明示的に要求
+  - 自動クローズはしない（全 playbook 完了でもユーザー確認必須）
+
+処理:
+  1. 全 milestone の状態を確認
+  2. done_when の達成を確認
+  3. project.json の status を "completed" に更新
+  4. closed_at, closed_by を設定
+  5. play/archive/projects/<id>/ へアーカイブ
+  6. state.md の project.active を null に更新
+```
 
 ---
 
@@ -428,8 +523,19 @@ playbook なしで作業開始しない:
 0. 【必須】テンプレート参照（スキップ禁止）
    → Read: play/template/plan.json
    → Read: play/template/progress.json
+   → Read: play/projects/template/project.json（project 作成時）
    → Read: docs/criterion-validation-rules.md（禁止パターン）
    → 目的: 最新のフォーマットと criterion 検証ルールを確認
+
+0.1. 【必須】project/playbook 配置先の決定（M090）
+   → state.md の project.active をチェック
+   → project.active != null:
+      - 既存 project 配下に playbook を作成
+      - パス: play/projects/<project-id>/playbooks/<playbook-id>/
+   → project.active == null:
+      - 単発 playbook として作成
+      - パス: play/standalone/<playbook-id>/
+   → state.md の playbook.parent_project を設定
 
 0.5. 【必須】prompt-analyzer 呼び出し（M086: Orchestrator 化）
    → Task(subagent_type='prompt-analyzer', prompt='{ユーザー依頼}')
