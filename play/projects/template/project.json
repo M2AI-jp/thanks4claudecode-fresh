@@ -1,0 +1,56 @@
+{
+  "format_version": "1.0",
+  "meta": {
+    "id": "example-project",
+    "title": "Project Title",
+    "created": "YYYY-MM-DD",
+    "status": "draft",
+    "reviewed": false,
+    "reviewed_by": "",
+    "closed_at": null,
+    "closed_by": null
+  },
+  "goal": {
+    "summary": "High-level objective description.",
+    "done_when": [
+      "Condition 1 is met.",
+      "Condition 2 is met."
+    ]
+  },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "Milestone 1",
+      "order": 1,
+      "status": "pending",
+      "description": "Milestone description.",
+      "playbooks": [
+        {
+          "id": "pb-001",
+          "title": "First playbook",
+          "status": "pending",
+          "path": "play/projects/<project-id>/playbooks/<playbook-id>/plan.json"
+        }
+      ]
+    }
+  ],
+  "progress": {
+    "total_playbooks": 1,
+    "completed_playbooks": 0,
+    "current_milestone": null,
+    "current_playbook": null
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {}
+    },
+    "user_approved_understanding": {
+      "source": "",
+      "approved_at": "",
+      "summary": "",
+      "approved_items": [],
+      "technical_requirements_confirmed": []
+    }
+  }
+}

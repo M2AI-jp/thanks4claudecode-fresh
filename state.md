@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: m1
-status: idle
+active: play/projects/context-cleanup/project.json
+current_milestone: m2
+status: active
 ```
 
 ---
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
-parent_project: null
-current_phase: null
-branch: null
+active: play/projects/context-cleanup/playbooks/m2-file-inventory/plan.json
+parent_project: context-cleanup
+current_phase: p1
+branch: project/context-cleanup
 last_archived: play/archive/projects/context-cleanup/m1-protected-files
 review_pending: false
 
@@ -34,10 +34,13 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: m2
+phase: p1
+done_criteria:
+  - tmp/file-inventory-report.md が存在する
+  - レポートに全ファイルのカテゴリ別一覧が含まれている
+  - レポートに削除候補セクションと各ファイルの削除理由が記載されている
+status: active
 
 ```
 
