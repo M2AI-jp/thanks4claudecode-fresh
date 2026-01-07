@@ -213,8 +213,36 @@ if [ -z "$PLAYBOOK_ID" ] || [ "$PLAYBOOK_ID" = "null" ]; then
     PLAYBOOK_ID=$(basename "$PLAYBOOK_DIR")
 fi
 PLAYBOOK_NAME="$PLAYBOOK_ID"
-ARCHIVE_DIR="play/archive"
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+
+# ==============================================================================
+# M090: Project 階層判定
+# playbook が project 配下か standalone かを判定し、アーカイブ先を決定
+# ==============================================================================
+PARENT_PROJECT=""
+ARCHIVE_DIR="play/archive/standalone"  # デフォルトは standalone
+
+# state.md から parent_project を取得
+if [ -f "state.md" ]; then
+    PARENT_PROJECT=$(grep '^parent_project:' state.md 2>/dev/null | sed 's/parent_project: *//' | tr -d ' ')
+fi
+
+# playbook パスから project を判定（state.md の情報がない場合のフォールバック）
+if [ -z "$PARENT_PROJECT" ] || [ "$PARENT_PROJECT" = "null" ]; then
+    # パスが play/projects/<project-id>/playbooks/<playbook-id>/ の形式か確認
+    if echo "$PLAYBOOK_DIR" | grep -q "play/projects/.*/playbooks/"; then
+        PARENT_PROJECT=$(echo "$PLAYBOOK_DIR" | sed 's|play/projects/\([^/]*\)/playbooks/.*|\1|')
+    fi
+fi
+
+# アーカイブ先の決定
+if [ -n "$PARENT_PROJECT" ] && [ "$PARENT_PROJECT" != "null" ]; then
+    ARCHIVE_DIR="play/archive/projects/$PARENT_PROJECT/playbooks"
+    log_info "Project 配下の playbook を検出: $PARENT_PROJECT"
+else
+    ARCHIVE_DIR="play/archive/standalone"
+    log_info "単発 playbook を検出"
+fi
 
 echo ""
 echo "$SEP"
@@ -351,9 +379,28 @@ STATE_FILE="state.md"
 if [ -f "$STATE_FILE" ]; then
     # === playbook セクション ===
     sed -i '' 's/^active: .*/active: null/' "$STATE_FILE" 2>/dev/null || true
+    sed -i '' 's/^parent_project: .*/parent_project: null/' "$STATE_FILE" 2>/dev/null || true
     sed -i '' 's/^current_phase: .*/current_phase: null/' "$STATE_FILE" 2>/dev/null || true
     sed -i '' 's/^branch: .*/branch: null/' "$STATE_FILE" 2>/dev/null || true
     sed -i '' "s|^last_archived: .*|last_archived: $ARCHIVE_DIR/$PLAYBOOK_NAME|" "$STATE_FILE" 2>/dev/null || true
+
+    # === project 進捗更新（M090: playbook 完了を project.json に反映）===
+    if [ -n "$PARENT_PROJECT" ] && [ "$PARENT_PROJECT" != "null" ]; then
+        PROJECT_FILE="play/projects/$PARENT_PROJECT/project.json"
+        if [ -f "$PROJECT_FILE" ]; then
+            # project.json の該当 playbook を done に更新
+            jq --arg pb_id "$PLAYBOOK_ID" '
+                .milestones |= map(
+                    .playbooks |= map(
+                        if .id == $pb_id then .status = "done" else . end
+                    )
+                ) |
+                .progress.completed_playbooks += 1 |
+                .progress.current_playbook = null
+            ' "$PROJECT_FILE" > "$PROJECT_FILE.tmp" && mv "$PROJECT_FILE.tmp" "$PROJECT_FILE"
+            log_info "project.json 更新完了: $PROJECT_FILE"
+        fi
+    fi
 
     # === goal セクション（neutral 状態にリセット）===
     sed -i '' 's/^self_complete: .*/self_complete: false/' "$STATE_FILE" 2>/dev/null || true
