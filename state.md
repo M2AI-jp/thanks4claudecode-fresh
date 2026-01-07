@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: m1
-status: idle
+active: play/projects/design-validation/project.json
+current_milestone: m2
+status: in_progress
 ```
 
 ---
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
-parent_project: null
-current_phase: null
-branch: null
+active: play/projects/design-validation/playbooks/audit-verification/plan.json
+parent_project: design-validation
+current_phase: p1
+branch: feat/audit-verification
 last_archived: play/archive/projects/play/projects/design-validation/project.json/playbooks/gap-analysis
 review_pending: false
 
@@ -34,10 +34,14 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: m2
+phase: p1
+done_criteria:
+  - "reports/audit-mechanisms.md にチェック・レビュー機能の完全なリストが存在する"
+  - "reports/project-audit-gap.md に project 生成時のチェックフロー Gap が記載されている"
+  - "project.json に meta.reviewed フィールドが追加されている"
+  - "pm.md に project 用 reviewer チェックが実装されている"
+status: in_progress
 
 ```
 

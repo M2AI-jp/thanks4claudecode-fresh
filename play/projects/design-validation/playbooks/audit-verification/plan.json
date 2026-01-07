@@ -1,0 +1,337 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "audit-verification",
+    "branch": "feat/audit-verification",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "parent_project": "design-validation",
+    "milestone": "m2",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "playbook & project 生成時の監査機能（チェック・レビュー）を調査・Gap分析し、project 生成時に playbook と同等のチェックフローを実装する",
+    "done_when": [
+      "reports/audit-mechanisms.md にチェック・レビュー機能の完全なリストが存在する",
+      "reports/project-audit-gap.md に project 生成時のチェックフロー Gap が記載されている",
+      "project.json に meta.reviewed フィールドが追加されている",
+      "pm.md に project 用 reviewer チェックが実装されている"
+    ],
+    "scope": {
+      "includes": [
+        "既存チェック・レビュー機能の全リストアップ",
+        "playbook 生成時 vs project 生成時のチェックフロー比較",
+        "project 生成時の reviewer チェック追加",
+        "project.json テンプレートへの meta.reviewed 追加"
+      ],
+      "excludes": [
+        "チェック機能自体のリファクタリング",
+        "新しいガード機能の設計（今回は既存機能の調査と Gap 解消のみ）"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code (AIエージェント自身) および開発者",
+          "what": "1. projects 生成時に playbook 生成時と同等のチェックフローが動作しているか確認\n2. チェック・レビュー機能を全てリストアップして理解する\n3. m2（マイルストーン2: Project Hierarchy Implementation）に上記の監査指示を新規挿入\n4. playbook & projects 生成時の監査機能の動作確認と改善",
+          "when": "即時",
+          "where": [
+            "play/projects/design-validation/project.json（m2 セクション）",
+            ".claude/agents/pm.md",
+            ".claude/skills/playbook-init/SKILL.md",
+            ".claude/skills/reward-guard/SKILL.md"
+          ],
+          "why": "報酬詐欺を防止するため。playbook には reviewer/critic チェックがあるが project 階層には未実装",
+          "how": "1. 既存のチェック・レビュー機能を網羅的にリストアップ\n2. project 生成フローにチェックが存在するか確認\n3. 不足している場合は project 生成時のレビューフローを設計・実装\n4. m2 の playbooks に監査機能確認 playbook を追加",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "pm.md の修正が必要",
+              "severity": "medium",
+              "mitigation": "project 専用の reviewer チェック関数を追加"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "チェック機能リストアップが広範囲",
+              "severity": "medium",
+              "mitigation": "Phase 分割: 調査 -> Gap -> 実装"
+            }
+          ],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 4,
+          "decomposition_needed": true,
+          "recommendation": "Phase 分割（調査 -> Gap -> 実装 -> 検証）"
+        },
+        "test_strategy": {
+          "level": "integration",
+          "coverage_target": "100%",
+          "edge_cases": [
+            "project 生成後に reviewer チェックが発火するか",
+            "meta.reviewed が false から true に更新されるか"
+          ]
+        },
+        "preconditions": {
+          "existing_code": [
+            "pm.md に playbook 用 reviewer チェックが存在",
+            "reviewer.md SubAgent が存在",
+            "playbook-review-criteria.md が存在"
+          ],
+          "dependencies": [
+            "play/projects/template/project.json（存在未確認）"
+          ],
+          "constraints": []
+        },
+        "success_criteria": {
+          "functional": [
+            "projects 生成時のチェックフローが playbook と同等レベルで動作する",
+            "チェック・レビュー機能の完全なリストが存在する",
+            "m2 の playbooks 配列に監査 playbook が追加されている",
+            "project.json に meta.reviewed フィールドが存在し reviewer 検証が記録される"
+          ],
+          "non_functional": [],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": {
+          "components": [
+            "pm.md（project 作成フローの変更）",
+            "project.json テンプレート（meta 構造の変更）"
+          ],
+          "risk_level": "medium"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "はい、進めてください",
+      "approved_items": [
+        "playbook 生成時と project 生成時のチェックフロー比較",
+        "チェック・レビュー機能の全リストアップ",
+        "project 生成時の reviewer チェック追加",
+        "m2 への監査 playbook 追加"
+      ],
+      "technical_requirements_confirmed": [
+        "reports/audit-mechanisms.md の作成",
+        "reports/project-audit-gap.md の作成",
+        "project.json への meta.reviewed 追加",
+        "pm.md への project 用 reviewer チェック追加"
+      ]
+    },
+    "detected_gap": {
+      "summary": "playbook には reviewer/critic チェックがあるが、project 階層には未実装",
+      "details": [
+        {
+          "item": "reviewer チェック",
+          "playbook": "あり（pm.md Step 10）",
+          "project": "なし"
+        },
+        {
+          "item": "meta.reviewed フィールド",
+          "playbook": "あり（plan.json）",
+          "project": "なし"
+        },
+        {
+          "item": "critic 検証",
+          "playbook": "あり（reward-guard）",
+          "project": "未検証"
+        }
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Check/Review Mechanism Investigation",
+      "description": "既存のチェック・レビュー機能を全てリストアップし、理解する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "reports/audit-mechanisms.md が存在し、以下のカテゴリで機能がリストアップされている: (1) playbook 生成時チェック (2) phase/subtask 完了時チェック (3) project 生成時チェック（あれば）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f reports/audit-mechanisms.md && grep -E 'playbook 生成時|phase.*完了|project 生成時' reports/audit-mechanisms.md",
+            "consistency": "SKILL.md, pm.md, reviewer.md, critic.md と照合して漏れがないか確認",
+            "completeness": "全てのガード（*-guard.sh）と SubAgent（reviewer, critic）が列挙されている"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "各チェック機能について発火条件・検証内容・ブロック動作が表形式で記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -E '\\| .* \\| .* \\|' reports/audit-mechanisms.md で表が存在することを確認",
+            "consistency": "各機能の定義ファイル（.md, .sh）と記載内容が一致する",
+            "completeness": "発火条件・検証内容・ブロック動作の3列が全機能に存在する"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Gap Analysis: Playbook vs Project",
+      "description": "playbook 生成時と project 生成時のチェックフローを比較し、Gap を特定する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "reports/project-audit-gap.md が存在し、playbook vs project のチェック機能比較表が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f reports/project-audit-gap.md && grep -E 'playbook|project' reports/project-audit-gap.md",
+            "consistency": "p1.1 のリストと照合して全機能が比較対象になっている",
+            "completeness": "各機能について playbook/project 両方の有無が記載されている"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "Gap として特定された項目に対する修正提案が記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -E '修正提案|改善案|実装案' reports/project-audit-gap.md",
+            "consistency": "detected_gap と一致する項目が全て修正提案に含まれている",
+            "completeness": "各 Gap に対して具体的な修正箇所（ファイル名 + 修正内容）が明記されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Implementation: Project Audit Check",
+      "description": "project 生成時に reviewer チェックを追加し、meta.reviewed フィールドを実装する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "play/projects/template/project.json の meta セクションに reviewed: false と reviewed_by: '' フィールドが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -E 'reviewed|reviewed_by' play/projects/template/project.json",
+            "consistency": "play/template/plan.json の meta.reviewed 構造と一致する",
+            "completeness": "reviewed と reviewed_by の両フィールドが存在する"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "pm.md の Project 階層サポート（M090）セクションに project 作成時の reviewer 呼び出しステップが追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -E 'Task.*reviewer.*project|project.*reviewer' .claude/skills/golden-path/agents/pm.md",
+            "consistency": "playbook 作成時の reviewer 呼び出し（Step 10）と同様のフローになっている",
+            "completeness": "PASS の場合の meta.reviewed 更新、FAIL の場合の再レビュー処理が記載されている"
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "design-validation project.json の meta セクションに reviewed と reviewed_by フィールドが追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -E 'reviewed|reviewed_by' play/projects/design-validation/project.json",
+            "consistency": "template と同じ構造になっている",
+            "completeness": "既存の meta フィールド（id, title, created, status, closed_at, closed_by）が維持されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_self_update",
+      "name": "Self-Improvement: Update m2 Playbooks",
+      "description": "この playbook 自体を design-validation project の m2.playbooks に追加する",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_self_update.1",
+          "criterion": "play/projects/design-validation/project.json の milestones[m2].playbooks 配列に audit-verification が追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -A5 '\"id\": \"m2\"' play/projects/design-validation/project.json | grep 'audit-verification'",
+            "consistency": "m1.playbooks の gap-analysis と同じ形式で記載されている",
+            "completeness": "id, title, status, path の4フィールドが存在する"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification",
+      "description": "done_when の全項目を reviewer が独立検証する",
+      "depends_on": ["p_self_update"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "reports/audit-mechanisms.md が存在し、チェック・レビュー機能の完全なリストが含まれている",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f reports/audit-mechanisms.md",
+            "consistency": "p1 の成果物と整合性がある",
+            "completeness": "playbook/project 両方のチェック機能が網羅されている"
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "reports/project-audit-gap.md が存在し、Gap と修正提案が記載されている",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f reports/project-audit-gap.md",
+            "consistency": "p2 の成果物と整合性がある",
+            "completeness": "全 Gap に対して修正提案が存在する"
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "project.json テンプレートと design-validation project.json に meta.reviewed フィールドが存在する",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep 'reviewed' play/projects/template/project.json play/projects/design-validation/project.json | wc -l で 4 以上",
+            "consistency": "playbook の meta.reviewed と同じ構造",
+            "completeness": "reviewed と reviewed_by の両方が存在する"
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "pm.md に project 用 reviewer チェックが実装されている",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -E 'project.*reviewer|reviewer.*project' .claude/skills/golden-path/agents/pm.md",
+            "consistency": "playbook 用 reviewer チェックと同様のフロー",
+            "completeness": "PASS/FAIL 両方の処理が記載されている"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

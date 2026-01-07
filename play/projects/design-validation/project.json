@@ -5,6 +5,8 @@
     "title": "Design Validation and Playbook Operation",
     "created": "2026-01-07",
     "status": "active",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
     "closed_at": null,
     "closed_by": null
   },
@@ -21,13 +23,13 @@
       "id": "m1",
       "title": "Gap Analysis and Prioritization",
       "order": 1,
-      "status": "pending",
+      "status": "done",
       "description": "設計図と実装の乖離を確認し、優先度を付ける",
       "playbooks": [
         {
           "id": "gap-analysis",
           "title": "Design-Implementation Gap Analysis",
-          "status": "pending",
+          "status": "done",
           "path": "play/projects/design-validation/playbooks/gap-analysis/plan.json"
         }
       ]
@@ -36,9 +38,16 @@
       "id": "m2",
       "title": "Project Hierarchy Implementation",
       "order": 2,
-      "status": "pending",
+      "status": "in_progress",
       "description": "project 階層の初期実装と運用ロジック",
-      "playbooks": []
+      "playbooks": [
+        {
+          "id": "audit-verification",
+          "title": "Playbook/Project Audit Mechanism Verification",
+          "status": "active",
+          "path": "play/projects/design-validation/playbooks/audit-verification/plan.json"
+        }
+      ]
     },
     {
       "id": "m3",
