@@ -1,0 +1,290 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "audit-verification",
+    "plan_path": "play/projects/design-validation/playbooks/audit-verification/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-07T17:00:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-07T17:10:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-07T17:20:00Z"
+    },
+    "p_self_update": {
+      "status": "done",
+      "updated_at": "2026-01-07T17:20:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-07T17:30:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["audit-mechanisms.md exists", "3 categories found"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["SKILL.md, pm.md, reviewer.md, critic.md verified"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["11 guards + 3 SubAgents listed"]
+        }
+      },
+      "notes": "Created reports/audit-mechanisms.md with all check/review mechanisms"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["77 table rows, 5 table headers"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["File paths match actual files"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["trigger/validation/block columns for all functions"]
+        }
+      },
+      "notes": "Table format with trigger condition, validation content, block behavior"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:10:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["project-audit-gap.md exists", "12 functions compared"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["All p1.1 major functions included in comparison"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Playbook/Project columns with status icons"]
+        }
+      },
+      "notes": "Created reports/project-audit-gap.md with comparison table"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:10:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["Section 4: 修正提案 exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["All 4 gaps have corresponding fix proposals"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["File paths + code examples for each proposal"]
+        }
+      },
+      "notes": "4 fix proposals with specific file paths and code examples"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["reviewed: false, reviewed_by: '' in template"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Same structure as plan.json meta.reviewed"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Both reviewed and reviewed_by fields exist"]
+        }
+      },
+      "notes": "Added meta.reviewed and meta.reviewed_by to project template"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["reviewer call at line 88-91 in pm.md"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Same flow as playbook reviewer check"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["PASS/FAIL handling documented"]
+        }
+      },
+      "notes": "Added project reviewer check to pm.md M090 section"
+    },
+    "p3.3": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["reviewed: true, reviewed_by: reviewer"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Same structure as template"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Existing meta fields preserved"]
+        }
+      },
+      "notes": "Added meta.reviewed to design-validation project.json"
+    },
+    "p_self_update.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["audit-verification in m2.playbooks array"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Same format as m1.playbooks.gap-analysis"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["id, title, status, path fields exist"]
+        }
+      },
+      "notes": "Added audit-verification to m2.playbooks in project.json"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:30:00Z",
+      "validated_by": "reviewer",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["audit-mechanisms.md exists with 9 sections"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["All Hook/Guard/SubAgent/Framework listed"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Playbook/Project/Phase check flows covered"]
+        }
+      },
+      "notes": "Reviewer verified: complete audit mechanisms list"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:30:00Z",
+      "validated_by": "reviewer",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["project-audit-gap.md exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["4 gaps with fix proposals"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Implementation plan included"]
+        }
+      },
+      "notes": "Reviewer verified: Gap analysis and fix proposals"
+    },
+    "p_final.3": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:30:00Z",
+      "validated_by": "reviewer",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["template: reviewed=false, design-validation: reviewed=true"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Same structure as playbook meta.reviewed"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["reviewed and reviewed_by fields in both files"]
+        }
+      },
+      "notes": "Reviewer verified: meta.reviewed in both project.json files"
+    },
+    "p_final.4": {
+      "status": "done",
+      "validated_at": "2026-01-07T17:30:00Z",
+      "validated_by": "reviewer",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["pm.md line 88-92: reviewer call for project"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Same flow as playbook reviewer check"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["PASS/FAIL handling documented"]
+        }
+      },
+      "notes": "Reviewer verified: project reviewer check in pm.md M090"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "All 4 done_when items verified with grep/test commands",
+      "audit-mechanisms.md: 241 lines, 9 sections",
+      "project-audit-gap.md: 216 lines, 4 gaps with fix proposals",
+      "meta.reviewed added to both template and design-validation project.json",
+      "pm.md line 88-91: project reviewer check implemented",
+      "No scope creep detected",
+      "No reward fraud detected"
+    ],
+    "notes": "Critic verified playbook completion at 2026-01-07T17:35:00Z"
+  }
+}
