@@ -1,0 +1,265 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "urf-implementation",
+    "branch": "feat/urf-implementation",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "URF (Unified Rigor Framework) を実装し、prompt-analyzer / playbook / project の全レベルで rigor を統一する",
+    "done_when": [
+      "URF スキーマ定義ファイルが .claude/frameworks/unified-rigor-framework.md に存在する",
+      "play/template/plan.json に URF フィールドが追加されている（後方互換性維持）",
+      "play/projects/template/project.json に URF フィールドが追加されている（後方互換性維持）",
+      "URF ドキュメントが docs/urf-specification.md に存在する"
+    ],
+    "scope": {
+      "includes": [
+        ".claude/frameworks/unified-rigor-framework.md の作成",
+        "play/template/plan.json の更新",
+        "play/projects/template/project.json の更新",
+        "docs/urf-specification.md の作成"
+      ],
+      "excludes": [
+        "prompt-analyzer 出力形式の変更（整合性確認のみ）",
+        "既存 playbook の migration",
+        "既存 project の migration"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code (orchestrator)",
+          "what": "URF (Unified Rigor Framework) の実装 - 全レベルで同じ変数・同じ検証プロセスを強制",
+          "when": "即時",
+          "where": [
+            ".claude/frameworks/ 配下に URF スキーマ定義",
+            "play/projects/template/project.json",
+            "play/template/plan.json"
+          ],
+          "why": "prompt-analyzer / playbook / project の全レベルで rigor を統一",
+          "how": "5コンポーネントの段階的実装",
+          "missing": []
+        },
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 5,
+          "topics": [
+            {"id": 1, "description": "URF スキーマ定義ファイル作成"},
+            {"id": 2, "description": "project テンプレート更新"},
+            {"id": 3, "description": "playbook テンプレート更新"},
+            {"id": 4, "description": "prompt-analyzer 出力形式の整合性確認"},
+            {"id": 5, "description": "ドキュメント作成"}
+          ],
+          "recommendation": "5コンポーネントを Phase として分割"
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "既存テンプレートとの互換性",
+              "severity": "medium",
+              "mitigation": "既存フィールドを維持しつつ追加"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "URF の範囲が曖昧",
+              "severity": "medium",
+              "mitigation": "3レベルに限定（prompt/playbook/project）"
+            }
+          ],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "test_strategy": {
+          "level": "integration",
+          "coverage_target": "フィールド存在確認 + JSON パース確認"
+        },
+        "preconditions": {
+          "existing_code": [
+            "play/template/plan.json 存在",
+            "play/projects/template/project.json 存在"
+          ],
+          "dependencies": [],
+          "constraints": ["後方互換性維持必須"]
+        },
+        "success_criteria": {
+          "functional": [
+            "URF スキーマ定義ファイルが .claude/frameworks/ に存在",
+            "project.json テンプレートに URF フィールドが追加",
+            "playbook テンプレートに URF フィールドが追加",
+            "prompt-analyzer 出力と URF スキーマが整合",
+            "URF ドキュメントが作成"
+          ],
+          "non_functional": [],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": [],
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "AUTO_APPROVED (auto_approve=true)",
+      "approved_items": [
+        "URF スキーマ定義ファイル作成",
+        "playbook テンプレート更新",
+        "project テンプレート更新",
+        "ドキュメント整備"
+      ],
+      "technical_requirements_confirmed": [
+        "既存フィールドとの後方互換性を維持",
+        "prompt-analyzer 出力形式は変更しない（整合性確認のみ）"
+      ]
+    },
+    "urf_schema": {
+      "note": "ユーザーが提案した URF スキーマ（playbook 作成の参照用）",
+      "sections": [
+        {
+          "name": "identity",
+          "fields": ["id", "title", "level"]
+        },
+        {
+          "name": "definition",
+          "fields": ["who", "what", "when", "where", "why", "how", "scope.in", "scope.out"]
+        },
+        {
+          "name": "analysis",
+          "fields": ["risks", "ambiguity", "preconditions"]
+        },
+        {
+          "name": "completion",
+          "fields": ["done_when", "deliverables", "acceptance_test"]
+        },
+        {
+          "name": "validation",
+          "fields": ["validations", "reviewer", "critic"]
+        },
+        {
+          "name": "dependencies",
+          "fields": ["depends_on", "blocks", "external"]
+        },
+        {
+          "name": "status",
+          "fields": ["current", "blocking_issues"]
+        }
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "URF スキーマ定義",
+      "description": "URF の正式なスキーマ定義ファイルを .claude/frameworks/ に作成する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": ".claude/frameworks/unified-rigor-framework.md が存在し、7つの標準セクション（identity, definition, analysis, completion, validation, dependencies, status）が定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f .claude/frameworks/unified-rigor-framework.md && grep -q 'identity' && grep -q 'definition' && grep -q 'analysis' && grep -q 'completion' && grep -q 'validation' && grep -q 'dependencies' && grep -q 'status'",
+            "consistency": "セクション名と prompt-analyzer の出力フィールド名が対応していることを確認",
+            "completeness": "全7セクションが YAML サンプル付きで定義されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "playbook テンプレート更新",
+      "description": "play/template/plan.json に URF 対応フィールドを追加（後方互換性維持）",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "play/template/plan.json に urf セクションが追加され、identity/definition/analysis/completion/validation/dependencies/status への参照が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq '.urf' play/template/plan.json で urf セクションが取得可能",
+            "consistency": "既存フィールド（meta, goal, context, phases）が維持されている",
+            "completeness": "URF 7セクションへの対応が明示されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "project テンプレート更新",
+      "description": "play/projects/template/project.json に URF 対応フィールドを追加（後方互換性維持）",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "play/projects/template/project.json に urf セクションが追加され、project レベルの URF フィールドが定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq '.urf' play/projects/template/project.json で urf セクションが取得可能",
+            "consistency": "既存フィールド（meta, goal, milestones, progress）が維持されている",
+            "completeness": "project レベルに適した URF フィールドが含まれている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "ドキュメント整備",
+      "description": "URF の使用方法と設計思想を説明するドキュメントを作成",
+      "depends_on": ["p1", "p2", "p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "docs/urf-specification.md が存在し、URF の設計思想・使用方法・各レベル（prompt/subtask/phase/playbook/milestone/project）の適用例が記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f docs/urf-specification.md",
+            "consistency": ".claude/frameworks/unified-rigor-framework.md との整合性確認",
+            "completeness": "設計思想、使用方法、各レベルの適用例が含まれている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands for each done_when item.",
+            "consistency": "Reviewer checks consistency between URF schema, templates, and docs.",
+            "completeness": "Reviewer validates all done_when items are met."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

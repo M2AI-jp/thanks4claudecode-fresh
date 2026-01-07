@@ -1,0 +1,415 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "playbook-completion",
+    "plan_path": "play/playbook-completion/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-07T00:00:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-07T00:00:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-07T00:00:00Z"
+    },
+    "p4": {
+      "status": "done",
+      "updated_at": "2026-01-07T00:00:00Z"
+    },
+    "p5": {
+      "status": "done",
+      "updated_at": "2026-01-07T00:00:00Z"
+    },
+    "p_self_update": {
+      "status": "done",
+      "updated_at": "2026-01-07T00:00:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-07T00:00:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "play/playbook-completion/reports/gap-list.md が存在（7866 bytes）",
+            "16 件の Gap 項目が列挙（Critical:1, High:0, Medium:5, Low:10）",
+            "検証コマンド: ls -la, grep -c \"^| GAP-\" → 存在確認済み"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "design-validation/reports/hook-unit-gaps.md と整合（Component 分割状況）",
+            "design-validation/reports/project-audit-gap.md と整合（Critical Gap: reviewer 検証なし）",
+            "既存レポートの分析結果を統合して作成"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "全 Gap（16件）に severity 分類（Critical/High/Medium/Low）が付与",
+            "Section 5 に severity 別サマリを記載",
+            "Section 6 に対応優先度を明記"
+          ]
+        }
+      },
+      "notes": "既存の design-validation reports を統合し、新規乖離リストを作成。critic PASS (agentId: a5ccf4c)"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "play/playbook-completion/reports/priority-list.md が存在（3383 bytes）",
+            "GAP-C1 に severity(Critical) と対応方針が記載",
+            "Section 4 に対応スケジュール（p2.1, p2.2）が記載"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "p1.1 の gap-list.md と整合（GAP-C1 = Critical, High = 0件）",
+            "gap-list.md Section 5 の severity 分類と一致"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "全 Critical 項目（1件: GAP-C1）が含まれている",
+            "全 High 項目（0件）が含まれている（Section 3 に明記）",
+            "対象外の Medium/Low も Section 5 に列挙"
+          ]
+        }
+      },
+      "notes": "Critical:1件（GAP-C1）、High:0件を優先リストとして整理。critic PASS (agentId: af0727c)"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "check_project_reviewed() 関数が行 36-64 に実装",
+            "Test 1: reviewed=false → Exit 2 (ブロック成功)",
+            "Test 2: reviewed=true → Exit 0 (パス成功)",
+            "Test 3: active=null → Exit 0 (スキップ成功)"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "playbook の reviewed チェック（行 245-248）と同様のパターン",
+            "jq -r '.meta.reviewed // false' で取得、!= true で判定"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "JSON playbook パス（行 284）で呼び出し",
+            "legacy markdown パス（行 323）で呼び出し",
+            "project.json 作成自体はデッドロック回避で許可（行 136-138）"
+          ]
+        }
+      },
+      "notes": "codex-delegate が実装、coderabbit レビュー approved、critic PASS (agentId: abf88e4)"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "template/project.json 行 8-9: reviewed: false, reviewed_by: ''",
+            "design-validation/project.json 行 8-9: reviewed: true, reviewed_by: 'reviewer'"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "check_project_reviewed() が jq -r '.meta.reviewed' で参照",
+            "integrity.sh が jq -r '.meta.reviewed_by' で参照"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "template（デフォルト値）と実運用ファイル（design-validation）の両方で確認"
+          ]
+        }
+      },
+      "notes": "フィールドは既存。critic PASS (agentId: ac6faaa)"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "Critical severity の Hook Unit component Gap = 0件",
+            "gap-list.md Section 2.2: 全て Low/Medium severity"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "唯一の Critical Gap (GAP-C1) は Project 階層の問題",
+            "GAP-C1 は p2 で解消済み"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "全 10 Hook Unit を評価",
+            "全 component タイプ（validator/telemetry等）を評価"
+          ]
+        }
+      },
+      "notes": "対象なし（Critical severity の Hook Unit component Gap = 0件）。critic PASS (agentId: a693034)"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "session-start Hook: Exit 0",
+            "pre-tool-edit Hook: Exit 0",
+            "user-prompt-submit Hook: Exit 0",
+            "stop Hook: Exit 0"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "check_project_reviewed() は project.active=null でスキップ",
+            "既存フローに影響なし"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "全 10 Hook のスモークテスト Exit 0",
+            "integrity check PASSED"
+          ]
+        }
+      },
+      "notes": "全 Hook 正常動作、リグレッションなし。critic PASS (agentId: abf84ce)"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "post-loop-fix: 全4 Phase done, 全10 subtasks done, critic PASS",
+            "audit-verification: 全5 Phase done, 全13 subtasks done",
+            "gap-analysis: 全4 Phase done, 全6 subtasks done"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "各 playbook に reviewer + critic 検証記録あり",
+            "POST_LOOP 完了: state.md last_archived で確認"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "アーカイブ済み playbook 14件",
+            "完全な検証サイクル（pm → reviewer → LOOP → POST_LOOP → archive）の記録"
+          ]
+        }
+      },
+      "notes": "既存の完走済み playbook が検証サイクルの証拠。critic PASS (agentId: a41ae15)"
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "verification-issues.md が存在（3494 bytes）",
+            "4件の問題エントリ（ISS-M1, ISS-M2, ISS-L1, ISS-L2）"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "各問題に発見場所と対応状況を記載",
+            "Section 3 に問題詳細（原因/影響/対応）を記載"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "severity 別（Critical/High/Medium/Low）の分類が完備",
+            "検証ステップ（スモークテスト、integrity check、レビュー）からの観察を記録"
+          ]
+        }
+      },
+      "notes": "Critical/High 問題なし、Medium 2件・Low 2件を記録。critic PASS (agentId: a675087)"
+    },
+    "p5.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "Critical Gap 1件（GAP-C1）が p2.1 で解消済み",
+            "check_project_reviewed() 実装（行 36-64）、呼び出し（行 284, 323）"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "priority-list.md の設計「pm → reviewer 検証 → PASS で確定」と整合",
+            "p2.1 の critic PASS 記録あり"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "Critical Gap: 1件 → 解消済み",
+            "High Gap: 0件（scope 外）"
+          ]
+        }
+      },
+      "notes": "全 Critical Gap 解消確認。critic PASS (agentId: a55dcd9)"
+    },
+    "p5.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "done_when_1: Critical Gap (GAP-C1) 解消済み（p2.1 で実装）",
+            "done_when_2: project.meta.status = active",
+            "done_when_3: アーカイブ済み playbook 14件"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "playbook の done_when と project の done_when が整合",
+            "reviewer + critic 検証記録あり"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "docs/ 乖離解消（Critical のみ scope）",
+            "reviewer 検証必須化（check_project_reviewed 実装）",
+            "検証サイクル完走（post-loop-fix 等）"
+          ]
+        }
+      },
+      "notes": "design-validation project done_when 3項目全達成。critic PASS (agentId: adb1684)"
+    },
+    "p_self_update.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "improvements.md 存在（3078 bytes）",
+            "8件の改善点（IMP-T1〜T4, IMP-O1〜O4）"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "p4.2 の 4件全てが improvements.md に対応",
+            "ISS-M1→IMP-T2, ISS-M2→IMP-T3, ISS-L1→IMP-T4, ISS-L2→IMP-T1"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "技術的改善点 4件（High 1, Medium 2, Low 1）",
+            "運用改善点 4件（High 1, Medium 2, Low 1）"
+          ]
+        }
+      },
+      "notes": "8件の改善点を記録。critic PASS (agentId: a6bf684)"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "coderabbit Final Review: approved",
+            "done_when 3項目: 全て検証済み"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "11 subtasks が critic PASS",
+            "plan.json の done_when と評価結果が整合"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "done_when_1: Critical Gap 解消（check_project_reviewed 実装）",
+            "done_when_2: reviewer 検証必須化（Exit 2 ブロック）",
+            "done_when_3: 検証サイクル完走（アーカイブ 14件）"
+          ]
+        }
+      },
+      "notes": "coderabbit approved、critic PASS。全 12 subtasks 完了 (agentId: a341f64)"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "done_when_1: Critical Gap 解消（check_project_reviewed 実装）",
+      "done_when_2: reviewer 検証必須化（Exit 2 ブロック）",
+      "done_when_3: 検証サイクル完走（アーカイブ 14件）"
+    ],
+    "notes": "coderabbit approved、全 12 subtasks critic PASS"
+  }
+}

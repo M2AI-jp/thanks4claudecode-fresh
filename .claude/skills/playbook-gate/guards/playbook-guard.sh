@@ -30,6 +30,39 @@ fi
 SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | head -1 | sed 's/security: *//' | tr -d ' ')
 # 特権モードでも playbook チェックは維持（コア契約）
 
+# --------------------------------------------------
+# project チェック関数（M090: project 階層サポート）
+# --------------------------------------------------
+check_project_reviewed() {
+    # project セクションから active を取得
+    PROJECT=$(grep -A6 "^## project" "$STATE_FILE" | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//' | tr -d ' ')
+
+    # project.active が設定されている場合、reviewed をチェック
+    if [[ -n "$PROJECT" && "$PROJECT" != "null" && -f "$PROJECT" ]]; then
+        PROJECT_REVIEWED=$(jq -r '.meta.reviewed // false' "$PROJECT" 2>/dev/null)
+        
+        if [[ "$PROJECT_REVIEWED" != "true" ]]; then
+            cat >&2 << 'EOF'
+========================================
+  ⛔ project 未承認
+========================================
+
+  meta.reviewed: true が必要です。
+  project 生成時に reviewer 検証が必須です。
+
+  対処法:
+    pm SubAgent が reviewer を呼び出し、
+    PASS 後に meta.reviewed: true に更新してください。
+
+    Task(subagent_type="reviewer", prompt="project をレビュー")
+
+========================================
+EOF
+            exit 2
+        fi
+    fi
+}
+
 # stdin から JSON を読み込む
 # Note: macOS には timeout コマンドがないため、cat を直接使用
 # Hook 自体にタイムアウト（10秒）が設定されているため、追加のタイムアウトは不要
@@ -95,6 +128,12 @@ EOF
 fi
 
 if [[ "$FILE_PATH" == *"/play/"*"/progress.json" ]]; then
+    exit 0
+fi
+
+# project.json の作成/更新は project チェックなしで許可（デッドロック回避）
+# pm が project を生成できるようにする
+if [[ "$FILE_PATH" == *"/play/projects/"*"/project.json" ]]; then
     exit 0
 fi
 
@@ -241,6 +280,9 @@ EOF
 EOF
     fi
 
+    # project チェック（M090）
+    check_project_reviewed
+
     exit 0
 fi
 
@@ -276,6 +318,9 @@ if [[ "$REVIEWED" == "false" ]] || [[ -z "$HAS_CONTEXT" ]]; then
 EOF
     exit 2
 fi
+
+# project チェック（M090）
+check_project_reviewed
 
 # playbook があり、reviewed: true かつ context ありならパス
 exit 0

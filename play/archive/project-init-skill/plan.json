@@ -1,0 +1,334 @@
+{
+  "format_version": "2.1",
+  "meta": {
+    "id": "project-init-skill",
+    "branch": "feat/project-init-skill",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "project-init Skill を作成 - プロジェクトレベルの戦略的分析を行う Skill",
+    "done_when": [
+      ".claude/skills/project-init/SKILL.md が存在する",
+      ".claude/skills/project-init/agents/project-analyzer.md が存在する",
+      "URF 準拠の project_analysis 出力フォーマットが定義されている",
+      "pm SubAgent との連携フローが明確",
+      "settings.json に Skill 登録されている"
+    ],
+    "scope": {
+      "includes": [
+        ".claude/skills/project-init/SKILL.md の作成",
+        ".claude/skills/project-init/agents/project-analyzer.md の作成",
+        "settings.json への Skill 登録",
+        "pm.md との統合確認（ドキュメント更新）"
+      ],
+      "excludes": [
+        "既存の pm.md M090 ロジックの変更",
+        "playbook-init との干渉",
+        "Hook 自動発火の実装"
+      ]
+    }
+  },
+  "urf": {
+    "_comment": "Unified Rigor Framework - see .claude/frameworks/unified-rigor-framework.md",
+    "identity": {
+      "id": "project-init-skill",
+      "title": "Create project-init Skill for strategic project analysis",
+      "level": "playbook"
+    },
+    "definition": {
+      "who": "Claude Code (orchestrator)",
+      "what": "project-init Skill の作成 - プロジェクトレベルの戦略的分析を行う Skill",
+      "when": "即時",
+      "where": [
+        ".claude/skills/project-init/SKILL.md",
+        ".claude/skills/project-init/agents/project-analyzer.md",
+        ".claude/settings.json"
+      ],
+      "why": "prompt-analyzer は毎回発火で短期的分析、project は長期的計画なので別の分析層が必要",
+      "how": "playbook-init と同様のアーキテクチャで、project レベルの URF 準拠分析を実行",
+      "scope": {
+        "in": [
+          "SKILL.md 作成",
+          "project-analyzer.md 作成",
+          "settings.json 登録",
+          "pm.md 統合確認"
+        ],
+        "out": [
+          "pm.md M090 ロジック変更",
+          "playbook-init 干渉",
+          "Hook 自動発火"
+        ]
+      }
+    },
+    "analysis": {
+      "risks": {
+        "technical": [],
+        "scope": [],
+        "dependency": []
+      },
+      "ambiguity": [],
+      "preconditions": {
+        "existing_code": {
+          "status": "新規作成",
+          "files": [],
+          "patterns": ["Skill 構造に従う"]
+        },
+        "dependencies": {
+          "installed": [],
+          "required": [],
+          "external": []
+        },
+        "constraints": {
+          "technical": ["URF フレームワーク準拠"],
+          "security": [],
+          "performance": []
+        }
+      }
+    },
+    "completion": {
+      "done_when": [
+        ".claude/skills/project-init/SKILL.md が存在する",
+        ".claude/skills/project-init/agents/project-analyzer.md が存在する",
+        "URF 準拠の project_analysis 出力フォーマットが定義されている",
+        "pm SubAgent との連携フローが明確",
+        "settings.json に Skill 登録されている"
+      ],
+      "deliverables": [
+        ".claude/skills/project-init/SKILL.md",
+        ".claude/skills/project-init/agents/project-analyzer.md"
+      ],
+      "acceptance_test": {
+        "command": "test -f .claude/skills/project-init/SKILL.md && test -f .claude/skills/project-init/agents/project-analyzer.md && jq '.skills[] | select(.name==\"project-init\")' .claude/settings.json",
+        "expected": "All files exist and skill is registered"
+      }
+    },
+    "validation": {
+      "reviewer": {
+        "reviewed": false,
+        "reviewed_by": "",
+        "reviewed_at": ""
+      },
+      "critic": {
+        "validated": false,
+        "validated_by": "",
+        "validated_at": ""
+      }
+    },
+    "dependencies": {
+      "depends_on": [],
+      "blocks": [],
+      "external": []
+    },
+    "status": {
+      "current": "active",
+      "blocking_issues": []
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code (orchestrator)",
+          "what": "project-init Skill の作成 - プロジェクトレベルの戦略的分析を行う Skill",
+          "when": "即時",
+          "where": [
+            ".claude/skills/project-init/SKILL.md",
+            ".claude/skills/project-init/agents/project-analyzer.md"
+          ],
+          "why": "prompt-analyzer は毎回発火で短期的分析、project は長期的計画なので別の分析層が必要",
+          "how": "playbook-init と同様のアーキテクチャで、project レベルの URF 準拠分析を実行",
+          "missing": []
+        },
+        "干渉分析結果": {
+          "pm_SubAgent": {
+            "リスク": "HIGH -> 解決済み",
+            "解決": "project-init は分析のみ、pm は作成のみ（責務分離）"
+          },
+          "playbook-init": {
+            "リスク": "MEDIUM -> 解決済み",
+            "解決": "project-init は project 作成、playbook-init は playbook 作成（明確な分離）"
+          },
+          "chain_sh": {
+            "リスク": "LOW",
+            "解決": "変更不要（project-init は明示的呼び出しのみ）"
+          }
+        },
+        "設計決定": {
+          "発火": "明示的呼び出しのみ（Hook 自動呼び出しなし）",
+          "責務": "戦略的分析（project_analysis 生成）",
+          "出力": "URF 準拠の分析結果",
+          "pm連携": "分析結果を pm に渡し、pm が project.json 作成"
+        },
+        "risks": {
+          "technical": [],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 4,
+          "topics": [
+            {"id": 1, "description": "SKILL.md 作成"},
+            {"id": 2, "description": "project-analyzer.md 作成"},
+            {"id": 3, "description": "settings.json 登録"},
+            {"id": 4, "description": "pm.md 統合確認"}
+          ],
+          "recommendation": "4コンポーネントを Phase として分割"
+        },
+        "test_strategy": {
+          "level": "file_existence",
+          "coverage_target": "ファイル存在確認 + 内容検証",
+          "edge_cases": []
+        },
+        "preconditions": {
+          "existing_code": ["playbook-init Skill が参照可能"],
+          "dependencies": [],
+          "constraints": ["URF フレームワーク準拠"]
+        },
+        "success_criteria": {
+          "functional": [
+            ".claude/skills/project-init/SKILL.md が存在する",
+            ".claude/skills/project-init/agents/project-analyzer.md が存在する",
+            "URF 準拠の project_analysis 出力フォーマットが定義されている",
+            "pm SubAgent との連携フローが明確",
+            "settings.json に Skill 登録されている"
+          ],
+          "non_functional": [],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": [],
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "AUTO_APPROVED (auto_approve=true)",
+      "approved_items": [
+        "SKILL.md 作成",
+        "project-analyzer.md 作成",
+        "settings.json 登録",
+        "pm.md 統合確認"
+      ],
+      "technical_requirements_confirmed": [
+        "既存の pm.md M090 ロジックは変更しない",
+        "playbook-init との干渉を避ける",
+        "URF フレームワーク準拠"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "project-init SKILL.md 作成",
+      "description": ".claude/skills/project-init/SKILL.md を作成し、Skill の概要・発火条件・使用方法を定義する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": ".claude/skills/project-init/SKILL.md が存在し、Purpose/When to Use/Output Format/Related Files セクションが定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f .claude/skills/project-init/SKILL.md && grep -q 'Purpose' && grep -q 'When to Use' && grep -q 'Output' && grep -q 'Related Files'",
+            "consistency": "playbook-init/SKILL.md と同様の構造になっている",
+            "completeness": "明示的呼び出しのみ、URF 準拠の出力フォーマット、pm 連携フローが記載されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "project-analyzer.md（SubAgent 定義）作成",
+      "description": ".claude/skills/project-init/agents/project-analyzer.md を作成し、SubAgent の詳細動作を定義する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": ".claude/skills/project-init/agents/project-analyzer.md が存在し、URF 準拠の project_analysis 出力フォーマットが定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f .claude/skills/project-init/agents/project-analyzer.md && grep -q 'project_analysis' && grep -q 'URF'",
+            "consistency": "prompt-analyzer.md と同様の SubAgent 構造になっている",
+            "completeness": "入力・出力・処理フロー・エラーハンドリングが定義されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "settings.json に Skill 登録",
+      "description": ".claude/settings.json の skills 配列に project-init を追加する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": ".claude/settings.json の skills 配列に name='project-init' のエントリが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq '.skills[] | select(.name==\"project-init\")' .claude/settings.json が結果を返す",
+            "consistency": "他の Skill エントリと同じ形式で登録されている",
+            "completeness": "path が正しく .claude/skills/project-init を指している"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "pm.md との統合確認（ドキュメント更新）",
+      "description": "pm.md に project-init Skill との連携フローを追記する（M090 ロジックは変更しない）",
+      "depends_on": ["p1", "p2"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": ".claude/skills/golden-path/agents/pm.md に project-init Skill との連携セクションが追記されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q 'project-init' .claude/skills/golden-path/agents/pm.md",
+            "consistency": "既存の M090 ロジックと干渉しない形で追記されている",
+            "completeness": "project-init の呼び出しタイミング・データフロー・責務分離が明記されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands for each done_when item.",
+            "consistency": "Reviewer checks consistency between SKILL.md, SubAgent, settings.json, and pm.md.",
+            "completeness": "Reviewer validates all done_when items are met."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

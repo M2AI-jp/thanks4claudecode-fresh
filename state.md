@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/projects/design-validation/playbooks/post-loop-fix
+last_archived: play/archive/projects/design-validation/playbooks/playbook-completion
 review_pending: false
 
 ```
@@ -46,8 +46,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 17:44:39
-last_end: 2026-01-07 13:23:10
+last_start: 2026-01-07 20:25:50
+last_end: 2026-01-07 19:24:36
 last_clear: 2025-12-24 03:20:00
 ```
 
