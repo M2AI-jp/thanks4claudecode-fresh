@@ -19,10 +19,10 @@ status: null
 ## playbook
 
 ```yaml
-active: null
+active: play/fix-playbook-guard-macos/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: fix/playbook-guard-macos
 last_archived: play/archive/dir-cleanup
 review_pending: false
 
@@ -46,7 +46,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 13:23:07
+last_start: 2026-01-07 15:05:30
 last_end: 2026-01-07 13:23:10
 last_clear: 2025-12-24 03:20:00
 ```

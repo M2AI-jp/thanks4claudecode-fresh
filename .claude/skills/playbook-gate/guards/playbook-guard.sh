@@ -30,11 +30,13 @@ fi
 SECURITY=$(grep -A3 "^## config" "$STATE_FILE" 2>/dev/null | grep "security:" | head -1 | sed 's/security: *//' | tr -d ' ')
 # 特権モードでも playbook チェックは維持（コア契約）
 
-# stdin から JSON を読み込む（タイムアウト付き）
-# Hook タイムアウト（10秒）の半分を使用し、残りを処理に充てる
-if ! INPUT=$(timeout 5 cat 2>/dev/null); then
-    echo "[WARN] stdin read timeout - skipping check" >&2
-    exit 0
+# stdin から JSON を読み込む
+# Note: macOS には timeout コマンドがないため、cat を直接使用
+# Hook 自体にタイムアウト（10秒）が設定されているため、追加のタイムアウトは不要
+# Fail-closed: stdin 読み込み失敗時はブロック
+if ! INPUT=$(cat 2>/dev/null) || [[ -z "$INPUT" ]]; then
+    echo "[ERROR] stdin read failed or empty - blocking (Fail-closed)" >&2
+    exit 2
 fi
 
 # jq がない場合はブロック（Fail-closed）
