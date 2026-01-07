@@ -59,7 +59,31 @@ if [ -f "$STATE_FILE" ]; then
 }
 EOF2
 )
-                echo "$PSEUDO_INPUT" | bash "$ARCHIVE_SCRIPT" 2>&1 | tee -a "$LOG_DIR/subagent.log" || true
+                # archive-playbook.sh を実行し、結果を記録
+                set +e  # 一時的にエラーで終了しないようにする
+                ARCHIVE_OUTPUT=$(echo "$PSEUDO_INPUT" | bash "$ARCHIVE_SCRIPT" 2>&1)
+                ARCHIVE_EXIT_CODE=$?
+                set -e
+                
+                # ログに出力を記録
+                echo "$ARCHIVE_OUTPUT" | tee -a "$LOG_DIR/subagent.log"
+                
+                # exit code に応じた処理
+                case $ARCHIVE_EXIT_CODE in
+                    0)
+                        # 正常終了（処理不要または完了）
+                        echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] archive-playbook.sh completed (exit 0)" >> "$LOG_DIR/subagent.log"
+                        ;;
+                    2)
+                        # ブロック（critic PASS 不足など）- 正常な動作
+                        echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] archive-playbook.sh blocked (exit 2) - awaiting completion" >> "$LOG_DIR/subagent.log"
+                        ;;
+                    *)
+                        # 予期しないエラー
+                        echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] archive-playbook.sh failed with exit code $ARCHIVE_EXIT_CODE" >> "$LOG_DIR/subagent.log"
+                        echo "[WARN] SubagentStop: archive-playbook.sh failed (exit $ARCHIVE_EXIT_CODE)" >&2
+                        ;;
+                esac
             else
                 echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] progress.json not found: $PROGRESS_PATH" >> "$LOG_DIR/subagent.log"
             fi
