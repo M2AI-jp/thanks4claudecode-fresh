@@ -434,29 +434,17 @@ CURRENT_AFTER=$(git branch --show-current 2>/dev/null || echo "")
 
 # main でない場合は checkout する
 if [ "$CURRENT_AFTER" != "main" ] && [ "$CURRENT_AFTER" != "master" ]; then
-    log_info "ブランチを main に切り替えます..."
-    if git checkout main 2>/dev/null; then
-        log_info "main へ checkout 完了"
+    # 未コミット変更があるかチェック
+    if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+        log_error "未コミット変更があります。main への checkout をブロックします。"
+        log_error "変更をコミットしてから再度実行してください。"
+        # ブロックせず警告のみ（アーカイブ処理は続行）
     else
-        # 未コミット変更がある場合は stash を使用
-        log_warn "checkout 失敗 → stash を試行します"
-        if git stash 2>/dev/null; then
-            log_info "stash 完了"
-            if git checkout main 2>/dev/null; then
-                log_info "main へ checkout 完了"
-                # stash を pop（失敗しても続行）
-                if git stash pop 2>/dev/null; then
-                    log_info "stash pop 完了"
-                else
-                    log_warn "stash pop に失敗（conflict の可能性）。git stash list で確認してください"
-                fi
-            else
-                log_warn "stash 後も checkout に失敗しました"
-                # stash を戻す
-                git stash pop 2>/dev/null || true
-            fi
+        log_info "ブランチを main に切り替えます..."
+        if git checkout main 2>/dev/null; then
+            log_info "main へ checkout 完了"
         else
-            log_warn "stash に失敗しました（未コミット変更を手動で処理してください）"
+            log_warn "main への checkout に失敗しました"
         fi
     fi
 fi
