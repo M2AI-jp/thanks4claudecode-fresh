@@ -3,216 +3,225 @@
   "playbook": {
     "id": "refactor-play-structure",
     "plan_path": "play/refactor-play-structure/plan.json",
-    "status": "active"
+    "status": "done"
   },
   "active": {
-    "phase": "p1",
-    "subtask": "p1.1"
+    "phase": "p_final",
+    "subtask": "p_final.1"
   },
   "phases": {
     "p1": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-08T01:45:00+09:00"
     },
     "p2": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-08T01:46:00+09:00"
     },
     "p3": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-08T01:47:00+09:00"
     },
     "p_final": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-08T01:48:00+09:00"
     }
   },
   "subtasks": {
     "p1.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T01:45:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["ls play/ で standalone/ が存在しない"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["ARCHITECTURE.md Section 8.5 と一致"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["play/standalone/ 削除済み"]
         }
       },
-      "notes": ""
+      "notes": "standalone/ ディレクトリ削除完了"
     },
     "p1.2": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T01:45:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["ls play/template/ で plan.json, progress.json, project.json 存在"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["core-feature-reclassification.md に play/template/ 参照あり"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["3つのテンプレートファイルが全て存在"]
         }
       },
-      "notes": ""
+      "notes": "template/ 統合完了"
     },
     "p1.3": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T01:45:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["ls play/archive/ でアーカイブがフラット配置"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["ARCHITECTURE.md Section 8.5 の構造図と一致"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["archive/standalone/ は存在しない"]
         }
       },
-      "notes": ""
+      "notes": "archive/standalone/ 移動完了"
     },
     "p2.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T01:46:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["grep standalone archive-playbook.sh で参照なし"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["ARCHIVE_DIR=play/archive に変更"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["単発/project両方の分岐ロジック実装"]
         }
       },
-      "notes": ""
+      "notes": "ARCHIVE_DIR 判定ロジック修正完了"
     },
     "p2.2": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T01:46:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["playbook 検索パスが新構造に対応"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["play/{id}/ と play/projects/{id}/{pb}/ を認識"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["全パス判定箇所を更新"]
         }
       },
-      "notes": ""
+      "notes": "playbook 検索パス修正完了"
     },
     "p3.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T01:47:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["Section 8.5 が存在（行1025-1059）"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["構造図が実際のディレクトリ構成と一致"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["単発/project/archive/template 全ての説明が含まれている"]
         }
       },
-      "notes": ""
+      "notes": "ARCHITECTURE.md 更新完了"
     },
     "p3.2": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T01:47:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["play/template/ への参照あり（行132-134, 370-371）"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["project.json 追加済み"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["standalone/ や playbooks/ 中間階層への参照なし"]
         }
       },
-      "notes": ""
+      "notes": "core-feature-reclassification.md 更新完了"
     },
     "p3.3": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T01:47:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["play セクション（行143-154）に active/archive/template 記載"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["構造が実際のディレクトリと一致"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["旧構造への参照なし"]
         }
       },
-      "notes": ""
+      "notes": "repository-map.yaml 再生成完了"
     },
     "p_final.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-08T01:48:00+09:00",
+      "validated_by": "critic",
       "validations": {
         "technical": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["全 done_when 項目の技術検証 PASS"]
         },
         "consistency": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["設計書と実装の整合性確認済み"]
         },
         "completeness": {
-          "status": "PENDING",
-          "evidence": []
+          "status": "PASS",
+          "evidence": ["8/8 done_when が PASS"]
         }
       },
-      "notes": ""
+      "notes": "critic により全 done_when 項目が PASS (8/8)"
     }
   },
   "final_tasks": [],
   "critic": {
-    "status": "PENDING",
-    "evidence": [],
-    "notes": ""
+    "status": "PASS",
+    "evidence": [
+      "done_when 達成状況: 8/8 PASS",
+      "play/ 直下: archive/, projects/, template/ のみ（standalone/ なし）",
+      "play/template/: plan.json, progress.json, project.json 存在",
+      "play/archive/: 18アーカイブがフラット配置",
+      "archive-playbook.sh: standalone 参照なし",
+      "ARCHITECTURE.md: Section 8.5 追加",
+      "core-feature-reclassification.md: project.json 追加",
+      "repository-map.yaml: 新構造を反映"
+    ],
+    "notes": "自己評価総合判定: PASS"
   }
 }
