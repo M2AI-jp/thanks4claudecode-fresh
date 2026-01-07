@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: play/projects/design-validation/project.json
+active: null
 current_milestone: m2
-status: active
+status: idle
 ```
 
 ---
@@ -19,11 +19,11 @@ status: active
 ## playbook
 
 ```yaml
-active: play/projects/design-validation/playbooks/post-loop-fix/plan.json
-parent_project: design-validation
-current_phase: p1
-branch: feat/m2-audit-verification
-last_archived: play/archive/projects/play/projects/design-validation/project.json/playbooks/gap-analysis
+active: null
+parent_project: null
+current_phase: null
+branch: null
+last_archived: play/archive/projects/design-validation/playbooks/post-loop-fix
 review_pending: false
 
 ```
@@ -34,13 +34,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: m2
-phase: p1
-done_criteria:
-  - playbook 完了時に自動でコミット・Push・PR 作成・マージが実行される
-  - post-loop Skill が確実に呼び出される（skip 経路がない）
-  - pending ファイル作成後、complete.sh 実行までブロックが維持される
-status: active
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
