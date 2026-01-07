@@ -1,0 +1,201 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "gap-analysis",
+    "branch": "feat/design-validation",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "parent_project": "play/projects/design-validation/project.json",
+    "milestone": "m1",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "設計図と実装の乖離を確認し、優先度を付けたレポートを作成する",
+    "done_when": [
+      "docs/ARCHITECTURE.md と実装の乖離が全てリスト化されている",
+      "docs/core-feature-reclassification.md と実装の乖離が全てリスト化されている",
+      "乖離項目に優先度（high/medium/low）が付与されている",
+      "play/projects/design-validation/reports/gap-report.md が存在する"
+    ],
+    "scope": {
+      "includes": [
+        "docs/ARCHITECTURE.md の設計内容と実装の比較",
+        "docs/core-feature-reclassification.md の設計内容と実装の比較",
+        "Hook Unit コンポーネント分割状況の確認",
+        "乖離レポートの作成"
+      ],
+      "excludes": [
+        "乖離の修正実装（m2 以降）",
+        "新機能の追加"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code (orchestrator)",
+          "what": "設計図と実装の乖離確認",
+          "when": "即時",
+          "where": ["docs/", ".claude/events/", ".claude/skills/"],
+          "why": "playbook 運用が設計図通り稼働しているか確認",
+          "how": "設計ドキュメントと実装ファイルの比較"
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "乖離が多すぎて優先度付けが困難",
+              "severity": "medium",
+              "mitigation": "カテゴリ別に整理し、ユーザー体験への影響度で優先度を決定"
+            }
+          ],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "detected": false
+        },
+        "test_strategy": {
+          "level": "verification",
+          "coverage_target": "全設計項目の確認",
+          "edge_cases": []
+        },
+        "preconditions": {
+          "existing_code": "docs/ARCHITECTURE.md, docs/core-feature-reclassification.md が存在",
+          "dependencies": [],
+          "constraints": []
+        },
+        "success_criteria": {
+          "functional": ["レポートが存在する"],
+          "non_functional": ["全項目に優先度が付与されている"],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": {
+          "affected_components": [],
+          "risk_level": "low"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "AUTO_APPROVED",
+      "approved_items": ["設計図と実装の乖離確認を行う"],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Architecture Document Analysis",
+      "description": "docs/ARCHITECTURE.md の設計と実装の比較",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "docs/ARCHITECTURE.md のセクション 1-7 の設計項目と実装ファイルの対応リストが作成されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "対応リストファイルの存在確認",
+            "consistency": "設計ドキュメントの全セクションが網羅されている",
+            "completeness": "各設計項目に対応する実装ファイルが記載されている"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "docs/ARCHITECTURE.md のセクション 8-14 の設計項目と実装の乖離が特定されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "乖離リストの存在確認",
+            "consistency": "セクション 8-14 が網羅されている",
+            "completeness": "各乖離項目に説明が付与されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Core Feature Reclassification Analysis",
+      "description": "docs/core-feature-reclassification.md の設計と実装の比較",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "docs/core-feature-reclassification.md の Hook Unit 目録（セクション 10）と実装の乖離が特定されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Hook Unit 乖離リストの存在確認",
+            "consistency": "全 Hook Unit が網羅されている",
+            "completeness": "各 Unit の missing 項目が明記されている"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "Skill/SubAgent 評価（セクション 12）と実装の整合性が確認されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Skill/SubAgent 整合性リストの存在確認",
+            "consistency": "全 Skill/SubAgent が網羅されている",
+            "completeness": "remove 対象の実装状況が確認されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Gap Report Creation",
+      "description": "乖離レポートの作成と優先度付け",
+      "depends_on": ["p1", "p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "play/projects/design-validation/reports/gap-report.md が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f play/projects/design-validation/reports/gap-report.md",
+            "consistency": "p1, p2 で特定した全乖離項目が含まれている",
+            "completeness": "各項目に優先度（high/medium/low）が付与されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
