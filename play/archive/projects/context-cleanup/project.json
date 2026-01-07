@@ -4,11 +4,11 @@
     "id": "context-cleanup",
     "title": "Repository Context Cleanup",
     "created": "2026-01-08",
-    "status": "active",
+    "status": "closed",
     "reviewed": true,
     "reviewed_by": "reviewer",
-    "closed_at": null,
-    "closed_by": null
+    "closed_at": "2026-01-08T03:11:57+09:00",
+    "closed_by": "archive-project.sh"
   },
   "goal": {
     "summary": "リポジトリ全体のファイル総点検を行い、protected-files.txt の保護レベルを BLOCK に統一し、コンテキスト汚染を引き起こす不要ファイルを削除する",
