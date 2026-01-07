@@ -1,0 +1,218 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "fix-archive-resume",
+    "plan_path": "play/fix-archive-resume/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-08T00:15:00+09:00"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-08T00:25:00+09:00"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-08T00:35:00+09:00"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-08T00:40:00+09:00"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-08T00:15:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep で init_checkpoint/update_checkpoint_start/update_checkpoint_complete/update_checkpoint_error/cleanup_checkpoint 関数の存在を確認"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["CHECKPOINT_FILE が SESSION_STATE_DIR 変数を使用"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["playbook_id, started_at, current_step, completed_steps, failed_step, last_error の全フィールドを保存"]
+        }
+      },
+      "notes": "チェックポイント書き込み関数を追加"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-08T00:15:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep で update_checkpoint_start/complete 1-13 の存在を確認"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["ステップ番号 1-13 が順序通りに呼び出されている"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["全13ステップに update_checkpoint_start/complete が実装済み"]
+        }
+      },
+      "notes": "各ステップでチェックポイント更新を追加"
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-08T00:15:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["trap 'handle_error $? \"$BASH_COMMAND\" \"$CURRENT_STEP\"' ERR"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["handle_error が update_checkpoint_error を呼び出し"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["set -e 維持、trap でエラーハンドリング、CURRENT_STEP 変数で追跡"]
+        }
+      },
+      "notes": "エラー発生時の記録処理を追加"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-08T00:25:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["case 文による --resume 解析（行192-208）"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["RESUME_FROM_CHECKPOINT フラグで stdin 入力処理と分岐"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["--resume オプションのヘルプメッセージが存在（行211-233）"]
+        }
+      },
+      "notes": "--resume オプションの引数解析を実装"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-08T00:25:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["jq でチェックポイント読み込み、failed_step に基づいて処理開始（行238-332）"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["should_run_step() 関数で各ステップのスキップ判定（行473-481）"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["チェックポイントファイル不存在時のエラーハンドリング（行242-246）"]
+        }
+      },
+      "notes": "チェックポイントからの状態復元と再開処理を実装"
+    },
+    "p2.3": {
+      "status": "done",
+      "validated_at": "2026-01-08T00:25:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["cleanup_checkpoint 呼び出し（行839）"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["全ステップ完了後に削除"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["OVERALL_STATUS に関わらず完了時は削除"]
+        }
+      },
+      "notes": "正常完了時のチェックポイント削除を確認"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-08T00:35:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep でチェックポイント機構と --resume の記述を確認（行563-577, 569-571）"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["処理順序（Step 1-13）が archive-playbook.sh と一致"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["チェックポイントファイルの場所、再開方法、エラー時の挙動が記載"]
+        }
+      },
+      "notes": "Section 6 にチェックポイント機構と再開コマンドの説明を追加"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-08T00:35:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["Section 11.7 に checkpoint 関連記述を確認（行1404-1443）"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Section 6 と Section 11.7 の記述が整合（補完関係）"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["再開フロー、チェックポイント内容、使用方法、エラーケースが明記"]
+        }
+      },
+      "notes": "Section 11.7 にチェックポイント機構と再開コマンドの詳細説明を追加"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-08T00:40:00+09:00",
+      "validated_by": "reviewer",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["done_when 全4項目を検証コマンドで確認"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["archive-playbook.sh と ARCHITECTURE.md の記述が一致"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["チェックポイント機構、再開コマンド、設計図更新の全てが完了"]
+        }
+      },
+      "notes": "reviewer による最終検証で全 done_when 項目が PASS"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": ["Phase p1-p3 全 subtask が critic により PASS 判定", "Phase p_final.1 が reviewer により PASS 判定", "done_when 全4項目が検証済み"],
+    "notes": "playbook 完了"
+  }
+}

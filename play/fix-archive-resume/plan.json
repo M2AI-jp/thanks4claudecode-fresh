@@ -1,0 +1,143 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "fix-archive-resume",
+    "branch": "fix/archive-resume",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "archive-playbook.sh の中断問題を修正し、再開機能を実装する",
+    "done_when": [
+      "archive-playbook.sh が中断した場合、中断したステップを特定できる",
+      "再開コマンド（--resume）で中断したステップから処理を継続できる",
+      "全ステップが完了したことを検証できる",
+      "docs/ARCHITECTURE.md の設計図が更新されている"
+    ],
+    "scope": {
+      "includes": [
+        "archive-playbook.sh のチェックポイント機構実装",
+        "再開コマンド（--resume）の実装",
+        "関連ファイル（chain.sh）への影響対応",
+        "ARCHITECTURE.md 設計図の更新"
+      ],
+      "excludes": [
+        "他の workflow スクリプトへの変更",
+        "テストコードの追加"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high"
+      }
+    },
+    "user_approved_understanding": {
+      "source": "auto_approve",
+      "approved_at": "2026-01-07",
+      "summary": "AUTO_APPROVED (auto_approve=true)"
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "チェックポイント機構の実装",
+      "description": "archive-playbook.sh にチェックポイント機構を追加し、各ステップの実行状態を記録する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "archive-checkpoint.json の書き込み関数が archive-playbook.sh に存在する",
+          "executor": "codex",
+          "coding": true
+        },
+        {
+          "id": "p1.2",
+          "criterion": "各ステップ（Step 1-13）の前後でチェックポイントが更新される",
+          "executor": "codex",
+          "coding": true
+        },
+        {
+          "id": "p1.3",
+          "criterion": "エラー発生時に failed_step と last_error が記録される",
+          "executor": "codex",
+          "coding": true
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "再開コマンドの実装",
+      "description": "archive-playbook.sh に --resume オプションを追加し、中断したステップから処理を再開する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "--resume オプションの引数解析が archive-playbook.sh に存在する",
+          "executor": "codex",
+          "coding": true
+        },
+        {
+          "id": "p2.2",
+          "criterion": "--resume 実行時に archive-checkpoint.json から状態を復元し、failed_step から処理を再開する",
+          "executor": "codex",
+          "coding": true
+        },
+        {
+          "id": "p2.3",
+          "criterion": "正常完了時に archive-checkpoint.json が削除される",
+          "executor": "codex",
+          "coding": true
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "設計図同期・検証",
+      "description": "ARCHITECTURE.md を更新し、全体の動作を検証する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "docs/ARCHITECTURE.md の Section 6 (PostToolUse:Edit/Write) にチェックポイント機構と再開コマンドの説明が追加されている",
+          "executor": "claudecode",
+          "coding": false
+        },
+        {
+          "id": "p3.2",
+          "criterion": "docs/ARCHITECTURE.md の Section 11.7 (Post-Loop 自動発火) にチェックポイント機構の説明が追加されている",
+          "executor": "claudecode",
+          "coding": false
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
