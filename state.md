@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: m1
+current_milestone: m2
 status: idle
 ```
 
@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/projects/context-cleanup/m1-protected-files
+last_archived: play/archive/projects/context-cleanup/m2-file-inventory
 review_pending: false
 
 ```
