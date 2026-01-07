@@ -1,0 +1,122 @@
+{
+  "format_version": "1.0",
+  "meta": {
+    "id": "design-validation",
+    "title": "Design Validation and Playbook Operation",
+    "created": "2026-01-07",
+    "status": "active",
+    "closed_at": null,
+    "closed_by": null
+  },
+  "goal": {
+    "summary": "playbook 生成と運用が設計図通り稼働しているか確認し、設計通りに完成させる",
+    "done_when": [
+      "docs/ の設計図と実装の乖離が全て解消されている",
+      "project 階層の本番運用が開始されている",
+      "playbook 運用検証サイクルが1回以上完了している"
+    ]
+  },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "Gap Analysis and Prioritization",
+      "order": 1,
+      "status": "pending",
+      "description": "設計図と実装の乖離を確認し、優先度を付ける",
+      "playbooks": [
+        {
+          "id": "gap-analysis",
+          "title": "Design-Implementation Gap Analysis",
+          "status": "pending",
+          "path": "play/projects/design-validation/playbooks/gap-analysis/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m2",
+      "title": "Project Hierarchy Implementation",
+      "order": 2,
+      "status": "pending",
+      "description": "project 階層の初期実装と運用ロジック",
+      "playbooks": []
+    },
+    {
+      "id": "m3",
+      "title": "Playbook Operation Verification Cycle",
+      "order": 3,
+      "status": "pending",
+      "description": "playbook 運用の検証サイクルを回して設計通りに完成",
+      "playbooks": []
+    }
+  ],
+  "progress": {
+    "total_playbooks": 1,
+    "completed_playbooks": 0,
+    "current_milestone": "m1",
+    "current_playbook": "gap-analysis"
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code (orchestrator)",
+          "what": "設計図と実装の乖離確認 + project 階層の本番実装",
+          "when": "乖離確認後に project 作成へ移行",
+          "where": ["docs/", ".claude/events/", ".claude/skills/", "play/projects/", "state.md"],
+          "why": "playbook 生成と運用が設計図通り稼働しているか確認・完成",
+          "how": "2段階: (1) 乖離確認 (2) project 作成と検証サイクル"
+        },
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 2,
+          "topics": [
+            {
+              "id": 1,
+              "summary": "設計図と実装の乖離確認",
+              "type": "instruction"
+            },
+            {
+              "id": 2,
+              "summary": "project 階層の本番実装と playbook 運用検証サイクル",
+              "type": "instruction"
+            }
+          ],
+          "recommendation": "Phase 1: 乖離確認レポート, Phase 2: project 初期実装, Phase 3: 運用検証サイクル"
+        },
+        "gap_analysis": {
+          "confirmed_gaps": [
+            {
+              "category": "Hook Unit Component",
+              "gap": "validator/context-injector/telemetry/guardrail 分割が未実装",
+              "severity": "medium"
+            },
+            {
+              "category": "Project Hierarchy",
+              "gap": "project 運用ロジック未実装（template のみ）",
+              "severity": "high"
+            },
+            {
+              "category": "Documentation",
+              "gap": "Stop Hook の no-op 記載が古い（completion-check 実装済み）",
+              "severity": "low"
+            }
+          ]
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "AUTO_APPROVED (auto_approve=true)",
+      "approved_items": [
+        "設計図と実装の乖離確認を行う",
+        "project 階層の本番実装をテストとして行う",
+        "playbook 運用検証サイクルを回して完成させる"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  }
+}

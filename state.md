@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: null
+current_milestone: m1
 status: idle
 ```
 
@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/standalone/fix-playbook-guard-macos
+last_archived: play/archive/projects/play/projects/design-validation/project.json/playbooks/gap-analysis
 review_pending: false
 
 ```
@@ -46,7 +46,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 15:05:30
+last_start: 2026-01-07 16:41:20
 last_end: 2026-01-07 13:23:10
 last_clear: 2025-12-24 03:20:00
 ```
