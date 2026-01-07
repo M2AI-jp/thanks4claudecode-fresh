@@ -545,22 +545,36 @@ Claude は playbook 作成時に自動でブランチを切る。
             ├─→ .claude/skills/playbook-gate/workflow/archive-playbook.sh
             │       │
             │       ├─→ 全 Phase done 検出
-            │       ├─→ 自動実行（10ステップ）:
+            │       ├─→ 自動実行（13ステップ）:
             │       │   1. 未コミット変更を自動コミット
             │       │   2. Push（PR 作成前に必須）
             │       │   3. PR 作成（create-pr.sh）
-            │       │   4. playbook アーカイブ（play/archive/<id>/ へ移動）
-            │       │   5. state.md 更新（playbook.active = null）
+            │       │   4. バックグラウンドタスク クリーンアップ
+            │       │   5. playbook アーカイブ（play/archive/<id>/ へ移動）
             │       │   6. アーカイブ変更をコミット
-            │       │   7. 追加コミットを Push
-            │       │   8. PR マージ（merge-pr.sh）
-            │       │   9. main 同期（checkout + pull）
-            │       │   10. pending ファイル作成（post-loop 強制用）
+            │       │   7. Push（アーカイブ分）
+            │       │   8. state.md 更新（playbook.active = null）
+            │       │   9. state.md 更新のコミット
+            │       │   10. Push（state.md 分）
+            │       │   11. PR マージ（merge-pr.sh）
+            │       │   12. main 同期（checkout + pull）
+            │       │   13. pending ファイル作成（post-loop 強制用）
+            │       │
+            │       ├─→ チェックポイント機構:
+            │       │   ├─→ .claude/session-state/archive-checkpoint.json に状態保存
+            │       │   ├─→ 各ステップの開始/完了を記録
+            │       │   ├─→ エラー発生時に failed_step と last_error を記録
+            │       │   └─→ 正常完了時にチェックポイント削除
+            │       │
+            │       ├─→ 再開コマンド（中断時の復旧）:
+            │       │   └─→ bash archive-playbook.sh --resume
+            │       │       └─→ failed_step から処理を再開
             │       │
             │       └─→ 書き込み:
             │           ├─→ play/archive/<id>/
             │           ├─→ state.md（playbook.active = null）
-            │           └─→ .claude/session-state/post-loop-pending
+            │           ├─→ .claude/session-state/post-loop-pending
+            │           └─→ .claude/session-state/archive-checkpoint.json（処理中のみ）
             │
             ├─→ .claude/skills/playbook-gate/workflow/cleanup.sh
             │       └─→ tmp/ クリーンアップ
@@ -1372,19 +1386,60 @@ playbook-gate:
 ### 処理順序（archive-playbook.sh）
 
 ```
-1. 自動コミット（未コミット変更がある場合）
-2. Push（PR 作成前に必要）
-3. PR 作成（create-pr.sh）
-3.5. バックグラウンドタスク クリーンアップ
-4. Playbook アーカイブ（play/archive/ へ移動）
-5. アーカイブのコミット
-6. Push（アーカイブ分）
-7. state.md 更新（playbook.active = null, goal セクションリセット）
-8. state.md 更新のコミット
-9. Push（state.md 分）
-10. PR マージ（merge-pr.sh）
-11. main 同期（checkout main && pull）
-12. pending ファイル作成（post-loop-pending）
+1.  自動コミット（未コミット変更がある場合）
+2.  Push（PR 作成前に必要）
+3.  PR 作成（create-pr.sh）
+4.  バックグラウンドタスク クリーンアップ
+5.  Playbook アーカイブ（play/archive/ へ移動）
+6.  アーカイブのコミット
+7.  Push（アーカイブ分）
+8.  state.md 更新（playbook.active = null, goal セクションリセット）
+9.  state.md 更新のコミット
+10. Push（state.md 分）
+11. PR マージ（merge-pr.sh）
+12. main 同期（checkout main && pull）
+13. pending ファイル作成（post-loop-pending）
+```
+
+### チェックポイント機構
+
+```yaml
+ファイル: .claude/session-state/archive-checkpoint.json
+
+内容:
+  {
+    "playbook_id": "example-v1",
+    "started_at": "2026-01-08T00:00:00+09:00",
+    "current_step": 5,
+    "completed_steps": [1, 2, 3, 4],
+    "failed_step": 5,
+    "last_error": "Exit code 1: git push"
+  }
+
+用途:
+  - 各ステップの開始/完了を追跡
+  - エラー発生時に failed_step と last_error を記録
+  - 中断した処理を再開可能にする
+  - 正常完了時は自動削除
+```
+
+### 再開コマンド（--resume）
+
+```yaml
+使用方法:
+  $ bash .claude/skills/playbook-gate/workflow/archive-playbook.sh --resume
+
+動作:
+  1. archive-checkpoint.json から状態を読み込み
+  2. failed_step を特定
+  3. completed_steps をスキップ
+  4. failed_step から処理を再開
+  5. 正常完了時にチェックポイント削除
+
+エラーケース:
+  - チェックポイントファイルが存在しない → エラー終了
+  - failed_step が記録されていない → エラー終了
+  - playbook_id が空 → エラー終了
 ```
 
 ### pending ファイルの役割
