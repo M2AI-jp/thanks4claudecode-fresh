@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/fix-projects-cleanup/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: fix/projects-cleanup
 last_archived: play/archive/standalone/fix-stack-bugs
 review_pending: false
 
@@ -35,9 +35,13 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - play/archive/projects/ 配下に不正なネストディレクトリが存在しない
+  - 全 milestone.playbooks[].path が実在するファイルを参照している
+  - closed 状態の project では全 milestone が done または明示的にスキップされている
+  - milestones の構造が template と整合している
+status: in_progress
 
 ```
 
@@ -46,8 +50,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 22:03:52
-last_end: 2026-01-07 22:02:21
+last_start: 2026-01-07 22:35:54
+last_end: 2026-01-07 22:35:51
 last_clear: 2025-12-24 03:20:00
 ```
 

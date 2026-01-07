@@ -30,7 +30,7 @@
           "id": "gap-analysis",
           "title": "Design-Implementation Gap Analysis",
           "status": "done",
-          "path": "play/projects/design-validation/playbooks/gap-analysis/plan.json"
+          "path": "play/archive/projects/design-validation/playbooks/gap-analysis/plan.json"
         }
       ]
     },
@@ -45,13 +45,13 @@
           "id": "audit-verification",
           "title": "Playbook/Project Audit Mechanism Verification",
           "status": "done",
-          "path": "play/projects/design-validation/playbooks/audit-verification/plan.json"
+          "path": "play/archive/projects/design-validation/playbooks/audit-verification/plan.json"
         },
         {
           "id": "post-loop-fix",
           "title": "Post-loop Flow Fix",
           "status": "done",
-          "path": "play/projects/design-validation/playbooks/post-loop-fix/plan.json"
+          "path": "play/archive/projects/design-validation/playbooks/post-loop-fix/plan.json"
         },
         {
           "id": "playbook-completion",
@@ -65,9 +65,10 @@
       "id": "m3",
       "title": "Playbook Operation Verification Cycle",
       "order": 3,
-      "status": "pending",
+      "status": "skipped",
       "description": "playbook 運用の検証サイクルを回して設計通りに完成",
-      "playbooks": []
+      "playbooks": [],
+      "skip_reason": "m1, m2 の playbook (4件) で運用検証サイクルが達成されたため、独立した m3 は不要と判断"
     }
   ],
   "progress": {
