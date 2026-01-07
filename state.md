@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/standalone/project-json-fix
+last_archived: play/archive/standalone/project-close
 review_pending: false
 
 ```
