@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: null
+current_milestone: m1
 status: idle
 ```
 
@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/refactor-play-structure
+last_archived: play/archive/projects/context-cleanup/m1-protected-files
 review_pending: false
 
 ```
@@ -46,8 +46,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-08 01:38:34
-last_end: 2026-01-08 00:42:31
+last_start: 2026-01-08 01:57:35
+last_end: 2026-01-08 01:57:34
 last_clear: 2025-12-24 03:20:00
 ```
 

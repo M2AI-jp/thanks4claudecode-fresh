@@ -1,0 +1,139 @@
+{
+  "format_version": "1.0",
+  "meta": {
+    "id": "context-cleanup",
+    "title": "Repository Context Cleanup",
+    "created": "2026-01-08",
+    "status": "active",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "closed_at": null,
+    "closed_by": null
+  },
+  "goal": {
+    "summary": "リポジトリ全体のファイル総点検を行い、protected-files.txt の保護レベルを BLOCK に統一し、コンテキスト汚染を引き起こす不要ファイルを削除する",
+    "done_when": [
+      "protected-files.txt の保護レベルが HARD_BLOCK と BLOCK の2種類に統一されている（WARN が廃止）",
+      "ファイル棚卸しレポート（tmp/file-inventory-report.md）が存在する",
+      "削除候補リストがユーザーに提示され承認を得ている",
+      "承認された不要ファイルが削除されている"
+    ]
+  },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "protected-files.txt 統一",
+      "order": 1,
+      "status": "pending",
+      "description": "WARN を BLOCK に変更し、保護レベルを HARD_BLOCK と BLOCK の2種類に統一",
+      "playbooks": [
+        {
+          "id": "m1-protected-files",
+          "title": "Protected Files Level Unification",
+          "status": "done",
+          "path": "play/projects/context-cleanup/playbooks/m1-protected-files/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m2",
+      "title": "ファイル棚卸しレポート作成",
+      "order": 2,
+      "status": "pending",
+      "description": "全ファイル走査、カテゴリ別分類、削除候補リスト化",
+      "playbooks": [
+        {
+          "id": "m2-file-inventory",
+          "title": "File Inventory Report",
+          "status": "pending",
+          "path": "play/projects/context-cleanup/playbooks/m2-file-inventory/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m3",
+      "title": "不要ファイル削除実行",
+      "order": 3,
+      "status": "pending",
+      "description": "ユーザー承認後に不要ファイルを削除",
+      "playbooks": [
+        {
+          "id": "m3-cleanup",
+          "title": "Cleanup Execution",
+          "status": "pending",
+          "path": "play/projects/context-cleanup/playbooks/m3-cleanup/plan.json"
+        }
+      ]
+    }
+  ],
+  "progress": {
+    "total_playbooks": 3,
+    "completed_playbooks": 1,
+    "current_milestone": "m1",
+    "current_playbook": null
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code / ユーザー",
+          "what": "1. protected-files.txt の保護レベルを BLOCK に統一\n2. リポジトリ全体のファイル総点検\n3. コンテキスト汚染を引き起こす可能性のある不要ファイルの削除",
+          "when": "即時（project として管理）",
+          "where": ".claude/protected-files.txt、リポジトリ全体",
+          "why": "保護レベルの複雑性を排除、LLM のコンテキストウィンドウ圧迫解消",
+          "how": "M1: protected-files.txt 統一、M2: ファイル棚卸しレポート、M3: 削除実行"
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "HARD_BLOCK 廃止による CLAUDE.md 改変リスク",
+              "severity": "high",
+              "mitigation": "HARD_BLOCK は維持し、WARN を BLOCK に統一"
+            }
+          ]
+        },
+        "file_inventory": {
+          "protected_files_analysis": {
+            "current": {
+              "HARD_BLOCK": [
+                "CLAUDE.md",
+                ".claude/protected-files.txt"
+              ],
+              "BLOCK": [
+                ".claude/settings.json",
+                "state.md"
+              ],
+              "WARN": [
+                "RUNBOOK.md"
+              ]
+            },
+            "proposed": {
+              "HARD_BLOCK": [
+                "CLAUDE.md",
+                ".claude/protected-files.txt"
+              ],
+              "BLOCK": [
+                ".claude/settings.json",
+                "state.md",
+                "RUNBOOK.md"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_FLOW",
+      "approved_at": "2026-01-08",
+      "summary": "上記分析結果に基づく project 作成",
+      "approved_items": [
+        "HARD_BLOCK は維持、WARN を BLOCK に統一",
+        "ファイル棚卸しレポート作成",
+        "削除実行はユーザー承認後"
+      ]
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "m1-protected-files",
+    "plan_path": "play/projects/context-cleanup/playbooks/m1-protected-files/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": null,
+    "subtask": null
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-08T02:15:00+09:00"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-08T02:16:00+09:00"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-08T02:15:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'WARN:' .claude/protected-files.txt = 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep 'BLOCK:RUNBOOK.md' .claude/protected-files.txt = success"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["HARD_BLOCK と BLOCK の2種類のみ存在"]
+        }
+      },
+      "notes": ""
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-08T02:15:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'WARN:path' .claude/protected-files.txt = 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["HARD_BLOCK と BLOCK の説明が正確"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["コメントとして保護レベルの定義が明記されている"]
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-08T02:16:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'WARN:' = 0", "grep 'BLOCK:RUNBOOK.md' = success"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["他の BLOCK: エントリと同じ形式"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["全 done_when 項目が達成"]
+        }
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "grep -c 'WARN:' .claude/protected-files.txt -> 0",
+      "grep 'BLOCK:RUNBOOK.md' .claude/protected-files.txt -> success",
+      "grep -c 'WARN:path' .claude/protected-files.txt -> 0"
+    ],
+    "notes": "全 done_when 条件を独立検証し PASS"
+  }
+}
