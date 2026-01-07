@@ -3,7 +3,7 @@
   "playbook": {
     "id": "project-lifecycle",
     "plan_path": "play/standalone/project-lifecycle/plan.json",
-    "status": "active"
+    "status": "done"
   },
   "active": {
     "phase": "p_final",
