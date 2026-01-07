@@ -1,0 +1,134 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "project-json-fix",
+    "branch": "feat/project-init-skill",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "coderabbit",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "design-validation/project.json の整合性修正（reviewed: false -> true、playbooks 追加、progress 修正）",
+    "done_when": [
+      "project.json の meta.reviewed が true である",
+      "m2.playbooks に playbook-completion が含まれている",
+      "progress.total_playbooks と completed_playbooks が 4 である"
+    ],
+    "scope": {
+      "includes": [
+        "play/projects/design-validation/project.json の修正"
+      ],
+      "excludes": [
+        "他のファイルへの変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code",
+          "what": "project.json の整合性修正（3点）",
+          "when": "即時",
+          "where": "play/projects/design-validation/project.json のみ",
+          "why": "前セッションで特定された矛盾を解消",
+          "how": "3つの修正を適用"
+        },
+        "risks": {
+          "technical": [],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "detected": false,
+          "decomposition_needed": false
+        },
+        "test_strategy": {
+          "test_types": ["validation"],
+          "coverage_target": "consistency-check"
+        },
+        "preconditions": {
+          "existing_code": "project.json に3つの矛盾が存在",
+          "dependencies": [],
+          "constraints": []
+        },
+        "success_criteria": {
+          "functional": [
+            "3点の修正が全て適用されている"
+          ],
+          "non_functional": [],
+          "breaking_changes": false
+        },
+        "reverse_dependencies": {
+          "affected_components": [],
+          "risk_level": "low"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07T21:04:00Z",
+      "summary": "AUTO_APPROVED (auto_approve=true)",
+      "approved_items": [
+        "reviewed: false -> true 修正",
+        "m2.playbooks に playbook-completion 追加",
+        "progress カウント修正（4, 4）"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Apply Fixes and Validate",
+      "description": "3点の修正を適用し、整合性を検証する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "project.json に3つの修正が全て適用されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq で各フィールドの値を確認",
+            "consistency": "playbooks 配列と progress カウントの整合性を確認",
+            "completeness": "3点全ての修正が反映されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "done_when 条件の独立検証",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

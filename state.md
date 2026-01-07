@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/project-json-fix/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: feat/project-init-skill
 last_archived: play/archive/projects/design-validation/playbooks/playbook-completion
 review_pending: false
 
@@ -35,9 +35,12 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - project.json の meta.reviewed が true である
+  - m2.playbooks に playbook-completion が含まれている
+  - progress.total_playbooks と completed_playbooks が 4 である
+status: active
 
 ```
 
@@ -46,7 +49,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 20:25:50
+last_start: 2026-01-07 21:03:52
 last_end: 2026-01-07 19:24:36
 last_clear: 2025-12-24 03:20:00
 ```

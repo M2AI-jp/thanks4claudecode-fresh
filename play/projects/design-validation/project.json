@@ -5,7 +5,7 @@
     "title": "Design Validation and Playbook Operation",
     "created": "2026-01-07",
     "status": "active",
-    "reviewed": false,
+    "reviewed": true,
     "reviewed_by": "reviewer",
     "closed_at": null,
     "closed_by": null
@@ -52,6 +52,12 @@
           "title": "Post-loop Flow Fix",
           "status": "done",
           "path": "play/projects/design-validation/playbooks/post-loop-fix/plan.json"
+        },
+        {
+          "id": "playbook-completion",
+          "title": "Playbook System Completion",
+          "status": "done",
+          "path": "play/archive/projects/design-validation/playbooks/playbook-completion/plan.json"
         }
       ]
     },
@@ -65,7 +71,7 @@
     }
   ],
   "progress": {
-    "total_playbooks": 3,
+    "total_playbooks": 4,
     "completed_playbooks": 4,
     "current_milestone": "m2",
     "current_playbook": null
