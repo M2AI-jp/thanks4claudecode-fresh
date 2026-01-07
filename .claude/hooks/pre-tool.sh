@@ -74,7 +74,8 @@ if [[ ! -f "$MARKER_FILE" ]]; then
                     SHOULD_SET_MARKER=true
                     ALLOW_WITHOUT_ANALYZER=true
                 elif [[ "$SKILL_NAME" == "playbook-init" ]]; then
-                    # playbook-init は prompt-analyzer を内包するため許可
+                    # playbook-init は prompt-analyzer を内包するため許可＆マーカー作成
+                    SHOULD_SET_MARKER=true
                     ALLOW_WITHOUT_ANALYZER=true
                 fi
                 ;;

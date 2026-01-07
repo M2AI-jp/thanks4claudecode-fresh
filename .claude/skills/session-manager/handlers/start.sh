@@ -205,8 +205,11 @@ verify_hooks() {
         [ -z "$CMD" ] && continue
 
         # "bash path/to/script.sh" 形式からパスを抽出
+        # 注意: "bash -lc '...'" のようなオプション付きコマンドはスキップ
         local HOOK_PATH=$(echo "$CMD" | sed -n 's/^bash \([^ ]*\).*/\1/p')
         [ -z "$HOOK_PATH" ] && continue
+        # オプション（-で始まる）の場合はスキップ（bash -lc などはパスではない）
+        [[ "$HOOK_PATH" == -* ]] && continue
 
         # ファイル存在チェック
         if [ ! -f "$HOOK_PATH" ]; then

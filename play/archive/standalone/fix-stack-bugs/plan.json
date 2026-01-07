@@ -1,0 +1,176 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "fix-stack-bugs",
+    "branch": "fix/stack-bugs",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "2つのバグ修正: verify_hooks の正規表現バグと playbook-init でのマーカー作成漏れ",
+    "done_when": [
+      "verify_hooks が `bash -lc 'command'` 形式を正しくスキップする",
+      "verify_hooks が `bash script.sh` 形式から正しくパスを抽出する",
+      "playbook-init 実行後にマーカーファイルが作成される",
+      "マーカー作成後は後続ツール（Edit/Write/Bash）が許可される"
+    ],
+    "scope": {
+      "includes": [
+        "verify_hooks 関数の正規表現修正（start.sh 行208付近）",
+        "playbook-init 分岐でのマーカー作成処理追加（pre-tool.sh 行76-78付近）"
+      ],
+      "excludes": [
+        "他の Hook の修正",
+        "新機能の追加"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code（開発者として実装を担当）",
+          "what": "2つのバグ修正を実装する：\n1. verify_hooks の正規表現バグ修正（`bash -lc` から `-lc` を抽出してしまう問題）\n2. playbook-init でのマーカー作成漏れ修正（pre-tool.sh の prompt-analyzer ガード）",
+          "when": "即時（今回のセッションで実装）",
+          "where": "修正対象ファイル：\n- .claude/skills/session-manager/handlers/start.sh（verify_hooks 関数、行208付近）\n- .claude/hooks/pre-tool.sh（playbook-init のマーカー作成処理、行76-78付近）",
+          "why": "スタック原因の解消：\n- verify_hooks のバグにより `-lc` がパスとして抽出され、不正なファイルチェックが発生\n- playbook-init でマーカーが作成されないため、prompt-analyzer ガードが後続処理をブロック",
+          "how": "1. verify_hooks: 正規表現を修正し、`bash -lc` のフラグを除外\n2. pre-tool.sh: playbook-init 分岐でも SHOULD_SET_MARKER=true を設定",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "正規表現修正による既存動作への影響",
+              "severity": "medium",
+              "mitigation": "修正後に全 Hook パターンでのテストを実施"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "修正範囲が限定的で他の類似バグを見落とす可能性",
+              "severity": "low",
+              "mitigation": "調査結果に基づき特定済みの2箇所のみ修正"
+            }
+          ]
+        },
+        "multi_topic_detection": {
+          "detected": true,
+          "topics": [
+            {
+              "id": 1,
+              "summary": "verify_hooks の正規表現バグ修正",
+              "type": "instruction"
+            },
+            {
+              "id": 2,
+              "summary": "playbook-init でのマーカー作成漏れ修正",
+              "type": "instruction"
+            }
+          ],
+          "recommendation": "論点1と論点2は同一 playbook 内の2つの subtask として扱う"
+        },
+        "success_criteria": {
+          "functional": [
+            "verify_hooks が `bash -lc 'command'` 形式を正しくスキップする",
+            "verify_hooks が `bash script.sh` 形式から正しくパスを抽出する",
+            "playbook-init 実行後にマーカーファイルが作成される",
+            "マーカー作成後は後続ツール（Edit/Write/Bash）が許可される"
+          ]
+        },
+        "reverse_dependencies": {
+          "affected_components": [
+            {
+              "component": "SessionStart Hook チェーン",
+              "impact": "low"
+            },
+            {
+              "component": "PreToolUse Hook チェーン",
+              "impact": "low"
+            }
+          ],
+          "risk_level": "low"
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_FLOW",
+      "approved_at": "2026-01-07T22:04:00+09:00",
+      "summary": "分析結果に基づく2つのバグ修正",
+      "approved_items": [
+        "verify_hooks の正規表現バグ修正",
+        "playbook-init でのマーカー作成漏れ修正"
+      ],
+      "technical_requirements_confirmed": [
+        "bash -lc フラグのスキップ",
+        "SHOULD_SET_MARKER=true の追加"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "バグ修正",
+      "description": "verify_hooks の正規表現バグと playbook-init のマーカー作成漏れを修正する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "verify_hooks 関数が `bash -lc 'command'` 形式をスキップし、`bash script.sh` 形式から正しくパスを抽出する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "修正後の正規表現で `bash -lc 'echo hello'` と `bash .claude/hooks/test.sh` をテストし、前者はスキップ、後者はパス抽出を確認",
+            "consistency": "ARCHITECTURE.md の Hook 設計（Hook -> Skill -> SubAgent）と整合することを確認",
+            "completeness": "verify_hooks 関数内の全パターン（bash -lc, bash script.sh, 空文字列）で正しく動作することを確認"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "pre-tool.sh の playbook-init 分岐で SHOULD_SET_MARKER=true が設定され、マーカーファイルが作成される",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "pre-tool.sh の playbook-init 分岐に SHOULD_SET_MARKER=true が追加されていることを確認",
+            "consistency": "prompt-analyzer 分岐と同様のマーカー作成パターンであることを確認",
+            "completeness": "ALLOW_WITHOUT_ANALYZER=true と SHOULD_SET_MARKER=true の両方が設定されていることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "done_when の独立検証",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "reviewer による全 done_when 項目の検証が PASS する",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "reviewer が検証コマンドを実行",
+            "consistency": "reviewer が出力の整合性を確認",
+            "completeness": "reviewer が全 done_when 項目を検証"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
