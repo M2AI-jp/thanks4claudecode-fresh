@@ -1,0 +1,134 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "project-close",
+    "branch": "feat/project-init-skill",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "micro",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "reviewer",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "design-validation project を close（m2 done + project close）",
+    "done_when": [
+      "m2.status が done に変更されている",
+      "meta.status が closed に変更されている",
+      "meta.closed_at と meta.closed_by が設定されている",
+      "progress.current_milestone が null に設定されている"
+    ],
+    "scope": {
+      "includes": [
+        "play/projects/design-validation/project.json の修正"
+      ],
+      "excludes": [
+        "他の project.json への変更",
+        "state.md の変更（playbook 完了時に自動処理）"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "reviewer / orchestrator",
+          "what": "design-validation project を close",
+          "when": "done_when 3つ達成確認後",
+          "where": "play/projects/design-validation/project.json",
+          "why": "project lifecycle を正しく終了",
+          "how": "project.json の meta/progress を更新"
+        },
+        "success_criteria": [
+          "m2.status が done に変更される",
+          "meta.status が closed に変更される",
+          "meta.closed_at が現在時刻に設定される",
+          "meta.closed_by が reviewer に設定される",
+          "progress.current_milestone が null に設定される"
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07T21:12:00Z",
+      "summary": "AUTO_APPROVED",
+      "approved_items": [
+        "design-validation project の done_when 3つが達成済み",
+        "m2 を done にして project を close する"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 2,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Project Close 修正適用",
+      "description": "project.json に 5つの修正を適用",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "m2.status が done に変更されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq で m2.status の値を確認",
+            "consistency": "m2 の playbooks が全て done であることを確認",
+            "completeness": "milestones 配列内の m2 オブジェクトが正しく更新されている"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "meta.status が closed、meta.closed_at と meta.closed_by が設定されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq で meta.status, meta.closed_at, meta.closed_by を確認",
+            "consistency": "closed_at が ISO8601 形式であることを確認",
+            "completeness": "3つのフィールドが全て設定されている"
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "progress.current_milestone が null に設定されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq で progress.current_milestone が null であることを確認",
+            "consistency": "project が closed なので current_milestone は null が正しい",
+            "completeness": "progress オブジェクトの整合性を確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "修正内容の最終検証",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "reviewer 検証が全ての done_when に対して PASS",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "project.json を読み取り、全フィールドを検証",
+            "consistency": "project lifecycle として正しい状態遷移を確認",
+            "completeness": "done_when 4項目が全て満たされている"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

@@ -4,11 +4,11 @@
     "id": "design-validation",
     "title": "Design Validation and Playbook Operation",
     "created": "2026-01-07",
-    "status": "active",
+    "status": "closed",
     "reviewed": true,
     "reviewed_by": "reviewer",
-    "closed_at": null,
-    "closed_by": null
+    "closed_at": "2026-01-07T21:12:00Z",
+    "closed_by": "reviewer"
   },
   "goal": {
     "summary": "playbook 生成と運用が設計図通り稼働しているか確認し、設計通りに完成させる",
@@ -38,7 +38,7 @@
       "id": "m2",
       "title": "Project Hierarchy Implementation",
       "order": 2,
-      "status": "in_progress",
+      "status": "done",
       "description": "project 階層の初期実装と運用ロジック",
       "playbooks": [
         {
@@ -73,7 +73,7 @@
   "progress": {
     "total_playbooks": 4,
     "completed_playbooks": 4,
-    "current_milestone": "m2",
+    "current_milestone": null,
     "current_playbook": null
   },
   "context": {

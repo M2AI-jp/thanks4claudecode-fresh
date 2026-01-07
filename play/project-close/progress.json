@@ -1,0 +1,110 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "project-close",
+    "plan_path": "play/project-close/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-07T21:13:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-07T21:15:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T21:13:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["jq '.milestones[1].status': done"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["m2 playbooks 3/3 done"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["m2.status 更新完了"]
+        }
+      },
+      "notes": "m2.status: in_progress -> done"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T21:13:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["meta.status: closed", "closed_at: 2026-01-07T21:12:00Z", "closed_by: reviewer"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["ISO8601 形式で設定"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["3フィールド全て設定"]
+        }
+      },
+      "notes": "meta.status/closed_at/closed_by 更新完了"
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-07T21:13:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["progress.current_milestone: null"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["closed project は current_milestone null が正しい"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["progress オブジェクト整合性確認"]
+        }
+      },
+      "notes": "progress.current_milestone: m2 -> null"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T21:15:00Z",
+      "validated_by": "reviewer",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["m2.status: done", "meta.status: closed", "closed_at: ISO8601", "current_milestone: null"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["project lifecycle 正常完了"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["done_when 4/4 達成"]
+        }
+      },
+      "notes": "reviewer 独立検証 PASS"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": ["p1.1-p1.3: claudecode 検証 PASS", "p_final.1: reviewer 独立検証 PASS"],
+    "notes": "design-validation project closed"
+  }
+}

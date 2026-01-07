@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/project-close/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: feat/project-init-skill
 last_archived: play/archive/standalone/project-json-fix
 review_pending: false
 
@@ -35,9 +35,13 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - m2.status が done に変更されている
+  - meta.status が closed に変更されている
+  - meta.closed_at と meta.closed_by が設定されている
+  - progress.current_milestone が null に設定されている
+status: active
 
 ```
 
