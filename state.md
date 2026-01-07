@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: m2
+current_milestone: m3
 status: idle
 ```
 
@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/projects/context-cleanup/m2-file-inventory
+last_archived: play/archive/projects/context-cleanup/m3-cleanup
 review_pending: false
 
 ```
@@ -46,7 +46,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-08 01:57:35
+last_start: 2026-01-08 03:08:33
 last_end: 2026-01-08 01:57:34
 last_clear: 2025-12-24 03:20:00
 ```

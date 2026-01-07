@@ -1,0 +1,139 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "m3-cleanup",
+    "type": "playbook",
+    "branch": "project/context-cleanup",
+    "created": "2026-01-08",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "parent_project": "context-cleanup",
+    "milestone": "m3",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "ファイル棚卸しレポートに基づき、不要ファイルを削除する",
+    "done_when": [
+      ".DS_Store が存在しない",
+      ".gitignore に .DS_Store が含まれている",
+      "2日以上前のセッションログが削除されている",
+      "play/template/project.json（legacy）が削除されている"
+    ],
+    "scope": {
+      "includes": [
+        ".DS_Store 削除",
+        ".gitignore 更新",
+        "古いセッションログ削除",
+        "legacy テンプレート削除"
+      ],
+      "excludes": [
+        "play/archive/ の削除（保留）",
+        "コアファイルの削除"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "file-inventory-report",
+      "data": {
+        "delete_targets": [
+          ".DS_Store",
+          ".claude/logs/sessions/2026-01-05_*.md",
+          ".claude/logs/sessions/2026-01-06_*.md",
+          "play/template/project.json"
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_FLOW",
+      "approved_at": "2026-01-08"
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": ".DS_Store 削除と .gitignore 更新",
+      "description": ".DS_Store を削除し、.gitignore に追加して再発防止",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": ".DS_Store が存在せず、.gitignore に .DS_Store が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test ! -f .DS_Store && grep '.DS_Store' .gitignore",
+            "consistency": ".gitignore のフォーマットが正しい",
+            "completeness": "削除と再発防止の両方が完了"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "古いセッションログ削除",
+      "description": "2日以上前のセッションログを削除",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": ".claude/logs/sessions/2026-01-05_*.md と 2026-01-06_*.md が存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "ls .claude/logs/sessions/2026-01-05_*.md 2>/dev/null が空",
+            "consistency": "最新のセッションログは保持されている",
+            "completeness": "指定された14件が削除されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "legacy テンプレート削除",
+      "description": "play/template/project.json を削除",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "play/template/project.json が存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test ! -f play/template/project.json",
+            "consistency": "play/projects/template/project.json は存在する",
+            "completeness": "legacy ファイルが削除されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "全 done_when 条件の独立検証",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "critic による全 done_when 項目の検証が PASS している",
+          "executor": "critic",
+          "coding": false,
+          "validation_plan": {
+            "technical": "critic が各 done_when を検証コマンドで確認",
+            "consistency": "削除対象が正しく削除されている",
+            "completeness": "全 done_when 項目が達成されている"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
