@@ -1,0 +1,96 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "project-json-fix",
+    "plan_path": "play/project-json-fix/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-07T21:06:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-07T21:07:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T21:06:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "jq . project.json > /dev/null: Valid JSON",
+            "jq '.meta.reviewed': true",
+            "jq 'm2.playbooks[].id': playbook-completion found",
+            "jq '.progress': total=4, completed=4"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "reviewed=true + reviewed_by=reviewer: 整合性あり",
+            "m2.playbooks 4件 = progress.total_playbooks 4: 整合性あり"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "修正1: reviewed: false -> true 完了",
+            "修正2: playbook-completion を m2.playbooks に追加 完了",
+            "修正3: progress カウント修正 完了"
+          ]
+        }
+      },
+      "notes": "3点の修正を適用、全検証 PASS"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T21:07:00Z",
+      "validated_by": "reviewer",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "meta.reviewed: true (line 8)",
+            "playbook-completion in m2.playbooks (lines 57-61)",
+            "progress: total=4, completed=4 (lines 74-75)"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "reviewed=true + reviewed_by=reviewer: 整合性あり",
+            "m2.playbooks count matches progress.total_playbooks"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "done_when 1: PASS",
+            "done_when 2: PASS",
+            "done_when 3: PASS"
+          ]
+        }
+      },
+      "notes": "reviewer による独立検証 PASS"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "p1.1: critic PASS (agentId: a0d01b5)",
+      "p_final.1: reviewer PASS (agentId: a11f6cf)"
+    ],
+    "notes": "全 subtasks 検証完了"
+  }
+}
