@@ -2,17 +2,28 @@
 
 > **現在地を示す Single Source of Truth**
 >
-> LLM はセッション開始時に必ずこのファイルを読み、playbook を確認すること。
+> LLM はセッション開始時に必ずこのファイルを読み、project/playbook を確認すること。
+
+---
+
+## project
+
+```yaml
+active: null
+current_milestone: null
+status: idle
+```
 
 ---
 
 ## playbook
 
 ```yaml
-active: play/git-state-sync/plan.json
-current_phase: p3
-branch: feat/loop-enforcement
-last_archived: play/archive/dir-cleanup
+active: null
+parent_project: null
+current_phase: null
+branch: null
+last_archived: play/archive/standalone/fix-playbook-guard-macos
 review_pending: false
 
 ```
@@ -35,8 +46,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 12:44:40
-last_end: 2026-01-07 04:36:27
+last_start: 2026-01-07 15:05:30
+last_end: 2026-01-07 13:23:10
 last_clear: 2025-12-24 03:20:00
 ```
 

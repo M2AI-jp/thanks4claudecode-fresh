@@ -55,7 +55,7 @@ tmp/*
 coverage/
 
 # User projects (created during setup)
-projects/
+/projects/
 
 # E2E Test Environment
 test/E2E/

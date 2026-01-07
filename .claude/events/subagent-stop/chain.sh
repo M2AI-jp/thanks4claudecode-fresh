@@ -43,18 +43,26 @@ if [ -f "$STATE_FILE" ]; then
         echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Checking playbook completion: $ACTIVE_PLAYBOOK" >> "$LOG_DIR/subagent.log"
 
         # archive-playbook.sh を呼び出すための疑似 Edit イベントを作成
+        # NOTE: archive-playbook.sh は */play/*/progress.json のみ受け付けるため、
+        #       plan.json ではなく progress.json のパスを渡す必要がある（M090 修正）
         ARCHIVE_SCRIPT="$SKILLS_DIR/playbook-gate/workflow/archive-playbook.sh"
         if [ -x "$ARCHIVE_SCRIPT" ]; then
-            PSEUDO_INPUT=$(cat <<EOF2
+            # plan.json → progress.json に変換
+            PROGRESS_PATH=$(echo "$ACTIVE_PLAYBOOK" | sed 's/plan\.json$/progress.json/')
+            if [ -f "$REPO_ROOT/$PROGRESS_PATH" ]; then
+                PSEUDO_INPUT=$(cat <<EOF2
 {
   "tool_name": "Edit",
   "tool_input": {
-    "file_path": "$ACTIVE_PLAYBOOK"
+    "file_path": "$REPO_ROOT/$PROGRESS_PATH"
   }
 }
 EOF2
 )
-            echo "$PSEUDO_INPUT" | bash "$ARCHIVE_SCRIPT" 2>&1 | tee -a "$LOG_DIR/subagent.log" || true
+                echo "$PSEUDO_INPUT" | bash "$ARCHIVE_SCRIPT" 2>&1 | tee -a "$LOG_DIR/subagent.log" || true
+            else
+                echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] progress.json not found: $PROGRESS_PATH" >> "$LOG_DIR/subagent.log"
+            fi
         fi
     fi
 fi

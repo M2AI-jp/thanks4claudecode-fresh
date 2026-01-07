@@ -66,22 +66,36 @@ get_state_info() {
     local state_file="$REPO_ROOT/state.md"
 
     if [[ ! -f "$state_file" ]]; then
+        echo "project_active=null"
         echo "playbook_active=null"
+        echo "parent_project=null"
         echo "phase=unknown"
         return
     fi
+
+    # project.active を取得（M090: Project 階層）
+    local project_active
+    project_active=$(grep -A5 "^## project" "$state_file" 2>/dev/null | grep "active:" | sed 's/.*active: *//' | tr -d '\r' || echo "null")
+    project_active=${project_active:-null}
 
     # playbook.active を取得
     local playbook_active
     playbook_active=$(grep -A5 "^## playbook" "$state_file" 2>/dev/null | grep "active:" | sed 's/.*active: *//' | tr -d '\r' || echo "null")
     playbook_active=${playbook_active:-null}
 
+    # playbook.parent_project を取得
+    local parent_project
+    parent_project=$(grep -A5 "^## playbook" "$state_file" 2>/dev/null | grep "parent_project:" | sed 's/.*parent_project: *//' | tr -d '\r' || echo "null")
+    parent_project=${parent_project:-null}
+
     # phase を取得
     local phase
     phase=$(grep -A5 "^## goal" "$state_file" 2>/dev/null | grep "phase:" | sed 's/.*phase: *//' | tr -d '\r' || echo "unknown")
     phase=${phase:-unknown}
 
+    echo "project_active=$project_active"
     echo "playbook_active=$playbook_active"
+    echo "parent_project=$parent_project"
     echo "phase=$phase"
 }
 
@@ -128,7 +142,9 @@ generate_output() {
 
     echo "=== State Injection ==="
     echo ""
+    echo "project.active = $project_active"
     echo "playbook.active = $playbook_active"
+    echo "playbook.parent_project = $parent_project"
     echo "phase = $phase"
 
     # 自動フロー指示

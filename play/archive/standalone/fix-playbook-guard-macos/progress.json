@@ -1,0 +1,138 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "fix-playbook-guard-macos",
+    "plan_path": "play/fix-playbook-guard-macos/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "completed",
+    "subtask": null
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-07T15:10:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-07T15:12:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-07T15:15:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T15:10:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["timeout コマンドを削除し cat に置換", "bash -n シンタックスチェック OK"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["他のガードと同様の Fail-closed パターン"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["stdin 読み込み + 空チェック + エラー処理"]
+        }
+      },
+      "notes": "macOS/Linux 両対応の stdin 読み込み処理に修正"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T15:10:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["exit 0 → exit 2 に変更", "エラーメッセージを [WARN] から [ERROR] に変更"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["jq 未インストール時と同様の exit 2 パターン"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["stdin 空/失敗時に exit 2 でブロック"]
+        }
+      },
+      "notes": "Fail-open から Fail-closed に変更"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T15:12:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["bash -n playbook-guard.sh: Syntax OK"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["既存の bash スクリプト規約に準拠"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["スクリプト全体がシンタックスチェック済み"]
+        }
+      },
+      "notes": ""
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-07T15:12:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["playbook=null: exit 2 (ブロック)", "playbook あり: exit 0 (許可)", "stdin 空: exit 2 (Fail-closed)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["既存の動作と同様の結果を確認"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["許可/拒否/Fail-closed の3ケースをテスト"]
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-07T15:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["done_when 3項目全てを検証", "コード変更確認", "テスト実行結果確認"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["plan.json の goal と整合", "報酬詐欺の検出なし"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["macOS 互換性", "Linux 互換性（コードベース）", "Fail-closed 動作"]
+        }
+      },
+      "notes": "critic による最終検証完了"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "done_when 1: macOS で timeout なしでも動作 - PASS（実機テスト済み）",
+      "done_when 2: Linux 互換 - PASS（POSIX コマンドのみ使用）",
+      "done_when 3: Fail-closed - PASS（exit 2 確認）"
+    ],
+    "notes": "総合判定 PASS - 全 done_when 達成"
+  }
+}

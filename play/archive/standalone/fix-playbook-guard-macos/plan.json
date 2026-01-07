@@ -1,0 +1,193 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "fix-playbook-guard-macos",
+    "branch": "fix/playbook-guard-macos",
+    "created": "2026-01-07",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "playbook-guard.sh の macOS 互換性を修正し、timeout コマンドがない環境でも正しく動作させる",
+    "done_when": [
+      "macOS で timeout なしでも正しく動作する",
+      "Linux でも引き続き正しく動作する",
+      "タイムアウト時は exit 2 で終了（Fail-closed）"
+    ],
+    "scope": {
+      "includes": [
+        ".claude/skills/playbook-gate/guards/playbook-guard.sh の timeout 処理修正",
+        "macOS/Linux クロスプラットフォーム対応",
+        "Fail-open から Fail-closed への変更"
+      ],
+      "excludes": [
+        "他の guard スクリプト",
+        "playbook-gate 以外の Skill"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code / 開発者",
+          "what": "playbook-guard.sh の macOS 互換性修正",
+          "when": "即時（セキュリティ上重要）",
+          "where": ".claude/skills/playbook-gate/guards/playbook-guard.sh:35-38",
+          "why": "macOS に timeout コマンドがないため playbook-gate が常にスキップされ、セキュリティ機構が無効化されている",
+          "how": "timeout を macOS 互換の方法に置換、Fail-closed 化",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "互換性の置換方法が正しく動作しない可能性",
+              "severity": "medium",
+              "mitigation": "macOS/Linux 両方でテスト"
+            }
+          ],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "instruction": ["playbook-guard.sh の macOS 互換性修正"],
+          "question": [],
+          "context": []
+        },
+        "test_strategy": {
+          "test_level": "integration",
+          "coverage_target": "macOS/Linux 両プラットフォーム",
+          "edge_cases": ["timeout コマンドがない環境", "タイムアウト発生時"]
+        },
+        "preconditions": {
+          "existing_code": ".claude/skills/playbook-gate/guards/playbook-guard.sh が存在",
+          "dependencies": ["bash", "jq"],
+          "constraints": ["macOS では GNU timeout がデフォルトでない"]
+        },
+        "success_criteria": {
+          "functional": [
+            "macOS で timeout なしでも正しく動作する",
+            "Linux でも引き続き正しく動作する",
+            "タイムアウト時は exit 2 で終了（Fail-closed）"
+          ],
+          "non_functional": ["既存のセキュリティ機能を維持"],
+          "breaking_changes": true,
+          "breaking_change_details": ["Fail-open から Fail-closed への変更"]
+        },
+        "reverse_dependencies": {
+          "affected_components": ["PreToolUse(Edit)", "PreToolUse(Write)"],
+          "risk_level": "high"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-07",
+      "summary": "playbook-guard.sh の macOS 互換性修正（timeout コマンド置換 + Fail-closed 化）",
+      "approved_items": [
+        "macOS で timeout なしでも動作",
+        "Linux でも引き続き動作",
+        "Fail-closed への変更"
+      ],
+      "technical_requirements_confirmed": [
+        "timeout を macOS 互換の方法に置換",
+        "タイムアウト時は exit 2 で終了"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "timeout 処理の修正",
+      "description": "macOS 互換の timeout 処理を実装し、Fail-closed に変更",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "playbook-guard.sh の 35-38 行目が macOS 互換の timeout 処理に置換されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "修正後のコードを確認し、timeout コマンドを使用していないことを検証",
+            "consistency": "他の部分のロジックと整合性があることを確認",
+            "completeness": "タイムアウト処理、エラー処理が全て含まれていることを確認"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "タイムアウト時に exit 2（Fail-closed）で終了するようになっている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "exit 0 ではなく exit 2 が使用されていることを確認",
+            "consistency": "他の exit 2 の使用箇所と整合性があることを確認",
+            "completeness": "タイムアウトのケースが全て exit 2 で処理されることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "動作検証",
+      "description": "修正後の動作を検証",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "スクリプトが構文エラーなく実行可能である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "bash -n でシンタックスチェックを実行",
+            "consistency": "shellcheck でベストプラクティス違反がないことを確認",
+            "completeness": "スクリプト全体が検証対象に含まれていることを確認"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "正常な JSON 入力に対して正しく動作する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "テスト JSON を stdin に渡してスクリプトを実行",
+            "consistency": "既存の動作と同じ結果が得られることを確認",
+            "completeness": "許可/拒否の両ケースをテスト"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "done_when の全項目を独立検証",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer 検証が全ての done_when 項目に対して PASS",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer が検証コマンドを実行",
+            "consistency": "Reviewer が出力の整合性を確認",
+            "completeness": "Reviewer が全 done_when 項目を検証"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

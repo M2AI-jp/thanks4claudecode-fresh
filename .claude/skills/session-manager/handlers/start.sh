@@ -298,6 +298,50 @@ BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 PLAYBOOK=$(awk '/## playbook/,/^---/' state.md | grep "^active:" | head -1 | sed 's/active: *//' | sed 's/ *#.*//')
 [ -z "$PLAYBOOK" ] && PLAYBOOK="null"
 
+# ==============================================================================
+# playbook 整合性チェック（M090: playbook.active と実ファイルの整合性）
+# state.md の playbook.active が指すファイルが存在しない場合、自動修復
+# ==============================================================================
+check_playbook_integrity() {
+    local playbook="$1"
+
+    # null または空の場合はスキップ
+    [ -z "$playbook" ] || [ "$playbook" = "null" ] && return 0
+
+    # playbook ファイルが存在するかチェック
+    if [ ! -f "$playbook" ]; then
+        echo ""
+        echo "$SEP"
+        echo "  ⚠️ playbook 整合性エラー検出"
+        echo "$SEP"
+        echo "  state.md の playbook.active が存在しないファイルを指しています:"
+        echo "    active: $playbook"
+        echo ""
+        echo "  → 自動修復を実行します..."
+
+        # state.md を自動修復
+        if [ -f "state.md" ]; then
+            # playbook セクションをリセット
+            sed -i '' 's/^active: .*/active: null/' state.md 2>/dev/null || \
+            sed -i 's/^active: .*/active: null/' state.md 2>/dev/null || true
+            sed -i '' 's/^current_phase: .*/current_phase: null/' state.md 2>/dev/null || \
+            sed -i 's/^current_phase: .*/current_phase: null/' state.md 2>/dev/null || true
+            sed -i '' 's/^branch: .*/branch: null/' state.md 2>/dev/null || \
+            sed -i 's/^branch: .*/branch: null/' state.md 2>/dev/null || true
+
+            echo "  [AUTO-FIX] state.md を修復しました（playbook.active = null）"
+
+            # PLAYBOOK 変数も更新
+            PLAYBOOK="null"
+        fi
+        echo "$SEP"
+        echo ""
+    fi
+}
+
+# playbook 整合性チェック実行
+check_playbook_integrity "$PLAYBOOK"
+
 # init-guard.sh 用に playbook パスを記録
 echo "$PLAYBOOK" > "$INIT_DIR/required_playbook"
 

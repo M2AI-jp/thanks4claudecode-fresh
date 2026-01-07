@@ -1,0 +1,40 @@
+{
+  "format_version": "1.0",
+  "meta": {
+    "id": "example-project",
+    "title": "Project Title",
+    "created": "YYYY-MM-DD",
+    "status": "active",
+    "closed_at": null,
+    "closed_by": null
+  },
+  "goal": {
+    "summary": "High-level objective description.",
+    "done_when": [
+      "Condition 1 is met.",
+      "Condition 2 is met."
+    ]
+  },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "Milestone 1",
+      "order": 1,
+      "status": "pending",
+      "playbooks": [
+        {
+          "id": "pb-001",
+          "title": "First playbook",
+          "status": "pending",
+          "path": null
+        }
+      ]
+    }
+  ],
+  "progress": {
+    "total_playbooks": 1,
+    "completed_playbooks": 0,
+    "current_milestone": null,
+    "current_playbook": null
+  }
+}
