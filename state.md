@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: m2
+current_milestone: null
 status: idle
 ```
 
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/project-lifecycle/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: feat/project-lifecycle
 last_archived: play/archive/standalone/fix-archive-resume
 review_pending: false
 
@@ -35,9 +35,15 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - docs/project-lifecycle.md が存在し、archive-project.sh の仕様・テンプレート構成・生成ロジックが明文化されている
+  - docs/ の既存ドキュメントと設計書の乖離が解消されている
+  - archive-project.sh が play/projects/<id>/ を play/archive/projects/<id>/ へ移動する
+  - archive-project.sh が state.md の project.active を null に更新する
+  - archive-playbook.sh の最後で project 完了チェック + archive-project.sh 呼び出しが実装されている
+  - design-validation project が play/archive/projects/ に移動されている
+status: active
 
 ```
 
@@ -46,8 +52,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-07 23:45:53
-last_end: 2026-01-07 23:44:54
+last_start: 2026-01-08 01:12:03
+last_end: 2026-01-08 00:42:31
 last_clear: 2025-12-24 03:20:00
 ```
 

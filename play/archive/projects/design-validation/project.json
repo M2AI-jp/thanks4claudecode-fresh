@@ -7,8 +7,8 @@
     "status": "closed",
     "reviewed": true,
     "reviewed_by": "reviewer",
-    "closed_at": "2026-01-07T21:12:00Z",
-    "closed_by": "reviewer"
+    "closed_at": "2026-01-08T01:19:07+09:00",
+    "closed_by": "archive-project.sh"
   },
   "goal": {
     "summary": "playbook 生成と運用が設計図通り稼働しているか確認し、設計通りに完成させる",

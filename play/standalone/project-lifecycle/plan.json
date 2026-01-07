@@ -1,0 +1,320 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "project-lifecycle",
+    "branch": "feat/project-lifecycle",
+    "created": "2026-01-08",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Project lifecycle の完全実装。設計書作成を最優先し、archive-project.sh の実装、テンプレート更新、archive-playbook.sh との連携を完成させる。",
+    "done_when": [
+      "docs/project-lifecycle.md が存在し、archive-project.sh の仕様・テンプレート構成・生成ロジックが明文化されている",
+      "docs/ の既存ドキュメントと設計書の乖離が解消されている",
+      "archive-project.sh が play/projects/<id>/ を play/archive/projects/<id>/ へ移動する",
+      "archive-project.sh が state.md の project.active を null に更新する",
+      "archive-playbook.sh の最後で project 完了チェック + archive-project.sh 呼び出しが実装されている",
+      "design-validation project が play/archive/projects/ に移動されている"
+    ],
+    "scope": {
+      "includes": [
+        "docs/project-lifecycle.md の新規作成",
+        "archive-project.sh の新規作成",
+        "archive-playbook.sh への連携ロジック追加",
+        "play/projects/template/project.json の必要に応じた更新",
+        "design-validation の play/archive/projects/ への移動"
+      ],
+      "excludes": [
+        "playbook アーカイブロジックの変更（既存の archive-playbook.sh の責務）",
+        "新しい project の作成",
+        "milestone 管理ロジックの実装"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code (orchestrator)",
+          "what": "Project lifecycle の完全実装",
+          "when": "設計書作成を最優先、その後に実装",
+          "where": [
+            "docs/project-lifecycle.md (新規設計書)",
+            ".claude/skills/playbook-gate/workflow/archive-project.sh (新規)",
+            ".claude/skills/playbook-gate/workflow/archive-playbook.sh (連携追加)",
+            "play/projects/template/project.json (テンプレート更新)",
+            "play/projects/design-validation/ (クリーンアップ)"
+          ],
+          "why": "playbook は archive-playbook.sh で自動アーカイブされるが、project は設計のみで実装がない",
+          "how": "設計書作成 -> docs 乖離是正 -> archive-project.sh 実装 -> archive-playbook.sh 連携 -> クリーンアップ",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "project.json の status 遷移ロジックが未定義",
+              "severity": "high",
+              "mitigation": "設計書で status 遷移図を明文化してから実装"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "設計書作成と実装を同時進行すると乖離が発生",
+              "severity": "medium",
+              "mitigation": "Phase 1 で設計書を完成させ、reviewer PASS 後に実装 Phase へ"
+            }
+          ],
+          "dependency": [
+            {
+              "risk": "pm.md の設計と実装の整合性",
+              "severity": "medium",
+              "mitigation": "pm.md の設計を SSOT とし忠実に実装"
+            }
+          ]
+        },
+        "ambiguity": [
+          {
+            "term": "project 完了をチェック",
+            "clarification_needed": "全 playbook.status == done を条件とする（milestone 内の全 playbook）"
+          },
+          {
+            "term": "design-validation クリーンアップ",
+            "clarification_needed": "play/archive/projects/ へ移動（削除ではない）"
+          }
+        ],
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 4,
+          "topics": [
+            {
+              "id": 1,
+              "summary": "設計書作成（archive-project.sh 仕様、テンプレート構成、生成ロジック）",
+              "type": "instruction"
+            },
+            {
+              "id": 2,
+              "summary": "docs の設計書との乖離是正",
+              "type": "instruction"
+            },
+            {
+              "id": 3,
+              "summary": "実装（archive-project.sh、テンプレート更新、archive-playbook.sh 連携）",
+              "type": "instruction"
+            },
+            {
+              "id": 4,
+              "summary": "design-validation project のクリーンアップ",
+              "type": "instruction"
+            }
+          ],
+          "recommendation": "Phase 1: 設計書作成 -> Phase 2: docs 乖離是正 -> Phase 3: 実装 -> Phase 4: クリーンアップ"
+        },
+        "test_strategy": {
+          "level": "integration",
+          "coverage_target": "archive-project.sh の動作確認、state.md 更新確認",
+          "edge_cases": [
+            "project.json が存在しない場合",
+            "playbook が全て done でない場合",
+            "既に archive 済みの場合"
+          ]
+        },
+        "preconditions": {
+          "existing_code": [
+            "archive-playbook.sh が存在し動作している",
+            "play/projects/template/project.json が存在",
+            "design-validation project が play/projects/ に存在（status: closed）"
+          ],
+          "dependencies": [
+            "jq コマンド",
+            "git 操作権限"
+          ],
+          "constraints": [
+            "archive-playbook.sh の既存ロジックを壊さない",
+            "単一責任の原則を維持"
+          ]
+        },
+        "success_criteria": {
+          "functional": [
+            "archive-project.sh が project.json を play/archive/projects/<id>/ へ移動",
+            "archive-project.sh が state.md の project.active を null に更新",
+            "archive-playbook.sh の最後で project 完了チェック -> archive-project.sh 呼び出し",
+            "project.json の meta.closed_at, meta.closed_by が設定される",
+            "design-validation が play/projects/ から消えている"
+          ],
+          "non_functional": [
+            "設計書が明確で他の開発者が理解できる",
+            "既存の archive-playbook.sh との整合性が保たれている"
+          ],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": {
+          "affected_components": [
+            "archive-playbook.sh（連携ロジック追加）",
+            "state.md（project.active フィールド）"
+          ],
+          "risk_level": "medium"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-08T01:00:00+09:00",
+      "summary": "AUTO_APPROVED (auto_approve=true)",
+      "approved_items": [
+        "設計書作成を Phase 1 に配置し最優先で実行",
+        "project 完了条件: 全 playbook.status == done",
+        "design-validation クリーンアップ: play/archive/projects/ へ移動（削除ではない）",
+        "archive-project.sh 呼び出し: 条件付き（project 完了時のみ）"
+      ],
+      "technical_requirements_confirmed": [
+        "archive-playbook.sh のパターンを踏襲",
+        "jq を使用した JSON 操作",
+        "チェックポイント機構は不要（シンプルな処理のため）"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "設計書作成",
+      "description": "docs/project-lifecycle.md を作成し、archive-project.sh の仕様、テンプレート構成、生成ロジックを明文化する。",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "docs/project-lifecycle.md が存在し、以下を含む: (1) Project lifecycle 概要 (2) status 遷移図 (3) archive-project.sh の入出力仕様 (4) archive-playbook.sh との連携フロー (5) テンプレート構成",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f docs/project-lifecycle.md でファイル存在を確認",
+            "consistency": "archive-playbook.sh の既存パターンと整合性確認",
+            "completeness": "5つの必須セクションが全て含まれているか確認"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "設計書が play/projects/template/project.json および archive-playbook.sh と整合している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "設計書内の JSON 構造と template/project.json を比較",
+            "consistency": "archive-playbook.sh の Step 8 の project 更新ロジックと整合確認",
+            "completeness": "status 遷移（draft -> active -> closed）が明文化されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "docs 乖離是正",
+      "description": "既存の docs/ 内ドキュメントと新設計書の乖離を是正する。",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "docs/repository-map.yaml に project-lifecycle.md と archive-project.sh が追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep 'project-lifecycle' docs/repository-map.yaml が成功",
+            "consistency": "他のドキュメントと同じフォーマットで記載",
+            "completeness": "パスと役割が明記されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "実装",
+      "description": "archive-project.sh の作成、テンプレート更新、archive-playbook.sh との連携を実装する。",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "archive-project.sh が存在し、実行可能で、以下の機能を持つ: (1) project 完了判定 (2) project.json の closed_at/closed_by 更新 (3) play/archive/projects/ への移動 (4) state.md の project.active を null に更新",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "test -x .claude/skills/playbook-gate/workflow/archive-project.sh",
+            "consistency": "archive-playbook.sh と同じログ出力パターンを使用",
+            "completeness": "設計書の仕様を全て実装している"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "play/projects/template/project.json に closed_at, closed_by フィールドが存在する（既に存在する場合は確認のみ）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq '.meta.closed_at, .meta.closed_by' play/projects/template/project.json",
+            "consistency": "design-validation/project.json と同じフィールド名",
+            "completeness": "null がデフォルト値として設定されている"
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "archive-playbook.sh の Step 8 以降に project 完了チェック + archive-project.sh 呼び出しロジックが追加されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": "grep 'archive-project.sh' .claude/skills/playbook-gate/workflow/archive-playbook.sh が成功",
+            "consistency": "既存の Step 構造を壊さない（Step 8.5 または新 Step として追加）",
+            "completeness": "条件付き呼び出し（project 配下の playbook かつ全 playbook done の場合のみ）"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "クリーンアップ",
+      "description": "design-validation project を play/archive/projects/ へ移動し、実装の動作確認を行う。",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "design-validation が play/archive/projects/design-validation/ に存在し、play/projects/design-validation/ が存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -d play/archive/projects/design-validation && ! test -d play/projects/design-validation",
+            "consistency": "project.json の meta.status が closed のまま維持",
+            "completeness": "playbooks ディレクトリへの参照パスが archive パスに更新されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "全ての done_when 条件を独立して検証する。",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "reviewer による全 done_when 項目の検証が PASS している",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "各 done_when 条件に対して技術的検証を実行",
+            "consistency": "設計書と実装の整合性を確認",
+            "completeness": "6つの done_when 全てが PASS"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
