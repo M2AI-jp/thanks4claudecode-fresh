@@ -19,13 +19,12 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/archive/codex-usage-improvement/plan.json
 parent_project: null
-current_phase: null
-branch: null
-last_archived: play/archive/executor-naming-unification
+current_phase: done
+branch: feat/codex-usage-improvement
+last_archived: play/archive/codex-usage-improvement
 review_pending: false
-
 ```
 
 ---
@@ -35,10 +34,9 @@ review_pending: false
 ```yaml
 self_complete: true
 milestone: null
-phase: null
+phase: done
 done_criteria: []
 status: idle
-
 ```
 
 ---

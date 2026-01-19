@@ -1,0 +1,133 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "codex-usage-improvement",
+    "branch": "feat/codex-usage-improvement",
+    "created": "2026-01-20",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "codex 使用率改善 - toolstack C で worker として codex が適切に使用されるようにする",
+    "done_when": [
+      "pm SubAgent が playbook 生成時に executor-resolver を呼び出す",
+      "toolstack C で coding=true の subtask に executor=codex が設定される",
+      "toolstack A/B では従来通り executor=claudecode が設定される"
+    ],
+    "scope": {
+      "includes": [
+        "pm.md の executor 設定ロジック確認・修正",
+        "playbook テンプレートの確認",
+        "toolstack C での codex 使用検証"
+      ],
+      "excludes": [
+        "executor-resolver.md の修正（既に正しく定義済み）",
+        "codex CLI の動作検証",
+        "toolstack A/B の動作変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "who": "開発者",
+          "what": "codex 使用率改善 - toolstack C で worker として codex が適切に使用されるようにする",
+          "when": "即時",
+          "where": "executor-guard.sh, pm.md, playbook テンプレート",
+          "why": "M1 分析で codex 使用率が低い（10件 vs claudecode 77件）",
+          "how": "pm SubAgent の executor 設定ロジックを確認・修正"
+        },
+        "risks": [
+          {
+            "risk": "pm SubAgent が executor-resolver を呼び出していない",
+            "severity": "high",
+            "mitigation": "pm.md で executor-resolver 呼び出しを明確化"
+          },
+          {
+            "risk": "playbook 生成時に executor が claudecode 固定",
+            "severity": "high",
+            "mitigation": "テンプレートと生成ロジックを確認"
+          }
+        ],
+        "success_criteria": {
+          "functional": [
+            "pm SubAgent が playbook 生成時に executor-resolver を呼び出す",
+            "toolstack C で coding=true の subtask に executor=codex が設定される",
+            "toolstack A/B では従来通り executor=claudecode が設定される"
+          ]
+        },
+        "preconditions": {
+          "existing_code": [
+            ".claude/skills/golden-path/agents/pm.md",
+            "play/template/plan.json"
+          ]
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-20",
+      "summary": "AUTO_APPROVED（続行指示）",
+      "approved_items": [
+        "codex 使用率改善のための pm.md 修正",
+        "toolstack C で coding=true の subtask に codex をアサイン"
+      ],
+      "technical_requirements_confirmed": [
+        "pm.md の executor 設定ロジック確認",
+        "executor-resolver 呼び出しの明確化"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "pm.md executor 設定ロジック確認・修正",
+      "description": "pm SubAgent が playbook 生成時に coding=true の subtask に対して executor=codex（toolstack C の場合）を設定するようにする",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "pm.md に toolstack C での coding=true subtask への executor=codex 設定ルールが明記されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "pm.md 内に toolstack C + coding=true -> executor=codex のルールが存在することを grep で確認",
+            "consistency": "executor-resolver.md の定義と整合していることを確認",
+            "completeness": "toolstack A/B/C 全てのケースが記載されていることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "検証",
+      "description": "toolstack C で codex が適切に使用されるかレビューで検証",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "coderabbit による変更内容のレビューが PASS",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": "coderabbit レビューコマンドを実行し PASS を確認",
+            "consistency": "変更が done_when の全条件を満たすことを確認",
+            "completeness": "全ての修正が意図通りであることを確認"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
