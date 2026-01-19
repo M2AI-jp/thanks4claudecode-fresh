@@ -1,0 +1,153 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "pm-temporal-guidance",
+    "branch": "feat/pm-temporal-guidance",
+    "created": "2026-01-20",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "pm.md の Step 3.5 に temporal achievability チェックを追加し、Shift Left 原則を実現する",
+    "done_when": [
+      "pm.md の Step 3.5 に temporal achievability チェックリストが追加されている",
+      "fail_examples と pass_examples が pm.md に含まれている",
+      "docs/design/temporal-achievability-spec.md への参照が含まれている"
+    ],
+    "scope": {
+      "includes": [
+        "pm.md の Step 3.5 セクション拡張",
+        "temporal achievability チェックリスト追加",
+        "fail_examples / pass_examples 追加"
+      ],
+      "excludes": [
+        "playbook-review-criteria.md の変更",
+        "pm.md の他のセクション変更",
+        "新規ファイル作成"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "topic_type": "instruction",
+        "5w1h": {
+          "who": "LLM（Claude Code）、pm SubAgent",
+          "what": "pm.md の Step 3.5 に temporal achievability チェックを追加",
+          "when": "即時実行可能",
+          "where": ".claude/skills/golden-path/agents/pm.md",
+          "why": "reviewer で検出するより pm 作成時に防ぐ（Shift Left）",
+          "how": "docs/design/temporal-achievability-spec.md を参照し、チェックリストと例を追加"
+        },
+        "risks": [
+          {
+            "category": "technical",
+            "risk": "pm.md の構造変更による既存フローへの影響",
+            "severity": "low",
+            "mitigation": "追加のみ、既存構造は変更しない"
+          }
+        ],
+        "success_criteria": {
+          "functional": [
+            "pm.md の Step 3.5 に temporal achievability チェックが追加されている",
+            "temporal-achievability-spec.md への参照が含まれている",
+            "fail_examples と pass_examples が含まれている"
+          ],
+          "non_functional": [
+            "既存の pm.md 構造が維持されている"
+          ]
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-20",
+      "summary": "修正がのちの修正をうむ懸念がなければ進めて良い",
+      "approved_items": [
+        "pm.md の Step 3.5 に temporal achievability チェックを追加",
+        "追加のみで既存構造は変更しない"
+      ],
+      "technical_requirements_confirmed": [
+        "docs/design/temporal-achievability-spec.md を参照",
+        "マイルストーン→playbook 設計に従う"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "pm.md Step 3.5 拡張",
+      "description": "pm.md の Step 3.5 セクションに temporal achievability チェックを追加する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "pm.md の Step 3.5 に temporal achievability チェックリストが追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "pm.md を Read し、Step 3.5 に temporal achievability チェックリストが存在することを確認",
+            "consistency": "docs/design/temporal-achievability-spec.md のチェックリストと一致することを確認",
+            "completeness": "4項目のチェックリスト（prerequisite_availability, state_consistency, timing_possibility, no_self_reference）が全て含まれていることを確認"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "pm.md に fail_examples と pass_examples が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "pm.md を Read し、fail_examples と pass_examples セクションが存在することを確認",
+            "consistency": "docs/design/temporal-achievability-spec.md の例と整合性があることを確認",
+            "completeness": "fail_examples に最低3例、pass_examples に最低3例が含まれていることを確認"
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "pm.md に docs/design/temporal-achievability-spec.md への参照が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "pm.md を Read し、temporal-achievability-spec.md へのパス参照が存在することを確認",
+            "consistency": "参照パスが正しく記載されていることを確認",
+            "completeness": "参照が適切な位置（Step 3.5 または参照ファイルセクション）に配置されていることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": [
+        "p1"
+      ],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
