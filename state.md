@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: play/projects/framework-quality/project.json
-current_milestone: m1
-status: in_progress
+active: null
+current_milestone: null
+status: idle
 ```
 
 ---
@@ -19,11 +19,11 @@ status: in_progress
 ## playbook
 
 ```yaml
-active: play/projects/framework-quality/playbooks/pm-temporal-guidance/plan.json
-parent_project: framework-quality
-current_phase: p_final
-branch: feat/pm-temporal-guidance
-last_archived: play/archive/temporal-achievability
+active: null
+parent_project: null
+current_phase: null
+branch: null
+last_archived: play/archive/pm-temporal-guidance
 review_pending: false
 ```
 
@@ -33,13 +33,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: m1
-phase: p_final
-done_criteria:
-  - pm.md の Step 3.5 に temporal achievability チェックリストが追加されている
-  - fail_examples と pass_examples が pm.md に含まれている
-  - docs/design/temporal-achievability-spec.md への参照が含まれている
-status: in_progress
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---

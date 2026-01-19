@@ -4,11 +4,11 @@
     "id": "framework-quality",
     "title": "Framework Quality Improvement",
     "created": "2026-01-20",
-    "status": "active",
+    "status": "completed",
     "reviewed": true,
     "reviewed_by": "reviewer",
-    "closed_at": null,
-    "closed_by": null
+    "closed_at": "2026-01-20",
+    "closed_by": "claudecode"
   },
   "goal": {
     "summary": "playbook-review-criteria.md と pm.md のガイダンスを強化し、reviewer で検出するより作成時に防ぐ（Shift Left 原則）",
@@ -22,13 +22,13 @@
       "id": "m1",
       "title": "pm.md Temporal Achievability Guidance",
       "order": 1,
-      "status": "in_progress",
+      "status": "completed",
       "description": "pm.md の Step 3.5 に temporal achievability チェックを追加",
       "playbooks": [
         {
           "id": "pm-temporal-guidance",
           "title": "pm.md に temporal achievability ガイダンスを追加",
-          "status": "active",
+          "status": "completed",
           "path": "play/projects/framework-quality/playbooks/pm-temporal-guidance/plan.json"
         }
       ]
@@ -36,9 +36,9 @@
   ],
   "progress": {
     "total_playbooks": 1,
-    "completed_playbooks": 0,
+    "completed_playbooks": 1,
     "current_milestone": "m1",
-    "current_playbook": "pm-temporal-guidance"
+    "current_playbook": null
   },
   "context": {
     "analysis_result": {
