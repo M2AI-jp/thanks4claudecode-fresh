@@ -155,6 +155,42 @@ risk_categories:
   - 知識リスク: 前提知識の不足、誤解
 ```
 
+### 7. 時間的達成可能性（Temporal Achievability）
+
+```yaml
+question: "この criterion は評価される時点で達成可能か？"
+
+checklist:
+  - [ ] 前提条件が評価時点で揃っている
+  - [ ] システムの状態遷移と矛盾しない
+  - [ ] 評価される Phase で達成可能（将来時点ではない）
+  - [ ] 自己参照矛盾を含んでいない
+
+state_transition_awareness:
+  # 主要フィールドの時間的変化を考慮せよ
+  playbook.branch:
+    during_execution: "{working_branch}"
+    after_archive: "null または main"
+  playbook.active:
+    during_execution: "{playbook_path}"
+    after_archive: "null"
+  goal.status:
+    during_execution: "in_progress"
+    after_archive: "idle"
+
+fail_examples:
+  - "state.md の playbook.branch が main" → playbook 実行中は達成不可能（作業ブランチのはず）
+  - "playbook.active が null" → playbook 実行中は達成不可能
+  - "PR がマージされている" → archive-playbook 実行前は達成不可能
+  - "全ての Phase が完了している" → 自己参照矛盾
+
+pass_examples:
+  - "ファイル X が存在する" → Phase 内で作成可能
+  - "ESLint エラーが 0 件" → Phase 内で修正可能
+  - "ブランチ名が feat/xxx 形式" → 開始時に確定済み
+  - "repository-map.yaml が再生成されている" → Phase 内で実行可能
+```
+
 ---
 
 ## タスク種別ごとの追加基準
@@ -211,14 +247,18 @@ additional_checks:
      b. 「この Phase で何をするか」を具体的に想像
      c. 「この Phase が終わったとき、何ができているか？」を確認
      d. 次の Phase の入力として十分か判定
+     e. 【時間的達成可能性】「この Phase の criterion を評価するとき、システムはどのような状態か？その状態で達成可能か？」
   3. 最終 Phase まで完了したら、goal.done_when を確認
   4. 「このまま実行して、本当に done_when は達成されるか？」を判定
+  5. 【時間的達成可能性】「done_when の各条件は、評価される時点で達成可能か？将来時点（archive後など）を前提としていないか？」
 
 シミュレーション中の質問:
   - "ここで詰まったらどうする？"
   - "この前提が間違っていたらどうなる？"
   - "想定より時間がかかったら？"
   - "途中で要件が変わったら？"
+  - "【時間的達成可能性】この criterion は評価時点で達成可能か？"
+  - "【時間的達成可能性】playbook 実行中/完了後のシステム状態を考慮しているか？"
 ```
 
 ---
@@ -300,10 +340,11 @@ plan_review:
 ```yaml
 PASS 条件（全て満たす必要あり）:
   - structural_validation: 全て PASS
-  - universal_criteria: 全て PASS
+  - universal_criteria: 全て PASS（7. 時間的達成可能性 を含む）
   - task_specific_criteria: 全て PASS
   - simulation_result: 重大なボトルネックなし
   - adversarial_analysis: 致命的な弱点なし
+  - temporal_achievability: 全 criterion が評価時点で達成可能
 
 FAIL 条件（1つでも該当すれば FAIL）:
   - universal_criteria のいずれかが FAIL
@@ -311,6 +352,7 @@ FAIL 条件（1つでも該当すれば FAIL）:
   - 必要なステップの欠落
   - 重大なリスクに対する対策なし
   - スコープが曖昧
+  - temporal_achievability: criterion が評価時点で達成不可能（論理的矛盾）
 
 severity による判定:
   - critical: 1つでもあれば即 FAIL

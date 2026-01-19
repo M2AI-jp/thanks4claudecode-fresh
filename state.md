@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/temporal-achievability/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p_final
+branch: feat/temporal-achievability-criteria
 last_archived: play/archive/m1-post-maintenance
 review_pending: false
 ```
@@ -34,9 +34,13 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p_final
+done_criteria:
+  - .claude/frameworks/playbook-review-criteria.md に「7. 時間的達成可能性」セクションが存在する
+  - セクションに question, checklist, fail_examples, pass_examples が含まれる
+  - 判定基準セクションに temporal_achievability が追加されている
+  - シミュレーション実行プロトコルに時間的整合性チェックが追加されている
+status: in_progress
 ```
 
 ---
