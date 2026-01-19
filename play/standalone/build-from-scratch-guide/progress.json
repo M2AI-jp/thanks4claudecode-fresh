@@ -1,0 +1,224 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "build-from-scratch-guide",
+    "plan_path": "play/standalone/build-from-scratch-guide/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-20T00:00:00+09:00"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-20T00:00:00+09:00"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-20T00:00:00+09:00"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-20T00:00:00+09:00"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T00:00:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["ARCHITECTURE.md exists and contains Hook event documentation"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Hook events match official specification (9 types)"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All 9 hook events documented"]
+        }
+      },
+      "notes": "Hook イベント一覧を ARCHITECTURE.md から抽出完了"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-20T00:00:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["settings.json exists and is valid JSON"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Settings structure matches documentation"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["permissions, hooks, enableAllProjectMcpServers documented"]
+        }
+      },
+      "notes": "settings.json の設定項目を把握完了"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T00:00:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["Build order draft created with Phase 0-6"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Dependencies respected: Phase 0 → 1 → 2 → 3 → 4 → 5 → 6"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All major features covered in 7 phases"]
+        }
+      },
+      "notes": "構築順序のドラフト作成完了"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T00:00:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f BUILD-FROM-SCRATCH.md → exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["File starts with markdown header"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["wc -l → 965 lines (>= 100)"]
+        }
+      },
+      "notes": "BUILD-FROM-SCRATCH.md 作成完了"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-20T00:00:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c Hook events → 35 (>= 9)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Hook keyword count → 35 (>= 5)"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All 9 hooks explained in table format"]
+        }
+      },
+      "notes": "Hook イベント 9 種の説明を含む"
+    },
+    "p3.3": {
+      "status": "done",
+      "validated_at": "2026-01-20T00:00:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c SubAgent|subagent_type → 35 (>= 3)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Task( examples included"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["SubAgent spec documented with tool restrictions"]
+        }
+      },
+      "notes": "SubAgent/Task の仕様説明を含む"
+    },
+    "p3.4": {
+      "status": "done",
+      "validated_at": "2026-01-20T00:00:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c Phase → 42 (>= 5)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Dependencies documented in each phase"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Phase 0-6 all documented"]
+        }
+      },
+      "notes": "機能構築の推奨順序（Phase 0-6）を含む"
+    },
+    "p3.5": {
+      "status": "done",
+      "validated_at": "2026-01-20T00:00:00+09:00",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -ci verify|validation|test|check → 21 (>= 10)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Each phase has verification section"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Verification methods for all 7 phases"]
+        }
+      },
+      "notes": "各 Phase の検証方法を含む"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T00:00:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f BUILD-FROM-SCRATCH.md → exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep Hook events → 35 >= 9 → pass"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep Phase → 42 >= 5 → pass"]
+        }
+      },
+      "notes": "critic PASS: 全 5 項目の done_when を満たす"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "criterion 1: exists (ファイル存在確認)",
+      "criterion 2: 35 matches (>= 9) - Hook events",
+      "criterion 3: 35 matches (>= 3) - SubAgent/Task",
+      "criterion 4: 42 matches (>= 5) - Phase definitions",
+      "criterion 5: 21 matches (>= 10) - Verification methods"
+    ],
+    "notes": "2026-01-20 critic SubAgent による検証完了。全 done_when 条件を満たす。"
+  }
+}
