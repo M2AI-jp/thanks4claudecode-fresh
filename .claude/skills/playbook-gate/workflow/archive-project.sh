@@ -114,12 +114,25 @@ log_info "Step 4: アーカイブ"
 mkdir -p "$ARCHIVE_DIR"
 
 if [ -d "$ARCHIVE_DIR/$PROJECT_ID" ]; then
-    log_warn "アーカイブ先に既に存在します: $ARCHIVE_DIR/$PROJECT_ID"
-    # 既存のアーカイブを削除して上書き
+    log_warn "アーカイブ先に既に存在します: $ARCHIVE_DIR/$PROJECT_ID - マージします"
+    # 既存 playbooks を保護（先にアーカイブされた playbook を失わない）
+    EXISTING_PLAYBOOKS="$ARCHIVE_DIR/$PROJECT_ID/playbooks"
+    if [ -d "$EXISTING_PLAYBOOKS" ] && [ "$(ls -A "$EXISTING_PLAYBOOKS" 2>/dev/null)" ]; then
+        log_info "既存 playbooks を一時退避: $(ls -1 "$EXISTING_PLAYBOOKS" | wc -l | tr -d ' ') 件"
+        mv "$EXISTING_PLAYBOOKS" "$ARCHIVE_DIR/${PROJECT_ID}_playbooks_backup"
+    fi
+    # 既存アーカイブを削除して project を移動
     rm -rf "$ARCHIVE_DIR/$PROJECT_ID"
+    mv "$PROJECT_DIR" "$ARCHIVE_DIR/"
+    # 退避した playbooks を復元
+    if [ -d "$ARCHIVE_DIR/${PROJECT_ID}_playbooks_backup" ]; then
+        rm -rf "$ARCHIVE_DIR/$PROJECT_ID/playbooks"  # 空の playbooks を削除
+        mv "$ARCHIVE_DIR/${PROJECT_ID}_playbooks_backup" "$ARCHIVE_DIR/$PROJECT_ID/playbooks"
+        log_info "既存 playbooks を復元しました"
+    fi
+else
+    mv "$PROJECT_DIR" "$ARCHIVE_DIR/"
 fi
-
-mv "$PROJECT_DIR" "$ARCHIVE_DIR/"
 log_info "アーカイブ完了: $ARCHIVE_DIR/$PROJECT_ID"
 
 # ==============================================================================

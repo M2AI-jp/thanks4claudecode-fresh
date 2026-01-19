@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-08 03:04:08"
+  generated: "2026-01-20 04:31:47"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 191
+  total_files: 175
 
 hooks:
   directory: .claude/hooks/
@@ -149,7 +149,7 @@ play:
       count: 18
     template:
       description: "playbook v2 テンプレート"
-      count: 3
+      count: 2
 
 root:
   description: "ルートディレクトリの主要ファイル"
@@ -385,6 +385,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-08 03:04:08"
+  - date: "2026-01-20 04:31:47"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
