@@ -217,6 +217,32 @@ if [[ "$RELATIVE_PATH" == src/* ]] || [[ "$RELATIVE_PATH" == app/* ]] || \
     IS_CODE_FILE=true
 fi
 
+# --------------------------------------------------
+# p_final/coderabbit 専用: IS_CODE_FILE に関係なく委譲
+# --------------------------------------------------
+# p_final フェーズで executor が coderabbit の場合、
+# レビュータスクなので Edit/Write を伴わない可能性がある。
+# IS_CODE_FILE=false で exit 0 される前に委譲メッセージを出力。
+if [[ "$EXECUTOR" == "coderabbit" && "$ACTIVE_SUBTASK" == p_final* ]]; then
+    cat << EOF
+{
+  "continue": false,
+  "decision": "block",
+  "reason": "executor: coderabbit (p_final) - coderabbit-delegate SubAgent への委譲が必要です",
+  "hookSpecificOutput": {
+    "action": "delegate_to_subagent",
+    "target_subagent": "coderabbit-delegate",
+    "executor": "coderabbit",
+    "file_path": "$RELATIVE_PATH",
+    "review_type": "final_review",
+    "phase": "$ACTIVE_SUBTASK"
+  },
+  "systemMessage": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n  🔄 executor: coderabbit (p_final) - coderabbit-delegate SubAgent に自動委譲\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n\\n  この Phase は CodeRabbit による最終レビューです。\\n  以下の Task ツールを使って coderabbit-delegate SubAgent に委譲してください:\\n\\n  Task(\\n    subagent_type='coderabbit-delegate',\\n    prompt='p_final: 全体の最終レビューを実施'\\n  )\\n\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+EOF
+    exit 2
+fi
+
 # コードファイルでない場合はスキップ（ドキュメント等は許可）
 if [[ "$IS_CODE_FILE" == false ]]; then
     exit 0

@@ -1,0 +1,192 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "toolstack-c-enforcement",
+    "branch": "fix/coderabbit-delegation",
+    "created": "2026-01-20",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "toolstack C 設定時に p_final（レビュータスク）で coderabbit-delegate SubAgent が確実に呼び出されるようにする",
+    "done_when": [
+      "toolstack C で p_final 開始時に coderabbit-delegate への委譲が発生する",
+      "コード編集なし（executor: reviewer）でも coderabbit 委譲が発生する",
+      "toolstack A/B では coderabbit 委譲が発生しない（既存動作維持）"
+    ],
+    "scope": {
+      "includes": [
+        "executor-guard.sh の p_final/reviewer 専用処理追加",
+        "Stop フックでの p_final 検知（代替案）",
+        "role-resolver.sh との連携確認"
+      ],
+      "excludes": [
+        "toolstack A/B の動作変更",
+        "coderabbit-delegate SubAgent 自体の修正",
+        "codex 委譲ロジックの変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "who": "開発者（Claude Code利用者）",
+          "what": "toolstack C 設定時に p_final で coderabbit-delegate が確実に呼び出される仕組みを追加",
+          "when": "即時",
+          "where": "executor-guard.sh, role-resolver.sh, Hook/Event chain",
+          "why": "executor-guard.sh は Edit/Write 時のみ発火、レビュータスクでは委譲が起きない",
+          "how": "p_final かつ executor: reviewer の場合に Edit/Write を伴わなくても委譲を強制するトリガー追加",
+          "missing": "なし"
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "executor-guard.sh は Edit/Write 時のみ発火",
+              "severity": "high",
+              "mitigation": "別トリガー（Stop フック等）で委譲"
+            },
+            {
+              "risk": "IS_CODE_FILE=false なら exit 0 で素通り",
+              "severity": "high",
+              "mitigation": "条件分岐で p_final 専用処理追加"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "toolstack A/B への影響",
+              "severity": "low",
+              "mitigation": "toolstack C の場合のみ処理"
+            }
+          ]
+        },
+        "proposed_solutions": {
+          "option_1": "p_final 専用ガード追加（pre-tool-edit chain）",
+          "option_3": "Stop フックでの p_final 検知",
+          "recommended": "option_1 または option_3 の組み合わせ"
+        },
+        "success_criteria": {
+          "functional": [
+            "toolstack C で p_final 開始時に coderabbit-delegate が呼び出される",
+            "コード編集なしでも coderabbit 委譲が発生",
+            "toolstack A/B では coderabbit 委譲が発生しない"
+          ],
+          "breaking_changes": false
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-20T04:45:00+09:00",
+      "summary": "toolstack C で p_final の coderabbit 委譲を強制する仕組みを追加",
+      "approved_items": [
+        "executor-guard.sh の修正",
+        "p_final/reviewer 専用処理の追加",
+        "toolstack C 限定の動作"
+      ],
+      "technical_requirements_confirmed": [
+        "Edit/Write を伴わないレビュータスクでも委譲が発生すること"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "現状分析と設計",
+      "description": "executor-guard.sh と関連コンポーネントを分析し、修正方針を確定",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "executor-guard.sh の IS_CODE_FILE チェック（220-223行目）がレビュータスクをスキップする問題点がドキュメント化されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "分析結果がファイルまたはチャットに記載されている",
+            "consistency": "問題点と proposed_solutions が整合している",
+            "completeness": "修正方針が明確に定義されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "p_final 専用ガード実装",
+      "description": "executor: reviewer かつ toolstack C の場合に coderabbit-delegate 委譲を強制するガードを実装",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "executor-guard.sh に p_final/reviewer 専用の委譲ロジックが追加されている",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "bash -n executor-guard.sh が成功する（構文エラーなし）",
+            "consistency": "既存の codex 委譲ロジックと同等の hookSpecificOutput 形式を使用",
+            "completeness": "toolstack C 判定、executor: reviewer 判定、p_final 判定が全て含まれる"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "IS_CODE_FILE=false でも p_final/reviewer の場合は委譲メッセージが出力される",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "テストケース（非コードファイル編集）で委譲メッセージが確認できる",
+            "consistency": "codex 委譲と同じ JSON 出力形式",
+            "completeness": "systemMessage に Task 呼び出し例が含まれる"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Stop フック連携（代替トリガー）",
+      "description": "Edit/Write を伴わないレビュータスクのために Stop フックに p_final 検知を追加",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "stop/chain.sh に p_final かつ executor: reviewer の場合の委譲チェックが追加されている",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": "bash -n stop/chain.sh が成功する",
+            "consistency": "executor-guard.sh と同じ委譲判定ロジックを使用",
+            "completeness": "coderabbit-delegate 呼び出し案内が含まれる"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "done_when の全項目を独立検証",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "reviewer による検証で全 done_when 項目が PASS",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "各 done_when に対する検証コマンド/手順が実行済み",
+            "consistency": "実装と done_when の対応が明確",
+            "completeness": "全 3 項目の検証証拠が記録されている"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
