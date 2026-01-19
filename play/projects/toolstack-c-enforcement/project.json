@@ -1,0 +1,110 @@
+{
+  "format_version": "1.0",
+  "meta": {
+    "id": "toolstack-c-enforcement",
+    "title": "Toolstack C Design Enforcement",
+    "created": "2026-01-08",
+    "status": "active",
+    "reviewed": true,
+    "reviewed_by": "reviewer"
+  },
+  "goal": {
+    "summary": "toolstack C 設計（codex + coderabbit 必須使用）が正しく機能していることを検証し、設計上の欠陥を修正する",
+    "done_when": [
+      "executor 使用統計が収集され、coderabbit が 0 件である根本原因が特定されている",
+      "pm -> executor-resolver -> playbook の連携フローに欠陥がないことが検証されている",
+      "executor: reviewer と roles.reviewer: coderabbit の対応が明確に定義されている",
+      "修正後の playbook で codex と coderabbit が適切にアサインされる"
+    ]
+  },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "現状分析",
+      "order": 1,
+      "status": "active",
+      "description": "executor 使用状況、アーカイブ欠損の証拠収集、executor: reviewer と coderabbit の関係分析",
+      "playbooks": [
+        {
+          "id": "m1-analysis",
+          "title": "Executor Usage Analysis",
+          "status": "done",
+          "path": "play/projects/toolstack-c-enforcement/playbooks/m1-analysis/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m2",
+      "title": "根本原因特定",
+      "order": 2,
+      "status": "pending",
+      "description": "pm -> executor-resolver フロー検証、archive スクリプト分析",
+      "playbooks": []
+    },
+    {
+      "id": "m3",
+      "title": "設計修正と実装",
+      "order": 3,
+      "status": "pending",
+      "description": "特定された問題の修正とテスト",
+      "playbooks": []
+    }
+  ],
+  "progress": {
+    "total_playbooks": 1,
+    "completed_playbooks": 1,
+    "current_milestone": "m1",
+    "current_playbook": null
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code / ユーザー",
+          "what": "複合タスク: 1. 作業の再開 2. 中断した根本原因の調査と修正 3. codex/coderabbit が playbook で必ず使われる設計の見直し 4. 完了した project の妥当性の根本からの再点検",
+          "when": "即時",
+          "where": "play/archive/, executor-resolver, archive scripts",
+          "why": "toolstack: C 設計では codex/coderabbit が使われるべきだが: coderabbit executor: 0件, codex executor: 10件, claudecode executor: 77件"
+        },
+        "investigation_findings": {
+          "executor_statistics": {
+            "claudecode": 77,
+            "codex": 10,
+            "reviewer": 17,
+            "coderabbit": 0
+          },
+          "archive_issues": [
+            "context-cleanup/project.json は存在するが playbooks/ が空"
+          ],
+          "design_gap": [
+            "executor: reviewer と roles.reviewer: coderabbit の対応が不明確",
+            "pm が executor-resolver を呼び出していない可能性",
+            "coderabbit は Edit/Write を伴わないため executor-guard が発動しない"
+          ]
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "executor: reviewer を coderabbit に解決する仕組みが欠落",
+              "severity": "high",
+              "mitigation": "role-resolver または実行時解決の仕組みを確認・修正"
+            }
+          ]
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_APPROVED",
+      "approved_at": "2026-01-08T08:00:00+09:00",
+      "summary": "toolstack C 設計の検証と修正",
+      "approved_items": [
+        "M1: 現状分析（executor 使用状況、アーカイブ欠損の証拠収集）",
+        "M2: 根本原因特定（pm -> executor-resolver フロー、archive スクリプト）",
+        "M3: 設計修正と実装"
+      ]
+    }
+  }
+}
