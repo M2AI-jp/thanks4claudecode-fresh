@@ -1,0 +1,173 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "m1-post-maintenance",
+    "branch": "fix/m1-post-maintenance",
+    "created": "2026-01-20",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "M1 レポート完了後の保守タスク: state.md の branch 更新と repository-map.yaml のドリフト解消",
+    "done_when": [
+      "state.md の playbook.branch が main に更新されている",
+      "repository-map.yaml のドリフトが解消されている（再生成完了）"
+    ],
+    "scope": {
+      "includes": [
+        "state.md の branch フィールド修正",
+        "repository-map.yaml の再生成"
+      ],
+      "excludes": [
+        "新機能の実装",
+        "既存機能の変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code（オーケストレーター）",
+          "what": "現状把握し、計画に基づいて必要な次のアクションをとる",
+          "when": "即時",
+          "where": "thanks4claudecode-v2 リポジトリ",
+          "why": "M1 レポート完了後の後処理・状態整合性の確保",
+          "how": "state.md の確認、ドリフト検出への対応、branch 参照の修正",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "state.md の branch が古い参照（feat/codex-usage-improvement）のまま",
+              "severity": "low",
+              "mitigation": "branch を main に更新"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "「必要な次のアクション」が曖昧で範囲が広がる可能性",
+              "severity": "medium",
+              "mitigation": "具体的なアクション（state.md リセット、repository-map 再生成）に限定"
+            }
+          ],
+          "dependency": [
+            {
+              "risk": "repository-map.yaml のドリフトが検出されている",
+              "severity": "low",
+              "mitigation": "generate-repository-map.sh の再実行"
+            }
+          ]
+        },
+        "success_criteria": {
+          "functional": [
+            "state.md の branch が main に更新されている",
+            "playbook.active が null のまま維持",
+            "repository-map.yaml のドリフトが解消されている"
+          ],
+          "non_functional": {
+            "maintainability": "状態ファイルの整合性が保たれる"
+          },
+          "breaking_changes": false
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": [],
+        "detected_issues": [
+          {
+            "issue": "state.md の branch が feat/codex-usage-improvement のまま（main であるべき）",
+            "current_value": "feat/codex-usage-improvement",
+            "expected_value": "main",
+            "file": "/Users/amano/Desktop/thanks4claudecode-v2/state.md",
+            "line": 25
+          },
+          {
+            "issue": "repository-map.yaml のドリフト（agents フィールド）",
+            "note": "セッション開始時にドリフト検出済み"
+          }
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-20T05:50:00Z",
+      "summary": "M1 完了後の保守タスク（state.md branch 更新、repository-map.yaml ドリフト解消）",
+      "approved_items": [
+        "state.md の branch を main に更新",
+        "repository-map.yaml を再生成してドリフト解消"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "state.md branch 更新",
+      "description": "state.md の playbook.branch を feat/codex-usage-improvement から main に修正する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "stale branch reference (feat/codex-usage-improvement) が解消され、適切な作業ブランチに更新されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "state.md の branch が feat/codex-usage-improvement ではないことを確認",
+            "consistency": "現在の git branch と state.md の branch が一致することを確認",
+            "completeness": "playbook.branch 以外の state.md 構造が維持されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "repository-map.yaml 再生成",
+      "description": "generate-repository-map.sh を実行してドリフトを解消する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "repository-map.yaml が最新状態で再生成されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "bash .claude/hooks/generate-repository-map.sh が exit 0 で完了",
+            "consistency": "docs/repository-map.yaml の meta.generated が本日の日付である",
+            "completeness": "agents, skills, hooks のカウントが正しく更新されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "全ての done_when 条件を検証する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "全ての done_when 条件が達成されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "各 done_when 条件をコマンドで検証",
+            "consistency": "state.md と repository-map.yaml が整合している",
+            "completeness": "保守タスクの全項目が完了している"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
