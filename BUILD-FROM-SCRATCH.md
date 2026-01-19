@@ -31,6 +31,34 @@ Hook（いつ発火するか）→ Skill（何をするか）→ SubAgent（誰�
 - **Skill**: ユースケース単位のパッケージ（独自設計）
 - **SubAgent**: 独立した検証者（報酬詐欺防止）
 
+### ⚠️ 構築順序の重要原則
+
+**最終形は「Hook → Skills → モジュール化された機能」だが、構築順序は逆である。**
+
+```
+❌ 間違った順序（このリポジトリの失敗例）:
+   Hook 基盤 → ガード → 機能
+   → Hook が他機能の開発・デバッグを阻害する
+
+✅ 正しい順序:
+   1. 単機能として構成・テスト
+   2. Skills 単位でモジュール化・手動テスト
+   3. 最後に Hook で制御
+```
+
+**なぜこの順序か**:
+
+| 順序 | やること | 理由 |
+|------|----------|------|
+| **1. 単機能** | ガードスクリプト、SubAgent を個別に作成・動作確認 | 各部品が正しく動くか確認してから組み合わせる |
+| **2. Skills** | 機能をパッケージ化し、手動で呼び出してテスト | Hook なしで `/skill-name` や手動実行で検証 |
+| **3. Hook** | すべて動作確認できてから Hook を接続 | Hook は「発火タイミング」のみ担当、機能は確立済み |
+
+**失敗パターン**:
+- Hook を先に入れると、playbook-guard が Edit をブロック → playbook 機能自体の開発ができない
+- main-branch ガードを先に入れると、テスト中の修正も全部ブロックされる
+- デバッグのために Hook を無効化する作業が発生し、本末転倒になる
+
 ### 前提知識
 
 - Claude Code CLI の基本操作
@@ -332,6 +360,8 @@ Task(
 
 ## 3. 構築フェーズ
 
+> ⚠️ **重要**: Phase の順序は「単機能 → Skills → Hook」である。Hook を先に入れると開発を阻害する。
+
 ### Phase 0: 最小動作環境
 
 **目標**: Claude Code が動作する最小環境を構築
@@ -376,13 +406,15 @@ claude
 
 **依存**: Phase 0
 
+**⚠️ この Phase では Hook を設定しない**（settings.json の hooks は空のまま）
+
 **作成ファイル**:
 ```
 プロジェクト/
 ├── CLAUDE.md
 ├── state.md           # 現在状態の真実源（SSOT）
 └── .claude/
-    └── settings.json  # Hook 設定
+    └── settings.json  # 権限設定のみ（hooks は空）
 ```
 
 **state.md の構造**:
@@ -397,7 +429,7 @@ claude
 - last_start: 2026-01-20T00:00:00+09:00
 ```
 
-**settings.json の最小構成**:
+**settings.json（Hook なし）**:
 ```json
 {
   "permissions": {
@@ -415,125 +447,150 @@ test -f state.md && echo "exists"
 
 # settings.json が有効な JSON であることを確認
 jq '.' .claude/settings.json > /dev/null && echo "valid JSON"
+
+# hooks が空であることを確認（この Phase では重要）
+jq '.hooks | keys | length' .claude/settings.json
+# 期待値: 0
 ```
 
 **検証基準**:
 - state.md が存在し、必須セクションがある
 - settings.json が有効な JSON
+- **hooks は空のまま**
 
 ---
 
-### Phase 2: Hook 基盤
+### Phase 2: SubAgent 単体構築
 
-**目標**: Hook イベントに応じてスクリプトを実行する仕組みを構築
+**目標**: SubAgent を個別に作成し、手動で動作確認
 
 **依存**: Phase 1
+
+**⚠️ Hook 経由ではなく、手動で `Task()` を呼び出してテストする**
 
 **作成ファイル**:
 ```
 .claude/
-├── settings.json      # Hook 定義を追加
-├── hooks/
-│   ├── session.sh     # SessionStart dispatcher
-│   ├── prompt.sh      # UserPromptSubmit dispatcher
-│   ├── pre-tool.sh    # PreToolUse dispatcher
-│   └── post-tool.sh   # PostToolUse dispatcher
-└── events/
-    ├── session-start/
-    │   └── chain.sh   # SessionStart の処理チェーン
-    ├── user-prompt-submit/
-    │   └── chain.sh
-    ├── pre-tool-edit/
-    │   └── chain.sh
-    └── post-tool-edit/
-        └── chain.sh
+└── agents/
+    ├── pm.md          # Project Manager SubAgent
+    ├── reviewer.md    # Reviewer SubAgent
+    └── critic.md      # Critic SubAgent（検証専門）
 ```
 
-**Hook dispatcher の基本形（pre-tool.sh）**:
-```bash
-#!/bin/bash
-set -euo pipefail
+**pm.md の例**:
+```markdown
+---
+name: pm
+description: playbook を作成・管理する Project Manager
+tools: Read, Write, Edit, Grep, Glob, Bash
+---
 
-# stdin から JSON を読み取り
-INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
+# PM SubAgent
 
-# ツール種別で分岐
-case "$TOOL_NAME" in
-  Edit|Write)
-    bash .claude/events/pre-tool-edit/chain.sh <<< "$INPUT"
-    ;;
-  Bash)
-    bash .claude/events/pre-tool-bash/chain.sh <<< "$INPUT"
-    ;;
-  *)
-    exit 0  # その他は許可
-    ;;
-esac
+## 役割
+ユーザーの依頼を分析し、playbook（plan.json）を作成する。
+
+## プロセス
+1. 依頼内容を理解
+2. done_when（完了条件）を定義
+3. phases と subtasks に分解
+4. plan.json を作成
 ```
 
-**settings.json への Hook 追加**:
-```json
-{
-  "hooks": {
-    "SessionStart": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "bash .claude/hooks/session.sh",
-        "timeout": 5000
-      }]
-    }],
-    "PreToolUse": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "bash .claude/hooks/pre-tool.sh",
-        "timeout": 10000
-      }]
-    }]
-  }
-}
+**reviewer.md の例**:
+```markdown
+---
+name: reviewer
+description: playbook の品質を検証する Reviewer
+tools: Read, Grep, Glob, Bash
+---
+
+# Reviewer SubAgent
+
+## 役割
+playbook が品質基準を満たしているかを検証する。
+
+## 検証項目
+- done_when が検証可能か
+- phases の依存関係が正しいか
+- scope が明確か
 ```
 
-**検証方法**:
-```bash
-# Hook スクリプトが存在することを確認
-test -f .claude/hooks/pre-tool.sh && echo "exists"
+**critic.md の例**:
+```markdown
+---
+name: critic
+description: 成果物が done_criteria を満たしているかを敵対的に検証
+tools: Read, Grep, Bash
+---
 
-# Hook スクリプトが実行可能であることを確認
-bash -n .claude/hooks/pre-tool.sh && echo "syntax OK"
+# Critic SubAgent
 
-# settings.json に hooks が定義されていることを確認
-jq '.hooks | keys | length' .claude/settings.json
-# 期待値: >= 1
+## 役割
+成果物が done_criteria を満たしているかを**敵対的に**検証する。
+
+## ツール制限
+- Edit/Write: **禁止**（自己完了を防止）
+
+## 検証プロセス
+1. done_criteria を読み込む
+2. 各 criterion を検証コマンドで確認
+3. 全て PASS なら PASS を返す
+```
+
+**検証方法（手動テスト）**:
+```python
+# Claude Code で手動実行
+
+# pm SubAgent のテスト
+Task(
+  subagent_type='pm',
+  prompt='テスト用の playbook を作成して: Hello World を出力する機能',
+  description='pm テスト'
+)
+
+# reviewer SubAgent のテスト
+Task(
+  subagent_type='reviewer',
+  prompt='play/test/plan.json を検証して',
+  description='reviewer テスト'
+)
+
+# critic SubAgent のテスト
+Task(
+  subagent_type='critic',
+  prompt='以下の criterion を検証して: "README.md が存在する"',
+  description='critic テスト'
+)
 ```
 
 **検証基準**:
-- 各 Hook スクリプトが構文エラーなし
-- settings.json に hooks セクションがある
-- SessionStart で state.md が読み込まれる
+- 各 SubAgent が Task() で呼び出せる
+- pm が playbook を作成できる
+- reviewer が playbook を検証できる
+- critic が criterion を検証できる（Edit/Write なしで）
 
 ---
 
-### Phase 3: 安全性ガード
+### Phase 3: ガードスクリプト単体構築
 
-**目標**: 破壊的操作をブロックする仕組みを構築
+**目標**: ガードスクリプトを個別に作成し、手動で動作確認
 
 **依存**: Phase 2
+
+**⚠️ Hook に接続せず、スクリプト単体でテストする**
 
 **作成ファイル**:
 ```
 .claude/
 ├── protected-files.txt        # 保護ファイルリスト
-└── skills/
-    └── access-control/
-        └── guards/
-            ├── main-branch.sh     # main ブランチ保護
-            └── protected-edit.sh  # 保護ファイル編集ブロック
+└── scripts/                   # 単体テスト用（後で skills/ に移動）
+    ├── main-branch-guard.sh   # main ブランチ保護
+    ├── protected-edit-guard.sh # 保護ファイル編集ブロック
+    └── playbook-guard.sh      # playbook 必須チェック
 ```
 
-**main-branch.sh の例**:
+**main-branch-guard.sh**:
 ```bash
 #!/bin/bash
 set -euo pipefail
@@ -541,60 +598,73 @@ set -euo pipefail
 BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
 
 if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
-  echo "main/master ブランチでの編集は禁止されています" >&2
-  exit 2  # BLOCK
+  echo "BLOCK: main/master ブランチでの編集は禁止" >&2
+  exit 2
 fi
 
-exit 0  # ALLOW
+echo "ALLOW: ブランチ $BRANCH"
+exit 0
 ```
 
-**protected-files.txt の例**:
-```
-CLAUDE.md
-.claude/protected-files.txt
-```
-
-**chain.sh への組み込み（pre-tool-edit/chain.sh）**:
+**playbook-guard.sh**:
 ```bash
 #!/bin/bash
 set -euo pipefail
 
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+STATE_FILE="${1:-state.md}"
 
-# main ブランチチェック
-bash .claude/skills/access-control/guards/main-branch.sh
-
-# 保護ファイルチェック
-if grep -qF "$FILE_PATH" .claude/protected-files.txt 2>/dev/null; then
-  echo "保護ファイルは編集できません: $FILE_PATH" >&2
+if [[ ! -f "$STATE_FILE" ]]; then
+  echo "BLOCK: state.md が存在しない" >&2
   exit 2
 fi
 
+PLAYBOOK_ACTIVE=$(grep -A1 "^## playbook" "$STATE_FILE" | grep "active:" | sed 's/.*active: //' || echo "null")
+
+if [[ -z "$PLAYBOOK_ACTIVE" || "$PLAYBOOK_ACTIVE" == "null" ]]; then
+  echo "BLOCK: playbook がありません" >&2
+  exit 2
+fi
+
+echo "ALLOW: playbook=$PLAYBOOK_ACTIVE"
 exit 0
 ```
 
-**検証方法**:
+**検証方法（スクリプト単体テスト）**:
 ```bash
-# main ブランチで Edit を試みてブロックされることを確認
+# main-branch-guard のテスト
 git checkout main
-# Claude で Edit を試行 → ブロックされる
+bash .claude/scripts/main-branch-guard.sh
+# 期待: exit 2（BLOCK）
 
-# 保護ファイルの編集がブロックされることを確認
-# Claude で CLAUDE.md の編集を試行 → ブロックされる
+git checkout -b test-branch
+bash .claude/scripts/main-branch-guard.sh
+# 期待: exit 0（ALLOW）
+
+# playbook-guard のテスト（playbook なし）
+echo -e "## playbook\n- active: null" > /tmp/test-state.md
+bash .claude/scripts/playbook-guard.sh /tmp/test-state.md
+# 期待: exit 2（BLOCK）
+
+# playbook-guard のテスト（playbook あり）
+echo -e "## playbook\n- active: play/test/plan.json" > /tmp/test-state.md
+bash .claude/scripts/playbook-guard.sh /tmp/test-state.md
+# 期待: exit 0（ALLOW）
 ```
 
 **検証基準**:
-- main ブランチで Edit/Write がブロックされる
-- protected-files.txt のファイルがブロックされる
+- 各スクリプトが単体で正しく動作する
+- exit code が正しい（0=ALLOW, 2=BLOCK）
+- **Hook なしで動作確認できている**
 
 ---
 
-### Phase 4: タスク管理（playbook）
+### Phase 4: playbook システム構築
 
-**目標**: タスクの計画と進捗を管理する仕組みを構築
+**目標**: playbook テンプレートと SubAgent の連携をテスト
 
-**依存**: Phase 3
+**依存**: Phase 2, Phase 3
+
+**⚠️ まだ Hook は接続しない。手動で SubAgent を呼び出して連携テスト**
 
 **作成ファイル**:
 ```
@@ -603,21 +673,6 @@ play/
 │   ├── plan.json      # playbook テンプレート
 │   └── progress.json  # 進捗テンプレート
 └── README.md
-
-.claude/
-├── agents/
-│   ├── pm.md          # Project Manager SubAgent
-│   └── reviewer.md    # Reviewer SubAgent
-└── skills/
-    ├── golden-path/
-    │   └── agents/
-    │       └── pm.md
-    ├── quality-assurance/
-    │   └── agents/
-    │       └── reviewer.md
-    └── playbook-gate/
-        └── guards/
-            └── playbook-guard.sh  # playbook 必須チェック
 ```
 
 **plan.json テンプレート**:
@@ -658,129 +713,225 @@ play/
 }
 ```
 
-**playbook-guard.sh の例**:
-```bash
-#!/bin/bash
-set -euo pipefail
+**検証方法（SubAgent 連携テスト）**:
+```python
+# 1. pm で playbook を作成
+Task(
+  subagent_type='pm',
+  prompt='「README.md に Hello World を追加」という playbook を作成して',
+  description='playbook 作成'
+)
 
-PLAYBOOK_ACTIVE=$(grep -A1 "^## playbook" state.md | grep "active:" | sed 's/.*active: //')
+# 2. reviewer で playbook を検証
+Task(
+  subagent_type='reviewer',
+  prompt='play/hello-world/plan.json を検証して',
+  description='playbook 検証'
+)
 
-if [[ -z "$PLAYBOOK_ACTIVE" || "$PLAYBOOK_ACTIVE" == "null" ]]; then
-  echo "playbook がありません。先に playbook を作成してください。" >&2
-  exit 2  # BLOCK
-fi
+# 3. 実際に作業を実行（手動）
+# README.md に Hello World を追加
 
-exit 0
+# 4. critic で完了を検証
+Task(
+  subagent_type='critic',
+  prompt='play/hello-world/plan.json の done_when を検証して',
+  description='完了検証'
+)
+```
+
+**検証基準**:
+- pm → reviewer → 作業 → critic の流れが動作する
+- 各 SubAgent が期待通りの出力を返す
+- **まだ Hook による自動化はしない**
+
+---
+
+### Phase 5: Skills モジュール化
+
+**目標**: 機能を Skills パッケージに整理し、手動呼び出しでテスト
+
+**依存**: Phase 3, Phase 4
+
+**⚠️ Skill ツールで手動呼び出し、または `/skill-name` でテスト**
+
+**作成ファイル**:
+```
+.claude/skills/
+├── access-control/
+│   ├── SKILL.md
+│   └── guards/
+│       ├── main-branch.sh      # Phase 3 から移動
+│       └── protected-edit.sh
+├── playbook-gate/
+│   ├── SKILL.md
+│   └── guards/
+│       └── playbook-guard.sh   # Phase 3 から移動
+├── golden-path/
+│   ├── SKILL.md
+│   └── agents/
+│       └── pm.md               # Phase 2 から移動
+├── quality-assurance/
+│   ├── SKILL.md
+│   └── agents/
+│       └── reviewer.md         # Phase 2 から移動
+└── reward-guard/
+    ├── SKILL.md
+    └── agents/
+        └── critic.md           # Phase 2 から移動
+```
+
+**SKILL.md の例（access-control）**:
+```markdown
+---
+name: access-control
+description: main ブランチ保護、保護ファイル編集ブロック
+user-invocable: false
+---
+
+# Access Control Skill
+
+## 機能
+- main/master ブランチでの編集をブロック
+- protected-files.txt に記載されたファイルの編集をブロック
+
+## 使用方法
+このスキルは Hook 経由で自動実行される。
+手動テストは以下:
+
+\`\`\`bash
+bash .claude/skills/access-control/guards/main-branch.sh
+bash .claude/skills/access-control/guards/protected-edit.sh "path/to/file"
+\`\`\`
 ```
 
 **検証方法**:
 ```bash
-# playbook テンプレートが存在することを確認
-test -f play/template/plan.json && echo "exists"
+# Skill 構造の確認
+find .claude/skills -name "SKILL.md" | wc -l
+# 期待: 5 以上
 
-# テンプレートが有効な JSON であることを確認
-jq '.' play/template/plan.json > /dev/null && echo "valid"
+# 各 Skill のガードスクリプトが動作することを確認
+bash .claude/skills/access-control/guards/main-branch.sh
+bash .claude/skills/playbook-gate/guards/playbook-guard.sh state.md
 
-# SubAgent 定義が存在することを確認
-test -f .claude/agents/pm.md && echo "pm exists"
-test -f .claude/agents/reviewer.md && echo "reviewer exists"
+# SubAgent が Skill ディレクトリから呼び出せることを確認
+Task(subagent_type='pm', prompt='テスト', description='Skill 配置確認')
 ```
 
 **検証基準**:
-- play/template/ にテンプレートがある
-- SubAgent が Task(subagent_type='pm') で呼び出せる
-- playbook なしで Edit がブロックされる
+- 各 Skill に SKILL.md がある
+- ガードスクリプトが Skill ディレクトリ内で動作する
+- SubAgent が Skill 内の agents/ から参照できる
+- **まだ Hook は接続しない**
 
 ---
 
-### Phase 5: 検証システム
+### Phase 6: Hook 統合（最終段階）
 
-**目標**: 自己承認バイアスを防ぐ独立検証の仕組みを構築
+**目標**: すべての機能が動作確認できてから、Hook を接続
 
-**依存**: Phase 4
+**依存**: Phase 5（すべての機能が手動で動作確認済み）
+
+**⚠️ この Phase が最後。ここまで来てから初めて Hook を有効化する**
 
 **作成ファイル**:
 ```
 .claude/
-├── agents/
-│   └── critic.md      # Critic SubAgent（検証専門）
-├── skills/
-│   └── reward-guard/
-│       ├── agents/
-│       │   └── critic.md
-│       └── guards/
-│           ├── critic-guard.sh    # done 変更前に critic 必須
-│           └── subtask-guard.sh   # subtask 検証チェック
-└── frameworks/
-    └── done-criteria-validation.md  # 検証基準
+├── hooks/
+│   ├── session.sh     # SessionStart dispatcher
+│   ├── prompt.sh      # UserPromptSubmit dispatcher
+│   ├── pre-tool.sh    # PreToolUse dispatcher
+│   └── post-tool.sh   # PostToolUse dispatcher
+└── events/
+    ├── session-start/
+    │   └── chain.sh
+    ├── user-prompt-submit/
+    │   └── chain.sh
+    ├── pre-tool-edit/
+    │   └── chain.sh
+    └── post-tool-edit/
+        └── chain.sh
 ```
 
-**critic.md の例**:
-```markdown
-# Critic SubAgent
-
-## 役割
-成果物が done_criteria を満たしているかを**敵対的に**検証する。
-
-## ツール制限
-- Read: 許可
-- Grep: 許可
-- Bash: 許可（読み取り系コマンドのみ）
-- Edit/Write: **禁止**（自己完了を防止）
-
-## 検証プロセス
-1. done_criteria を読み込む
-2. 各 criterion を検証コマンドで確認
-3. 全て PASS なら PASS を返す
-4. 1つでも FAIL があれば FAIL を返す
-
-## 出力形式
-PASS または FAIL + 証拠
+**settings.json への Hook 追加（この Phase で初めて）**:
+```json
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": ["Edit", "Write", "Task(*)", "Bash(git:*)"]
+  },
+  "hooks": {
+    "SessionStart": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "bash .claude/hooks/session.sh",
+        "timeout": 5000
+      }]
+    }],
+    "PreToolUse": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "bash .claude/hooks/pre-tool.sh",
+        "timeout": 10000
+      }]
+    }]
+  }
+}
 ```
 
-**critic-guard.sh の例**:
+**pre-tool.sh（dispatcher）**:
 ```bash
 #!/bin/bash
 set -euo pipefail
 
 INPUT=$(cat)
-NEW_CONTENT=$(echo "$INPUT" | jq -r '.tool_input.new_string // empty')
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 
-# "done" への変更を検出
-if echo "$NEW_CONTENT" | grep -q '"status".*:.*"done"'; then
-  echo "done への変更には critic の PASS が必要です" >&2
-  echo '{"systemMessage": "Task(subagent_type=\"critic\") を先に実行してください"}'
-  exit 0  # WARN（ブロックではなく警告）
-fi
-
-exit 0
+case "$TOOL_NAME" in
+  Edit|Write)
+    # Phase 5 で動作確認済みのガードを呼び出し
+    bash .claude/skills/access-control/guards/main-branch.sh
+    bash .claude/skills/playbook-gate/guards/playbook-guard.sh state.md
+    ;;
+  *)
+    exit 0
+    ;;
+esac
 ```
 
 **検証方法**:
 ```bash
-# critic SubAgent が存在することを確認
-test -f .claude/agents/critic.md && echo "exists"
+# 1. Hook が正しく発火することを確認
+# Claude Code を起動して Edit を試みる
 
-# critic が Edit 権限を持っていないことを確認
-grep -c "Edit" .claude/agents/critic.md
-# 期待値: tools セクションに Edit がない
+# 2. main ブランチで Edit がブロックされることを確認
+git checkout main
+# Edit を試行 → ブロックされる
 
-# done-criteria-validation.md が存在することを確認
-test -f .claude/frameworks/done-criteria-validation.md && echo "exists"
+# 3. playbook なしで Edit がブロックされることを確認
+# state.md の playbook.active を null にして Edit → ブロック
+
+# 4. 正常系：playbook あり + feature ブランチで Edit が成功
+git checkout -b feat/test
+# state.md の playbook.active を設定
+# Edit → 成功
 ```
 
 **検証基準**:
-- critic SubAgent が Edit/Write 権限を持たない
-- done 変更時に critic が必要と通知される
-- critic の PASS なしで完了宣言できない
+- Hook が正しく発火する
+- Phase 5 までに作成した機能が Hook 経由で動作する
+- **Hook を有効化しても、機能自体のロジックは変わらない**（発火タイミングが変わるだけ）
 
 ---
 
-### Phase 6: 自動化（Git ワークフロー）
+### Phase 7: 自動化（Git ワークフロー）
 
 **目標**: PR 作成・マージ・アーカイブを自動化
 
-**依存**: Phase 5
+**依存**: Phase 6
 
 **作成ファイル**:
 ```
@@ -795,7 +946,7 @@ test -f .claude/frameworks/done-criteria-validation.md && echo "exists"
             └── archive-playbook.sh  # playbook アーカイブ
 ```
 
-**archive-playbook.sh の例（簡略版）**:
+**archive-playbook.sh の例**:
 ```bash
 #!/bin/bash
 set -euo pipefail
@@ -804,30 +955,13 @@ PLAYBOOK_ID=$1
 SOURCE="play/${PLAYBOOK_ID}"
 DEST="play/archive/${PLAYBOOK_ID}"
 
-# 1. アーカイブディレクトリへ移動
 mkdir -p "$(dirname "$DEST")"
 mv "$SOURCE" "$DEST"
-
-# 2. state.md を更新
 sed -i '' 's/active: .*/active: null/' state.md
-
-# 3. コミット
 git add -A
 git commit -m "archive: ${PLAYBOOK_ID}"
 
 echo "Archived: ${PLAYBOOK_ID}"
-```
-
-**検証方法**:
-```bash
-# git-workflow スクリプトが存在することを確認
-test -f .claude/skills/git-workflow/handlers/create-pr.sh && echo "exists"
-
-# archive-playbook.sh が存在することを確認
-test -f .claude/skills/playbook-gate/workflow/archive-playbook.sh && echo "exists"
-
-# スクリプトの構文チェック
-bash -n .claude/skills/playbook-gate/workflow/archive-playbook.sh && echo "syntax OK"
 ```
 
 **検証基準**:
@@ -863,6 +997,8 @@ bash -n .claude/skills/playbook-gate/workflow/archive-playbook.sh && echo "synta
 
 ## 5. 検証チェックリスト
 
+> ⚠️ **重要**: 各 Phase の検証は **Hook なしで** 行う（Phase 6 まで）
+
 ### Phase 0 の検証
 ```bash
 # CLAUDE.md が存在する
@@ -876,56 +1012,94 @@ test -f state.md && echo "PASS" || echo "FAIL"
 
 # settings.json が有効
 jq '.' .claude/settings.json > /dev/null 2>&1 && echo "PASS" || echo "FAIL"
+
+# ⚠️ hooks が空であることを確認（この Phase では重要）
+[[ $(jq '.hooks | keys | length' .claude/settings.json) -eq 0 ]] && echo "PASS: hooks empty" || echo "WARN: hooks should be empty"
 ```
 
-### Phase 2 の検証
+### Phase 2 の検証（SubAgent 単体）
 ```bash
-# Hook スクリプトが存在する
-test -f .claude/hooks/pre-tool.sh && echo "PASS" || echo "FAIL"
+# SubAgent 定義が存在する
+test -f .claude/agents/pm.md && echo "PASS: pm" || echo "FAIL"
+test -f .claude/agents/reviewer.md && echo "PASS: reviewer" || echo "FAIL"
+test -f .claude/agents/critic.md && echo "PASS: critic" || echo "FAIL"
 
-# settings.json に hooks が定義されている
-jq -e '.hooks' .claude/settings.json > /dev/null 2>&1 && echo "PASS" || echo "FAIL"
+# critic が Edit 権限を持たない
+! grep -q "Edit" .claude/agents/critic.md && echo "PASS: critic no Edit" || echo "FAIL"
 ```
 
-### Phase 3 の検証
+### Phase 3 の検証（ガードスクリプト単体）
 ```bash
-# main-branch.sh が存在する
-test -f .claude/skills/access-control/guards/main-branch.sh && echo "PASS" || echo "FAIL"
+# スクリプトが存在する
+test -f .claude/scripts/main-branch-guard.sh && echo "PASS" || echo "FAIL"
+test -f .claude/scripts/playbook-guard.sh && echo "PASS" || echo "FAIL"
 
-# protected-files.txt が存在する
-test -f .claude/protected-files.txt && echo "PASS" || echo "FAIL"
+# main-branch-guard の単体テスト
+git checkout main
+bash .claude/scripts/main-branch-guard.sh 2>/dev/null
+[[ $? -eq 2 ]] && echo "PASS: main branch blocked" || echo "FAIL"
+
+# ⚠️ Hook なしで動作確認できていることが重要
 ```
 
-### Phase 4 の検証
+### Phase 4 の検証（playbook システム）
 ```bash
 # playbook テンプレートが存在する
 test -f play/template/plan.json && echo "PASS" || echo "FAIL"
 
-# pm SubAgent が存在する
-test -f .claude/agents/pm.md && echo "PASS" || echo "FAIL"
+# テンプレートが有効な JSON
+jq '.' play/template/plan.json > /dev/null 2>&1 && echo "PASS" || echo "FAIL"
+
+# ⚠️ SubAgent 連携を手動でテスト（Hook なし）
+# Task(subagent_type='pm', prompt='テスト playbook 作成')
+# Task(subagent_type='reviewer', prompt='検証')
+# Task(subagent_type='critic', prompt='完了検証')
 ```
 
-### Phase 5 の検証
+### Phase 5 の検証（Skills モジュール）
 ```bash
-# critic SubAgent が存在する
-test -f .claude/agents/critic.md && echo "PASS" || echo "FAIL"
+# Skill 構造が正しい
+test -f .claude/skills/access-control/SKILL.md && echo "PASS" || echo "FAIL"
+test -f .claude/skills/playbook-gate/SKILL.md && echo "PASS" || echo "FAIL"
+test -f .claude/skills/golden-path/SKILL.md && echo "PASS" || echo "FAIL"
 
-# critic が Edit 権限を持たない
-! grep -q "Edit" .claude/agents/critic.md && echo "PASS" || echo "FAIL"
+# ガードスクリプトが Skill ディレクトリに移動されている
+test -f .claude/skills/access-control/guards/main-branch.sh && echo "PASS" || echo "FAIL"
+test -f .claude/skills/playbook-gate/guards/playbook-guard.sh && echo "PASS" || echo "FAIL"
+
+# ⚠️ まだ Hook は接続しない
 ```
 
-### Phase 6 の検証
+### Phase 6 の検証（Hook 統合）
+```bash
+# ⚠️ この Phase で初めて Hook を有効化
+
+# Hook スクリプトが存在する
+test -f .claude/hooks/pre-tool.sh && echo "PASS" || echo "FAIL"
+test -f .claude/hooks/session.sh && echo "PASS" || echo "FAIL"
+
+# settings.json に hooks が定義されている
+jq -e '.hooks.PreToolUse' .claude/settings.json > /dev/null 2>&1 && echo "PASS" || echo "FAIL"
+
+# Hook 経由で既存機能が動作することを確認
+# main ブランチで Edit → ブロック
+# playbook なしで Edit → ブロック
+```
+
+### Phase 7 の検証（自動化）
 ```bash
 # archive-playbook.sh が存在する
 test -f .claude/skills/playbook-gate/workflow/archive-playbook.sh && echo "PASS" || echo "FAIL"
+
+# git-workflow が存在する
+test -f .claude/skills/git-workflow/handlers/create-pr.sh && echo "PASS" || echo "FAIL"
 ```
 
-### 統合検証
+### 統合検証（Phase 6 完了後のみ）
 ```bash
 # 全 Hook イベントが settings.json に定義されているか確認
 HOOKS=$(jq -r '.hooks | keys[]' .claude/settings.json 2>/dev/null | sort | tr '\n' ' ')
 echo "定義済み Hook: $HOOKS"
-# 期待: SessionStart UserPromptSubmit PreToolUse PostToolUse SubagentStop PreCompact Stop SessionEnd Notification
 ```
 
 ---
@@ -934,26 +1108,37 @@ echo "定義済み Hook: $HOOKS"
 
 ```
 Phase 0: 最小環境
-    │
+    │   └─ CLAUDE.md
     ▼
-Phase 1: 状態管理
-    │   └─ state.md, settings.json
+Phase 1: 状態管理（Hook なし）
+    │   └─ state.md, settings.json（hooks: {}）
     ▼
-Phase 2: Hook 基盤
-    │   └─ Hook dispatcher, Event chain
+Phase 2: SubAgent 単体（手動テスト）
+    │   └─ pm.md, reviewer.md, critic.md
+    │   └─ Task() で手動呼び出し
     ▼
-Phase 3: 安全性ガード
-    │   └─ access-control, playbook-gate
+Phase 3: ガードスクリプト単体（手動テスト）
+    │   └─ main-branch-guard.sh, playbook-guard.sh
+    │   └─ bash で直接実行
     ▼
-Phase 4: タスク管理
-    │   └─ playbook, pm, reviewer
+Phase 4: playbook システム（手動テスト）
+    │   └─ plan.json テンプレート
+    │   └─ pm → reviewer → critic 連携
     ▼
-Phase 5: 検証システム
-    │   └─ critic, reward-guard
+Phase 5: Skills モジュール化（手動テスト）
+    │   └─ .claude/skills/ に整理
+    │   └─ SKILL.md 定義
     ▼
-Phase 6: 自動化
+Phase 6: Hook 統合 ← ここで初めて Hook を有効化
+    │   └─ hooks/, events/
+    │   └─ settings.json に hooks 追加
+    ▼
+Phase 7: 自動化
         └─ git-workflow, archive
 ```
+
+**重要**: Phase 1-5 は **Hook なし** で動作確認する。
+Hook を先に入れると、機能開発・デバッグが阻害される。
 
 ---
 
@@ -961,4 +1146,5 @@ Phase 6: 自動化
 
 | 日付 | 内容 |
 |------|------|
+| 2026-01-20 | **Phase 構成を根本修正**: 「単機能 → Skills → Hook」の順序に変更 |
 | 2026-01-20 | 初版作成 |
