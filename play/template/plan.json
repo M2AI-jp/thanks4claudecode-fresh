@@ -71,7 +71,7 @@
         {
           "id": "p_final.1",
           "criterion": "Reviewer verification passes for all done_when items.",
-          "executor": "reviewer",
+          "executor": "coderabbit",
           "coding": false,
           "validation_plan": {
             "technical": "Reviewer runs verification commands.",
