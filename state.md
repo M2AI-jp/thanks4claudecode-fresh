@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: null
-status: idle
+active: play/projects/validation-enforcement-system/project.json
+current_milestone: m2_command_execution
+status: in_progress
 ```
 
 ---
@@ -20,10 +20,10 @@ status: idle
 
 ```yaml
 active: null
-parent_project: null
+parent_project: validation-enforcement-system
 current_phase: null
 branch: null
-last_archived: play/standalone/template-strictness-v2
+last_archived: play/projects/validation-enforcement-system/playbooks/pb-m1-schema
 review_pending: false
 ```
 
@@ -33,10 +33,12 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
+milestone: m2_command_execution
 phase: null
-done_criteria: []
-status: idle
+done_criteria:
+  - "scripts/validate-commands.sh が存在し、実行可能である"
+  - "playbook 内の全 command が構文エラーなしでパース可能"
+status: pending
 ```
 
 ---
