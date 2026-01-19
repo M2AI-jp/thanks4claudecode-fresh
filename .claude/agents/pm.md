@@ -666,6 +666,18 @@ subtasks:
 ### executor 選択ロジック
 
 ```yaml
+# ★★★ coding フィールドによる自動判定（最優先）★★★
+coding_field_rule:
+  description: subtask の coding フィールドに基づいて executor を自動決定
+  rules:
+    - coding: true → executor: worker（toolstack C では codex）
+    - coding: false → executor: claudecode または reviewer
+  rationale: |
+    coding=true は本格的なコード実装を意味する。
+    toolstack C では worker=codex なので、自動的に codex が使用される。
+    これにより pm が executor-resolver を呼び忘れても正しく委譲される。
+
+# キーワードベース判定（coding フィールドが不明な場合のフォールバック）
 claudecode:
   キーワード: ファイル作成、設定、ドキュメント、軽量な修正
   例: "〇〇.md が存在する"、"設定ファイルに〇〇が含まれる"
