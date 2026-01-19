@@ -1,0 +1,188 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "temporal-achievability",
+    "branch": "feat/temporal-achievability-criteria",
+    "created": "2026-01-20",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "playbook-review-criteria.md に「時間的達成可能性（Temporal Achievability）」セクションを追加し、reviewer が論理的に達成不可能な criterion を検出できるようにする",
+    "done_when": [
+      ".claude/frameworks/playbook-review-criteria.md に「7. 時間的達成可能性」セクションが存在する",
+      "セクションに question, checklist, fail_examples, pass_examples が含まれる",
+      "「判定基準」セクションに temporal_achievability が追加されている",
+      "「シミュレーション実行プロトコル」に時間的整合性チェックが追加されている"
+    ],
+    "scope": {
+      "includes": [
+        "playbook-review-criteria.md への新セクション追加",
+        "判定基準への temporal_achievability 統合",
+        "シミュレーション実行プロトコルの拡張"
+      ],
+      "excludes": [
+        "reviewer.md SubAgent 定義の変更",
+        "既存セクションの大幅な構造変更",
+        "他の review criteria の追加"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "who": "reviewer SubAgent / pm SubAgent",
+          "what": "playbook-review-criteria.md に「7. 時間的達成可能性」セクションを追加",
+          "when": "即時",
+          "where": ".claude/frameworks/playbook-review-criteria.md",
+          "why": "m1-post-maintenance で達成不可能な criterion が reviewer を PASS した",
+          "how": "設計 -> 計画 -> 実装 の順序"
+        },
+        "risks": [
+          {
+            "risk": "定義が曖昧だと新たな見落とし",
+            "severity": "medium",
+            "mitigation": "具体的なチェックリストと fail_examples"
+          }
+        ],
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "instruction": ["時間的達成可能性チェックを追加"],
+          "question": [],
+          "context": ["m1-post-maintenance での問題事例"]
+        },
+        "test_strategy": {
+          "level": "manual review",
+          "coverage_target": "N/A",
+          "edge_cases": ["過去時制の criterion", "相対時間の criterion"]
+        },
+        "preconditions": {
+          "existing_code": "playbook-review-criteria.md に6つの普遍的レビュー基準が存在",
+          "dependencies": [],
+          "constraints": ["既存構造を維持"]
+        },
+        "success_criteria": {
+          "functional": [
+            "playbook-review-criteria.md に「7. 時間的達成可能性」セクションが存在する",
+            "セクションに question, checklist, fail_examples, pass_examples が含まれる",
+            "判定基準セクションに temporal_achievability が追加されている",
+            "シミュレーション実行プロトコルに時間的整合性チェックが追加されている"
+          ],
+          "non_functional": [],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": {
+          "components": ["reviewer SubAgent", "pm SubAgent"],
+          "risk_level": "low"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-20T06:05:00Z",
+      "summary": "AUTO_APPROVED - 時間的達成可能性チェックを playbook-review-criteria.md に追加",
+      "approved_items": [
+        "設計 -> 計画 -> 実装 の順序",
+        "既存構造を維持しつつ新セクションを追加"
+      ],
+      "technical_requirements_confirmed": [
+        "普遍的レビュー基準への「7. 時間的達成可能性」追加",
+        "判定基準への統合",
+        "シミュレーション実行プロトコルの拡張"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p0",
+      "name": "設計",
+      "description": "時間的達成可能性の定義、チェックリスト、fail_examples/pass_examples を設計",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p0.1",
+          "criterion": "時間的達成可能性の定義が明文化されている（docs/design/temporal-achievability-spec.md が存在する）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "test -f docs/design/temporal-achievability-spec.md",
+            "consistency": "定義が playbook-review-criteria.md の既存セクション構造と整合する",
+            "completeness": "question, checklist, fail_examples, pass_examples の全てが設計に含まれる"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p1",
+      "name": "実装",
+      "description": "playbook-review-criteria.md にセクション7を追加し、判定基準とシミュレーションプロトコルを更新",
+      "depends_on": ["p0"],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "playbook-review-criteria.md に「### 7. 時間的達成可能性（Temporal Achievability）」セクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q '### 7. 時間的達成可能性' .claude/frameworks/playbook-review-criteria.md",
+            "consistency": "セクション構造が既存の1-6と同じフォーマット",
+            "completeness": "question, checklist, fail_examples, pass_examples が全て含まれる"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "「判定基準」セクションの PASS 条件に temporal_achievability が含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q 'temporal_achievability' .claude/frameworks/playbook-review-criteria.md",
+            "consistency": "他の判定基準と同じ形式で記載",
+            "completeness": "PASS 条件と FAIL 条件の両方に統合"
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "「シミュレーション実行プロトコル」に時間的整合性チェックが含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -q '時間的' .claude/frameworks/playbook-review-criteria.md の「シミュレーション実行プロトコル」セクション内",
+            "consistency": "既存の手順・質問と同じ形式",
+            "completeness": "時間的達成可能性に関する質問が追加されている"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
