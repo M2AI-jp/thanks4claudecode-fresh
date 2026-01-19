@@ -568,7 +568,27 @@ playbook なしで作業開始しない:
      - [ ] 状態形式か？（「〜である」「〜が存在する」）
      - [ ] validations（3点検証）が書けるか？
      - [ ] 禁止パターンに該当しないか？
+     - [ ] 時間的達成可能性を満たすか？（下記チェックリスト）
    → 1つでも該当 → criterion を修正
+
+   【時間的達成可能性チェックリスト】（参照: docs/design/temporal-achievability-spec.md）
+   評価時点で達成可能な criterion のみを設定すること:
+     - [ ] 前提条件が評価時点で揃っている
+     - [ ] システムの状態遷移と矛盾しない
+     - [ ] 評価される Phase で達成可能（将来時点ではない）
+     - [ ] 自己参照矛盾を含んでいない
+
+   【fail_examples】達成不可能な criterion（設定禁止）:
+     - "state.md の playbook.branch が main" → playbook 実行中は作業ブランチ、main は archive 後
+     - "playbook.active が null" → playbook 実行中は current playbook を指す
+     - "PR がマージされている" → archive-playbook.sh で実行、Phase 中は未マージ
+     - "全ての Phase が完了している" → 現在実行中の Phase は未完了（自己参照矛盾）
+
+   【pass_examples】達成可能な criterion:
+     - "ファイル X が存在する" → Phase 内で作成可能
+     - "ESLint エラーが 0 件" → Phase 内で修正可能
+     - "ブランチ名が feat/xxx 形式" → 開始時に確定済み
+     - "repository-map.yaml が再生成されている" → Phase 内のアクションで達成可能
 
 4. 【必須】executor-resolver 呼び出し（M086: LLM ベース判定）
    → Task(subagent_type='executor-resolver', prompt='{subtasks リスト}')

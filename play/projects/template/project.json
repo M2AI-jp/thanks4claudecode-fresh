@@ -1,8 +1,56 @@
 {
-  "format_version": "1.0",
+  "_template_rules": {
+    "criterion": {
+      "MUST": "State what must be true, not what to do",
+      "MUST": "Be verifiable by command execution",
+      "FORBIDDEN": ["〜する", "〜した", "確認する", "検証する", "適切", "正しく", "良い"],
+      "GOOD_EXAMPLES": [
+        "ファイル X が存在する",
+        "jq '.field' が Y を返す",
+        "テストスクリプトが exit 0 で終了する"
+      ],
+      "BAD_EXAMPLES": [
+        "システムを実装する",
+        "適切に設定されている",
+        "正しく動作する"
+      ]
+    },
+    "command": {
+      "MUST": "Be a shell command that can be executed",
+      "MUST": "Return verifiable output or exit code",
+      "FORBIDDEN": ["Execute ...", "Compare ...", "Review ...", "Check ...", "Verify ..."],
+      "GOOD_EXAMPLES": [
+        "test -f path && echo 'exists'",
+        "./scripts/integration-test.sh && echo 'pass'",
+        "jq -e '.status' state.json"
+      ],
+      "BAD_EXAMPLES": [
+        "Execute all tests",
+        "Verify the system works",
+        "Check manually"
+      ]
+    },
+    "expected": {
+      "MUST": "Be a concrete value or condition",
+      "FORBIDDEN": ["適切", "正常", "正しく", "All ...", "100% ...", "Complete"],
+      "GOOD_EXAMPLES": [
+        "exists",
+        "pass",
+        "exit 0",
+        "\"completed\"",
+        ">= 1"
+      ],
+      "BAD_EXAMPLES": [
+        "正常終了",
+        "All pass",
+        "Complete success"
+      ]
+    }
+  },
+  "format_version": "1.2",
   "meta": {
-    "id": "example-project",
-    "title": "Project Title",
+    "id": "example-project-id",
+    "title": "Project Title: Specific Goal",
     "created": "YYYY-MM-DD",
     "status": "draft",
     "reviewed": false,
@@ -11,23 +59,60 @@
     "closed_by": null
   },
   "goal": {
-    "summary": "High-level objective description.",
+    "summary": "High-level objective: What system/feature and why",
     "done_when": [
-      "Condition 1 is met.",
-      "Condition 2 is met."
+      {
+        "criterion": "統合テストスクリプト scripts/integration-test.sh が pass を出力する",
+        "command": "./scripts/integration-test.sh 2>/dev/null | tail -1",
+        "expected": "pass"
+      },
+      {
+        "criterion": "全ての playbook が completed ステータスである",
+        "command": "jq -e '.milestones[].playbooks[] | select(.status != \"completed\") | .id' project.json 2>/dev/null | wc -l | tr -d ' '",
+        "expected": "0"
+      }
     ]
   },
   "milestones": [
     {
       "id": "m1",
-      "title": "Milestone 1",
+      "title": "Milestone 1: Foundation",
       "order": 1,
       "status": "pending",
-      "description": "Milestone description.",
+      "description": "What this milestone achieves",
+      "done_when": [
+        {
+          "criterion": "基盤コンポーネント X が存在し、export されている",
+          "command": "test -f src/foundation/X.ts && grep -c 'export' src/foundation/X.ts",
+          "expected": ">= 1"
+        }
+      ],
       "playbooks": [
         {
           "id": "pb-001",
-          "title": "First playbook",
+          "title": "Implement foundation component X",
+          "status": "pending",
+          "path": "play/projects/<project-id>/playbooks/<playbook-id>/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m2",
+      "title": "Milestone 2: Integration",
+      "order": 2,
+      "status": "pending",
+      "description": "Integrate components and verify",
+      "done_when": [
+        {
+          "criterion": "統合テストが pass を返す",
+          "command": "./scripts/integration-test.sh 2>/dev/null | tail -1",
+          "expected": "pass"
+        }
+      ],
+      "playbooks": [
+        {
+          "id": "pb-002",
+          "title": "Integration and testing",
           "status": "pending",
           "path": "play/projects/<project-id>/playbooks/<playbook-id>/plan.json"
         }
@@ -35,7 +120,7 @@
     }
   ],
   "progress": {
-    "total_playbooks": 1,
+    "total_playbooks": 2,
     "completed_playbooks": 0,
     "current_milestone": null,
     "current_playbook": null

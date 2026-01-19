@@ -1,8 +1,56 @@
 {
-  "format_version": "2.0",
+  "_template_rules": {
+    "criterion": {
+      "MUST": "State what must be true, not what to do",
+      "MUST": "Be verifiable by command execution",
+      "FORBIDDEN": ["〜する", "〜した", "確認する", "検証する", "適切", "正しく", "良い"],
+      "GOOD_EXAMPLES": [
+        "ファイル X が存在する",
+        "jq '.field' が Y を返す",
+        "grep -c 'pattern' が N 以上"
+      ],
+      "BAD_EXAMPLES": [
+        "ファイルを作成する",
+        "適切に設定されている",
+        "正しく動作する"
+      ]
+    },
+    "command": {
+      "MUST": "Be a shell command that can be executed",
+      "MUST": "Return verifiable output or exit code",
+      "FORBIDDEN": ["Execute ...", "Compare ...", "Review ...", "Check ..."],
+      "GOOD_EXAMPLES": [
+        "test -f path && echo 'exists'",
+        "jq -e '.field' file.json",
+        "grep -c 'pattern' file | awk '{print ($1 >= 3)}'"
+      ],
+      "BAD_EXAMPLES": [
+        "Execute the test",
+        "Compare with expected",
+        "Manually verify"
+      ]
+    },
+    "expected": {
+      "MUST": "Be a concrete value or condition",
+      "FORBIDDEN": ["適切", "正常", "正しく", "All ...", "100% ..."],
+      "GOOD_EXAMPLES": [
+        "exists",
+        "exit 0",
+        "true",
+        ">= 1",
+        "\"completed\""
+      ],
+      "BAD_EXAMPLES": [
+        "正常終了",
+        "All pass",
+        "100% match"
+      ]
+    }
+  },
+  "format_version": "2.2",
   "meta": {
-    "id": "example",
-    "branch": "feat/example",
+    "id": "example-playbook-id",
+    "branch": "feat/example-feature",
     "created": "YYYY-MM-DD",
     "status": "draft",
     "review_profile": "standard",
@@ -16,14 +64,22 @@
     }
   },
   "goal": {
-    "summary": "Short description of the objective.",
+    "summary": "Implement X to achieve Y (one sentence, specific)",
     "done_when": [
-      "Condition 1 is objectively verifiable.",
-      "Condition 2 is objectively verifiable."
+      {
+        "criterion": "src/feature.ts が存在し、export function X が含まれる",
+        "command": "test -f src/feature.ts && grep -c 'export function X' src/feature.ts",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "npm test が exit 0 で終了する",
+        "command": "npm test > /dev/null 2>&1 && echo 'pass' || echo 'fail'",
+        "expected": "pass"
+      }
     ],
     "scope": {
-      "includes": [],
-      "excludes": []
+      "includes": ["List specific files or features"],
+      "excludes": ["List what is NOT in scope"]
     }
   },
   "context": {
@@ -43,40 +99,62 @@
   "phases": [
     {
       "id": "p1",
-      "name": "Phase 1",
-      "description": "Describe the phase goal.",
+      "name": "Implementation",
+      "description": "Implement the core feature",
       "depends_on": [],
       "subtasks": [
         {
           "id": "p1.1",
-          "criterion": "Clear, verifiable completion condition.",
-          "executor": "claudecode",
-          "coding": false,
+          "criterion": "src/feature.ts が存在し、関数 X が定義されている",
+          "executor": "codex",
+          "coding": true,
           "validation_plan": {
-            "technical": "How to verify technically.",
-            "consistency": "How to verify consistency.",
-            "completeness": "How to verify completeness."
+            "technical": {
+              "type": "automated",
+              "command": "test -f src/feature.ts && grep -q 'function X' src/feature.ts && echo 'found'",
+              "expected": "found"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'import.*feature' src/index.ts",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq '.compilerOptions.strict' tsconfig.json",
+              "expected": "true"
+            }
           }
         }
       ]
     },
     {
       "id": "p_final",
-      "name": "Final review",
-      "description": "Independent verification of done_when.",
-      "depends_on": [
-        "p1"
-      ],
+      "name": "Final verification",
+      "description": "Execute all done_when commands and verify results",
+      "depends_on": ["p1"],
       "subtasks": [
         {
           "id": "p_final.1",
-          "criterion": "Reviewer verification passes for all done_when items.",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
           "executor": "coderabbit",
           "coding": false,
           "validation_plan": {
-            "technical": "Reviewer runs verification commands.",
-            "consistency": "Reviewer checks consistency across outputs.",
-            "completeness": "Reviewer validates all done_when items."
+            "technical": {
+              "type": "automated",
+              "command": "test -f src/feature.ts && grep -c 'export function X' src/feature.ts | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "npm test > /dev/null 2>&1 && echo 'pass' || echo 'fail'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "echo 'done_when[0]: '$(test -f src/feature.ts && grep -c 'export function X' src/feature.ts)' done_when[1]: '$(npm test > /dev/null 2>&1 && echo 'pass' || echo 'fail')",
+              "expected": "done_when[0]: >= 1, done_when[1]: pass"
+            }
           }
         }
       ]
