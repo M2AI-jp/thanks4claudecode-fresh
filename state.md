@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: m1
+current_milestone: null
 status: idle
 ```
 

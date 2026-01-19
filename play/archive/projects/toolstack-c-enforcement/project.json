@@ -4,9 +4,11 @@
     "id": "toolstack-c-enforcement",
     "title": "Toolstack C Design Enforcement",
     "created": "2026-01-08",
-    "status": "active",
+    "status": "closed",
     "reviewed": true,
-    "reviewed_by": "reviewer"
+    "reviewed_by": "reviewer",
+    "closed_at": "2026-01-20T04:15:02+09:00",
+    "closed_by": "archive-project.sh"
   },
   "goal": {
     "summary": "toolstack C 設計（codex + coderabbit 必須使用）が正しく機能していることを検証し、設計上の欠陥を修正する",
