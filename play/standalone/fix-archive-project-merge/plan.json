@@ -1,0 +1,153 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "fix-archive-project-merge",
+    "branch": "fix/archive-project-merge",
+    "created": "2026-01-20",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "archive-project.sh 117-119行目の rm -rf バグを修正し、既存 playbooks を保持するマージロジックに変更する",
+    "done_when": [
+      "archive-project.sh の 117-119行目が rm -rf ではなくマージロジック（rsync または cp -rn）に変更されている",
+      "既存アーカイブディレクトリが存在する場合、その中の playbooks/ 配下のファイルが保持される",
+      "project.json は新規で上書きされる"
+    ],
+    "scope": {
+      "includes": [
+        "archive-project.sh のマージロジック修正"
+      ],
+      "excludes": [
+        "archive-playbook.sh の変更",
+        "他のアーカイブスクリプトの変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "who": "Claude Code（playbook アーカイブ機能）",
+          "what": "archive-project.sh 117-119行目の rm -rf バグ修正",
+          "when": "即時（データ消失が継続中）",
+          "where": ".claude/skills/playbook-gate/workflow/archive-project.sh",
+          "why": "既存 playbooks が消失し、アーカイブの完全性が損なわれる",
+          "how": "rm -rf をマージロジック（rsync/cp -r）に変更",
+          "missing": "なし"
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "マージ時のファイル競合",
+              "severity": "low",
+              "mitigation": "project.json は新規で上書き、playbooks は保持"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "他のアーカイブスクリプトにも同様のバグ",
+              "severity": "medium",
+              "mitigation": "archive-playbook.sh も確認"
+            }
+          ]
+        },
+        "test_strategy": {
+          "test_types": ["integration"],
+          "coverage_target": "standard",
+          "edge_cases": [
+            "既存アーカイブがない場合",
+            "playbooks が空の場合"
+          ]
+        },
+        "success_criteria": {
+          "functional": "アーカイブ時に既存 playbooks が保持される",
+          "breaking_changes": false
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-20T04:25:00+09:00",
+      "summary": "archive-project.sh の rm -rf バグを修正し、マージロジックに変更する",
+      "approved_items": [
+        "rm -rf を rsync/cp -rn に変更",
+        "既存 playbooks を保持",
+        "project.json は上書き"
+      ],
+      "technical_requirements_confirmed": [
+        "マージ時の優先順位: 新規 project.json > 既存、既存 playbooks 保持"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "バグ修正",
+      "description": "archive-project.sh の 117-119行目を rm -rf からマージロジックに変更",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "archive-project.sh の 117-119行目が、既存アーカイブがある場合に rsync または cp を使ったマージロジックに変更されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "grep -A5 'アーカイブ先に既に存在' archive-project.sh でマージロジックを確認",
+            "consistency": "mv コマンドとの整合性確認（mv が残るか削除されるか）",
+            "completeness": "rm -rf が完全に削除されていることを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "動作検証",
+      "description": "修正後のロジックが正しく動作することを確認",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "シェルスクリプトの構文エラーがない（bash -n でチェック PASS）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "bash -n archive-project.sh の exit code が 0",
+            "consistency": "他のシェルスクリプトと同じコーディングスタイル",
+            "completeness": "エラーハンドリングが適切"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final review",
+      "description": "Independent verification of done_when.",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Reviewer verification passes for all done_when items.",
+          "executor": "reviewer",
+          "coding": false,
+          "validation_plan": {
+            "technical": "Reviewer runs verification commands.",
+            "consistency": "Reviewer checks consistency across outputs.",
+            "completeness": "Reviewer validates all done_when items."
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
