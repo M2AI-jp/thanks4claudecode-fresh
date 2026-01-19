@@ -19,7 +19,7 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/archive/codex-usage-improvement/plan.json
+active: null
 parent_project: null
 current_phase: done
 branch: feat/codex-usage-improvement
