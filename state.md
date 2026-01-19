@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/template-strictness/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: feat/template-strictness
-last_archived: play/archive/pm-temporal-guidance
+current_phase: null
+branch: null
+last_archived: play/standalone/template-strictness-v2
 review_pending: false
 ```
 
@@ -34,12 +34,9 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: p1
-done_criteria:
-  - "plan.json の validation_plan が { type, command, expected } 構造を持つ"
-  - "project.json の done_when が { criterion, command, expected } 構造を持つ"
-  - "全フィールドに具体的なサンプルコマンドが記載されている"
-status: in_progress
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
@@ -47,7 +44,7 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-20 06:45:30
+last_start: 2026-01-20 07:23:44
 last_end: 2026-01-20 06:45:28
 last_clear: 2025-12-24 03:20:00
 ```
