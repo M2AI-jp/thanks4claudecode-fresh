@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/fix-archive-project-merge/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: fix/archive-project-merge
-last_archived: play/archive/projects/toolstack-c-enforcement/m1-analysis
+current_phase: null
+branch: null
+last_archived: play/archive/fix-archive-project-merge
 review_pending: false
 
 ```
@@ -35,12 +35,9 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: p1
-done_criteria:
-  - archive-project.sh の 117-119行目が rm -rf ではなくマージロジックに変更されている
-  - 既存アーカイブディレクトリが存在する場合、その中の playbooks/ 配下のファイルが保持される
-  - project.json は新規で上書きされる
-status: in_progress
+phase: null
+done_criteria: []
+status: idle
 
 ```
 
