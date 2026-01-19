@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: null
-status: idle
+active: play/projects/toolstack-c-enforcement/project.json
+current_milestone: m1
+status: active
 ```
 
 ---
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
-parent_project: null
-current_phase: null
-branch: null
+active: play/projects/toolstack-c-enforcement/playbooks/m1-analysis/plan.json
+parent_project: toolstack-c-enforcement
+current_phase: p1
+branch: project/toolstack-c-enforcement
 last_archived: play/archive/projects/context-cleanup/m3-cleanup
 review_pending: false
 
@@ -34,10 +34,14 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: m1
+phase: p1
+done_criteria:
+  - executor 使用統計レポート（tmp/executor-usage-report.md）が存在する
+  - executor: reviewer と roles.reviewer: coderabbit の関係が分析されている
+  - context-cleanup playbooks がアーカイブされていない原因が特定されている
+  - 根本原因仮説が文書化されている
+status: active
 
 ```
 
@@ -46,8 +50,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-08 03:08:33
-last_end: 2026-01-08 01:57:34
+last_start: 2026-01-20 04:12:43
+last_end: 2026-01-20 03:49:19
 last_clear: 2025-12-24 03:20:00
 ```
 
