@@ -1,0 +1,168 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "toolstack-c-enforcement",
+    "plan_path": "play/standalone/toolstack-c-enforcement/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-20T04:50:00+09:00"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-20T04:55:00+09:00"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-20T05:00:00+09:00"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-20T05:05:00+09:00"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T04:50:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "plan.json context.analysis_result.data.risks.technical に問題点記載"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "proposed_solutions が問題点と整合（Stop フック案）"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "修正方針: p2 で executor-guard.sh 修正、p3 で Stop フック追加"
+          ]
+        }
+      },
+      "notes": "IS_CODE_FILE=false で exit 0 する問題を特定、Stop フック案を採用"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T04:52:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "bash -n exit 0（構文エラーなし）"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "hookSpecificOutput 形式が既存 coderabbit 委譲と同等"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "line 226: coderabbit + p_final* 判定、role-resolver で toolstack C 判定"
+          ]
+        }
+      },
+      "notes": "codex-delegate で実装完了"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-20T04:55:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "IS_CODE_FILE チェック（line 247）前に p_final チェック（line 226）配置"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "codex 委譲と同じ hookSpecificOutput JSON 構造"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "systemMessage に Task 呼び出し例含む"
+          ]
+        }
+      },
+      "notes": "非コードファイルでも委譲メッセージ出力確認"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T05:00:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "bash -n exit 0"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "executor-guard.sh と同等のロジック"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "coderabbit-delegate 呼び出し案内含む"
+          ]
+        }
+      },
+      "notes": "Stop フックに p_final 検知追加"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T05:05:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "reviewer PASS 3/3 + critic 独立検証"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "executor-guard.sh + stop/chain.sh + role-resolver.sh 連携確認"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "全3 done_when 項目検証済み"
+          ]
+        }
+      },
+      "notes": "reviewer + critic dual validation 完了"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PENDING",
+    "evidence": [],
+    "notes": ""
+  }
+}

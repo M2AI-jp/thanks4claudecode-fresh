@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/toolstack-c-enforcement/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: fix/coderabbit-delegation
 last_archived: play/archive/fix-archive-project-merge
 review_pending: false
 
@@ -35,9 +35,12 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - toolstack C で p_final 開始時に coderabbit-delegate への委譲が発生する
+  - コード編集なし（executor: reviewer）でも coderabbit 委譲が発生する
+  - toolstack A/B では coderabbit 委譲が発生しない
+status: in_progress
 
 ```
 
