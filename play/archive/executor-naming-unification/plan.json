@@ -1,0 +1,123 @@
+{
+  "format_version": "2.0",
+  "meta": {
+    "id": "executor-naming-unification",
+    "branch": "fix/executor-naming-unification",
+    "created": "2026-01-20",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "executor 名の統一 - テンプレートの p_final.executor を 'reviewer' から 'coderabbit' に変更",
+    "done_when": [
+      "play/template/plan.json の p_final.1.executor が 'coderabbit' である"
+    ],
+    "scope": {
+      "includes": [
+        "play/template/plan.json の executor 値変更"
+      ],
+      "excludes": [
+        "既存 playbook の修正",
+        "executor-resolver の変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "who": "開発者",
+          "what": "executor 名の統一 - テンプレートの p_final.executor を 'reviewer' から 'coderabbit' に変更",
+          "when": "即時",
+          "where": "play/template/plan.json (74行目)",
+          "why": "テンプレート(reviewer) と executor-resolver(coderabbit) の不整合解消",
+          "how": "テンプレートを coderabbit に変更"
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "既存 playbook への影響",
+              "severity": "low",
+              "mitigation": "既存はアーカイブ済み、新規分のみ"
+            },
+            {
+              "risk": "toolstack A/B での動作",
+              "severity": "medium",
+              "mitigation": "role-resolver.sh で coderabbit はそのまま返却"
+            }
+          ]
+        },
+        "success_criteria": {
+          "functional": [
+            "play/template/plan.json の p_final.1.executor が 'coderabbit' になっている",
+            "新規 playbook 生成時に p_final の executor が 'coderabbit' で出力される"
+          ]
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-20",
+      "summary": "計画の確認と修正しながらの進行",
+      "approved_items": [
+        "テンプレートの executor を reviewer から coderabbit に変更"
+      ],
+      "technical_requirements_confirmed": [
+        "変更対象: 1ファイル1行のみ"
+      ]
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "テンプレート修正",
+      "description": "play/template/plan.json の executor を修正する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "play/template/plan.json の p_final.1.executor が 'coderabbit' である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": "jq '.phases[] | select(.id==\"p_final\") | .subtasks[0].executor' play/template/plan.json で 'coderabbit' を確認",
+            "consistency": "state.md の roles.reviewer と一致することを確認",
+            "completeness": "他の executor 値が意図せず変更されていないことを確認"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "done_when の独立検証",
+      "depends_on": [
+        "p1"
+      ],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "全ての done_when 項目が検証に合格している",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": "検証コマンドを実行し結果を確認",
+            "consistency": "出力結果が done_when と整合",
+            "completeness": "全 done_when が PASS"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/toolstack-c-enforcement
+last_archived: play/archive/executor-naming-unification
 review_pending: false
 
 ```
@@ -33,7 +33,7 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: false
+self_complete: true
 milestone: null
 phase: null
 done_criteria: []
@@ -46,7 +46,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-20 04:12:43
+last_start: 2026-01-20 05:10:51
 last_end: 2026-01-20 03:49:19
 last_clear: 2025-12-24 03:20:00
 ```

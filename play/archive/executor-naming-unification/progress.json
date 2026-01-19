@@ -1,0 +1,78 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "executor-naming-unification",
+    "plan_path": "play/standalone/executor-naming-unification/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-20T04:30:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-20T04:35:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T04:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "jq output: coderabbit"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "state.md roles.reviewer matches"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "only claudecode and coderabbit"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-20T04:35:00Z",
+      "validated_by": "coderabbit",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "jq output: coderabbit"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [],
+    "notes": ""
+  }
+}
