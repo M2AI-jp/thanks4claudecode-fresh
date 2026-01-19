@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/m1-post-maintenance/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: fix/m1-post-maintenance
-last_archived: play/archive/codex-usage-improvement
+current_phase: null
+branch: null
+last_archived: play/archive/m1-post-maintenance
 review_pending: false
 ```
 
@@ -32,13 +32,11 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: true
+self_complete: false
 milestone: null
-phase: p1
-done_criteria:
-  - state.md の playbook.branch が main に更新されている
-  - repository-map.yaml のドリフトが解消されている
-status: in_progress
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
