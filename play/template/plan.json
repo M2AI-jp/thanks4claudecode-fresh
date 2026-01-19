@@ -1,5 +1,5 @@
 {
-  "format_version": "2.0",
+  "format_version": "2.1",
   "meta": {
     "id": "example",
     "branch": "feat/example",
@@ -18,8 +18,16 @@
   "goal": {
     "summary": "Short description of the objective.",
     "done_when": [
-      "Condition 1 is objectively verifiable.",
-      "Condition 2 is objectively verifiable."
+      {
+        "criterion": "Condition 1: State what must be true (not what to do)",
+        "command": "test -f path/to/file.json && echo 'exists'",
+        "expected": "exists"
+      },
+      {
+        "criterion": "Condition 2: Another verifiable state",
+        "command": "jq -e '.field' path/to/file.json",
+        "expected": "exit 0"
+      }
     ],
     "scope": {
       "includes": [],
@@ -49,13 +57,25 @@
       "subtasks": [
         {
           "id": "p1.1",
-          "criterion": "Clear, verifiable completion condition.",
+          "criterion": "Clear, verifiable completion condition (state, not action).",
           "executor": "claudecode",
           "coding": false,
           "validation_plan": {
-            "technical": "How to verify technically.",
-            "consistency": "How to verify consistency.",
-            "completeness": "How to verify completeness."
+            "technical": {
+              "type": "automated",
+              "command": "test -f path/to/file && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'pattern' related/file.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq 'keys | length' config.json",
+              "expected": ">= 3"
+            }
           }
         }
       ]
@@ -70,13 +90,25 @@
       "subtasks": [
         {
           "id": "p_final.1",
-          "criterion": "Reviewer verification passes for all done_when items.",
+          "criterion": "All done_when conditions pass verification.",
           "executor": "coderabbit",
           "coding": false,
           "validation_plan": {
-            "technical": "Reviewer runs verification commands.",
-            "consistency": "Reviewer checks consistency across outputs.",
-            "completeness": "Reviewer validates all done_when items."
+            "technical": {
+              "type": "automated",
+              "command": "Execute all done_when[].command and verify expected",
+              "expected": "All commands return expected values"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "Compare plan.json done_when with actual state",
+              "expected": "100% match"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "Review all done_when items manually",
+              "expected": "Human confirmation that all criteria are met"
+            }
           }
         }
       ]

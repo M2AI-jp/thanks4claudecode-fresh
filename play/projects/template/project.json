@@ -1,5 +1,5 @@
 {
-  "format_version": "1.0",
+  "format_version": "1.1",
   "meta": {
     "id": "example-project",
     "title": "Project Title",
@@ -13,8 +13,16 @@
   "goal": {
     "summary": "High-level objective description.",
     "done_when": [
-      "Condition 1 is met.",
-      "Condition 2 is met."
+      {
+        "criterion": "Condition 1: State what must be true (not what to do)",
+        "command": "test -f path/to/expected/file && echo 'exists'",
+        "expected": "exists"
+      },
+      {
+        "criterion": "Condition 2: Another verifiable state",
+        "command": "jq -e '.status' path/to/state.json",
+        "expected": "\"completed\""
+      }
     ]
   },
   "milestones": [
@@ -24,6 +32,13 @@
       "order": 1,
       "status": "pending",
       "description": "Milestone description.",
+      "done_when": [
+        {
+          "criterion": "Milestone completion condition",
+          "command": "test -f milestone/artifact && echo 'ready'",
+          "expected": "ready"
+        }
+      ],
       "playbooks": [
         {
           "id": "pb-001",
