@@ -1,0 +1,139 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "pm-temporal-guidance",
+    "plan_path": "play/projects/framework-quality/playbooks/pm-temporal-guidance/plan.json",
+    "status": "completed"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "completed",
+      "updated_at": "2026-01-20"
+    },
+    "p_final": {
+      "status": "completed",
+      "updated_at": "2026-01-20"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "completed",
+      "validated_at": "2026-01-20",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "pm.md Line 571-580 に temporal achievability チェックリストが存在"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "docs/design/temporal-achievability-spec.md Section 3.1 と一致"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "4項目全て含まれている（prerequisite_availability, state_consistency, timing_possibility, no_self_reference）"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p1.2": {
+      "status": "completed",
+      "validated_at": "2026-01-20",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "pm.md Line 581-592 に fail_examples と pass_examples が存在"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "temporal-achievability-spec.md Section 4 と整合"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "fail_examples 4例、pass_examples 4例（要件の最低3例を超過）"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p1.3": {
+      "status": "completed",
+      "validated_at": "2026-01-20",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "pm.md Line 574 に「参照: docs/design/temporal-achievability-spec.md」が存在"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "参照パスが正しい（ファイルが実在する）"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "Step 3.5 セクション内の適切な位置に配置"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "completed",
+      "validated_at": "2026-01-20",
+      "validated_by": "coderabbit",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "全ての done_when 条件を検証し PASS"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "既存の pm.md 構造が維持されている"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "3つの done_when 条件が全て満たされている"
+          ]
+        }
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "p1.1 PASS: temporal achievability チェックリスト 4項目追加済み",
+      "p1.2 PASS: fail_examples 4例、pass_examples 4例追加済み",
+      "p1.3 PASS: temporal-achievability-spec.md への参照追加済み",
+      "p_final.1 PASS: coderabbit による最終検証完了"
+    ],
+    "notes": "All phases completed 2026-01-20"
+  }
+}
