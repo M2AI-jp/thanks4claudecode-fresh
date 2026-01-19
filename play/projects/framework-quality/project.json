@@ -1,0 +1,92 @@
+{
+  "format_version": "1.0",
+  "meta": {
+    "id": "framework-quality",
+    "title": "Framework Quality Improvement",
+    "created": "2026-01-20",
+    "status": "active",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "closed_at": null,
+    "closed_by": null
+  },
+  "goal": {
+    "summary": "playbook-review-criteria.md と pm.md のガイダンスを強化し、reviewer で検出するより作成時に防ぐ（Shift Left 原則）",
+    "done_when": [
+      "pm.md に temporal achievability のチェックリストと例が追加されている",
+      "playbook-review-criteria.md への参照が pm.md に含まれている"
+    ]
+  },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "pm.md Temporal Achievability Guidance",
+      "order": 1,
+      "status": "in_progress",
+      "description": "pm.md の Step 3.5 に temporal achievability チェックを追加",
+      "playbooks": [
+        {
+          "id": "pm-temporal-guidance",
+          "title": "pm.md に temporal achievability ガイダンスを追加",
+          "status": "active",
+          "path": "play/projects/framework-quality/playbooks/pm-temporal-guidance/plan.json"
+        }
+      ]
+    }
+  ],
+  "progress": {
+    "total_playbooks": 1,
+    "completed_playbooks": 0,
+    "current_milestone": "m1",
+    "current_playbook": "pm-temporal-guidance"
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "topic_type": "instruction",
+        "5w1h": {
+          "who": "LLM（Claude Code）、pm SubAgent",
+          "what": "pm.md の Step 3.5 に temporal achievability チェックを追加",
+          "when": "即時実行可能",
+          "where": ".claude/skills/golden-path/agents/pm.md",
+          "why": "reviewer で検出するより pm 作成時に防ぐ（Shift Left）",
+          "how": "docs/design/temporal-achievability-spec.md を参照し、チェックリストと例を追加"
+        },
+        "risks": [
+          {
+            "category": "technical",
+            "risk": "pm.md の構造変更による既存フローへの影響",
+            "severity": "low",
+            "mitigation": "追加のみ、既存構造は変更しない"
+          }
+        ],
+        "success_criteria": {
+          "functional": [
+            "pm.md の Step 3.5 に temporal achievability チェックが追加されている",
+            "temporal-achievability-spec.md への参照が含まれている",
+            "fail_examples と pass_examples が含まれている"
+          ],
+          "non_functional": [
+            "既存の pm.md 構造が維持されている"
+          ]
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-20",
+      "summary": "修正がのちの修正をうむ懸念がなければ進めて良い",
+      "approved_items": [
+        "pm.md の Step 3.5 に temporal achievability チェックを追加",
+        "追加のみで既存構造は変更しない"
+      ],
+      "technical_requirements_confirmed": [
+        "docs/design/temporal-achievability-spec.md を参照",
+        "マイルストーン→playbook 設計に従う"
+      ]
+    }
+  }
+}
