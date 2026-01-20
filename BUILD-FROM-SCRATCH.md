@@ -24,12 +24,19 @@
 ### 設計思想
 
 ```
-Hook（いつ発火するか）→ Skill（何をするか）→ SubAgent（誰が検証するか）
+実行系:
+Hook（いつ発火するか）→ Skill（何をするか）→ Module（単機能）
+
+検証系:
+SubAgent（誰が検証するか）
 ```
 
 - **Hook**: イベント駆動の入口（公式仕様）
 - **Skill**: ユースケース単位のパッケージ（独自設計）
-- **SubAgent**: 独立した検証者（報酬詐欺防止）
+- **Module**: Skill 内の単機能スクリプト（guards/handlers/workflow など）
+- **SubAgent**: 独立した検証者（報酬詐欺防止、実行系から分離）
+
+Event Unit は Hook の発火タイミングを境界にした実行単位で、`Hook → chain → Skill → Module` のみを通す。
 
 ### ⚠️ 構築順序の重要原則
 
@@ -41,16 +48,16 @@ Hook（いつ発火するか）→ Skill（何をするか）→ SubAgent（誰�
    → Hook が他機能の開発・デバッグを阻害する
 
 ✅ 正しい順序:
-   1. 単機能として構成・テスト
-   2. Skills 単位でモジュール化・手動テスト
-   3. 最後に Hook で制御
+   1. 単機能モジュールとして構成・テスト
+   2. Skills 単位で手動呼び出しし、モジュール単位で動作テスト
+   3. 最後に Hook（Event Unit）で制御
 ```
 
 **なぜこの順序か**:
 
 | 順序 | やること | 理由 |
 |------|----------|------|
-| **1. 単機能** | ガードスクリプト、SubAgent を個別に作成・動作確認 | 各部品が正しく動くか確認してから組み合わせる |
+| **1. 単機能** | ガードスクリプトなどの単機能モジュールと SubAgent を個別に作成・動作確認 | 各部品が正しく動くか確認してから組み合わせる |
 | **2. Skills** | 機能をパッケージ化し、手動で呼び出してテスト | Hook なしで `/skill-name` や手動実行で検証 |
 | **3. Hook** | すべて動作確認できてから Hook を接続 | Hook は「発火タイミング」のみ担当、機能は確立済み |
 
@@ -321,6 +328,8 @@ Task(
 | `handlers/` | 処理スクリプト（*.sh） |
 | `workflow/` | ワークフロースクリプト（*.sh） |
 
+`guards/handlers/workflow` は **Module（単機能）** の置き場であり、Hook ではなく **手動実行で先に動作確認**する。
+
 **主要 Skills 一覧**:
 | Skill | 役割 | Hook との関係 |
 |-------|------|--------------|
@@ -360,7 +369,7 @@ Task(
 
 ## 3. 構築フェーズ
 
-> ⚠️ **重要**: Phase の順序は「単機能 → Skills → Hook」である。Hook を先に入れると開発を阻害する。
+> ⚠️ **重要**: Phase の順序は「単機能モジュール → Skills → Hook」である。Hook を先に入れると開発を阻害する。
 
 ### Phase 0: 最小動作環境
 
@@ -468,6 +477,8 @@ jq '.hooks | keys | length' .claude/settings.json
 
 **⚠️ Hook 経由ではなく、手動で `Task()` を呼び出してテストする**
 
+SubAgent は検証レイヤのため、`Hook → Skill → Module` の実行系とは分離して確認する。
+
 **作成ファイル**:
 ```
 .claude/
@@ -574,7 +585,7 @@ Task(
 
 ### Phase 3: ガードスクリプト単体構築
 
-**目標**: ガードスクリプトを個別に作成し、手動で動作確認
+**目標**: ガードスクリプトを単機能モジュールとして作成し、手動で動作確認
 
 **依存**: Phase 2
 
@@ -754,6 +765,8 @@ Task(
 **依存**: Phase 3, Phase 4
 
 **⚠️ Skill ツールで手動呼び出し、または `/skill-name` でテスト**
+
+Skill は Module（guards/handlers/workflow）を束ねる単位で、機能は Module に閉じる。
 
 **作成ファイル**:
 ```
@@ -986,7 +999,7 @@ echo "Archived: ${PLAYBOOK_ID}"
 
 | 機能 | 説明 | 目的 |
 |-----|------|-----|
-| Event Unit | Hook → chain → Skill の階層構造 | 疎結合の維持 |
+| Event Unit | Hook → chain → Skill → Module の階層構造 | 疎結合の維持 |
 | playbook | plan.json + progress.json によるタスク管理 | 状態の永続化 |
 | state.md | 現在状態の Single Source of Truth | セッション間の状態保持 |
 | Golden Path | playbook-init → pm → reviewer の必須チェーン | 品質保証 |
@@ -1146,5 +1159,6 @@ Hook を先に入れると、機能開発・デバッグが阻害される。
 
 | 日付 | 内容 |
 |------|------|
-| 2026-01-20 | **Phase 構成を根本修正**: 「単機能 → Skills → Hook」の順序に変更 |
+| 2026-01-20 | 設計思想を **Hook → Skill → Module** に更新、SubAgent を検証レイヤとして明示 |
+| 2026-01-20 | **Phase 構成を根本修正**: 「単機能モジュール → Skills → Hook」の順序に変更 |
 | 2026-01-20 | 初版作成 |
