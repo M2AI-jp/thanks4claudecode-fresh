@@ -1,0 +1,369 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "pb-001",
+    "branch": "feat/new-repo-docs-sync",
+    "created": "2026-01-21",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "new-repo ドキュメントの改善タスク 8 項目を全て実行し、ルートの修正を new-repo にミラーしてドキュメント整合性を確保する",
+    "done_when": [
+      {
+        "criterion": "new-repo/BUILD-FROM-SCRATCH.md がルートの修正を反映している",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md && grep -c '機能単位で縦に完成' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "new-repo/EXAMPLE-FRAMEWORK-BUILD.md が存在する",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-FRAMEWORK-BUILD.md && echo 'exists'",
+        "expected": "exists"
+      },
+      {
+        "criterion": "new-repo/EXAMPLE-CHATGPT-CLONE.md に Phase -1 前提条件が追加されている",
+        "command": "grep -c 'Phase -1' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-CHATGPT-CLONE.md",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "PROJECT-STORY.md に概念整理を飛ばした失敗セクションが存在する",
+        "command": "grep -c '概念整理.*飛ばした\\|飛ばした.*失敗' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/PROJECT-STORY.md",
+        "expected": ">= 1"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "new-repo/BUILD-FROM-SCRATCH.md",
+        "new-repo/REBUILD-DESIGN-SPEC.md",
+        "new-repo/EXAMPLE-FRAMEWORK-BUILD.md",
+        "new-repo/EXAMPLE-CHATGPT-CLONE.md",
+        "new-repo/PROJECT-STORY.md"
+      ],
+      "excludes": [
+        "ルートディレクトリのファイル（参照のみ）",
+        "コード実装"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "claudecode（orchestrator として）",
+          "what": "new-repo ドキュメントの改善タスク 8 項目を全て実行",
+          "when": "即時",
+          "where": "/Users/amano/Desktop/thanks4claudecode-v2/new-repo/",
+          "why": "ルートの修正を new-repo にミラーし、ドキュメント整合性を確保",
+          "how": "playbook を立ち上げ、8 タスクを phase/subtask として段階実行"
+        },
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 8,
+          "topics": [
+            {"id": 1, "description": "BUILD-FROM-SCRATCH.md, REBUILD-DESIGN-SPEC.md をルートから new-repo にミラー"},
+            {"id": 2, "description": "EXAMPLE-FRAMEWORK-BUILD.md を new-repo にコピー"},
+            {"id": 3, "description": "EXAMPLE-CHATGPT-CLONE.md に Phase -1 前提条件を追加"},
+            {"id": 4, "description": "機能単位で縦に完成させる原則を BUILD-FROM-SCRATCH.md に追加"},
+            {"id": 5, "description": "Layer 0-5 の未配置コンポーネント 6 個を確定"},
+            {"id": 6, "description": "Phase -1 の最小成果物テンプレートを追加"},
+            {"id": 7, "description": "EXAMPLE-FRAMEWORK-BUILD.md の詳細化（成果物/Evidence/完了条件）"},
+            {"id": 8, "description": "PROJECT-STORY.md に概念整理を飛ばした失敗を追加"}
+          ],
+          "recommendation": "8 タスクを 2 phase（高優先度 / 中優先度）に分割"
+        },
+        "success_criteria": {
+          "functional": [
+            "new-repo/BUILD-FROM-SCRATCH.md が修正を反映",
+            "new-repo/EXAMPLE-FRAMEWORK-BUILD.md が存在",
+            "new-repo/EXAMPLE-CHATGPT-CLONE.md に Phase -1 前提条件が追加",
+            "BUILD-FROM-SCRATCH.md に機能単位で縦に完成させる原則が追加",
+            "Layer 0-5 の 6 コンポーネントが適切なセクションに配置",
+            "Phase -1 の最小成果物テンプレートが追加",
+            "EXAMPLE-FRAMEWORK-BUILD.md に成果物/Evidence/完了条件が追加",
+            "PROJECT-STORY.md に概念整理を飛ばした失敗セクションが追加"
+          ]
+        },
+        "ready_for_playbook": true
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_APPROVED",
+      "approved_at": "2026-01-21",
+      "summary": "8 タスクの実行を自動承認（auto_approve=true）",
+      "approved_items": [
+        "8 項目のドキュメント改善タスク",
+        "2 phase 構成（高優先度 / 中優先度）"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "High Priority Tasks (1-4)",
+      "description": "高優先度タスク: ミラーリング、コピー、Phase -1 追加、機能単位原則追加",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "new-repo/BUILD-FROM-SCRATCH.md にルートの修正内容が反映されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "diff /Users/amano/Desktop/thanks4claudecode-v2/docs/design/BUILD-FROM-SCRATCH.md /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md | head -20 || echo 'diff_checked'",
+              "expected": "diff_checked"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'Phase' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 3"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "new-repo/REBUILD-DESIGN-SPEC.md にルートの修正内容が反映されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/REBUILD-DESIGN-SPEC.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Layer' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/REBUILD-DESIGN-SPEC.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/new-repo/REBUILD-DESIGN-SPEC.md | tr -d ' '",
+              "expected": ">= 50"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "new-repo/EXAMPLE-FRAMEWORK-BUILD.md が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-FRAMEWORK-BUILD.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Phase' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-FRAMEWORK-BUILD.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-FRAMEWORK-BUILD.md | tr -d ' '",
+              "expected": ">= 30"
+            }
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "new-repo/EXAMPLE-CHATGPT-CLONE.md に Phase -1 前提条件セクションが追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Phase -1\\|Phase.-1\\|前提条件' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-CHATGPT-CLONE.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '概念整理\\|問題定義' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-CHATGPT-CLONE.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -A5 'Phase -1\\|Phase.-1\\|前提条件' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-CHATGPT-CLONE.md | wc -l | tr -d ' '",
+              "expected": ">= 3"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Medium Priority Tasks (5-8)",
+      "description": "中優先度タスク: Layer 配置、テンプレート追加、詳細化、失敗セクション追加",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "BUILD-FROM-SCRATCH.md に機能単位で縦に完成させる原則が追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c '機能単位.*縦\\|縦.*完成\\|Vertical Slice' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '原則\\|Principle' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -A10 '機能単位\\|Vertical' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "Layer 0-5 の 6 コンポーネントが適切なセクションに配置されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Layer' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 6"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -E 'Layer [0-5]' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md | wc -l | tr -d ' '",
+              "expected": ">= 6"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'コンポーネント\\|Component' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "Phase -1 の最小成果物テンプレートが追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'テンプレート\\|Template\\|最小成果物' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Phase -1\\|Phase.-1' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -A15 'Phase -1\\|Phase.-1\\|最小成果物' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": "EXAMPLE-FRAMEWORK-BUILD.md に成果物/Evidence/完了条件が追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Evidence\\|成果物\\|完了条件\\|Done' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-FRAMEWORK-BUILD.md",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Phase' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-FRAMEWORK-BUILD.md",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-FRAMEWORK-BUILD.md | tr -d ' '",
+              "expected": ">= 100"
+            }
+          }
+        },
+        {
+          "id": "p2.5",
+          "criterion": "PROJECT-STORY.md に概念整理を飛ばした失敗セクションが追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c '概念整理.*飛ばした\\|飛ばした.*失敗\\|概念整理.*スキップ' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/PROJECT-STORY.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '失敗\\|Failure\\|教訓' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/PROJECT-STORY.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -A10 '概念整理\\|飛ばした' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/PROJECT-STORY.md | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "全 done_when の検証を実行",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md && grep -c '機能単位で縦に完成' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-FRAMEWORK-BUILD.md && echo 'pass' || echo 'fail'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'Phase -1' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-CHATGPT-CLONE.md | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

@@ -1,0 +1,187 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "project-story",
+    "branch": "feat/project-story",
+    "created": "2026-01-20",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Create PROJECT-STORY.md documenting repository evolution, failures, learnings, and Claude Code orchestration design in story format (10,000+ chars)",
+    "done_when": [
+      {
+        "criterion": "PROJECT-STORY.md exists in top directory",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md && echo 'exists'",
+        "expected": "exists"
+      },
+      {
+        "criterion": "PROJECT-STORY.md has 10,000+ characters",
+        "command": "wc -c < /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md | awk '{print ($1 >= 10000 ? \"pass\" : \"fail\")}'",
+        "expected": "pass"
+      },
+      {
+        "criterion": "Document contains required sections: failures, Claude Code specs, orchestration, human workflow",
+        "command": "grep -c '##' /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md | awk '{print ($1 >= 5 ? \"pass\" : \"fail\")}'",
+        "expected": "pass"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "PROJECT-STORY.md creation",
+        "Repository failure history",
+        "Claude Code specification documentation",
+        "Orchestration design rationale",
+        "Human workflow recreation approach"
+      ],
+      "excludes": [
+        "Code implementation",
+        "Test automation",
+        "CI/CD configuration"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Repository owner/developer",
+          "what": "Create structured design document with repository failure history and learnings in story format",
+          "when": "Immediate",
+          "where": "Top directory (PROJECT-STORY.md)",
+          "why": "To leverage failure learnings for future projects",
+          "how": "Reference BUILD-FROM-SCRATCH.md and EXAMPLE-CHATGPT-CLONE.md, write 10,000+ characters"
+        },
+        "risks": {
+          "technical": {
+            "severity": "low",
+            "description": "10,000 char requirement is subjective",
+            "mitigation": "Use wc -c for verification"
+          },
+          "scope": {
+            "severity": "medium",
+            "description": "Failure definition may be ambiguous",
+            "mitigation": "Reference BUILD-FROM-SCRATCH.md Section 4 as basis"
+          }
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "instruction": "Create PROJECT-STORY.md with structured content",
+          "question": null,
+          "context": "BUILD-FROM-SCRATCH.md and EXAMPLE-CHATGPT-CLONE.md as references"
+        },
+        "test_strategy": {
+          "level": "Document verification",
+          "coverage": "File existence and content length",
+          "edge_cases": "None"
+        },
+        "preconditions": {
+          "existing_code": "BUILD-FROM-SCRATCH.md, EXAMPLE-CHATGPT-CLONE.md exist",
+          "dependencies": "None",
+          "constraints": "10,000+ characters in story format"
+        },
+        "success_criteria": {
+          "functional": "Document created with required sections",
+          "non_functional": "Readable story format",
+          "breaking_changes": "None"
+        },
+        "reverse_dependencies": {
+          "components": "None",
+          "risk_level": "low"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_FLOW",
+      "approved_at": "2026-01-20T",
+      "summary": "Create PROJECT-STORY.md documenting repository evolution, failures, learnings, and Claude Code orchestration design",
+      "approved_items": [
+        "File: PROJECT-STORY.md in top directory",
+        "Format: Markdown, story-based, 10,000+ characters",
+        "Content: Repository failures and recovery, Claude Code specs, orchestration necessity, human engineer workflow recreation"
+      ],
+      "technical_requirements_confirmed": [
+        "Use BUILD-FROM-SCRATCH.md and EXAMPLE-CHATGPT-CLONE.md as references",
+        "Include structured sections with ## headings",
+        "Write in detailed story format"
+      ]
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Document Creation",
+      "description": "Create PROJECT-STORY.md with all required content",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "PROJECT-STORY.md exists with 10,000+ characters covering repository history, failures, Claude Code specs, orchestration rationale, and human workflow recreation",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md && wc -c < /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md | awk '{print ($1 >= 10000 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -E '(BUILD-FROM-SCRATCH|EXAMPLE-CHATGPT-CLONE|Hook|Skill|SubAgent|playbook)' /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md | wc -l | awk '{print ($1 >= 10 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '##' /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md | awk '{print ($1 >= 5 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "Verify all done_when criteria are satisfied",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "All goal.done_when commands return expected values",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "wc -c < /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md | awk '{print ($1 >= 10000 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '##' /Users/amano/Desktop/thanks4claudecode-v2/PROJECT-STORY.md | awk '{print ($1 >= 5 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

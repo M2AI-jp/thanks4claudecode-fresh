@@ -2,6 +2,8 @@
 
 > 文書の位置付け: 構築手順書（How）
 >
+> **MECE 役割**: 構築手順の SSOT（Phase -1〜8、Layer 構造、コンポーネント一覧、ディレクトリ構造）
+>
 > 読み順: README.md を参照
 >
 > 一次仕様: REBUILD-DESIGN-SPEC.md
@@ -16,7 +18,15 @@
 >
 > **逆引き設計図**: Claude Code フレームワークをゼロから構築するためのガイド
 >
-> 更新: 2026-01-20
+> 更新: 2026-01-21
+>
+> ---
+>
+> **SSOT マップ（本文書内の重複と参照先）**:
+> - §2 設計原則 → **本文書が SSOT**（PROJECT-STORY.md §6 は背景のみ）
+> - §8.0 Phase -1 概念整理 → 手順は本文書、**内容は REBUILD-DESIGN-SPEC.md §5 が SSOT**
+> - §8.1 Layer 0-5 → **本文書が SSOT**
+> - §11 Claude Code 公式仕様 → **REBUILD-DESIGN-SPEC.md §3 が SSOT**（本文書は URL のみ）
 
 ---
 
@@ -75,14 +85,16 @@
 **依頼順番:**
 
 1. **概念の整理**（何を作るか）
-   - エンジニアリング概念を分解する
+   - エンジニアリング概念を**最小作業単位**まで分解する
      - 概念整理の順序（依存関係）: 役割 → 保護・制御 → 計画 → テスト → レビュー → 状態管理
      - 役割: 判断者/実行者/監査者/強制者
      - 保護・制御: 対象（ブランチ/ファイル/スコープ/品質）
-     - 計画: 粒度（ロードマップ/プロジェクト/スプリント/タスク）
-     - テスト: 粒度（Unit/Integration/E2E）×目的（機能/回帰/性能）×タイミング
-     - レビュー: 対象（要件/設計/コード）×観点（正確性/可読性/保守性）×タイミング
-     - 状態管理: 対象（コード/タスク/環境/データ/依存）
+     - 計画: 粒度（ロードマップ/プロジェクト/スプリント/タスク）→ **タスクは最小単位まで分解**
+     - テスト: 粒度（Unit/Integration/E2E）×目的（機能/回帰/性能）×タイミング → **観点抽出→設計→実装→実行→失敗分類→修正→再実行**
+     - レビュー: 対象（要件/設計/コード）×観点（正確性/可読性/保守性）×タイミング → **チェックリスト化**
+     - 状態管理: 保存対象/表現形式/粒度/更新契機/復元手順/破綻パターン → **ロングタームコンテキストの設計**
+   - 追加の分解: 仕様（入力形式）、変更（PR）、運用
+   - **最小作業単位のテンプレ**: Step名/入力/作業内容/完了条件/出力/失敗時
    - REBUILD-DESIGN-SPEC.md のセクション 5 を参照
    - 各概念を Skill/SubAgent/Module/Hook にマッピングする
 2. **実装**（どう作るか）
@@ -92,6 +104,8 @@
    - 最後に Hook を接続する（Event Unit の chain を含む）
 
 > 鉄則: 「モジュールにする前に、エンジニアリングの概念をリストアップする」。この整理が先にあって、初めて「何を Skill にするか」「何を SubAgent にするか」が決まる。
+>
+> **重要**: モジュール化は"概念の名前"ではなく、**"人間の作業単位"と"合否判定"の境界**で行う。「入力」「処理」「出力」「検証（合否判定）」「失敗時の分岐」を持つ最小作業単位へ分解すると、並列化・リトライ・人間承認ポイント挿入・ログ追跡が可能になる。
 
 > 重要: Phase 順（全 Module → 全 SubAgent → 全 Skill）ではなく、**機能単位で縦に完成させる**。
 >
@@ -311,23 +325,31 @@
 ```
 .claude/
   events/
-    pre-tool/
-    prompt/
     session-start/
+    prompt/
+    pre-tool/
+    post-tool/
     stop/
+    pre-compact/
+    session-end/
   hooks/
-    pre-tool-guard.sh
     session-init.sh
+    pre-tool-guard.sh
+    post-tool.sh
     stop-guard.sh
+    pre-compact.sh
+    session-end.sh
   skills/
     topic-classifier/
     playbook-creator/
     executor-resolver/
     state-updater/
     lint-runner/
+    type-checker/
     integrity-checker/
     health-checker/
     test-runner/
+    dependency-checker/
     playbook-validator/
     code-validator/
     branch-manager/
@@ -336,6 +358,8 @@
     branch-protector/
     file-protector/
     playbook-gate/
+    completion-gate/
+    scope-guard/
     post-loop-gate/
   agents/
     orchestrator.md
@@ -378,6 +402,8 @@ play/
 
 ### 8.0 Phase -1: 概念整理（全ての出発点）
 
+> **SSOT 注記**: 本セクションは「手順」のみ。概念の詳細（What）は **REBUILD-DESIGN-SPEC.md §5** を参照。
+
 Phase 0 に進む前に、エンジニアリング概念を整理する。これが全ての依頼の土台になる。
 
 **なぜ概念整理が先か:**
@@ -388,10 +414,11 @@ Phase 0 に進む前に、エンジニアリング概念を整理する。これ
 **概念整理の順序（依存関係）:**
 1. 役割（判断者/実行者/監査者/強制者）
 2. 保護・制御（Hook で強制できる範囲の確定）
-3. 計画（playbook の粒度と構造）
-4. テスト（実行者の責務と実行タイミング）
-5. レビュー（監査者の責務、playbook/code の分離）
-6. 状態管理（上記を踏まえた SSOT と更新ルール）
+3. 計画（playbook の粒度と構造）→ **タスクは最小作業単位まで分解**
+4. テスト（実行者の責務と実行タイミング）→ **観点抽出→設計→実装→実行→失敗分類→修正→再実行**
+5. レビュー（監査者の責務、playbook/code の分離）→ **チェックリスト化**
+6. 状態管理（ロングタームコンテキスト設計）→ **保存対象/表現形式/粒度/更新契機/復元手順/破綻パターン**
+7. 追加の分解: 仕様（エージェントが迷わない入力形式）、変更（PR）、運用
 
 **Phase -1 の playbook 運用（手動）:**
 1. `play/template/` が無ければ、この時点で最小の plan/progress を手動作成（Phase 4 で正式化）
@@ -411,7 +438,10 @@ Phase 0 に進む前に、エンジニアリング概念を整理する。これ
 - マッピング表（概念 → Skill/SubAgent/Module/Hook、Hook 強制可否）
 - コンポーネント仕様一覧（責務1行、入力/出力、依存先）
 - 機能依存関係図（Layer 0〜N の分類と構築順序）
+- **最小作業単位テンプレ**（各コンポーネントの Step名/入力/作業内容/完了条件/出力/失敗時）
 - 作るべきコンポーネントの一覧が確定し、責務の重複がない（MECE）
+
+> **重要**: 「入力」「処理」「出力」「検証（合否判定）」「失敗時の分岐」を持つ最小作業単位へ分解することで、並列化・リトライ・人間承認ポイント挿入・ログ追跡が可能になる。モジュール化は"概念の名前"ではなく、"人間の作業単位"と"合否判定"の境界で行う。
 
 **参照:**
 - REBUILD-DESIGN-SPEC.md セクション 5「エンジニアリング概念マップ」
@@ -610,6 +640,8 @@ set -euo pipefail
 ---
 
 ## 11. Claude Code 公式仕様
+
+> **SSOT 注記**: 仕様の詳細は **REBUILD-DESIGN-SPEC.md §3** を参照。本セクションは URL リンクのみ。
 
 - Hooks: https://code.claude.com/docs/ja/hooks
 - SubAgents: https://code.claude.com/docs/ja/sub-agents
