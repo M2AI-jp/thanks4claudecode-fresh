@@ -38,7 +38,7 @@
         {
           "id": "pb-001",
           "title": "Execute 8 documentation improvement tasks",
-          "status": "active",
+          "status": "done",
           "path": "play/projects/new-repo-docs-sync/playbooks/pb-001/plan.json"
         }
       ]
@@ -46,9 +46,9 @@
   ],
   "progress": {
     "total_playbooks": 1,
-    "completed_playbooks": 0,
+    "completed_playbooks": 1,
     "current_milestone": "m1",
-    "current_playbook": "pb-001"
+    "current_playbook": null
   },
   "context": {
     "analysis_result": {
@@ -68,14 +68,38 @@
           "detected": true,
           "topic_count": 8,
           "topics": [
-            {"id": 1, "description": "BUILD-FROM-SCRATCH.md, REBUILD-DESIGN-SPEC.md をルートから new-repo にミラー"},
-            {"id": 2, "description": "EXAMPLE-FRAMEWORK-BUILD.md を new-repo にコピー"},
-            {"id": 3, "description": "EXAMPLE-CHATGPT-CLONE.md に Phase -1 前提条件を追加"},
-            {"id": 4, "description": "機能単位で縦に完成させる原則を BUILD-FROM-SCRATCH.md に追加"},
-            {"id": 5, "description": "Layer 0-5 の未配置コンポーネント 6 個を確定"},
-            {"id": 6, "description": "Phase -1 の最小成果物テンプレートを追加"},
-            {"id": 7, "description": "EXAMPLE-FRAMEWORK-BUILD.md の詳細化（成果物/Evidence/完了条件）"},
-            {"id": 8, "description": "PROJECT-STORY.md に概念整理を飛ばした失敗を追加"}
+            {
+              "id": 1,
+              "description": "BUILD-FROM-SCRATCH.md, REBUILD-DESIGN-SPEC.md をルートから new-repo にミラー"
+            },
+            {
+              "id": 2,
+              "description": "EXAMPLE-FRAMEWORK-BUILD.md を new-repo にコピー"
+            },
+            {
+              "id": 3,
+              "description": "EXAMPLE-CHATGPT-CLONE.md に Phase -1 前提条件を追加"
+            },
+            {
+              "id": 4,
+              "description": "機能単位で縦に完成させる原則を BUILD-FROM-SCRATCH.md に追加"
+            },
+            {
+              "id": 5,
+              "description": "Layer 0-5 の未配置コンポーネント 6 個を確定"
+            },
+            {
+              "id": 6,
+              "description": "Phase -1 の最小成果物テンプレートを追加"
+            },
+            {
+              "id": 7,
+              "description": "EXAMPLE-FRAMEWORK-BUILD.md の詳細化（成果物/Evidence/完了条件）"
+            },
+            {
+              "id": 8,
+              "description": "PROJECT-STORY.md に概念整理を飛ばした失敗を追加"
+            }
           ],
           "recommendation": "8 タスクを 2 phase（高優先度 / 中優先度）に分割"
         },
