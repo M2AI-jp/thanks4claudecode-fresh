@@ -11,3 +11,10 @@ Entry points:
 - CLAUDE.md (behavior)
 - AGENTS.md (coding rules)
 - state.md (SSOT)
+
+Zero-base docs (read in order):
+- PROJECT-STORY.md (background)
+- REBUILD-DESIGN-SPEC.md (design principles)
+- BUILD-FROM-SCRATCH.md (build steps)
+- EXAMPLE-FRAMEWORK-BUILD.md (build simulation)
+- EXAMPLE-CHATGPT-CLONE.md (operational script)

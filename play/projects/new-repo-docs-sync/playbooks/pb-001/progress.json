@@ -1,0 +1,238 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "pb-001",
+    "plan_path": "play/projects/new-repo-docs-sync/playbooks/pb-001/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-21T23:00:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-21T23:00:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-21T23:01:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c '機能単位で縦に完成' → 1 (Line 110)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["test -f → exists"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Phase count = 23 (expected >= 3)"]
+        }
+      },
+      "notes": "ルートの修正内容が反映済み"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f → exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Layer count = 4 (expected >= 1)"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Line count = 1220 (expected >= 50)"]
+        }
+      },
+      "notes": "REBUILD-DESIGN-SPEC.md が正常に存在"
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f → exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Phase count = 13 (expected >= 1)"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Line count = 406 (expected >= 30)"]
+        }
+      },
+      "notes": "EXAMPLE-FRAMEWORK-BUILD.md が406行で存在"
+    },
+    "p1.4": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["'Phase -1' count = 3 (Lines 37-38)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["'概念整理|問題定義' count = 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Phase -1 content lines = 14"]
+        }
+      },
+      "notes": "Phase -1 前提条件が追加済み"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["'機能単位.*縦' count = 1 (Line 110)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["'原則|Principle' count = 6"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Vertical content lines = 11"]
+        }
+      },
+      "notes": "機能単位で縦に完成させる原則が追加済み"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["'Layer' count = 10+ (expected >= 6)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["'Layer [0-5]' matches = 10 (Lines 454-484)"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["'コンポーネント|Component' count = 6"]
+        }
+      },
+      "notes": "Layer 0-5 が適切に配置"
+    },
+    "p2.3": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["'テンプレート' count = 2"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["'Phase -1' count = 8"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Phase -1 content lines = 137"]
+        }
+      },
+      "notes": "Phase -1 最小成果物テンプレートが追加済み"
+    },
+    "p2.4": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["'Evidence|成果物|完了条件' count = 62 (expected >= 3)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["'Phase' count = 13 (expected >= 3)"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Line count = 406 (expected >= 100)"]
+        }
+      },
+      "notes": "EXAMPLE-FRAMEWORK-BUILD.md に詳細が追加済み"
+    },
+    "p2.5": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["'概念整理.*飛ばした' count = 3 (Line 44, 46, 412)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["'失敗|教訓' count = 37"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Content lines = 41"]
+        }
+      },
+      "notes": "PROJECT-STORY.md に失敗セクション追加済み"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-21T23:01:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["BUILD-FROM-SCRATCH.md validation = 'pass'"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["EXAMPLE-FRAMEWORK-BUILD.md = 'pass'"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["EXAMPLE-CHATGPT-CLONE.md Phase -1 = 'pass'"]
+        }
+      },
+      "notes": "goal.done_when の全コマンドが PASS"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "全10個の subtask が PASS",
+      "goal.done_when の4つの自動検証コマンドも全て期待値を満たした",
+      "各 criterion に対して具体的なコマンド実行結果と行番号付きの証拠を提示"
+    ],
+    "notes": "critic SubAgent による検証完了: 2026-01-21T23:01:00Z"
+  }
+}

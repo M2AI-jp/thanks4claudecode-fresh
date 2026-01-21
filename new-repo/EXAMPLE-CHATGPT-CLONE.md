@@ -2,11 +2,26 @@
 
 > 文書の位置付け: 運用脚本（ケーススタディ）
 >
+> **MECE 役割**: 運用例の SSOT（フレームワーク完成後の運用シミュレーション、ACT 0-7 のユースケース）
+>
 > 読み順: README.md を参照
 >
 > 一次仕様: REBUILD-DESIGN-SPEC.md
 >
 > 構築手順: BUILD-FROM-SCRATCH.md
+>
+> 更新: 2026-01-21
+>
+> ---
+>
+> **SSOT マップ（本文書内の重複と参照先）**:
+> - 用語 → **REBUILD-DESIGN-SPEC.md §3-5 が SSOT**（本文書は運用視点の要約）
+> - 非交渉ルール → **REBUILD-DESIGN-SPEC.md §3.6 が SSOT**
+> - 報酬詐欺防止 → **REBUILD-DESIGN-SPEC.md §7.1 が SSOT**
+> - デッドロック回避 → **REBUILD-DESIGN-SPEC.md §11 が SSOT**
+> - Issue コード → **REBUILD-DESIGN-SPEC.md §9.4 が SSOT**（本文書は運用最小集合）
+> - Evidence 3点検証 → **REBUILD-DESIGN-SPEC.md §9 が SSOT**
+> - Temporal Achievability → **REBUILD-DESIGN-SPEC.md §10 が SSOT**
 >
 > 更新基準: playbook v2 / Event Unit Architecture / Evidence 3点検証 / Temporal Achievability / I-RF / I-DL
 
@@ -19,9 +34,12 @@
 
 ## 前提（読むタイミング）
 
-- BUILD-FROM-SCRATCH の Phase 8 まで完了していること
+- BUILD-FROM-SCRATCH の **Phase -1 から Phase 8 まで**完了していること
+- 特に Phase -1（概念整理）が完了し、**エンジニアリング概念が最小作業単位まで分解**されていること
+- Skill/SubAgent/Module/Hook のマッピングが確定し、**最小作業単位テンプレ**（Step名/入力/作業内容/完了条件/出力/失敗時）が定義されていること
 - `.claude/agents/` と `.claude/skills/` と `play/template/` が揃っていること
 - 構築前に読む場合は「運用の完成像の参考資料」として扱うこと
+- フレームワーク構築中は EXAMPLE-FRAMEWORK-BUILD.md を参照
 
 ## 用語（1行で把握できる定義）
 
@@ -36,6 +54,8 @@
 - playbook-reviewer: plan.json の事前検証を担う
 - code-reviewer: 実装コードの検証を担う
 - critic: 最終完了判定を担う（自己申告は不可）
+- **最小作業単位**: 入力/処理/出力/検証/失敗時を持つエージェント委譲可能な最小単位
+- **ロングタームコンテキスト**: セッション断を跨いで作業状態を復元するための永続化設計
 
 ## 非交渉ルール（最新仕様）
 
@@ -65,7 +85,7 @@
 
 ## Issue コード（運用で使う最小集合）
 
-- I-BOOT-1: 前提欠落（dependency-check -> user 補完）
+- I-BOOT-1: 前提欠落（dependency-checker -> user 補完）
 - I-REQ-2: 要件矛盾（conflict report -> user 判断）
 - I-RF-1: 証拠不一致（evidence-audit -> 再検証）
 - I-RF-2: 自己申告完了（critic-gate -> 進行停止）
@@ -164,13 +184,13 @@ SessionStart の Event Unit が state.md と playbook を読み込み、playbook
 「どれが足りないのか知りたい。いまの停止は正常なのか？」
 
 ### System POV
-dependency-check が Hook/Skill/SubAgent の稼働可否を確認し、不足は playbook.issue-log に記録する。
+dependency-checker が Hook/Skill/SubAgent の稼働可否を確認し、不足は playbook.issue-log に記録する。
 
 ### Event Units/Hooks
 - UserPromptSubmit -> events/prompt/chain.sh
 
 ### Required Skills
-- dependency-check
+- dependency-checker
 
 ### Called SubAgents
 - orchestrator
@@ -298,7 +318,7 @@ playbook-creator が plan.json と progress.json を生成。context セクシ�
 - docs/evidence/phase-plan.md
 
 ### Done Criteria
-- plan.json に context と validations が含まれる
+- plan.json に context と validation_plan が含まれる（validations 結果は progress.json）
 
 ### Failure/Recovery
 - plan が空疎 -> reviewer で差し戻し

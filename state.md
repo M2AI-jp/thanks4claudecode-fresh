@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: null
-status: idle
+active: play/projects/new-repo-docs-sync/project.json
+current_milestone: m1
+status: in_progress
 ```
 
 ---
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
-parent_project: null
-current_phase: null
-branch: feat/project-story
+active: play/projects/new-repo-docs-sync/playbooks/pb-001/plan.json
+parent_project: new-repo-docs-sync
+current_phase: p1
+branch: feat/new-repo-docs-sync
 last_archived: play/standalone/project-story
 review_pending: false
 ```
@@ -33,10 +33,14 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: m1
+phase: p1
+done_criteria:
+  - new-repo/BUILD-FROM-SCRATCH.md がルートの修正を反映
+  - new-repo/EXAMPLE-FRAMEWORK-BUILD.md が存在
+  - new-repo/EXAMPLE-CHATGPT-CLONE.md に Phase -1 前提条件が追加
+  - PROJECT-STORY.md に概念整理を飛ばした失敗セクションが存在
+status: in_progress
 ```
 
 ---
@@ -44,8 +48,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-21 00:08:35
-last_end: 2026-01-21 00:08:34
+last_start: 2026-01-21 22:40:37
+last_end: 2026-01-21 20:07:53
 last_clear: 2026-01-20
 ```
 
