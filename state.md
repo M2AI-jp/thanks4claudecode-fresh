@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/v2-design-docs/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: feat/new-repo-docs-sync
 last_archived: play/archive/projects/new-repo-docs-sync/pb-001
 review_pending: false
 ```
@@ -34,9 +34,11 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - new-repo/v2-design/ ディレクトリが存在する
+  - 6つの設計ドキュメントが作成されている
+status: in_progress
 ```
 
 ---
@@ -44,8 +46,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-21 22:40:37
-last_end: 2026-01-21 20:07:53
+last_start: 2026-01-22 13:00:47
+last_end: 2026-01-21 22:51:23
 last_clear: 2026-01-20
 ```
 
