@@ -1,0 +1,506 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "repository-completion",
+    "plan_path": "play/standalone/repository-completion/plan.json",
+    "status": "complete"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.1"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-28T06:00:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-28T06:15:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-28T06:30:00Z"
+    },
+    "p4": {
+      "status": "done",
+      "updated_at": "2026-01-28T07:20:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-28T07:35:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "find .claude/skills -maxdepth 2 -name 'SKILL.md' | wc -l = 13"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "All 13 Skill directories have SKILL.md"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "13 Skill directories verified via find"
+          ]
+        }
+      },
+      "notes": "critic validated: All 13 Skills have SKILL.md"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            ".claude/agents/: 7 files"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "skills/**/agents/*.md: 7 files"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "diff output empty (0 differences)"
+          ]
+        }
+      },
+      "notes": "critic validated: SubAgent alignment confirmed"
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "49 files total: .md=20, .sh=29"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "agents:7, guards:15, handlers:8, workflow:3, checkers:3"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "SKILL.md Related Files sections document all submodules"
+          ]
+        }
+      },
+      "notes": "critic validated: All Skill submodules accessible and documented"
+    },
+    "p1.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'prompt-analyzer' playbook-init/SKILL.md = 16"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'pm' golden-path/SKILL.md = 7"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "Chain Position diagram in playbook-init/SKILL.md lines 259-279"
+          ]
+        }
+      },
+      "notes": "critic validated: Skill inter-call relationships documented"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "test -f docs/completion-criteria.md -> EXISTS"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'COMPLETION_CRITERIA' -> 1"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c '## ' -> 12 (>= 5)"
+          ]
+        }
+      },
+      "notes": "critic validated: docs/completion-criteria.md created with COMPLETION_CRITERIA marker"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -E '^### [0-9]+\\.' -> 7 items"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'Hook' -> 6"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'SubAgent' -> 8"
+          ]
+        }
+      },
+      "notes": "critic validated: 7 completion criteria defined"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "test -f docs/file-inventory.md -> exists"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c '.claude/' -> 28 (>= 10)"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "wc -l -> 201 (>= 100)"
+          ]
+        }
+      },
+      "notes": "critic validated: File inventory created"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'Duplicate' -> 3"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Intentional 7 pairs, unintentional 0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'agents' -> 13"
+          ]
+        }
+      },
+      "notes": "critic validated: Duplicate analysis documented"
+    },
+    "p3.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'Orphan' -> 2"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Delete 0, keep 5 documented"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'Reference' -> 7"
+          ]
+        }
+      },
+      "notes": "critic validated: Orphan analysis documented"
+    },
+    "p3.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T06:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "test -f docs/bash-protection-issues.md -> exists"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'ls' -> 16"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'HARD_BLOCK' -> 16"
+          ]
+        }
+      },
+      "notes": "critic validated: Bash protection issues documented"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T07:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "ls .claude/ HARD_BLOCK = 0"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "rm HARD_BLOCK >= 1"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "normalize_command applied before write check"
+          ]
+        }
+      },
+      "notes": "codex-delegate fixed contract.sh"
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T07:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "scripts/reward-fraud-test.sh exists"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep critic = 6"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep PASS|FAIL = 15"
+          ]
+        }
+      },
+      "notes": "Test script created with honest SKIP reporting"
+    },
+    "p4.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T07:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "docs/reward-fraud-test-results.md exists"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "13 PASS, 0 FAIL, 1 SKIP documented"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "A- grade with skip explanation"
+          ]
+        }
+      },
+      "notes": "Test results documented honestly with SKIP explanation"
+    },
+    "p4.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T07:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "comm -3 SubAgent diff = 0"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "All Skills reference their submodules"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "10 SKILL.md have Related Files/関連"
+          ]
+        }
+      },
+      "notes": "MECE verification complete"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T07:30:00Z",
+      "validated_by": "coderabbit",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": "coderabbit-delegate final review PASS"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T07:30:00Z",
+      "validated_by": "coderabbit",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": "coderabbit-delegate final review PASS"
+    },
+    "p_final.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T07:30:00Z",
+      "validated_by": "coderabbit",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": "coderabbit-delegate final review PASS"
+    },
+    "p_final.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T07:30:00Z",
+      "validated_by": "coderabbit",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": "coderabbit-delegate final review PASS"
+    },
+    "p_final.5": {
+      "status": "done",
+      "validated_at": "2026-01-28T07:30:00Z",
+      "validated_by": "coderabbit",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": "coderabbit-delegate final review PASS"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [],
+    "notes": "coderabbit-delegate final review approved"
+  }
+}

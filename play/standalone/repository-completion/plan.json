@@ -1,0 +1,602 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "repository-completion",
+    "branch": "feat/repository-completion",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "strict",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "リポジトリの完成状態を定義し、報酬詐欺耐性・MECE状態・ファイル存在意義を完璧に検証・対応する",
+    "done_when": [
+      {
+        "criterion": "docs/completion-criteria.md が存在し、完成状態の定義が記載されている",
+        "command": "test -f docs/completion-criteria.md && grep -c 'COMPLETION_CRITERIA' docs/completion-criteria.md",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "全 Skill（13種）が SKILL.md を持ち、配下モジュールが整合している",
+        "command": "find .claude/skills -maxdepth 1 -type d | wc -l | tr -d ' '",
+        "expected": "14"
+      },
+      {
+        "criterion": "全 SubAgent（7種）が .claude/agents/ と skills/*/agents/ で整合している",
+        "command": "diff <(ls .claude/agents/*.md | xargs -I{} basename {} | sort) <(find .claude/skills -path '*/agents/*.md' | xargs -I{} basename {} | sort) | wc -l | tr -d ' '",
+        "expected": "0"
+      },
+      {
+        "criterion": "報酬詐欺耐性テストスクリプトが存在し、テスト結果が文書化されている",
+        "command": "test -f scripts/reward-fraud-test.sh && test -f docs/reward-fraud-test-results.md",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "Bash 保護の誤検出が 0 件である（ls コマンドが保護されない）",
+        "command": "echo 'ls -la .claude/' | bash .claude/hooks/pre-tool.sh 2>&1 | grep -c 'HARD_BLOCK' || echo 0",
+        "expected": "0"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "全 13 Skill の構造検証",
+        "全 7 SubAgent の整合性検証",
+        "全 6 Hook の動作検証",
+        "報酬詐欺耐性テスト",
+        "MECE 状態検証",
+        "ファイル存在意義検証",
+        "Bash 保護パターン修正"
+      ],
+      "excludes": [
+        "新機能の追加",
+        "アーキテクチャの根本的変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "who": "Claude Code",
+          "what": "完成状態定義、報酬詐欺耐性検証、MECE検証、ファイル存在意義検証",
+          "when": "即時（リソース無制限）",
+          "where": "リポジトリ全体（13 Skill, 11 Event Unit, 6 Hook, 7 SubAgent）",
+          "why": "完璧な状態への到達",
+          "how": "Skill 頂点構造に基づく階層的検証"
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "Bash 保護の誤検出による検証作業の阻害",
+              "severity": "high",
+              "mitigation": "保護パターンの精緻化"
+            }
+          ],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "skill_hierarchy": {
+          "golden-path": ["pm.md", "codex-delegate.md"],
+          "playbook-gate": ["guards/4種", "workflow/3種"],
+          "reward-guard": ["guards/6種", "critic.md"],
+          "quality-assurance": ["checkers/3種", "reviewer.md", "coderabbit-delegate.md"],
+          "access-control": ["guards/3種"],
+          "session-manager": ["handlers/4種"],
+          "prompt-analyzer": ["prompt-analyzer.md"],
+          "playbook-init": ["SKILL.md のみ"],
+          "post-loop": ["guards/1種", "handlers/1種"],
+          "executor-resolver": ["executor-resolver.md"],
+          "git-workflow": ["handlers/3種"],
+          "state": ["SKILL.md のみ"],
+          "understanding-check": ["SKILL.md のみ"]
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-28",
+      "summary": "Skill を頂点としたモジュール構造検証を最初に実施",
+      "approved_items": [
+        "Skill が頂点という認識",
+        "妥協なく完璧を目指す",
+        "5 フェーズ構成"
+      ],
+      "technical_requirements_confirmed": [
+        "全 Skill の SKILL.md 存在確認",
+        "SubAgent の整合性検証",
+        "Event Unit との接続確認",
+        "報酬詐欺耐性 A+ 達成"
+      ]
+    }
+  },
+  "max_iterations": 10,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Skill 頂点モジュール構造検証",
+      "description": "全 13 Skill の構造を検証し、配下モジュールの整合性を確認する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "全 Skill（13種）の SKILL.md が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls .claude/skills/*/SKILL.md | wc -l | tr -d ' '",
+              "expected": "13"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for d in .claude/skills/*/; do test -f \"${d}SKILL.md\" && echo 'OK' || echo \"MISSING: $d\"; done | grep -c 'MISSING' || echo 0",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find .claude/skills -maxdepth 1 -type d ! -name skills | wc -l | tr -d ' '",
+              "expected": "13"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "全 SubAgent の .claude/agents/ と skills/*/agents/ が一致している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls .claude/agents/*.md | wc -l | tr -d ' '",
+              "expected": "7"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find .claude/skills -path '*/agents/*.md' | wc -l | tr -d ' '",
+              "expected": "7"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "comm -3 <(ls .claude/agents/*.md | xargs -I{} basename {} | sort) <(find .claude/skills -path '*/agents/*.md' | xargs -I{} basename {} | sort) | wc -l | tr -d ' '",
+              "expected": "0"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "各 Skill の配下モジュール（agents/guards/handlers/workflow/checkers）が参照可能である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find .claude/skills -type f -name '*.md' -o -name '*.sh' | wc -l | tr -d ' '",
+              "expected": ">= 40"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find .claude/skills -type l | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "Skill 一覧と配下モジュールのマッピングを出力",
+              "expected": "全 Skill に必要なモジュールが存在"
+            }
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "Skill 間呼び出し関係（playbook-init -> prompt-analyzer -> pm）が文書化されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -r 'prompt-analyzer' .claude/skills/playbook-init/SKILL.md | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -r 'pm' .claude/skills/golden-path/SKILL.md | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -r 'Skill' .claude/skills/*/SKILL.md | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "完成状態の定義",
+      "description": "完成の明示的判定基準を文書化する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "docs/completion-criteria.md が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/completion-criteria.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'COMPLETION_CRITERIA' docs/completion-criteria.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '## ' docs/completion-criteria.md",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "完成条件 7 項目が全て定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -E '^[0-9]+\\.' docs/completion-criteria.md | wc -l | tr -d ' '",
+              "expected": ">= 7"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Hook' docs/completion-criteria.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'SubAgent' docs/completion-criteria.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "現状調査",
+      "description": "全ファイルのインベントリ作成、重複・孤立ファイルの特定",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "全ファイルインベントリが docs/file-inventory.md に記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/file-inventory.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '.claude/' docs/file-inventory.md",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l docs/file-inventory.md | awk '{print $1}'",
+              "expected": ">= 100"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "重複ファイル一覧が docs/file-inventory.md に記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Duplicate' docs/file-inventory.md || echo 0",
+              "expected": ">= 0"
+            },
+            "consistency": {
+              "type": "manual",
+              "command": "重複が存在する場合、理由が記載されているか確認",
+              "expected": "理由が記載されている"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'agents' docs/file-inventory.md",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "孤立ファイル（参照されていない）一覧が docs/file-inventory.md に記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Orphan' docs/file-inventory.md || echo 0",
+              "expected": ">= 0"
+            },
+            "consistency": {
+              "type": "manual",
+              "command": "孤立ファイルに対して削除/保持の判断が記載されているか",
+              "expected": "判断が記載されている"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'Reference' docs/file-inventory.md",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p3.4",
+          "criterion": "Bash 保護の誤検出パターンが docs/bash-protection-issues.md に記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/bash-protection-issues.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'ls' docs/bash-protection-issues.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'HARD_BLOCK' docs/bash-protection-issues.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "検証と修正",
+      "description": "発見した問題を修正し、報酬詐欺耐性テストを実行する",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "Bash 保護パターンが修正され、ls コマンドが誤検出されない",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "echo 'ls -la .claude/' | TOOL_INPUT='{\"command\":\"ls -la .claude/\"}' bash .claude/hooks/pre-tool.sh 2>&1 | grep -c 'HARD_BLOCK' || echo 0",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "echo 'rm -rf /' | TOOL_INPUT='{\"command\":\"rm -rf /\"}' bash .claude/hooks/pre-tool.sh 2>&1 | grep -c 'BLOCK' || echo 0",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'AUTO_HARD_BLOCK_PATTERNS' .claude/hooks/pre-tool.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "報酬詐欺耐性テストスクリプト scripts/reward-fraud-test.sh が存在する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f scripts/reward-fraud-test.sh && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'critic' scripts/reward-fraud-test.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|FAIL' scripts/reward-fraud-test.sh",
+              "expected": ">= 2"
+            }
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "報酬詐欺耐性テストを実行し、結果が docs/reward-fraud-test-results.md に記録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/reward-fraud-test-results.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|FAIL' docs/reward-fraud-test-results.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '既知の問題\\|Known Issues\\|TODO' docs/reward-fraud-test-results.md || echo 0",
+              "expected": ">= 0"
+            }
+          }
+        },
+        {
+          "id": "p4.4",
+          "criterion": "MECE 状態検証が完了し、重複・欠落が解消されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "comm -3 <(ls .claude/agents/*.md | xargs -I{} basename {} | sort) <(find .claude/skills -path '*/agents/*.md' | xargs -I{} basename {} | sort) | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "manual",
+              "command": "各 Skill の配下モジュールが SKILL.md で参照されているか確認",
+              "expected": "全て参照されている"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find .claude/skills -name '*.md' -exec grep -l 'Related Files' {} \\; | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "全 done_when を検証し、完成状態を確認する",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "docs/completion-criteria.md が存在し、COMPLETION_CRITERIA が含まれる（done_when[0]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/completion-criteria.md && grep -c 'COMPLETION_CRITERIA' docs/completion-criteria.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "wc -l docs/completion-criteria.md | awk '{print $1}'",
+              "expected": ">= 50"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '## ' docs/completion-criteria.md",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "全 Skill（13種）が存在する（done_when[1]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find .claude/skills -maxdepth 1 -type d | wc -l | tr -d ' '",
+              "expected": "14"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls .claude/skills/*/SKILL.md | wc -l | tr -d ' '",
+              "expected": "13"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "全 Skill の SKILL.md 内容を確認",
+              "expected": "全て有効な内容"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "全 SubAgent が整合している（done_when[2]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "diff <(ls .claude/agents/*.md | xargs -I{} basename {} | sort) <(find .claude/skills -path '*/agents/*.md' | xargs -I{} basename {} | sort) | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls .claude/agents/*.md | wc -l | tr -d ' '",
+              "expected": "7"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find .claude/skills -path '*/agents/*.md' | wc -l | tr -d ' '",
+              "expected": "7"
+            }
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "報酬詐欺耐性テストが PASS する（done_when[3]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>&1 | grep -c 'PASS'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "テスト結果の詳細を確認",
+              "expected": "全シナリオ PASS"
+            }
+          }
+        },
+        {
+          "id": "p_final.5",
+          "criterion": "Bash 保護の誤検出が 0 件である（done_when[4]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "echo 'ls -la .claude/' | TOOL_INPUT='{\"command\":\"ls -la .claude/\"}' bash .claude/hooks/pre-tool.sh 2>&1 | grep -c 'HARD_BLOCK' || echo 0",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "echo 'cat CLAUDE.md' | TOOL_INPUT='{\"command\":\"cat CLAUDE.md\"}' bash .claude/hooks/pre-tool.sh 2>&1 | grep -c 'HARD_BLOCK' || echo 0",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "echo 'rm CLAUDE.md' | TOOL_INPUT='{\"command\":\"rm CLAUDE.md\"}' bash .claude/hooks/pre-tool.sh 2>&1 | grep -c 'BLOCK'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
