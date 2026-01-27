@@ -106,9 +106,63 @@ Claude Code のイベントに応じて自動実行されるスクリプト。
 - 例: I-RF-1（報酬詐欺）, I-DL-1（デッドライン）
 - 問題: 複雑すぎて実装困難 → 3回ルールで置換
 
+### Invoker パターン
+呼び出しと処理を分離する設計パターン。
+- invoker は「呼ぶだけ」で判定しない
+- 例: codex-invoker は実装を委譲するが、承認は critic が担う
+- 対比: 呼び出しと判定を混ぜる設計（密結合）
+
 ---
 
 ## L
+
+### Layer 0-5（機能依存レイヤー）
+コンポーネントの依存関係に基づく構築順序。下位 Layer に依存するコンポーネントは、依存先が完成してから構築する。
+- Layer 0: 依存なし（state-updater, prompt-analyzer など）
+- Layer 1: Layer 0 に依存（playbook-gate, planner など）
+- Layer 2: Layer 1 に依存（playbook-creator, code-reviewer など）
+- Layer 3: Layer 2 に依存（playbook-reviewer, code-validator など）
+- Layer 4: Layer 3 に依存（critic）
+- Layer 5: Layer 4 に依存（orchestrator, archive-manager）
+
+---
+
+## M
+
+### MECE（ミーシー）
+Mutually Exclusive, Collectively Exhaustive の略。「漏れなく、重複なく」の原則。
+- 責務分割時に重複と欠落を排除するための基準
+- 例: Skill は単一責務、SubAgent は独立役割
+
+### Module（モジュール）
+Hook/Skill の内側にある最小単位のスクリプト。
+- 場所: modules/ ディレクトリ
+- 役割: 単一機能の実装
+- 例: example.sh
+
+---
+
+## O
+
+### 概念マップ（Engineering Concept Map）
+エンジニアリング概念の分解と分類。Phase -1 で作成する。
+- 6軸: フェーズ、抽象度、権限、データ、制約、失敗と回復
+- 目的: Module/Skill/SubAgent への責務マッピングを決定する土台
+
+---
+
+## P
+
+### Phase -1（概念整理フェーズ）
+Phase 0 の前に実施する概念整理フェーズ。全ての依頼の土台となる。
+- 目的: 「何を作るか」を決定する
+- 順序: 役割 → 保護・制御 → 計画 → テスト → レビュー → 状態管理
+- 成果物: 概念分解表、マッピング表、コンポーネント仕様一覧、機能依存関係図
+- 鉄則: 「モジュールにする前に、エンジニアリングの概念をリストアップする」
+
+---
+
+## Q-R
 
 ### Layer（層）
 3層防御戦略における防御の層。
@@ -230,6 +284,12 @@ harness で採用されている自己完結型エージェントパターン。
 - フロー: implement → self-review → fix → build verify → test
 - 制約: disallowedTools: [Task]（委譲禁止）
 
+### Temporal Achievability（時間的達成可能性）
+criterion が「評価時点で達成可能」かどうかの観点。
+- 将来の状態や外部完了を前提とする criterion は FAIL
+- 報酬詐欺と同じくらい重要（達成不可能な基準はデッドロックを生む）
+- reviewer は plan.json のレビュー時に必ず検証する
+
 ### Testability（テスト可能性）
 仕様/実装がテスト可能かどうかの観点。
 - レビュー5観点の一つ
@@ -237,6 +297,13 @@ harness で採用されている自己完結型エージェントパターン。
 ### 3回ルール
 同一タスクで 3回失敗したら必ずエスカレーションするルール。
 - 用途: Issue codes の代替、シンプルで確実
+
+### 3点検証（validations）
+Evidence の有効性を判定する 3 つの検証観点。
+- technical: 実行可能なコマンドで証明する
+- consistency: 関係ファイルと矛盾しないこと
+- completeness: 欠落のない状態であること
+- 重要: 3点が揃わない Evidence は「存在しない」とみなす
 
 ### 3層防御戦略
 Rules → Skills → Hooks の順で防御する戦略。
@@ -263,6 +330,8 @@ Skill のオーケストレーションを定義する YAML ファイル。
 
 ## 参照
 
-- CLAUDE.md（Core Contract）
-- ARCHITECTURE.md（アーキテクチャ設計）
-- SPECIFICATION.md（仕様書）
+- HARNESS-ANALYSIS.md（harness 分析）
+- IMPLEMENTATION-PLAN-V2.md（実装計画）
+- REVIEW-PROTOCOL.md（レビュー手順）
+- TEST-PROTOCOL.md（テスト手順）
+- FAILURE-CATALOG.md（失敗カタログ）

@@ -20,7 +20,7 @@ review:
 
   input:
     - 成果物（コード、ドキュメント、設定ファイル）
-    - 仕様書（SPECIFICATION.md + 関連スキーマ）
+    - 仕様書（IMPLEMENTATION-PLAN-V2.md + 関連スキーマ）
 
   output:
     status: PASS | FAIL | CONDITIONAL_PASS
@@ -52,7 +52,7 @@ review:
 ```yaml
 question: 仕様書の要件を全て満たしているか？
 method:
-  - SPECIFICATION.md の各要件を抽出
+  - IMPLEMENTATION-PLAN-V2.md の各要件を抽出
   - 成果物が各要件を満たすか検証
   - 満たさない場合は FAIL + 要件番号を記録
 evidence: 要件対応表（Traceability Matrix）
@@ -139,7 +139,7 @@ actions:
   - 新しい Claude Code セッションを開始（コンテキスト0）
   - README.md を読む
   - GLOSSARY.md を読む
-  - SPECIFICATION.md を読む
+  - IMPLEMENTATION-PLAN-V2.md を読む
   - レビュー対象の範囲を確認
 ```
 
@@ -188,7 +188,7 @@ actions:
 - レビュー対象: {対象の範囲}
 - レビュー日時: {YYYY-MM-DD HH:MM}
 - レビュアー: Claude Code (Context-0)
-- 参照仕様: SPECIFICATION.md v{version}
+- 参照仕様: IMPLEMENTATION-PLAN-V2.md v{version}
 
 ## 総合判定
 **{PASS | FAIL | CONDITIONAL_PASS}**
@@ -254,7 +254,137 @@ condition:
 
 ---
 
-## 6. レビュー対象別ガイド
+## 6. Evidence 3点検証（validations）
+
+### 6.1 定義
+
+Evidence（証拠）は以下の **3点** が全て揃って初めて有効とみなす。
+
+```yaml
+evidence_validation:
+  three_points:
+    1_technical:
+      definition: 実行可能なコマンドで証明する
+      example:
+        - "test -f ./path/to/file.md → 存在確認"
+        - "npm test → テスト PASS"
+        - "grep 'pattern' file.md → 内容確認"
+      fail_if: コマンドが存在しない、実行不能、期待と不一致
+
+    2_consistency:
+      definition: 関係ファイルと矛盾しないこと
+      example:
+        - "state.md の playbook.active と plan.json のパスが一致"
+        - "GLOSSARY.md の用語定義と本文の用語が一致"
+        - "参照先ファイルが全て存在"
+      fail_if: 同一概念に矛盾する記述、壊れた参照
+
+    3_completeness:
+      definition: 欠落のない状態であること
+      example:
+        - "全ての done_criteria に対応する Evidence が存在"
+        - "TODO/FIXME/TBD が残っていない"
+        - "必須セクションが全て存在"
+      fail_if: 未検証の criterion、欠損データ
+```
+
+### 6.2 検証の順序
+
+```yaml
+validation_order:
+  1. technical: まず実行可能なコマンドで検証
+  2. consistency: 次に他ファイル/基準との整合を確認
+  3. completeness: 最後に漏れがないか確認
+
+rationale: |
+  technical が失敗すると consistency/completeness の検証が無意味になる。
+  consistency が失敗すると completeness の判断が困難になる。
+  この順序で検証することで、失敗の原因特定が容易になる。
+```
+
+### 6.3 3点検証の出力形式
+
+```yaml
+subtask_validation_example:
+  p1.1:
+    validations:
+      technical:
+        status: PASS | FAIL | PENDING
+        command: "test -f ./docs/spec.md"
+        evidence: ["ファイル存在確認: 2026-01-22"]
+      consistency:
+        status: PASS | FAIL | PENDING
+        evidence: ["GLOSSARY.md との用語一致確認"]
+      completeness:
+        status: PASS | FAIL | PENDING
+        evidence: ["全セクション存在確認"]
+```
+
+> **重要**: 3点検証が揃わない Evidence は「存在しない」とみなす。critic は 3点全てが PASS の subtask のみを完了として認定する。
+
+---
+
+## 7. 時間的達成可能性（Temporal Achievability）
+
+### 7.1 定義
+
+```yaml
+temporal_achievability:
+  definition: |
+    criterion が「評価時点で達成可能」かどうかを検証する。
+    将来の状態や外部完了を前提とする criterion は FAIL。
+
+  rationale: |
+    達成不可能な基準は、必ずデッドロックを生む。
+    時間的達成可能性は、報酬詐欺と同じくらい重要である。
+```
+
+### 7.2 典型的な FAIL 例
+
+```yaml
+fail_examples:
+  - name: "playbook なし状態の要求"
+    criterion: "playbook.active が null であること"
+    context: "作業中（playbook.active が設定されている状態）"
+    reason: "評価時点で達成不可能"
+
+  - name: "未来の完了を前提"
+    criterion: "レビューが完了していること"
+    context: "レビュー実行前の phase"
+    reason: "まだ発生していない"
+
+  - name: "全 subtask 完了を途中 phase に要求"
+    criterion: "すべての subtask が完了していること"
+    context: "Phase 1 の done_criteria"
+    reason: "Phase 2 以降の subtask は未完了"
+```
+
+### 7.3 レビュー時の確認方法
+
+```yaml
+review_checklist:
+  - question: "この criterion は評価時点で判定可能か？"
+    pass: "Yes - 現在の状態で判定できる"
+    fail: "No - 将来の状態を前提としている"
+
+  - question: "外部依存はないか？"
+    pass: "No - 自己完結している"
+    fail: "Yes - 他の phase/subtask/外部システムに依存"
+
+  - question: "時間順序を尊重しているか？"
+    pass: "Yes - 前の phase で達成されるべきことを前提としていない"
+    fail: "No - 後続 phase の成果を前提としている"
+```
+
+### 7.4 適用
+
+- playbook の `done_criteria` は全て temporal achievability を通過しなければならない
+- reviewer は plan.json のレビュー時に必ず時間的達成可能性を検証する
+- 違反した criterion は即座に FAIL とし、修正を要求する
+
+---
+
+## 8. レビュー対象別ガイド
 
 ### コードレビュー
 
@@ -290,4 +420,5 @@ additional_checks:
 
 - TEST-PROTOCOL.md（テスト手順）
 - GLOSSARY.md（用語定義）
-- SPECIFICATION.md（仕様書）
+- IMPLEMENTATION-PLAN-V2.md（実装計画）
+- FAILURE-CATALOG.md（失敗カタログ）

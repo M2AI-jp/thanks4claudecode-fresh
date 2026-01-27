@@ -141,6 +141,137 @@ new-repo/
 
 ## 4. 実装計画（Phase 別）
 
+### Phase -1: 概念整理（全ての出発点）
+
+> **重要**: Phase 0 に進む前に、エンジニアリング概念を整理する。これが全ての依頼の土台になる。
+
+```yaml
+phase_-1:
+  name: 概念整理
+  goal: 実装の前に「何を作るか」を決定する
+  duration: 概念ごとに 1 依頼
+  depends_on: なし
+
+  why: |
+    - Module を作る前に「何の Module を作るか」を決める必要がある
+    - SubAgent を定義する前に「どの役割を SubAgent にするか」を決める必要がある
+    - 概念整理なしに実装を始めると「作りながら考える」ことになり、責務の重複や欠落が生じる
+    - 鉄則: 「モジュールにする前に、エンジニアリングの概念をリストアップする」
+
+  概念整理の順序（依存関係）:
+    1_役割:
+      description: 判断者 / 実行者 / 監査者 / 強制者
+      output: 各 SubAgent の責務が決まる
+    2_保護・制御:
+      description: Hook で強制できる範囲の確定
+      output: Hook と Skill/SubAgent の境界が決まる
+    3_計画:
+      description: playbook の粒度と構造
+      note: タスクは最小作業単位まで分解
+      output: playbook/phase/subtask の設計が決まる
+    4_テスト:
+      description: 実行者の責務と実行タイミング
+      flow: 観点抽出→設計→実装→実行→失敗分類→修正→再実行
+      output: テスト戦略が決まる
+    5_レビュー:
+      description: 監査者の責務、playbook/code の分離
+      note: チェックリスト化
+      output: reviewer/critic の分離が決まる
+    6_状態管理:
+      description: ロングタームコンテキスト設計
+      elements: 保存対象/表現形式/粒度/更新契機/復元手順/破綻パターン
+      output: state.md/session.json の設計が決まる
+    7_追加分解:
+      description: 仕様（入力形式）、変更（PR）、運用
+      output: 補助的な概念の整理
+
+  最小作業単位テンプレ:
+    - Step名
+    - 入力
+    - 作業内容
+    - 完了条件
+    - 出力
+    - 失敗時の分岐
+
+  deliverables:
+    - 概念分解表（分解軸と分解結果、カバー範囲/非カバー範囲）
+    - マッピング表（概念 → Skill/SubAgent/Module/Hook、Hook 強制可否）
+    - コンポーネント仕様一覧（責務1行、入力/出力、依存先）
+    - 機能依存関係図（Layer 0〜5 の分類と構築順序）
+
+  done_criteria:
+    - 作るべきコンポーネントの一覧が確定
+    - 責務の重複がない（MECE）
+    - 各コンポーネントの入力/出力が明確
+```
+
+**依頼例**:
+- 「役割を分解して。判断者/実行者/監査者/強制者の4分類で整理し、各 SubAgent の責務を決めて」
+- 「保護・制御という概念を整理して。Hook で強制できる範囲と、Skill/SubAgent に委ねる範囲を明確にして」
+- 「計画という概念を分解して。playbook の粒度と reviewer/critic の関係を整理して」
+- 「レビューという概念を分解して。playbook レビューとコードレビューを分離し、担当を割り当てて」
+
+> **重要**: モジュール化は"概念の名前"ではなく、**"人間の作業単位"と"合否判定"の境界**で行う。「入力」「処理」「出力」「検証（合否判定）」「失敗時の分岐」を持つ最小作業単位へ分解すると、並列化・リトライ・人間承認ポイント挿入・ログ追跡が可能になる。
+
+#### 機能依存レイヤー（Layer 0-5）
+
+構築は Layer 0 → Layer 5 の順序で進める。下位 Layer に依存するコンポーネントは、依存先が完成してから構築する。
+
+```yaml
+layer_0:
+  description: 依存なし（独立コンポーネント）
+  components:
+    - state-updater       # 状態更新
+    - file-protector      # ファイル保護
+    - branch-protector    # ブランチ保護
+    - prompt-analyzer     # プロンプト分析
+    - test-runner         # テスト実行
+    - lint-runner         # lint 実行
+    - topic-classifier    # トピック分類
+    - executor-resolver   # executor 判定
+    - codex-invoker       # Codex 呼び出し
+    - coderabbit-invoker  # CodeRabbit 呼び出し
+
+layer_1:
+  description: Layer 0 に依存
+  components:
+    - playbook-gate: [state-updater]
+    - integrity-checker: [state-updater]
+    - planner: [prompt-analyzer]
+    - progress-tracker: [state-updater]
+
+layer_2:
+  description: Layer 1 に依存
+  components:
+    - playbook-creator: [planner]
+    - code-reviewer: [test-runner, lint-runner]
+    - review-aggregator: [code-reviewer, coderabbit-invoker]
+
+layer_3:
+  description: Layer 2 に依存
+  components:
+    - playbook-reviewer: [playbook-creator]
+    - code-validator: [code-reviewer]
+
+layer_4:
+  description: Layer 3 に依存
+  components:
+    - critic: [playbook-reviewer, code-reviewer]
+
+layer_5:
+  description: Layer 4 に依存（最上位）
+  components:
+    - archive-manager: [critic]
+    - orchestrator: [全て]
+```
+
+**構築の原則**:
+- Layer N のコンポーネントは Layer N-1 以下が完成してから実装
+- 各 Layer 内のコンポーネントは並列で構築可能
+- 依存関係が明確なため、テストも Layer 順に実行
+
+---
+
 ### Phase 0: 基盤（手動運用のみ）
 
 ```yaml
@@ -321,7 +452,7 @@ context_0_verification:
     1_can_understand:
       question: README を読んで目的を理解できるか
       method: Claude に「このリポジトリの目的を説明して」と聞く
-      pass_criteria: SPECIFICATION.md の目的と一致する回答
+      pass_criteria: IMPLEMENTATION-PLAN-V2.md の目的と一致する回答
 
     2_can_navigate:
       question: 必要なドキュメントを見つけられるか
@@ -438,10 +569,11 @@ Codex の分析結果を統合した改善案:
 ```yaml
 phase_0: 手動のみ
 phase_1: セッション/ログ
-phase_2: ガードレール
-phase_3: 自動化
+phase_2: 計画管理
+phase_3: 品質保証
+phase_4: 自動化
 
-原則: Hook 自動化は Phase 3（最後）
+原則: Hook 自動化は Phase 4（最後）
 ```
 
 ---

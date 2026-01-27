@@ -56,7 +56,7 @@ example: |
   # test-file-exists.sh
   assert_file_exists "README.md"
   assert_file_exists "CLAUDE.md"
-  assert_file_exists "docs/SPECIFICATION.md"
+  assert_file_exists "docs/IMPLEMENTATION-PLAN-V2.md"
   assert_dir_exists ".claude/commands"
 
 pass_criteria:
@@ -364,4 +364,5 @@ coverage_targets:
 
 - REVIEW-PROTOCOL.md（レビュー手順）
 - GLOSSARY.md（用語定義）
-- SPECIFICATION.md（仕様書）
+- IMPLEMENTATION-PLAN-V2.md（実装計画）
+- FAILURE-CATALOG.md（失敗カタログ）

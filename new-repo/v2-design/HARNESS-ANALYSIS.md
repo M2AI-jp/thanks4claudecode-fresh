@@ -369,5 +369,7 @@ new-repo の設計文書（特に REBUILD-DESIGN-SPEC.md の Evidence/Issue code
 ## 参照
 
 - [claude-code-harness](https://github.com/Chachamaru127/claude-code-harness)
-- REBUILD-DESIGN-SPEC.md（new-repo 一次仕様）
-- BUILD-FROM-SCRATCH.md（new-repo 構築手順）
+- IMPLEMENTATION-PLAN-V2.md（実装計画）
+- FAILURE-CATALOG.md（失敗カタログ）
+- ../archive/REBUILD-DESIGN-SPEC.md（旧一次仕様、参照用）
+- ../archive/BUILD-FROM-SCRATCH.md（旧構築手順、参照用）
