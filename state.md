@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/complete-deadlock-fix/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: feat/complete-deadlock-prevention
 last_archived: play/archive/deadlock-prevention
 review_pending: false
 ```
@@ -34,9 +34,14 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - BOOTSTRAP_SINGLE_PATTERNS に git rebase --skip パターンが含まれる
+  - BOOTSTRAP_SINGLE_PATTERNS に git rebase --continue パターンが含まれる
+  - BOOTSTRAP_SINGLE_PATTERNS に git branch -D パターンが含まれる
+  - has_file_redirect 関数が heredoc (<<) を除外するロジックを含む
+  - feat/complete-deadlock-prevention ブランチが main と同期されている
+status: active
 ```
 
 ---
@@ -44,7 +49,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 00:25:00
+last_start: 2026-01-28 01:55:29
 last_end: 2026-01-27 23:40:48
 last_clear: 2026-01-20
 ```
