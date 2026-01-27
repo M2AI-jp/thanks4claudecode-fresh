@@ -63,6 +63,8 @@ ALLOWLIST=(
     "state.md"
     ".claude/session-state/"
     "post-loop-pending"
+    # === playbook 作成用（デッドロック防止） ===
+    "play/"
 )
 
 for ALLOWED in "${ALLOWLIST[@]}"; do
