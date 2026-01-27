@@ -314,6 +314,15 @@ BOOTSTRAP_SINGLE_PATTERNS=(
     '^gh[[:space:]]+pr[[:space:]]+create'
     # gh pr merge（PR マージ用）
     '^gh[[:space:]]+pr[[:space:]]+merge'
+    # === Git Recovery コマンド（デッドロック防止） ===
+    # git rebase --abort（rebase 中断）
+    '^git[[:space:]]+rebase[[:space:]]+--abort'
+    # git merge --abort（merge 中断）
+    '^git[[:space:]]+merge[[:space:]]+--abort'
+    # git cherry-pick --abort（cherry-pick 中断）
+    '^git[[:space:]]+cherry-pick[[:space:]]+--abort'
+    # git reset --hard origin/（リモートブランチへの同期）
+    '^git[[:space:]]+reset[[:space:]]+--hard[[:space:]]+origin/'
 )
 
 # Admin Maintenance allowlist に一致するか判定

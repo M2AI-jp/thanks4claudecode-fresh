@@ -1,0 +1,131 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "deadlock-prevention",
+    "plan_path": "play/standalone/deadlock-prevention/plan.json",
+    "status": "active"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.2"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-28T01:35:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-28T01:36:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-28T01:36:00Z"
+    },
+    "p_final": {
+      "status": "in_progress",
+      "updated_at": "2026-01-28T01:37:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T01:37:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["grep -q 'rebase.*--abort' -> found"]},
+        "consistency": {"status": "PASS", "evidence": ["is_bootstrap_single_allowed 'git rebase --abort' -> allow"]},
+        "completeness": {"status": "PASS", "evidence": ["grep -c -> 1"]}
+      },
+      "notes": "git rebase --abort added to BOOTSTRAP_SINGLE_PATTERNS"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T01:37:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["grep -q 'merge.*--abort' -> found"]},
+        "consistency": {"status": "PASS", "evidence": ["is_bootstrap_single_allowed 'git merge --abort' -> allow"]},
+        "completeness": {"status": "PASS", "evidence": ["grep -c -> 1"]}
+      },
+      "notes": "git merge --abort added to BOOTSTRAP_SINGLE_PATTERNS"
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T01:37:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["grep -q 'cherry-pick.*--abort' -> found"]},
+        "consistency": {"status": "PASS", "evidence": ["is_bootstrap_single_allowed 'git cherry-pick --abort' -> allow"]},
+        "completeness": {"status": "PASS", "evidence": ["grep -c -> 1"]}
+      },
+      "notes": "git cherry-pick --abort added to BOOTSTRAP_SINGLE_PATTERNS"
+    },
+    "p1.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T01:37:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["grep -q 'reset.*--hard' -> found"]},
+        "consistency": {"status": "PASS", "evidence": ["is_bootstrap_single_allowed 'git reset --hard origin/main' -> allow"]},
+        "completeness": {"status": "PASS", "evidence": ["grep -c -> 1"]}
+      },
+      "notes": "git reset --hard origin/ added to BOOTSTRAP_SINGLE_PATTERNS"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T01:37:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["grep -A5 'ALLOWLIST=' | grep -q 'play/' -> found"]},
+        "consistency": {"status": "PASS", "evidence": ["grep -c 'play/' -> 1"]},
+        "completeness": {"status": "PASS", "evidence": ["play/ in ALLOWLIST line 67"]}
+      },
+      "notes": "play/ added to pending-guard.sh ALLOWLIST"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T01:37:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["grep -q 'post-loop-pending' -> found"]},
+        "consistency": {"status": "PASS", "evidence": ["grep -c 'stale|warning' -> 4"]},
+        "completeness": {"status": "PASS", "evidence": ["cleanup_stale_pending() function exists"]}
+      },
+      "notes": "stale pending detection already implemented in start.sh"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T01:37:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["4 git recovery commands found"]},
+        "consistency": {"status": "PASS", "evidence": ["play/ in pending-guard.sh"]},
+        "completeness": {"status": "PASS", "evidence": ["post-loop-pending in start.sh"]}
+      },
+      "notes": "All goal.done_when criteria verified"
+    },
+    "p_final.2": {
+      "status": "pending",
+      "validated_at": "",
+      "validated_by": "",
+      "validations": {
+        "technical": {"status": "PENDING", "evidence": []},
+        "consistency": {"status": "PENDING", "evidence": []},
+        "completeness": {"status": "PENDING", "evidence": []}
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "p1.1-p1.4: git recovery コマンド追加 - PASS",
+      "p2.1: pending-guard play/ 許可 - PASS",
+      "p3.1: stale pending 検出（既存実装）- PASS",
+      "p_final.1: goal.done_when 全項目 - PASS"
+    ],
+    "notes": "p_final.2 (main sync) pending"
+  }
+}
