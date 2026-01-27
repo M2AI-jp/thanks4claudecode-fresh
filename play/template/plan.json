@@ -1,58 +1,184 @@
 {
   "_template_rules": {
+    "_philosophy": {
+      "principle": "LLM は提案者、ルールは裁判官。キーワード禁止は無意味（言い換え可能）。行動パターンを禁止する。",
+      "reference": "claude-code-harness の implementation-quality.md / test-quality.md"
+    },
     "criterion": {
-      "MUST": "State what must be true, not what to do",
-      "MUST": "Be verifiable by command execution",
-      "FORBIDDEN": ["〜する", "〜した", "確認する", "検証する", "適切", "正しく", "良い", "かつ", "および", "〜し、", "存在し、"],
-      "GOOD_EXAMPLES": [
-        "ファイル X が存在する",
-        "jq '.field' が Y を返す",
-        "grep -c 'pattern' が N 以上"
+      "MUST": [
+        "State a single, atomic condition that is either true or false",
+        "Be verifiable by exactly one command execution",
+        "Describe observable state, not action or intent",
+        "Be semantically aligned with its verification command"
       ],
-      "BAD_EXAMPLES": [
-        "ファイルを作成する",
-        "適切に設定されている",
-        "正しく動作する",
-        "ファイル X が存在し、関数 Y が定義されている"
+      "PROHIBITED_PATTERNS": {
+        "hollow_criterion": {
+          "description": "A criterion that cannot fail or proves nothing",
+          "examples": ["ファイルが適切に設定されている", "正しく動作する", "問題なく完了する"],
+          "why_prohibited": "Cannot be falsified - always passes by interpretation"
+        },
+        "compound_criterion": {
+          "description": "A criterion that tests multiple independent conditions",
+          "examples": ["ファイル X が存在し、関数 Y が定義されている", "A が B で、C が D である"],
+          "why_prohibited": "If one fails, which failed? Split into separate criteria."
+        },
+        "action_criterion": {
+          "description": "A criterion written as an action to perform",
+          "examples": ["ファイルを作成する", "テストを実行する", "設定を確認する"],
+          "why_prohibited": "Criterion describes state, not action. Use past participle or existence."
+        },
+        "proxy_criterion": {
+          "description": "Criterion that tests existence/syntax when semantics matter",
+          "examples": ["関数が定義されている（when logic correctness matters）", "ファイルが存在する（when content correctness matters）"],
+          "why_prohibited": "Existence != correctness. Test the actual behavior, not its proxy."
+        },
+        "tautological_criterion": {
+          "description": "Criterion that cannot logically fail",
+          "examples": ["0件以上存在する", "ファイルの内容がファイルと一致する", "空または空でない"],
+          "why_prohibited": "If true by definition, it proves nothing."
+        },
+        "semantic_compound": {
+          "description": "Criterion that appears single but implies multiple conditions",
+          "examples": ["API レスポンスの形式が仕様通り（=API稼働+JSON有効+スキーマ準拠）", "ビルドが成功する（=依存解決+コンパイル+リンク）"],
+          "why_prohibited": "Decompose high-level concepts into atomic testable units."
+        }
+      },
+      "SELF_CHECK": [
+        "Can this criterion fail? If not, it's hollow.",
+        "Does this criterion test exactly one thing? If not, split it.",
+        "Is this describing state (what IS) or action (what TO DO)? Must be state.",
+        "Would a hollow implementation pass this? If yes, strengthen.",
+        "Does the command test the SPECIFIC noun in the criterion, not a proxy?"
       ]
     },
     "command": {
-      "MUST": ["Be a shell command that can be executed", "Return verifiable output or exit code", "1 command = 1 検証操作（&& や ; での結合禁止）"],
-      "FORBIDDEN": ["Execute ...", "Compare ...", "Review ...", "Check ...", "複数操作を && で結合"],
-      "GOOD_EXAMPLES": [
-        "test -f path",
-        "jq -e '.field' file.json",
-        "grep -c 'pattern' file"
+      "MUST": [
+        "Be a valid shell command that can be copy-pasted and executed",
+        "Return a verifiable exit code or output",
+        "Test exactly one condition (no && or ; chaining)",
+        "Use fresh/current data, not cached artifacts"
       ],
-      "BAD_EXAMPLES": [
-        "Execute the test",
-        "Compare with expected",
-        "Manually verify",
-        "test -f path && grep -q 'pattern' path"
+      "PROHIBITED_PATTERNS": {
+        "pseudo_command": {
+          "description": "Instructions disguised as commands",
+          "examples": ["Execute the test", "Compare with expected", "Manually verify"],
+          "why_prohibited": "Not executable. Must be actual shell command."
+        },
+        "compound_command": {
+          "description": "Multiple commands chained together",
+          "examples": ["test -f path && grep -q 'pattern' path", "cmd1; cmd2"],
+          "why_prohibited": "Which command failed? Split into separate validations."
+        },
+        "trivial_command": {
+          "description": "Commands that always succeed",
+          "examples": ["echo 'done'", "true", "exit 0"],
+          "why_prohibited": "Proves nothing. Command must actually test something."
+        },
+        "output_filtering": {
+          "description": "Commands that hide failures through filtering",
+          "examples": ["grep -v 'error'", "|| true", "|| echo 0", "2>/dev/null (hiding errors)"],
+          "why_prohibited": "Hides evidence of failure. Output must be unfiltered."
+        },
+        "stale_check": {
+          "description": "Checking cached/old artifacts without regeneration",
+          "examples": ["test -d dist (without preceding build)", "cat old-log.txt"],
+          "why_prohibited": "May pass on stale success. Validate current state."
+        }
+      },
+      "SELF_CHECK": [
+        "Can I paste this into a terminal right now? If not, rewrite.",
+        "Does this command test exactly one thing?",
+        "Can this command fail when the criterion is not met?",
+        "Is the output unfiltered? No grep -v, || true, or error suppression?",
+        "Am I testing fresh output, not cached artifacts?"
       ]
     },
     "expected": {
-      "MUST": "Be a concrete value or condition",
-      "FORBIDDEN": ["適切", "正常", "正しく", "All ...", "100% ..."],
-      "GOOD_EXAMPLES": [
-        "exists",
-        "exit 0",
-        "true",
-        ">= 1",
-        "\"completed\""
+      "MUST": [
+        "Be a concrete, observable value or exit code",
+        "Be comparable by machine (not human interpretation)",
+        "Reject at least 50% of possible outcomes (meaningful threshold)"
       ],
-      "BAD_EXAMPLES": [
-        "正常終了",
-        "All pass",
-        "100% match"
+      "PROHIBITED_PATTERNS": {
+        "subjective_expected": {
+          "description": "Values requiring human judgment",
+          "examples": ["適切な値", "正常終了", "期待通り"],
+          "why_prohibited": "Machine cannot evaluate 'appropriate'. Use concrete value."
+        },
+        "universal_expected": {
+          "description": "Values that sound complete but mean nothing",
+          "examples": ["All pass", "100% success", "No errors"],
+          "why_prohibited": "What is 'all'? Define the specific check."
+        },
+        "vacuous_threshold": {
+          "description": "Thresholds that almost anything passes",
+          "examples": [">= 0", ">= 1 line", "not empty (on any file)", "any output"],
+          "why_prohibited": "No meaningful quality gate. Threshold must exclude failures."
+        }
+      },
+      "VALID_FORMS": ["exit 0", "exit 1", ">= N (where N > trivial)", "== N", "contains 'X'", "exact string"],
+      "SELF_CHECK": [
+        "What percentage of random inputs would pass this? If > 90%, too weak.",
+        "Would a hollow implementation's output pass? If yes, strengthen."
       ]
     },
     "subtask": {
-      "MUST": ["1 subtask = 1 状態変化（単一の検証可能な変更）"],
-      "FORBIDDEN": ["複数の変更を1つの subtask にまとめる", "複合 criterion（かつ/および/〜し、を含む）"]
+      "MUST": [
+        "Represent exactly one state change",
+        "Have exactly one criterion"
+      ],
+      "PROHIBITED_PATTERNS": {
+        "omnibus_subtask": {
+          "description": "A subtask that does too many things",
+          "examples": ["ファイル作成、テスト追加、ドキュメント更新を行う"],
+          "why_prohibited": "Which part failed? One subtask = one verifiable change."
+        }
+      }
+    },
+    "anti_fraud": {
+      "hollow_implementation": {
+        "description": "Code that appears to work but doesn't actually do anything",
+        "examples": [
+          "Hardcoding test answers",
+          "Returning fixed values instead of computing",
+          "Stubbing with empty implementations"
+        ],
+        "detection": "Run with inputs not in test cases. Does it still work?"
+      },
+      "test_tampering": {
+        "description": "Modifying tests to pass instead of fixing implementation",
+        "examples": [
+          "Changing expected values to match actual errors",
+          "Adding skip() to failing tests",
+          "Removing assertions"
+        ],
+        "rule": "Fix implementation, not tests. Test changes require user approval."
+      },
+      "evidence_fabrication": {
+        "description": "Creating fake evidence of completion",
+        "examples": [
+          "Manually writing 'PASS' in logs",
+          "Copying old success outputs",
+          "Editing timestamps"
+        ],
+        "rule": "Evidence must be from actual command execution, not manual creation."
+      }
+    },
+    "semantic_integrity": {
+      "principle": "The trinity (criterion, command, expected) must be semantically aligned",
+      "checks": [
+        "Criterion noun == Command target (criterion says 'auth logic', command tests 'auth logic' not 'any function')",
+        "Criterion specificity <= Command specificity (if criterion is specific, command must be equally or more specific)",
+        "Expected must reject hollow implementations (if empty stub would pass, expected is too weak)"
+      ],
+      "detection_questions": [
+        "If I replace the implementation with an empty stub, would this validation pass?",
+        "If I hardcode the expected output, would this validation pass?",
+        "Does the command actually test what the criterion claims?"
+      ]
     }
   },
-  "format_version": "2.2",
+  "format_version": "2.4",
   "meta": {
     "id": "example-playbook-id",
     "branch": "feat/example-feature",

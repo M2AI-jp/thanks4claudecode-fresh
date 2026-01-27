@@ -1,0 +1,156 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "auto-hard-block",
+    "plan_path": "play/standalone/auto-hard-block/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.3"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-28T04:35:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-28T05:15:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T04:35:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'AUTO_HARD_BLOCK_PATTERNS=' contract.sh = 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Lines 53-67: 配列定義確認"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c '.claude/agents/' contract.sh >= 1"]
+        }
+      },
+      "notes": "AUTO_HARD_BLOCK_PATTERNS 配列を追加"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T04:35:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -A30 'is_hard_block()' | grep -c 'AUTO_HARD_BLOCK_PATTERNS' = 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Lines 191-197: for loop パターンマッチング"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["source contract.sh && type is_hard_block exit 0"]
+        }
+      },
+      "notes": "is_hard_block() にパターンマッチング追加"
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T04:35:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["is_hard_block '.claude/agents/pm.md' -> BLOCKED"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["is_hard_block '.claude/lib/contract.sh' -> BLOCKED"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["is_hard_block 'state.md' -> NOT_BLOCKED"]
+        }
+      },
+      "notes": "正常検出と除外を確認"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T05:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'AUTO_HARD_BLOCK_PATTERNS' = 6"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["配列がファイル内で複数回参照されている"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["bash -n 構文チェック OK"]
+        }
+      },
+      "notes": "AUTO_HARD_BLOCK_PATTERNS 定義確認"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T05:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -A20 'is_hard_block()' | grep -c 'AUTO_HARD_BLOCK_PATTERNS' = 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["行 191-197 でパターンマッチング実装を確認"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["source 可能、構文チェック OK"]
+        }
+      },
+      "notes": "is_hard_block() が AUTO_HARD_BLOCK_PATTERNS を使用"
+    },
+    "p_final.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T05:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["bash -c 'source ... && is_hard_block ...' = BLOCKED"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [".claude/lib/contract.sh も BLOCKED、state.md は NOT_BLOCKED"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["パターン '.claude/agents/*.md' が正しく glob マッチ"]
+        }
+      },
+      "notes": ".claude/agents/pm.md が BLOCKED として検出"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "AUTO_HARD_BLOCK_PATTERNS 出現回数: 6",
+      "is_hard_block() 内での使用: 行 191-197",
+      ".claude/agents/pm.md: BLOCKED",
+      "構文チェック: SYNTAX_OK",
+      "state.md の除外: NOT_BLOCKED"
+    ],
+    "notes": "全 done_when 基準達成"
+  }
+}

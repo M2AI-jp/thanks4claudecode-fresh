@@ -1,0 +1,253 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "auto-hard-block",
+    "branch": "feat/auto-hard-block",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "contract.sh に AUTO_HARD_BLOCK_PATTERNS を追加し、.claude/agents/*.md 等を自動 HARD_BLOCK 化する",
+    "done_when": [
+      {
+        "criterion": "contract.sh に AUTO_HARD_BLOCK_PATTERNS 配列が定義されている",
+        "command": "grep -c 'AUTO_HARD_BLOCK_PATTERNS' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "is_hard_block() 関数が AUTO_HARD_BLOCK_PATTERNS を使用している",
+        "command": "grep -A20 'is_hard_block()' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | grep -c 'AUTO_HARD_BLOCK_PATTERNS'",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": ".claude/agents/pm.md が is_hard_block() で検出される",
+        "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && source .claude/lib/contract.sh && is_hard_block '.claude/agents/pm.md' && echo 'BLOCKED' || echo 'NOT_BLOCKED'",
+        "expected": "BLOCKED"
+      }
+    ],
+    "scope": {
+      "includes": [
+        ".claude/lib/contract.sh の AUTO_HARD_BLOCK_PATTERNS 追加",
+        "is_hard_block() 関数のパターンマッチング拡張"
+      ],
+      "excludes": [
+        "protected-files.txt の変更",
+        "他の contract.sh 関数の変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code",
+          "what": "contract.sh に自動検出パターンを追加し、.claude/agents/*.md 等を自動 HARD_BLOCK 化",
+          "when": "即時",
+          "where": [".claude/lib/contract.sh"],
+          "why": "ユーザー手動介入なしで報酬詐欺防止を実現するため（protected-files.txt は HARD_BLOCK で編集不可）",
+          "how": "AUTO_HARD_BLOCK_PATTERNS を contract.sh に追加し、is_hard_block() を拡張",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "パターンマッチングの誤検出",
+              "severity": "low",
+              "mitigation": "テストケースで検証"
+            }
+          ],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_FLOW",
+      "approved_at": "2026-01-28",
+      "summary": "自動検出パターンによる HARD_BLOCK 拡張",
+      "approved_items": [
+        "AUTO_HARD_BLOCK_PATTERNS 配列を contract.sh に追加",
+        ".claude/agents/*.md パターンを自動 HARD_BLOCK 化",
+        ".claude/skills/*/agents/*.md パターンを自動 HARD_BLOCK 化",
+        ".claude/lib/*.sh パターンを自動 HARD_BLOCK 化"
+      ],
+      "technical_requirements_confirmed": [
+        "既存の protected-files.txt からの読み込みは維持",
+        "優先順位: パターン -> ファイル"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "AUTO_HARD_BLOCK_PATTERNS 実装",
+      "description": "contract.sh に AUTO_HARD_BLOCK_PATTERNS 配列を追加し、is_hard_block() を拡張する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "contract.sh に AUTO_HARD_BLOCK_PATTERNS 配列が定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'AUTO_HARD_BLOCK_PATTERNS=' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep 'AUTO_HARD_BLOCK_PATTERNS' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | head -5",
+              "expected": "not empty"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '\\.claude/agents/' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "is_hard_block() 関数が AUTO_HARD_BLOCK_PATTERNS を使用したパターンマッチングを実行する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -A30 'is_hard_block()' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | grep -c 'AUTO_HARD_BLOCK_PATTERNS'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -A30 'is_hard_block()' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | grep -c 'pattern'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash -c 'source /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh && type is_hard_block'",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": ".claude/agents/pm.md が is_hard_block() で HARD_BLOCK として検出される",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && source .claude/lib/contract.sh && is_hard_block '.claude/agents/pm.md' && echo 'BLOCKED' || echo 'NOT_BLOCKED'",
+              "expected": "BLOCKED"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && source .claude/lib/contract.sh && is_hard_block '.claude/lib/contract.sh' && echo 'BLOCKED' || echo 'NOT_BLOCKED'",
+              "expected": "BLOCKED"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && source .claude/lib/contract.sh && is_hard_block 'state.md' && echo 'BLOCKED' || echo 'NOT_BLOCKED'",
+              "expected": "NOT_BLOCKED"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "Execute all done_when commands and verify results",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "contract.sh に AUTO_HARD_BLOCK_PATTERNS 配列が定義されている（done_when[0]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'AUTO_HARD_BLOCK_PATTERNS' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep 'AUTO_HARD_BLOCK_PATTERNS' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | wc -l",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "is_hard_block() 関数が AUTO_HARD_BLOCK_PATTERNS を使用している（done_when[1]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -A20 'is_hard_block()' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | grep -c 'AUTO_HARD_BLOCK_PATTERNS'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -c 'source /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh && type is_hard_block 2>&1 | grep -c function'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash -c 'source /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh 2>&1; echo $?'",
+              "expected": "0"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": ".claude/agents/pm.md が is_hard_block() で検出される（done_when[2]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && source .claude/lib/contract.sh && is_hard_block '.claude/agents/pm.md' && echo 'BLOCKED' || echo 'NOT_BLOCKED'",
+              "expected": "BLOCKED"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && source .claude/lib/contract.sh && is_hard_block '.claude/skills/golden-path/agents/pm.md' && echo 'BLOCKED' || echo 'NOT_BLOCKED'",
+              "expected": "BLOCKED"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && source .claude/lib/contract.sh && is_hard_block 'README.md' && echo 'BLOCKED' || echo 'NOT_BLOCKED'",
+              "expected": "NOT_BLOCKED"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
