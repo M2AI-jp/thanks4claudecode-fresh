@@ -3,7 +3,7 @@
     "criterion": {
       "MUST": "State what must be true, not what to do",
       "MUST": "Be verifiable by command execution",
-      "FORBIDDEN": ["〜する", "〜した", "確認する", "検証する", "適切", "正しく", "良い"],
+      "FORBIDDEN": ["〜する", "〜した", "確認する", "検証する", "適切", "正しく", "良い", "かつ", "および", "〜し、", "存在し、"],
       "GOOD_EXAMPLES": [
         "ファイル X が存在する",
         "jq '.field' が Y を返す",
@@ -12,22 +12,23 @@
       "BAD_EXAMPLES": [
         "ファイルを作成する",
         "適切に設定されている",
-        "正しく動作する"
+        "正しく動作する",
+        "ファイル X が存在し、関数 Y が定義されている"
       ]
     },
     "command": {
-      "MUST": "Be a shell command that can be executed",
-      "MUST": "Return verifiable output or exit code",
-      "FORBIDDEN": ["Execute ...", "Compare ...", "Review ...", "Check ..."],
+      "MUST": ["Be a shell command that can be executed", "Return verifiable output or exit code", "1 command = 1 検証操作（&& や ; での結合禁止）"],
+      "FORBIDDEN": ["Execute ...", "Compare ...", "Review ...", "Check ...", "複数操作を && で結合"],
       "GOOD_EXAMPLES": [
-        "test -f path && echo 'exists'",
+        "test -f path",
         "jq -e '.field' file.json",
-        "grep -c 'pattern' file | awk '{print ($1 >= 3)}'"
+        "grep -c 'pattern' file"
       ],
       "BAD_EXAMPLES": [
         "Execute the test",
         "Compare with expected",
-        "Manually verify"
+        "Manually verify",
+        "test -f path && grep -q 'pattern' path"
       ]
     },
     "expected": {
@@ -45,6 +46,10 @@
         "All pass",
         "100% match"
       ]
+    },
+    "subtask": {
+      "MUST": ["1 subtask = 1 状態変化（単一の検証可能な変更）"],
+      "FORBIDDEN": ["複数の変更を1つの subtask にまとめる", "複合 criterion（かつ/および/〜し、を含む）"]
     }
   },
   "format_version": "2.2",
@@ -67,14 +72,19 @@
     "summary": "Implement X to achieve Y (one sentence, specific)",
     "done_when": [
       {
-        "criterion": "src/feature.ts が存在し、export function X が含まれる",
-        "command": "test -f src/feature.ts && grep -c 'export function X' src/feature.ts",
+        "criterion": "src/feature.ts が存在する",
+        "command": "test -f src/feature.ts",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "src/feature.ts に export function X が含まれる",
+        "command": "grep -c 'export function X' src/feature.ts",
         "expected": ">= 1"
       },
       {
         "criterion": "npm test が exit 0 で終了する",
-        "command": "npm test > /dev/null 2>&1 && echo 'pass' || echo 'fail'",
-        "expected": "pass"
+        "command": "npm test",
+        "expected": "exit 0"
       }
     ],
     "scope": {
@@ -105,14 +115,14 @@
       "subtasks": [
         {
           "id": "p1.1",
-          "criterion": "src/feature.ts が存在し、関数 X が定義されている",
+          "criterion": "src/feature.ts が存在する",
           "executor": "codex",
           "coding": true,
           "validation_plan": {
             "technical": {
               "type": "automated",
-              "command": "test -f src/feature.ts && grep -q 'function X' src/feature.ts && echo 'found'",
-              "expected": "found"
+              "command": "test -f src/feature.ts",
+              "expected": "exit 0"
             },
             "consistency": {
               "type": "automated",
@@ -136,24 +146,70 @@
       "subtasks": [
         {
           "id": "p_final.1",
-          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "criterion": "src/feature.ts が存在する（done_when[0]）",
           "executor": "coderabbit",
           "coding": false,
           "validation_plan": {
             "technical": {
               "type": "automated",
-              "command": "test -f src/feature.ts && grep -c 'export function X' src/feature.ts | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
-              "expected": "pass"
+              "command": "test -f src/feature.ts",
+              "expected": "exit 0"
             },
             "consistency": {
               "type": "automated",
-              "command": "npm test > /dev/null 2>&1 && echo 'pass' || echo 'fail'",
-              "expected": "pass"
+              "command": "ls -la src/feature.ts",
+              "expected": "file exists"
             },
             "completeness": {
               "type": "automated",
-              "command": "echo 'done_when[0]: '$(test -f src/feature.ts && grep -c 'export function X' src/feature.ts)' done_when[1]: '$(npm test > /dev/null 2>&1 && echo 'pass' || echo 'fail')",
-              "expected": "done_when[0]: >= 1, done_when[1]: pass"
+              "command": "file src/feature.ts",
+              "expected": "text"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "src/feature.ts に export function X が含まれる（done_when[1]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'export function X' src/feature.ts",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep 'export function X' src/feature.ts",
+              "expected": "not empty"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l src/feature.ts",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "npm test が exit 0 で終了する（done_when[2]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "npm test",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "npm run test:unit",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "npm run lint",
+              "expected": "exit 0"
             }
           }
         }

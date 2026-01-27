@@ -1,0 +1,697 @@
+{
+  "_template_rules": {
+    "criterion": {
+      "MUST": "State what must be true, not what to do",
+      "MUST": "Be verifiable by command execution",
+      "FORBIDDEN": ["〜する", "〜した", "確認する", "検証する", "適切", "正しく", "良い"]
+    },
+    "command": {
+      "MUST": "Be a shell command that can be executed",
+      "MUST": "Return verifiable output or exit code",
+      "FORBIDDEN": ["Execute ...", "Compare ...", "Review ...", "Check ..."]
+    },
+    "expected": {
+      "MUST": "Be a concrete value or condition",
+      "FORBIDDEN": ["適切", "正常", "正しく", "All ...", "100% ..."]
+    }
+  },
+  "format_version": "2.2",
+  "meta": {
+    "id": "template-strictness",
+    "branch": "feat/template-strictness",
+    "created": "2026-01-28",
+    "status": "draft",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "play/template/plan.json の _template_rules を修正し、粒度ルールを最大限厳密にする",
+    "done_when": [
+      {
+        "criterion": "_template_rules.criterion.FORBIDDEN に「かつ」が含まれている",
+        "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"かつ\"])' play/template/plan.json",
+        "expected": "true"
+      },
+      {
+        "criterion": "_template_rules.criterion.FORBIDDEN に「および」が含まれている",
+        "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"および\"])' play/template/plan.json",
+        "expected": "true"
+      },
+      {
+        "criterion": "_template_rules.criterion.FORBIDDEN に「〜し、」が含まれている",
+        "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"〜し、\"])' play/template/plan.json",
+        "expected": "true"
+      },
+      {
+        "criterion": "_template_rules.criterion.FORBIDDEN に「存在し、」が含まれている",
+        "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"存在し、\"])' play/template/plan.json",
+        "expected": "true"
+      },
+      {
+        "criterion": "_template_rules.command.FORBIDDEN に複数操作結合禁止が含まれている",
+        "command": "jq -e '._template_rules.command.FORBIDDEN | any(. | contains(\"&&\"))' play/template/plan.json",
+        "expected": "true"
+      },
+      {
+        "criterion": "_template_rules.subtask セクションが存在する",
+        "command": "jq -e '._template_rules.subtask' play/template/plan.json",
+        "expected": "not null"
+      },
+      {
+        "criterion": "goal.done_when[0] の criterion に「かつ」「および」が含まれていない",
+        "command": "jq -r '.goal.done_when[0].criterion' play/template/plan.json | grep -c '\\(かつ\\|および\\|し、\\)'",
+        "expected": "0"
+      },
+      {
+        "criterion": "goal.done_when[0] の command に「&&」が含まれていない",
+        "command": "jq -r '.goal.done_when[0].command' play/template/plan.json | grep -c '&&'",
+        "expected": "0"
+      }
+    ],
+    "scope": {
+      "includes": ["play/template/plan.json の _template_rules セクション", "play/template/plan.json の goal.done_when", "play/template/plan.json の phases[0].subtasks"],
+      "excludes": ["play/template/progress.json", "既存の playbook", "他のテンプレートファイル"]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code",
+          "what": "play/template/plan.json の _template_rules を修正し、粒度ルールを最大限厳密にする",
+          "when": "即時",
+          "where": ["play/template/plan.json"],
+          "why": "LLM が複合的な criterion/command を作成して報酬詐欺を行う余地を排除するため",
+          "how": [
+            "criterion に「かつ」「および」「〜し、」「存在し、」を FORBIDDEN に追加",
+            "command に「&& で複数チェック」を FORBIDDEN に追加",
+            "subtask ルールを新設し「1 subtask = 1 状態変化」を MUST に追加",
+            "例文も1つの検証に限定したものに修正"
+          ],
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "粒度が細かくなりすぎて playbook が膨大になる",
+              "severity": "low",
+              "mitigation": "厳密性のためなら許容（ユーザー指示）"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "既存の playbook との非互換",
+              "severity": "low",
+              "mitigation": "新規 playbook から適用、既存はアーカイブ済み"
+            }
+          ]
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_FLOW",
+      "approved_at": "2026-01-28",
+      "summary": "分析結果の5W1H全項目を承認",
+      "approved_items": ["5w1h", "risks", "scope"],
+      "technical_requirements_confirmed": ["criterion FORBIDDEN 追加", "command FORBIDDEN 追加", "subtask ルール新設", "例文修正"]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "criterion ルールの厳格化",
+      "description": "_template_rules.criterion.FORBIDDEN に複合表現を追加",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "_template_rules.criterion.FORBIDDEN 配列に「かつ」が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"かつ\"])' play/template/plan.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.criterion.FORBIDDEN | length' play/template/plan.json",
+              "expected": ">= 8"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.criterion.FORBIDDEN[]' play/template/plan.json | grep -c 'かつ'",
+              "expected": "1"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "_template_rules.criterion.FORBIDDEN 配列に「および」が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"および\"])' play/template/plan.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.criterion.FORBIDDEN | length' play/template/plan.json",
+              "expected": ">= 9"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.criterion.FORBIDDEN[]' play/template/plan.json | grep -c 'および'",
+              "expected": "1"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "_template_rules.criterion.FORBIDDEN 配列に「〜し、」が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"〜し、\"])' play/template/plan.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.criterion.FORBIDDEN | length' play/template/plan.json",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.criterion.FORBIDDEN[]' play/template/plan.json | grep -c '〜し、'",
+              "expected": "1"
+            }
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "_template_rules.criterion.FORBIDDEN 配列に「存在し、」が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"存在し、\"])' play/template/plan.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.criterion.FORBIDDEN | length' play/template/plan.json",
+              "expected": ">= 11"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.criterion.FORBIDDEN[]' play/template/plan.json | grep -c '存在し、'",
+              "expected": "1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "command ルールの厳格化",
+      "description": "_template_rules.command に複数操作結合禁止を追加",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "_template_rules.command.FORBIDDEN に「複数操作を && で結合」が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.command.FORBIDDEN | any(. | contains(\"&&\"))' play/template/plan.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.command.FORBIDDEN | length' play/template/plan.json",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.command.FORBIDDEN[]' play/template/plan.json | grep -c '&&'",
+              "expected": "1"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "_template_rules.command.MUST に「1 command = 1 検証操作」が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.command.MUST' play/template/plan.json | grep -c '1 command'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.command | keys' play/template/plan.json | grep -c 'MUST'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.command.MUST' play/template/plan.json | grep -c '検証操作'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "subtask ルールの新設",
+      "description": "_template_rules.subtask セクションを新設し、粒度ルールを定義",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "_template_rules.subtask セクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.subtask' play/template/plan.json",
+              "expected": "not null"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules | keys' play/template/plan.json | grep -c 'subtask'",
+              "expected": "1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq '._template_rules.subtask | type' play/template/plan.json",
+              "expected": "\"object\""
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "_template_rules.subtask.MUST に「1 subtask = 1 状態変化」が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.subtask.MUST' play/template/plan.json | grep -c '1 subtask'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.subtask | keys' play/template/plan.json | grep -c 'MUST'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.subtask.MUST' play/template/plan.json | grep -c '状態変化'",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "_template_rules.subtask.FORBIDDEN に「複数の変更を1つの subtask にまとめる」が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.subtask.FORBIDDEN | any(. | contains(\"複数\"))' play/template/plan.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.subtask | keys' play/template/plan.json | grep -c 'FORBIDDEN'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.subtask.FORBIDDEN[]' play/template/plan.json | grep -c 'まとめる'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "例文の修正",
+      "description": "GOOD_EXAMPLES と BAD_EXAMPLES を単一検証に修正",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "criterion.GOOD_EXAMPLES が全て単一検証のみである",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.criterion.GOOD_EXAMPLES[]' play/template/plan.json | grep -c '\\(かつ\\|および\\|し、\\)'",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.criterion.GOOD_EXAMPLES | length' play/template/plan.json",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.criterion.GOOD_EXAMPLES[]' play/template/plan.json | wc -l",
+              "expected": ">= 3"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "criterion.BAD_EXAMPLES に複合 criterion の例が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.criterion.BAD_EXAMPLES[]' play/template/plan.json | grep -c '\\(かつ\\|および\\|存在し、\\)'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.criterion.BAD_EXAMPLES | length' play/template/plan.json",
+              "expected": ">= 4"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.criterion.BAD_EXAMPLES[]' play/template/plan.json | grep -c '存在し'",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "command.GOOD_EXAMPLES が全て単一操作のみである",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.command.GOOD_EXAMPLES[]' play/template/plan.json | grep -c '&&'",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.command.GOOD_EXAMPLES | length' play/template/plan.json",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.command.GOOD_EXAMPLES[]' play/template/plan.json | wc -l",
+              "expected": ">= 3"
+            }
+          }
+        },
+        {
+          "id": "p4.4",
+          "criterion": "command.BAD_EXAMPLES に「&&」を使った例が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.command.BAD_EXAMPLES[]' play/template/plan.json | grep -c '&&'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.command.BAD_EXAMPLES | length' play/template/plan.json",
+              "expected": ">= 4"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.command.BAD_EXAMPLES[]' play/template/plan.json | grep -c '&&'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "テンプレート本体の修正",
+      "description": "goal.done_when と phases[0].subtasks を単一検証に修正",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "goal.done_when[0] の criterion が単一検証である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '.goal.done_when[0].criterion' play/template/plan.json | grep -c '\\(かつ\\|および\\|し、\\)'",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '.goal.done_when | length' play/template/plan.json",
+              "expected": ">= 2"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '.goal.done_when[0].criterion' play/template/plan.json | wc -c",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p5.2",
+          "criterion": "goal.done_when[0] の command が単一操作である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '.goal.done_when[0].command' play/template/plan.json | grep -c '&&'",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -r '.goal.done_when[0].command' play/template/plan.json | wc -c",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.goal.done_when[0].command' play/template/plan.json",
+              "expected": "not null"
+            }
+          }
+        },
+        {
+          "id": "p5.3",
+          "criterion": "goal.done_when に分割した2つ目の項目が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '.goal.done_when[1]' play/template/plan.json",
+              "expected": "not null"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '.goal.done_when | length' play/template/plan.json",
+              "expected": ">= 2"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '.goal.done_when[1].criterion' play/template/plan.json | wc -c",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p5.4",
+          "criterion": "phases[0].subtasks[0].criterion が単一検証である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '.phases[0].subtasks[0].criterion' play/template/plan.json | grep -c '\\(かつ\\|および\\|し、\\)'",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -r '.phases[0].subtasks[0].criterion' play/template/plan.json | wc -c",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.phases[0].subtasks[0].criterion' play/template/plan.json",
+              "expected": "not null"
+            }
+          }
+        },
+        {
+          "id": "p5.5",
+          "criterion": "phases[0].subtasks[0].validation_plan.technical.command が単一操作である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '.phases[0].subtasks[0].validation_plan.technical.command' play/template/plan.json | grep -c '&&'",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -r '.phases[0].subtasks[0].validation_plan.technical.command' play/template/plan.json | wc -c",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.phases[0].subtasks[0].validation_plan.technical.command' play/template/plan.json",
+              "expected": "not null"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p6",
+      "name": "最終検証",
+      "description": "全ての変更が正しく適用されていることを確認",
+      "depends_on": ["p5"],
+      "subtasks": [
+        {
+          "id": "p6.1",
+          "criterion": "_template_rules.criterion.FORBIDDEN に「かつ」が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"かつ\"])' play/template/plan.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.criterion.FORBIDDEN | length' play/template/plan.json",
+              "expected": ">= 11"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.criterion.FORBIDDEN | join(\",\")' play/template/plan.json | grep -c 'かつ'",
+              "expected": "1"
+            }
+          }
+        },
+        {
+          "id": "p6.2",
+          "criterion": "_template_rules.subtask セクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.subtask' play/template/plan.json",
+              "expected": "not null"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.subtask | keys | length' play/template/plan.json",
+              "expected": ">= 2"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq '._template_rules.subtask | has(\"MUST\") and has(\"FORBIDDEN\")' play/template/plan.json",
+              "expected": "true"
+            }
+          }
+        },
+        {
+          "id": "p6.3",
+          "criterion": "テンプレート本体の goal.done_when に「&&」が含まれていない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '.goal.done_when[].command' play/template/plan.json | grep -c '&&'",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '.goal.done_when | length' play/template/plan.json",
+              "expected": ">= 2"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '.goal.done_when[].criterion' play/template/plan.json | grep -c '\\(かつ\\|および\\|存在し、\\)'",
+              "expected": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "Execute all done_when commands and verify results",
+      "depends_on": ["p6"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.criterion.FORBIDDEN | contains([\"かつ\", \"および\", \"〜し、\", \"存在し、\"])' play/template/plan.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -e '._template_rules.subtask' play/template/plan.json",
+              "expected": "not null"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '.goal.done_when[].command' play/template/plan.json | grep -c '&&'",
+              "expected": "0"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

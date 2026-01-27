@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: null
+current_milestone: m1
 status: idle
 ```
 
@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/template-strictness/plan.json
 parent_project: null
-current_phase: null
-branch: null
-last_archived: play/standalone/template-strictness-v2
+current_phase: p1
+branch: feat/template-strictness
+last_archived: play/archive/findings-fix
 review_pending: false
 ```
 
@@ -44,9 +44,9 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-20 07:23:44
-last_end: 2026-01-20 06:45:28
-last_clear: 2025-12-24 03:20:00
+last_start: 2026-01-28 03:42:04
+last_end: 2026-01-28 02:47:07
+last_clear: 2026-01-20
 ```
 
 ---
@@ -55,12 +55,12 @@ last_clear: 2025-12-24 03:20:00
 
 ```yaml
 security: admin
-toolstack: C  # A: Claude Code only | B: +Codex | C: +Codex+CodeRabbit
+toolstack: C
 roles:
-  orchestrator: claudecode  # 監督・調整・設計（常に claudecode）
-  worker: codex             # 実装担当（A: claudecode, B/C: codex）
-  reviewer: coderabbit      # レビュー担当（A/B: claudecode, C: coderabbit）
-  human: user               # 人間の介入（常に user）
+  orchestrator: claudecode
+  worker: codex
+  reviewer: coderabbit
+  human: user
 ```
 
 ---
