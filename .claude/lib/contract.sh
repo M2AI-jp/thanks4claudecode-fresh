@@ -22,16 +22,27 @@
 STATE_FILE="${STATE_FILE:-state.md}"
 REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
-# HARD_BLOCK ファイル（admin でも回避不可）
-HARD_BLOCK_FILES=(
-    "CLAUDE.md"
-    ".claude/protected-files.txt"
-    ".claude/hooks/init-guard.sh"
-    ".claude/hooks/critic-guard.sh"
-    ".claude/hooks/scope-guard.sh"
-    ".claude/hooks/executor-guard.sh"
-    ".claude/hooks/playbook-guard.sh"
-)
+# HARD_BLOCK ファイルは protected-files.txt から読み込む（SSOT）
+# 形式: HARD_BLOCK:path
+PROTECTED_FILES="${REPO_ROOT}/.claude/protected-files.txt"
+HARD_BLOCK_FILES=()
+if [[ -f "$PROTECTED_FILES" ]]; then
+    while IFS= read -r line; do
+        # コメント行と空行をスキップ
+        [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+        # HARD_BLOCK: プレフィックスを持つ行を抽出
+        if [[ "$line" =~ ^HARD_BLOCK:(.+)$ ]]; then
+            HARD_BLOCK_FILES+=("${BASH_REMATCH[1]}")
+        fi
+    done < "$PROTECTED_FILES"
+fi
+# フォールバック: protected-files.txt が読めない場合の最小限の保護
+if [[ ${#HARD_BLOCK_FILES[@]} -eq 0 ]]; then
+    HARD_BLOCK_FILES=(
+        "CLAUDE.md"
+        ".claude/protected-files.txt"
+    )
+fi
 
 # Maintenance ホワイトリスト（admin + playbook=null で許可）
 MAINTENANCE_WHITELIST=(

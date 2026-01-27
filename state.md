@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/v2-design-enhancement
+last_archived: play/archive/mece-completion-v2
 review_pending: false
 ```
 
@@ -44,8 +44,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-27 21:53:39
-last_end: 2026-01-21 22:51:23
+last_start: 2026-01-28 00:25:00
+last_end: 2026-01-27 23:40:48
 last_clear: 2026-01-20
 ```
 

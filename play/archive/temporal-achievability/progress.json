@@ -3,7 +3,7 @@
   "playbook": {
     "id": "temporal-achievability",
     "plan_path": "play/standalone/temporal-achievability/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",

@@ -3,7 +3,7 @@
   "playbook": {
     "id": "refactor-play-structure",
     "plan_path": "play/refactor-play-structure/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",
@@ -35,15 +35,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["ls play/ で standalone/ が存在しない"]
+          "evidence": [
+            "ls play/ で standalone/ が存在しない"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["ARCHITECTURE.md Section 8.5 と一致"]
+          "evidence": [
+            "ARCHITECTURE.md Section 8.5 と一致"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["play/standalone/ 削除済み"]
+          "evidence": [
+            "play/standalone/ 削除済み"
+          ]
         }
       },
       "notes": "standalone/ ディレクトリ削除完了"
@@ -55,15 +61,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["ls play/template/ で plan.json, progress.json, project.json 存在"]
+          "evidence": [
+            "ls play/template/ で plan.json, progress.json, project.json 存在"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["core-feature-reclassification.md に play/template/ 参照あり"]
+          "evidence": [
+            "core-feature-reclassification.md に play/template/ 参照あり"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["3つのテンプレートファイルが全て存在"]
+          "evidence": [
+            "3つのテンプレートファイルが全て存在"
+          ]
         }
       },
       "notes": "template/ 統合完了"
@@ -75,15 +87,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["ls play/archive/ でアーカイブがフラット配置"]
+          "evidence": [
+            "ls play/archive/ でアーカイブがフラット配置"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["ARCHITECTURE.md Section 8.5 の構造図と一致"]
+          "evidence": [
+            "ARCHITECTURE.md Section 8.5 の構造図と一致"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["archive/standalone/ は存在しない"]
+          "evidence": [
+            "archive/standalone/ は存在しない"
+          ]
         }
       },
       "notes": "archive/standalone/ 移動完了"
@@ -95,15 +113,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["grep standalone archive-playbook.sh で参照なし"]
+          "evidence": [
+            "grep standalone archive-playbook.sh で参照なし"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["ARCHIVE_DIR=play/archive に変更"]
+          "evidence": [
+            "ARCHIVE_DIR=play/archive に変更"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["単発/project両方の分岐ロジック実装"]
+          "evidence": [
+            "単発/project両方の分岐ロジック実装"
+          ]
         }
       },
       "notes": "ARCHIVE_DIR 判定ロジック修正完了"
@@ -115,15 +139,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["playbook 検索パスが新構造に対応"]
+          "evidence": [
+            "playbook 検索パスが新構造に対応"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["play/{id}/ と play/projects/{id}/{pb}/ を認識"]
+          "evidence": [
+            "play/{id}/ と play/projects/{id}/{pb}/ を認識"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["全パス判定箇所を更新"]
+          "evidence": [
+            "全パス判定箇所を更新"
+          ]
         }
       },
       "notes": "playbook 検索パス修正完了"
@@ -135,15 +165,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["Section 8.5 が存在（行1025-1059）"]
+          "evidence": [
+            "Section 8.5 が存在（行1025-1059）"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["構造図が実際のディレクトリ構成と一致"]
+          "evidence": [
+            "構造図が実際のディレクトリ構成と一致"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["単発/project/archive/template 全ての説明が含まれている"]
+          "evidence": [
+            "単発/project/archive/template 全ての説明が含まれている"
+          ]
         }
       },
       "notes": "ARCHITECTURE.md 更新完了"
@@ -155,15 +191,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["play/template/ への参照あり（行132-134, 370-371）"]
+          "evidence": [
+            "play/template/ への参照あり（行132-134, 370-371）"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["project.json 追加済み"]
+          "evidence": [
+            "project.json 追加済み"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["standalone/ や playbooks/ 中間階層への参照なし"]
+          "evidence": [
+            "standalone/ や playbooks/ 中間階層への参照なし"
+          ]
         }
       },
       "notes": "core-feature-reclassification.md 更新完了"
@@ -175,15 +217,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["play セクション（行143-154）に active/archive/template 記載"]
+          "evidence": [
+            "play セクション（行143-154）に active/archive/template 記載"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["構造が実際のディレクトリと一致"]
+          "evidence": [
+            "構造が実際のディレクトリと一致"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["旧構造への参照なし"]
+          "evidence": [
+            "旧構造への参照なし"
+          ]
         }
       },
       "notes": "repository-map.yaml 再生成完了"
@@ -195,15 +243,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["全 done_when 項目の技術検証 PASS"]
+          "evidence": [
+            "全 done_when 項目の技術検証 PASS"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["設計書と実装の整合性確認済み"]
+          "evidence": [
+            "設計書と実装の整合性確認済み"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["8/8 done_when が PASS"]
+          "evidence": [
+            "8/8 done_when が PASS"
+          ]
         }
       },
       "notes": "critic により全 done_when 項目が PASS (8/8)"

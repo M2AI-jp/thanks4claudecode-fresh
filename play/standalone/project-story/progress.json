@@ -11,51 +11,64 @@
   },
   "phases": {
     "p1": {
-      "status": "completed",
+      "status": "done",
       "updated_at": "2026-01-21T00:15:00Z"
     },
     "p_final": {
-      "status": "completed",
+      "status": "done",
       "updated_at": "2026-01-21T00:16:00Z"
     }
   },
   "subtasks": {
     "p1.1": {
-      "status": "completed",
+      "status": "done",
       "validated_at": "2026-01-21T00:15:00Z",
       "validated_by": "claudecode",
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["file exists: PROJECT-STORY.md", "14,457 chars >= 10,000"]
+          "evidence": [
+            "file exists: PROJECT-STORY.md",
+            "14,457 chars >= 10,000"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["references BUILD-FROM-SCRATCH.md, EXAMPLE-CHATGPT-CLONE.md, REBUILD-DESIGN-SPEC.md"]
+          "evidence": [
+            "references BUILD-FROM-SCRATCH.md, EXAMPLE-CHATGPT-CLONE.md, REBUILD-DESIGN-SPEC.md"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["38 sections >= 5"]
+          "evidence": [
+            "38 sections >= 5"
+          ]
         }
       },
       "notes": ""
     },
     "p_final.1": {
-      "status": "completed",
+      "status": "done",
       "validated_at": "2026-01-21T00:16:00Z",
       "validated_by": "claudecode",
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test -f PROJECT-STORY.md -> exists"]
+          "evidence": [
+            "test -f PROJECT-STORY.md -> exists"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["wc -c >= 10000 -> pass (14,457)"]
+          "evidence": [
+            "wc -c >= 10000 -> pass (14,457)"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["grep -c '##' >= 5 -> pass (38)"]
+          "evidence": [
+            "grep -c '##' >= 5 -> pass (38)"
+          ]
         }
       },
       "notes": ""

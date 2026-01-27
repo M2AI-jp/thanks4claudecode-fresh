@@ -11,17 +11,17 @@
   },
   "phases": {
     "p1": {
-      "status": "completed",
+      "status": "done",
       "updated_at": "2026-01-20"
     },
     "p_final": {
-      "status": "completed",
+      "status": "done",
       "updated_at": "2026-01-20"
     }
   },
   "subtasks": {
     "p1.1": {
-      "status": "completed",
+      "status": "done",
       "validated_at": "2026-01-20",
       "validated_by": "critic",
       "validations": {
@@ -47,7 +47,7 @@
       "notes": ""
     },
     "p1.2": {
-      "status": "completed",
+      "status": "done",
       "validated_at": "2026-01-20",
       "validated_by": "critic",
       "validations": {
@@ -73,7 +73,7 @@
       "notes": ""
     },
     "p1.3": {
-      "status": "completed",
+      "status": "done",
       "validated_at": "2026-01-20",
       "validated_by": "critic",
       "validations": {
@@ -99,7 +99,7 @@
       "notes": ""
     },
     "p_final.1": {
-      "status": "completed",
+      "status": "done",
       "validated_at": "2026-01-20",
       "validated_by": "coderabbit",
       "validations": {

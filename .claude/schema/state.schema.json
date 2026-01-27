@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/thanks4claudecode/schema/state.schema.json",
+  "title": "State.md Schema",
+  "description": "Schema for state.md YAML sections - the Single Source of Truth for current state",
+  "type": "object",
+  "required": ["project", "playbook", "goal", "session", "config"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "description": "Project-level state",
+      "properties": {
+        "active": {
+          "type": ["string", "null"],
+          "description": "Active project identifier or null"
+        },
+        "current_milestone": {
+          "type": ["string", "null"],
+          "description": "Current milestone (e.g., m1, m2)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["idle", "active", "blocked"],
+          "description": "Project status"
+        }
+      }
+    },
+    "playbook": {
+      "type": "object",
+      "description": "Playbook-level state",
+      "required": ["active", "current_phase", "branch"],
+      "properties": {
+        "active": {
+          "type": ["string", "null"],
+          "description": "Path to active playbook plan.json or null"
+        },
+        "parent_project": {
+          "type": ["string", "null"],
+          "description": "Parent project identifier"
+        },
+        "current_phase": {
+          "type": ["string", "null"],
+          "description": "Current phase (e.g., p1, p2)"
+        },
+        "branch": {
+          "type": ["string", "null"],
+          "description": "Git branch name"
+        },
+        "last_archived": {
+          "type": ["string", "null"],
+          "description": "Path to last archived playbook"
+        },
+        "review_pending": {
+          "type": "boolean",
+          "description": "Whether playbook review is pending"
+        }
+      }
+    },
+    "goal": {
+      "type": "object",
+      "description": "Goal-level state",
+      "properties": {
+        "self_complete": {
+          "type": "boolean",
+          "description": "Whether goal can self-complete"
+        },
+        "milestone": {
+          "type": ["string", "null"],
+          "description": "Target milestone"
+        },
+        "phase": {
+          "type": ["string", "null"],
+          "description": "Target phase"
+        },
+        "done_criteria": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of done criteria"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["idle", "in_progress", "done", "blocked"],
+          "description": "Goal status"
+        }
+      }
+    },
+    "session": {
+      "type": "object",
+      "description": "Session-level state",
+      "properties": {
+        "last_start": {
+          "type": "string",
+          "description": "Last session start timestamp"
+        },
+        "last_end": {
+          "type": "string",
+          "description": "Last session end timestamp"
+        },
+        "last_clear": {
+          "type": "string",
+          "description": "Last /clear timestamp"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "description": "Configuration settings",
+      "properties": {
+        "security": {
+          "type": "string",
+          "enum": ["strict", "trusted", "admin"],
+          "description": "Security mode"
+        },
+        "toolstack": {
+          "type": "string",
+          "description": "Toolstack identifier"
+        },
+        "roles": {
+          "type": "object",
+          "properties": {
+            "orchestrator": {
+              "type": "string",
+              "enum": ["claudecode", "codex", "user"]
+            },
+            "worker": {
+              "type": "string",
+              "enum": ["claudecode", "codex", "user"]
+            },
+            "reviewer": {
+              "type": "string",
+              "enum": ["claudecode", "coderabbit", "user"]
+            },
+            "human": {
+              "type": "string",
+              "const": "user"
+            }
+          }
+        }
+      }
+    }
+  }
+}

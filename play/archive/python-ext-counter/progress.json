@@ -3,7 +3,7 @@
   "playbook": {
     "id": "python-ext-counter",
     "plan_path": "play/archive/python-ext-counter/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": null,

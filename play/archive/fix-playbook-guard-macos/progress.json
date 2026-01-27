@@ -3,7 +3,7 @@
   "playbook": {
     "id": "fix-playbook-guard-macos",
     "plan_path": "play/fix-playbook-guard-macos/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
     "phase": "completed",
@@ -31,15 +31,22 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["timeout コマンドを削除し cat に置換", "bash -n シンタックスチェック OK"]
+          "evidence": [
+            "timeout コマンドを削除し cat に置換",
+            "bash -n シンタックスチェック OK"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["他のガードと同様の Fail-closed パターン"]
+          "evidence": [
+            "他のガードと同様の Fail-closed パターン"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["stdin 読み込み + 空チェック + エラー処理"]
+          "evidence": [
+            "stdin 読み込み + 空チェック + エラー処理"
+          ]
         }
       },
       "notes": "macOS/Linux 両対応の stdin 読み込み処理に修正"
@@ -51,15 +58,22 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["exit 0 → exit 2 に変更", "エラーメッセージを [WARN] から [ERROR] に変更"]
+          "evidence": [
+            "exit 0 → exit 2 に変更",
+            "エラーメッセージを [WARN] から [ERROR] に変更"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["jq 未インストール時と同様の exit 2 パターン"]
+          "evidence": [
+            "jq 未インストール時と同様の exit 2 パターン"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["stdin 空/失敗時に exit 2 でブロック"]
+          "evidence": [
+            "stdin 空/失敗時に exit 2 でブロック"
+          ]
         }
       },
       "notes": "Fail-open から Fail-closed に変更"
@@ -71,15 +85,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["bash -n playbook-guard.sh: Syntax OK"]
+          "evidence": [
+            "bash -n playbook-guard.sh: Syntax OK"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["既存の bash スクリプト規約に準拠"]
+          "evidence": [
+            "既存の bash スクリプト規約に準拠"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["スクリプト全体がシンタックスチェック済み"]
+          "evidence": [
+            "スクリプト全体がシンタックスチェック済み"
+          ]
         }
       },
       "notes": ""
@@ -91,15 +111,23 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["playbook=null: exit 2 (ブロック)", "playbook あり: exit 0 (許可)", "stdin 空: exit 2 (Fail-closed)"]
+          "evidence": [
+            "playbook=null: exit 2 (ブロック)",
+            "playbook あり: exit 0 (許可)",
+            "stdin 空: exit 2 (Fail-closed)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["既存の動作と同様の結果を確認"]
+          "evidence": [
+            "既存の動作と同様の結果を確認"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["許可/拒否/Fail-closed の3ケースをテスト"]
+          "evidence": [
+            "許可/拒否/Fail-closed の3ケースをテスト"
+          ]
         }
       },
       "notes": ""
@@ -111,15 +139,26 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["done_when 3項目全てを検証", "コード変更確認", "テスト実行結果確認"]
+          "evidence": [
+            "done_when 3項目全てを検証",
+            "コード変更確認",
+            "テスト実行結果確認"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["plan.json の goal と整合", "報酬詐欺の検出なし"]
+          "evidence": [
+            "plan.json の goal と整合",
+            "報酬詐欺の検出なし"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["macOS 互換性", "Linux 互換性（コードベース）", "Fail-closed 動作"]
+          "evidence": [
+            "macOS 互換性",
+            "Linux 互換性（コードベース）",
+            "Fail-closed 動作"
+          ]
         }
       },
       "notes": "critic による最終検証完了"

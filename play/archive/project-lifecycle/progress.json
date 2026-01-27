@@ -3,7 +3,7 @@
   "playbook": {
     "id": "project-lifecycle",
     "plan_path": "play/standalone/project-lifecycle/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",
@@ -39,15 +39,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test -f docs/project-lifecycle.md → PASS"]
+          "evidence": [
+            "test -f docs/project-lifecycle.md → PASS"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["archive-playbook.sh と同じログ出力パターン（log_info/log_warn/log_error）を使用する設計"]
+          "evidence": [
+            "archive-playbook.sh と同じログ出力パターン（log_info/log_warn/log_error）を使用する設計"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["5つの必須セクション確認: (1) Project Lifecycle 概要 (2) Status 遷移図 (3) archive-project.sh 入出力仕様 (4) archive-playbook.sh との連携フロー (5) テンプレート構成"]
+          "evidence": [
+            "5つの必須セクション確認: (1) Project Lifecycle 概要 (2) Status 遷移図 (3) archive-project.sh 入出力仕様 (4) archive-playbook.sh との連携フロー (5) テンプレート構成"
+          ]
         }
       },
       "notes": "docs/project-lifecycle.md を作成。9セクション構成の詳細設計書。"
@@ -59,15 +65,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["設計書の JSON 構造と template/project.json の比較完了"]
+          "evidence": [
+            "設計書の JSON 構造と template/project.json の比較完了"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["archive-playbook.sh Step 8 の project 更新ロジック（行 665-681）と設計書セクション 6.3 が一致"]
+          "evidence": [
+            "archive-playbook.sh Step 8 の project 更新ロジック（行 665-681）と設計書セクション 6.3 が一致"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["status 遷移（draft -> active -> closed）が設計書セクション 2 で明文化"]
+          "evidence": [
+            "status 遷移（draft -> active -> closed）が設計書セクション 2 で明文化"
+          ]
         }
       },
       "notes": "設計書と既存実装/テンプレートの整合性確認完了"
@@ -79,15 +91,22 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["bash .claude/hooks/generate-repository-map.sh 実行完了", "grep 'project-lifecycle' docs/repository-map.yaml → 行 134 に存在"]
+          "evidence": [
+            "bash .claude/hooks/generate-repository-map.sh 実行完了",
+            "grep 'project-lifecycle' docs/repository-map.yaml → 行 134 に存在"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["他のドキュメントと同じフォーマット（name フィールド）で記載"]
+          "evidence": [
+            "他のドキュメントと同じフォーマット（name フィールド）で記載"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["project-lifecycle.md 追加確認済み。archive-project.sh は p3 作成後に再生成で追加される"]
+          "evidence": [
+            "project-lifecycle.md 追加確認済み。archive-project.sh は p3 作成後に再生成で追加される"
+          ]
         }
       },
       "notes": "generate-repository-map.sh で自動生成。archive-project.sh は p3 完了後に再生成"
@@ -99,15 +118,27 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test -x archive-project.sh → PASS", "Line 78: jq で残り playbook カウント", "Lines 101-105: closed_at/closed_by 更新", "Line 122: mv で archive 移動", "Line 132: state.md を null に更新"]
+          "evidence": [
+            "test -x archive-project.sh → PASS",
+            "Line 78: jq で残り playbook カウント",
+            "Lines 101-105: closed_at/closed_by 更新",
+            "Line 122: mv で archive 移動",
+            "Line 132: state.md を null に更新"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["archive-playbook.sh と同じ log_info/log_warn/log_error パターン（25箇所使用）", "7 Steps 構成が設計書と一致"]
+          "evidence": [
+            "archive-playbook.sh と同じ log_info/log_warn/log_error パターン（25箇所使用）",
+            "7 Steps 構成が設計書と一致"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["設計書 docs/project-lifecycle.md Section 3.3 の 7 Steps 全て実装", "エラーハンドリング（Section 8.1）全ケース対応"]
+          "evidence": [
+            "設計書 docs/project-lifecycle.md Section 3.3 の 7 Steps 全て実装",
+            "エラーハンドリング（Section 8.1）全ケース対応"
+          ]
         }
       },
       "notes": "archive-project.sh 作成完了。4機能全て実装済み。"
@@ -119,15 +150,22 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["jq '.meta.closed_at, .meta.closed_by' → null, null（フィールド存在）"]
+          "evidence": [
+            "jq '.meta.closed_at, .meta.closed_by' → null, null（フィールド存在）"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["template: closed_at/closed_by (Lines 10-11)", "design-validation: 同名フィールドで実値設定済み"]
+          "evidence": [
+            "template: closed_at/closed_by (Lines 10-11)",
+            "design-validation: 同名フィールドで実値設定済み"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["null がデフォルト値として設定（Lines 10-11）"]
+          "evidence": [
+            "null がデフォルト値として設定（Lines 10-11）"
+          ]
         }
       },
       "notes": "テンプレートに closed_at, closed_by が既に存在。確認のみで完了。"
@@ -139,15 +177,26 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["Line 27: Step 14 コメント", "Line 859: archive-project.sh パス定義", "Line 862: bash 呼び出し"]
+          "evidence": [
+            "Line 27: Step 14 コメント",
+            "Line 859: archive-project.sh パス定義",
+            "Line 862: bash 呼び出し"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Step 14 が Step 13 後に追加 (Lines 839-879)", "should_run_step 14 でチェックポイント機構使用"]
+          "evidence": [
+            "Step 14 が Step 13 後に追加 (Lines 839-879)",
+            "should_run_step 14 でチェックポイント機構使用"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["Line 850: project 配下のみ", "Line 857: 全 playbook done の場合のみ", "Line 875: standalone スキップ"]
+          "evidence": [
+            "Line 850: project 配下のみ",
+            "Line 857: 全 playbook done の場合のみ",
+            "Line 875: standalone スキップ"
+          ]
         }
       },
       "notes": "archive-playbook.sh に Step 14 追加。条件付き呼び出し実装済み。"
@@ -159,15 +208,24 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test -d play/archive/projects/design-validation → PASS", "! test -d play/projects/design-validation → PASS"]
+          "evidence": [
+            "test -d play/archive/projects/design-validation → PASS",
+            "! test -d play/projects/design-validation → PASS"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["meta.status = closed 維持", "closed_at/closed_by 設定済み"]
+          "evidence": [
+            "meta.status = closed 維持",
+            "closed_at/closed_by 設定済み"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["git commit eb0a66b で移動確認", "playbooks パス参照が archive パスに更新"]
+          "evidence": [
+            "git commit eb0a66b で移動確認",
+            "playbooks パス参照が archive パスに更新"
+          ]
         }
       },
       "notes": "archive-project.sh で移動完了。design-validation は play/archive/projects/ に存在。"
@@ -179,15 +237,22 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["全 6 done_when 項目の技術検証 PASS"]
+          "evidence": [
+            "全 6 done_when 項目の技術検証 PASS"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["設計書と実装の整合性確認済み（7 Steps 一致）"]
+          "evidence": [
+            "設計書と実装の整合性確認済み（7 Steps 一致）"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["エッジケース（7件）全てカバー", "git 履歴に証跡あり"]
+          "evidence": [
+            "エッジケース（7件）全てカバー",
+            "git 履歴に証跡あり"
+          ]
         }
       },
       "notes": "reviewer により全 done_when 項目が PASS (6/6)。playbook 完了。"

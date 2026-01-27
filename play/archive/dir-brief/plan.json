@@ -4,7 +4,7 @@
     "id": "dir-brief",
     "branch": "feat/python-filesearch",
     "created": "2026-01-06",
-    "status": "done",
+    "status": "completed",
     "review_profile": "standard",
     "reviewed": true,
     "reviewed_by": "coderabbit",
@@ -73,7 +73,9 @@
           ]
         },
         "test_strategy": {
-          "test_types": ["unit"],
+          "test_types": [
+            "unit"
+          ],
           "coverage_target": "standard",
           "edge_cases": [
             "空ディレクトリでのサマリー表示",
@@ -170,7 +172,9 @@
       "id": "p_final",
       "name": "Final review",
       "description": "Independent verification of done_when.",
-      "depends_on": ["p1"],
+      "depends_on": [
+        "p1"
+      ],
       "subtasks": [
         {
           "id": "p_final.1",

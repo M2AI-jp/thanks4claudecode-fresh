@@ -3,7 +3,7 @@
   "playbook": {
     "id": "fix-archive-project-merge",
     "plan_path": "play/standalone/fix-archive-project-merge/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",
@@ -31,15 +31,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["grep -A20: 117-132行目にマージロジック（mv退避・復元）実装"]
+          "evidence": [
+            "grep -A20: 117-132行目にマージロジック（mv退避・復元）実装"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["mv コマンド維持、既存 playbooks は退避後復元"]
+          "evidence": [
+            "mv コマンド維持、既存 playbooks は退避後復元"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["rm -rf は playbooks 退避後に実行、データ消失なし"]
+          "evidence": [
+            "rm -rf は playbooks 退避後に実行、データ消失なし"
+          ]
         }
       },
       "notes": "mv による退避・復元方式でマージを実現"
@@ -51,15 +57,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["bash -n exit code 0"]
+          "evidence": [
+            "bash -n exit code 0"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["set -e 使用、他スクリプトと同一スタイル"]
+          "evidence": [
+            "set -e 使用、他スクリプトと同一スタイル"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["log_error + exit 1 パターンでエラーハンドリング実装"]
+          "evidence": [
+            "log_error + exit 1 パターンでエラーハンドリング実装"
+          ]
         }
       },
       "notes": "構文チェック PASS"
@@ -71,15 +83,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["reviewer PASS 3/3 + critic 独立検証"]
+          "evidence": [
+            "reviewer PASS 3/3 + critic 独立検証"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["done_when 全項目が実装と一致"]
+          "evidence": [
+            "done_when 全項目が実装と一致"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["backup-restore パターンで既存 playbooks 保護"]
+          "evidence": [
+            "backup-restore パターンで既存 playbooks 保護"
+          ]
         }
       },
       "notes": "reviewer + critic dual validation 完了"

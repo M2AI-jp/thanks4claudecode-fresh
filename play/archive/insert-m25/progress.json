@@ -3,7 +3,7 @@
   "playbook": {
     "id": "insert-m25",
     "plan_path": "play/insert-m25/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
     "phase": "p1",

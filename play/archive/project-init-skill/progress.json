@@ -3,7 +3,7 @@
   "playbook": {
     "id": "project-init-skill",
     "plan_path": "play/project-init-skill/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
     "phase": "p1",

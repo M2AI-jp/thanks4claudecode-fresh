@@ -3,7 +3,7 @@
   "playbook": {
     "id": "codex-usage-improvement",
     "plan_path": "play/standalone/codex-usage-improvement/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",

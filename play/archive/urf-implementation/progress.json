@@ -3,7 +3,7 @@
   "playbook": {
     "id": "urf-implementation",
     "plan_path": "play/urf-implementation/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
     "phase": "p1",

@@ -53,21 +53,23 @@ Single Source of Truth:
 Boundary is event timing, not function. Each Hook event owns a unit with its own
 validator/context/guardrail/telemetry/retry/snapshot + chain.
 
-Target layout (not yet implemented):
+Standard layout (implemented):
 
 ```
 .claude/events/<event-unit>/
-  validator.sh
-  context-injector.sh
-  guardrail.sh
-  telemetry.sh
-  retry.sh        # optional
-  snapshot.sh     # optional
-  chain.sh
+  chain.sh          # メインエントリーポイント（必須）
+  validator.sh      # 入力の検証と整形（実装済み）
+  README.md         # ユニットのドキュメント（任意）
+  handlers/         # 個別ハンドラー（任意）
+
+.claude/events/lib/
+  telemetry.sh      # イベント記録・メトリクス（実装済み）
 ```
 
-Current implementation dispatches from hooks to event unit chain wrappers,
-which still call existing skills. Component split is not yet implemented.
+Current implementation:
+- validator.sh: session-start, pre-tool-edit, post-tool-edit, stop に実装済み
+- telemetry.sh: .claude/events/lib/telemetry.sh に共有ライブラリとして実装済み
+- chain.sh: 全 Event Unit に実装済み
 The canonical mapping (ideal -> current -> missing) lives in
 `docs/core-feature-reclassification.md`.
 
@@ -1607,17 +1609,15 @@ scripts/
 
 | 参照元 | 参照先 | 状態 | 影響度 |
 |--------|--------|------|--------|
-| playbook-guard.sh (行 107, 138, 171) | .claude/hooks/failure-logger.sh | ❌ 不存在 | 低（存在チェックあり） |
 | cleanup.sh (行 85) | .claude/skills/playbook-gate/workflow/generate-repository-map.sh | ❌ 不存在 | 中（自動更新が無効） |
 | access-control/SKILL.md | .claude/skills/access-control/lib/contract.sh | ❌ 不存在 | 低（文書不整合） |
 
-**備考**: failure-logger.sh は存在チェック `[[ -f ... ]]` でガードされているため、不存在でも機能に影響なし。
+**備考**: 2026-01-27 の MECE completion で削除済み（ファイルロギング機能は未実装で削除）。
 
 ### 14.2 設計されたが未実装の機能
 
 | 機能 | 設計箇所 | 状態 | 推奨対応 |
 |------|---------|------|---------|
-| failure-logger.sh | playbook-guard.sh から参照 | 未実装 | 実装または参照削除 |
 | doc-freshness-check.sh | 設計構想 | 未実装 | 要件定義後に検討 |
 | update-tracker.sh | 設計構想 | 未実装 | git diff で代替可能 |
 

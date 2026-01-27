@@ -3,7 +3,7 @@
   "playbook": {
     "id": "m1-post-maintenance",
     "plan_path": "play/standalone/m1-post-maintenance/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",
@@ -31,15 +31,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["state.md branch: fix/m1-post-maintenance (feat/codex-usage-improvement ではない)"]
+          "evidence": [
+            "state.md branch: fix/m1-post-maintenance (feat/codex-usage-improvement ではない)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["git branch と state.md branch が一致 (fix/m1-post-maintenance)"]
+          "evidence": [
+            "git branch と state.md branch が一致 (fix/m1-post-maintenance)"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["state.md 構造維持: project, playbook, goal, session, config, 参照 セクション全て存在"]
+          "evidence": [
+            "state.md 構造維持: project, playbook, goal, session, config, 参照 セクション全て存在"
+          ]
         }
       },
       "notes": "criterion 修正後に再検証: stale reference 解消を確認"
@@ -51,15 +57,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["bash .claude/hooks/generate-repository-map.sh: exit 0"]
+          "evidence": [
+            "bash .claude/hooks/generate-repository-map.sh: exit 0"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["meta.generated: 2026-01-20 05:55:29"]
+          "evidence": [
+            "meta.generated: 2026-01-20 05:55:29"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["hooks: 6, agents: 7, skills: 13 - カウント正常"]
+          "evidence": [
+            "hooks: 6, agents: 7, skills: 13 - カウント正常"
+          ]
         }
       },
       "notes": ""
@@ -71,15 +83,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["p1.1 PASS, p2.1 PASS"]
+          "evidence": [
+            "p1.1 PASS, p2.1 PASS"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["state.md と git branch 整合"]
+          "evidence": [
+            "state.md と git branch 整合"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["保守タスク全項目完了"]
+          "evidence": [
+            "保守タスク全項目完了"
+          ]
         }
       },
       "notes": ""
