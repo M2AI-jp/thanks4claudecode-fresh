@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/mece-completion/plan.json
+active: null
 parent_project: null
-current_phase: p9
-branch: feat/mece-completion
-last_archived: play/standalone/refactoring-cleanup
+current_phase: null
+branch: null
+last_archived: play/archive/mece-completion
 review_pending: false
 ```
 
