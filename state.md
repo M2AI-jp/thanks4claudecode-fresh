@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/findings-fix/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: feat/findings-fix
-last_archived: play/archive/mece-completion
+current_phase: null
+branch: null
+last_archived: play/archive/findings-fix
 review_pending: false
 ```
 
