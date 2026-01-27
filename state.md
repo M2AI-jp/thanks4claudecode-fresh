@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/findings-fix
+last_archived: play/archive/template-strictness
 review_pending: false
 ```
 
@@ -44,8 +44,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 01:55:29
-last_end: 2026-01-27 23:40:48
+last_start: 2026-01-28 03:42:04
+last_end: 2026-01-28 02:47:07
 last_clear: 2026-01-20
 ```
 
