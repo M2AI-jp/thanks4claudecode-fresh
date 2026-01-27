@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/deadlock-prevention/plan.json
+active: null
 parent_project: null
-current_phase: p_final
-branch: feat/deadlock-prevention
-last_archived: play/archive/mece-completion-v2
+current_phase: null
+branch: null
+last_archived: play/archive/deadlock-prevention
 review_pending: false
 ```
 
@@ -34,12 +34,9 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: p1
-done_criteria:
-  - contract.sh に git recovery コマンドが含まれる
-  - pending-guard.sh の許可リストに play/ が含まれる
-  - session-start で stale pending ファイルの検出処理が存在する
-status: in_progress
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
