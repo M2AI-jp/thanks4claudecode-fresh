@@ -19,9 +19,9 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/v2-design-docs/plan.json
+active: null
 parent_project: null
-current_phase: p1
+current_phase: null
 branch: feat/new-repo-docs-sync
 last_archived: play/archive/projects/new-repo-docs-sync/pb-001
 review_pending: false
@@ -46,7 +46,7 @@ status: in_progress
 ## session
 
 ```yaml
-last_start: 2026-01-22 13:00:47
+last_start: 2026-01-22 16:28:21
 last_end: 2026-01-21 22:51:23
 last_clear: 2026-01-20
 ```

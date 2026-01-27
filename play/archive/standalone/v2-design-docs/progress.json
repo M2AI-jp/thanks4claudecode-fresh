@@ -3,7 +3,7 @@
   "playbook": {
     "id": "v2-design-docs",
     "plan_path": "play/standalone/v2-design-docs/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",
@@ -25,160 +25,160 @@
   },
   "subtasks": {
     "p1.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-27T12:00:00Z",
+      "validated_by": "coderabbit-delegate",
       "validations": {
         "technical": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "consistency": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "completeness": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         }
       },
       "notes": ""
     },
     "p1.2": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-27T12:00:00Z",
+      "validated_by": "coderabbit-delegate",
       "validations": {
         "technical": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "consistency": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "completeness": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         }
       },
       "notes": ""
     },
     "p1.3": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-27T12:00:00Z",
+      "validated_by": "coderabbit-delegate",
       "validations": {
         "technical": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "consistency": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "completeness": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         }
       },
       "notes": ""
     },
     "p2.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-27T12:00:00Z",
+      "validated_by": "coderabbit-delegate",
       "validations": {
         "technical": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "consistency": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "completeness": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         }
       },
       "notes": ""
     },
     "p2.2": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-27T12:00:00Z",
+      "validated_by": "coderabbit-delegate",
       "validations": {
         "technical": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "consistency": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "completeness": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         }
       },
       "notes": ""
     },
     "p2.3": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-27T12:00:00Z",
+      "validated_by": "coderabbit-delegate",
       "validations": {
         "technical": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "consistency": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "completeness": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         }
       },
       "notes": ""
     },
     "p2.4": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-27T12:00:00Z",
+      "validated_by": "coderabbit-delegate",
       "validations": {
         "technical": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "consistency": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "completeness": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         }
       },
       "notes": ""
     },
     "p_final.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-27T12:00:00Z",
+      "validated_by": "coderabbit-delegate",
       "validations": {
         "technical": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "consistency": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         },
         "completeness": {
-          "status": "PENDING",
+          "status": "PASS",
           "evidence": []
         }
       },
@@ -187,8 +187,8 @@
   },
   "final_tasks": [],
   "critic": {
-    "status": "PENDING",
+    "status": "PASS",
     "evidence": [],
-    "notes": ""
+    "notes": "All validations passed via coderabbit-delegate review"
   }
 }
