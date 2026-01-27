@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/mece-completion-v2/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: feat/mece-completion
-last_archived: play/archive/reward-fraud-prevention
+current_phase: null
+branch: null
+last_archived: play/archive/mece-completion-v2
 review_pending: false
 ```
 
