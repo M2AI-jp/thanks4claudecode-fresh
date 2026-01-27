@@ -1,0 +1,228 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "complete-deadlock-fix",
+    "branch": "feat/complete-deadlock-prevention",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "contract.sh に不足している git recovery コマンドを追加し、heredoc 検出の誤爆を修正する",
+    "done_when": [
+      {
+        "criterion": "BOOTSTRAP_SINGLE_PATTERNS に git rebase --skip パターンが含まれる",
+        "command": "grep -c 'rebase.*--skip' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "BOOTSTRAP_SINGLE_PATTERNS に git rebase --continue パターンが含まれる",
+        "command": "grep -c 'rebase.*--continue' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "BOOTSTRAP_SINGLE_PATTERNS に git branch -D パターンが含まれる",
+        "command": "grep -c 'branch.*-D' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "has_file_redirect 関数が heredoc (<<) を除外するロジックを含む",
+        "command": "grep -c '<<' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "feat/complete-deadlock-prevention ブランチが main と同期されている",
+        "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && git log main..HEAD --oneline | wc -l | tr -d ' '",
+        "expected": "0"
+      }
+    ],
+    "scope": {
+      "includes": [
+        ".claude/lib/contract.sh の BOOTSTRAP_SINGLE_PATTERNS",
+        ".claude/lib/contract.sh の has_file_redirect 関数"
+      ],
+      "excludes": [
+        "他のスクリプトファイル",
+        "テストファイルの作成"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "topic_type": "instruction",
+        "confidence": "high",
+        "ready_for_playbook": true,
+        "5w1h": {
+          "what": "contract.sh に不足している git recovery コマンド（rebase --skip, rebase --continue, branch -D）を追加し、heredoc 検出の誤爆を修正する",
+          "why": "デッドロック防止のための git recovery コマンドが不足しており、heredoc を含むコマンドが誤ってファイルリダイレクトとして検出される問題がある",
+          "who": "claudecode（orchestrator）",
+          "when": "現セッション",
+          "where": ".claude/lib/contract.sh",
+          "how": "BOOTSTRAP_SINGLE_PATTERNS に3つのパターンを追加、has_file_redirect 関数に heredoc 除外ロジックを追加"
+        },
+        "risks": {
+          "technical": {
+            "severity": "low",
+            "description": "パターン追加は既存コードに影響しない追記のみ",
+            "mitigation": "追加後に既存パターンが動作することを確認"
+          }
+        },
+        "ambiguity": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-28T00:30:00Z",
+      "summary": "AUTO_APPROVED（セッション継続）",
+      "approved_items": [
+        "git rebase --skip パターンの追加",
+        "git rebase --continue パターンの追加",
+        "git branch -D パターンの追加",
+        "heredoc 除外ロジックの追加",
+        "main ブランチとの同期"
+      ],
+      "technical_requirements_confirmed": [
+        "BOOTSTRAP_SINGLE_PATTERNS (298-326行目) への追記",
+        "has_file_redirect() (98-112行目) の修正"
+      ]
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Git recovery コマンド追加",
+      "description": "BOOTSTRAP_SINGLE_PATTERNS に不足している git recovery コマンドを追加",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "BOOTSTRAP_SINGLE_PATTERNS に git rebase --skip, git rebase --continue, git branch -D パターンが追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -E 'rebase.*(--skip|--continue)' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | wc -l | tr -d ' '",
+              "expected": ">= 2"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'branch.*-D' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'BOOTSTRAP_SINGLE_PATTERNS' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Heredoc 検出の修正",
+      "description": "has_file_redirect 関数に heredoc (<<) を除外するロジックを追加",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "has_file_redirect 関数が heredoc (<<) を含むコマンドをファイルリダイレクトとして誤検出しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -A5 'has_file_redirect' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | grep -c '<<'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -c 'source /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh && has_file_redirect \"cat <<EOF\" && echo fail || echo pass'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash -c 'source /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh && has_file_redirect \"echo test > file.txt\" && echo pass || echo fail'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Main ブランチ同期",
+      "description": "変更をコミットし、main ブランチと同期する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "変更がコミットされ、main ブランチにマージされている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && git log main..HEAD --oneline | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && git status --porcelain | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && git branch --show-current",
+              "expected": "main"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "全ての done_when 条件が満たされていることを確認",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'rebase.*--skip' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'rebase.*--continue' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'branch.*-D' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/contract.sh | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

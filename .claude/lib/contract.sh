@@ -95,11 +95,17 @@ is_compound_command() {
 
 # ファイルへのリダイレクトがあるか判定（/dev/null以外）
 # >, >>, &>, &>> でファイルに書き込む場合を検出
+# 注意: heredoc (<<) は input redirect であり、この関数では検出しない
 has_file_redirect() {
     local cmd="$1"
     # まず /dev/null へのリダイレクトを除去
     local normalized
     normalized=$(normalize_command "$cmd")
+
+    # heredoc (<<) を含む場合は、<< 以降を除去してから判定
+    # 例: git commit -m "$(cat <<EOF...)" の << はファイル書き込みではない
+    normalized=$(echo "$normalized" | sed 's/<<[^>]*//g')
+
     # 残ったリダイレクト（>, >>, &>, &>>）があれば書き込み
     # パターン: 数字?>、数字?>>、&>、&>>
     if [[ "$normalized" =~ [0-9]*\>[^\>] ]] || \
@@ -323,6 +329,12 @@ BOOTSTRAP_SINGLE_PATTERNS=(
     '^git[[:space:]]+cherry-pick[[:space:]]+--abort'
     # git reset --hard origin/（リモートブランチへの同期）
     '^git[[:space:]]+reset[[:space:]]+--hard[[:space:]]+origin/'
+    # git rebase --skip（コンフリクトスキップ）
+    '^git[[:space:]]+rebase[[:space:]]+--skip'
+    # git rebase --continue（コンフリクト解決後の継続）
+    '^git[[:space:]]+rebase[[:space:]]+--continue'
+    # git branch -D / -d（ブランチ削除 - recovery 用）
+    '^git[[:space:]]+branch[[:space:]]+-[dD]'
 )
 
 # Admin Maintenance allowlist に一致するか判定
