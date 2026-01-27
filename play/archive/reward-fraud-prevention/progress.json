@@ -1,0 +1,244 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "reward-fraud-prevention",
+    "plan_path": "play/standalone/reward-fraud-prevention/plan.json",
+    "status": "completed"
+  },
+  "active": {
+    "phase": null,
+    "subtask": null
+  },
+  "phases": {
+    "p0": {
+      "status": "done",
+      "updated_at": "2026-01-28T00:05:00Z"
+    },
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-28T00:12:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-28T00:18:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-28T00:22:00Z"
+    }
+  },
+  "subtasks": {
+    "p0.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "ls | grep → 0"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "ls | wc -l → 0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "test ! -f → clean"
+          ]
+        }
+      },
+      "notes": "pending, required_playbook, repository-map.prev.yaml deleted"
+    },
+    "p0.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "jq .meta.status → completed"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "jq .playbook.status → completed"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "both files exist"
+          ]
+        }
+      },
+      "notes": "plan.json meta.status updated to completed"
+    },
+    "p0.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "jq .playbook.plan_path → play/archive/mece-completion/plan.json"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "test -f → path_valid"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep archive → 1"
+          ]
+        }
+      },
+      "notes": "progress.json plan_path updated to archive path"
+    },
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T00:12:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep '再実行|re-execute|rerun' → 4"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep 'command.*実行' → 5"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep '報酬詐欺|fraud|虚偽' → 9"
+          ]
+        }
+      },
+      "notes": "reviewer.md に command_rerun_check セクションを追加"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T00:12:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "test -f → exists"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep 'test -f|test -d' → 4"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep 'stdin|禁止|FORBIDDEN' → 11"
+          ]
+        }
+      },
+      "notes": "docs/validation-command-standards.md 作成"
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T00:12:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "jq GOOD_EXAMPLES length → 3"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep 'test -f' → 5"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "jq FORBIDDEN length → 4"
+          ]
+        }
+      },
+      "notes": "play/template/plan.json は既に標準を満たしている"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T00:18:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "Read ツールで確認 - RUNBOOK.md 記載なし"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "test ! -f RUNBOOK.md → not_exists"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "wc -l → 16 (<= 16)"
+          ]
+        }
+      },
+      "notes": "Codex により BLOCK:RUNBOOK.md を削除"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T00:22:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": "goal.done_when 5/5 PASS"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "全8 subtask PASS",
+      "全4 Phase done",
+      "goal.done_when 5/5 PASS"
+    ],
+    "notes": ""
+  }
+}

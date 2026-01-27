@@ -1,0 +1,450 @@
+{
+  "_template_rules": {
+    "criterion": {
+      "MUST": "State what must be true, not what to do",
+      "MUST": "Be verifiable by command execution",
+      "FORBIDDEN": ["〜する", "〜した", "確認する", "検証する", "適切", "正しく", "良い"],
+      "GOOD_EXAMPLES": [
+        "ファイル X が存在する",
+        "jq '.field' が Y を返す",
+        "grep -c 'pattern' が N 以上"
+      ],
+      "BAD_EXAMPLES": [
+        "ファイルを作成する",
+        "適切に設定されている",
+        "正しく動作する"
+      ]
+    },
+    "command": {
+      "MUST": "Be a shell command that can be executed",
+      "MUST": "Return verifiable output or exit code",
+      "FORBIDDEN": ["Execute ...", "Compare ...", "Review ...", "Check ..."],
+      "GOOD_EXAMPLES": [
+        "test -f path && echo 'exists'",
+        "jq -e '.field' file.json",
+        "grep -c 'pattern' file | awk '{print ($1 >= 3)}'"
+      ],
+      "BAD_EXAMPLES": [
+        "Execute the test",
+        "Compare with expected",
+        "Manually verify"
+      ]
+    },
+    "expected": {
+      "MUST": "Be a concrete value or condition",
+      "FORBIDDEN": ["適切", "正常", "正しく", "All ...", "100% ..."],
+      "GOOD_EXAMPLES": [
+        "exists",
+        "exit 0",
+        "true",
+        ">= 1",
+        "\"completed\""
+      ],
+      "BAD_EXAMPLES": [
+        "正常終了",
+        "All pass",
+        "100% match"
+      ]
+    }
+  },
+  "format_version": "2.2",
+  "meta": {
+    "id": "build-from-scratch-guide",
+    "branch": "feat/validation-enforcement-m1",
+    "created": "2026-01-20",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Create a reverse-engineering design document (BUILD-FROM-SCRATCH.md) at the repository root that explains how to rebuild this framework from zero, including Claude Code official specifications, feature build order, and verification procedures",
+    "done_when": [
+      {
+        "criterion": "BUILD-FROM-SCRATCH.md がトップディレクトリに存在する",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md && echo 'exists'",
+        "expected": "exists"
+      },
+      {
+        "criterion": "Claude Code 公式 Hook イベント（9種）の説明が含まれている",
+        "command": "grep -c 'SessionStart\\|UserPromptSubmit\\|PreToolUse\\|PostToolUse\\|SubagentStop\\|PreCompact\\|Notification\\|Stop\\|SessionEnd' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+        "expected": ">= 9"
+      },
+      {
+        "criterion": "SubAgent/Task の仕様説明が含まれている",
+        "command": "grep -c 'SubAgent\\|subagent_type' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+        "expected": ">= 3"
+      },
+      {
+        "criterion": "機能構築の推奨順序（Phase）が明記されている",
+        "command": "grep -c 'Phase [0-9]\\|PHASE [0-9]\\|## [0-9]' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+        "expected": ">= 5"
+      },
+      {
+        "criterion": "各 Phase の検証方法が記載されている",
+        "command": "grep -ci 'verify\\|validation\\|test\\|check' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+        "expected": ">= 10"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "BUILD-FROM-SCRATCH.md ファイル作成",
+        "Claude Code 公式仕様の体系化",
+        "機能構築順序の設計",
+        "検証手順の整理",
+        "このリポジトリ固有設計と公式仕様の区別"
+      ],
+      "excludes": [
+        "実際のコード実装",
+        "既存ファイルの変更",
+        "新しい機能追加"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "next_action": "playbook-init",
+        "5w1h": {
+          "who": "Claude Code を利用する開発者 / このリポジトリを学習・再構築したい人",
+          "what": "リポジトリをゼロから再構築するための逆引き設計図（構造化テキストファイル）をトップディレクトリに作成",
+          "when": "明示なし（即時）",
+          "where": "トップディレクトリ（/Users/amano/Desktop/thanks4claudecode-v2/）",
+          "why": "Claude Code 公式仕様の把握順序・機能構築順序・検証順序を体系化し、再現可能な知識として残す",
+          "how": "リポジトリ分析 + Claude Code 公式仕様の整理 + 構築順序の設計 + ファイル作成",
+          "missing": [
+            "ファイル形式の詳細（Markdown 推奨）",
+            "想定読者のレベル（初心者向け / 経験者向け）",
+            "詳細度（概要レベル / ステップバイステップ）"
+          ]
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "Claude Code 公式仕様の変更",
+              "severity": "medium",
+              "mitigation": "公式ドキュメント URL を記載し、執筆日時を明記"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "設計図が膨大になりすぎて実用性が低下",
+              "severity": "medium",
+              "mitigation": "フェーズ分割で構造化"
+            }
+          ]
+        },
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 4,
+          "topics": [
+            {
+              "id": 1,
+              "summary": "Claude Code 公式仕様の体系化",
+              "type": "instruction"
+            },
+            {
+              "id": 2,
+              "summary": "機能構築の推奨順序の設計",
+              "type": "instruction"
+            },
+            {
+              "id": 3,
+              "summary": "検証手順の整理",
+              "type": "instruction"
+            },
+            {
+              "id": 4,
+              "summary": "トップディレクトリへのファイル作成",
+              "type": "instruction"
+            }
+          ],
+          "recommendation": "1つの playbook 内で Phase 分割（公式仕様整理 -> 構築順序設計 -> 検証手順 -> ファイル作成）"
+        },
+        "success_criteria": {
+          "functional": [
+            "トップディレクトリに設計図ファイルが作成されている",
+            "Claude Code 公式 Hook イベント（9種）の説明が含まれている",
+            "SubAgent / Task の仕様説明が含まれている",
+            "settings.json の設定項目説明が含まれている",
+            "CLAUDE.md の役割と記述ルールが含まれている",
+            "機能構築の推奨順序（Phase 1-N）が明記されている",
+            "各 Phase の検証方法が記載されている",
+            "このリポジトリ固有の設計判断と公式仕様の区別が明確"
+          ],
+          "breaking_changes": false
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_APPROVED",
+      "approved_at": "2026-01-20",
+      "summary": "リポジトリをゼロから再構築するための逆引き設計図をトップディレクトリに作成",
+      "approved_items": [
+        "Markdown 形式（BUILD-FROM-SCRATCH.md）",
+        "Claude Code 公式仕様 + 構築順序 + 検証手順の体系化",
+        "このリポジトリ固有設計と公式仕様の区別"
+      ],
+      "technical_requirements_confirmed": [
+        "Hook イベント 9 種の説明",
+        "SubAgent/Task 仕様",
+        "settings.json 設定項目",
+        "CLAUDE.md の役割"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Official Specification Research",
+      "description": "Claude Code 公式仕様の調査と整理（Hook, SubAgent, settings.json, CLAUDE.md）",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "docs/ARCHITECTURE.md または同等ファイルから Hook イベント一覧が抽出されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/ARCHITECTURE.md && echo 'exists' || echo 'missing'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Hook\\|Event' /Users/amano/Desktop/thanks4claudecode-v2/docs/ARCHITECTURE.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "echo 'Verify 9 hook events are identified'",
+              "expected": "Hook events documented"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": ".claude/settings.json の設定項目が把握されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/settings.json && echo 'exists' || echo 'missing'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq 'keys' /Users/amano/Desktop/thanks4claudecode-v2/.claude/settings.json | wc -l",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "echo 'Verify settings structure is understood'",
+              "expected": "Settings documented"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Build Order Design",
+      "description": "機能構築の推奨順序を設計（依存関係を考慮）",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "構築順序のドラフトが作成されている（Phase 1-N の順序）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "manual",
+              "command": "echo 'Build order draft created'",
+              "expected": "Draft exists"
+            },
+            "consistency": {
+              "type": "manual",
+              "command": "echo 'Dependencies are respected'",
+              "expected": "Dependencies validated"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "echo 'All major features covered'",
+              "expected": "Coverage confirmed"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Document Creation",
+      "description": "BUILD-FROM-SCRATCH.md をトップディレクトリに作成",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "BUILD-FROM-SCRATCH.md がトップディレクトリに存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "head -1 /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md | grep -c '#'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 100"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "Claude Code 公式 Hook イベント 9 種の説明が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'SessionStart\\|UserPromptSubmit\\|PreToolUse\\|PostToolUse\\|SubagentStop\\|PreCompact\\|Notification\\|Stop\\|SessionEnd' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 9"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Hook' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "echo 'All 9 hooks explained'",
+              "expected": "9 hooks documented"
+            }
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "SubAgent/Task の仕様説明が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'SubAgent\\|subagent_type' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Task(' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "echo 'SubAgent spec documented'",
+              "expected": "SubAgent documented"
+            }
+          }
+        },
+        {
+          "id": "p3.4",
+          "criterion": "機能構築の推奨順序（Phase）が明記されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Phase [0-9]\\|PHASE [0-9]\\|## [0-9]' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 5"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'depends\\|prerequisite\\|before\\|after' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "echo 'Build phases defined'",
+              "expected": "Phases documented"
+            }
+          }
+        },
+        {
+          "id": "p3.5",
+          "criterion": "各 Phase の検証方法が記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -ci 'verify\\|validation\\|test\\|check' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'command\\|script\\|run' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "echo 'Verification methods for each phase'",
+              "expected": "Verifications documented"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "Execute all done_when commands and verify results",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md && echo 'pass'",
+              "expected": "pass"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'SessionStart\\|UserPromptSubmit\\|PreToolUse\\|PostToolUse\\|SubagentStop\\|PreCompact\\|Notification\\|Stop\\|SessionEnd' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md | awk '{print ($1 >= 9 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'Phase [0-9]\\|PHASE [0-9]\\|## [0-9]' /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md | awk '{print ($1 >= 5 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/template-strictness/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: feat/template-strictness
-last_archived: play/archive/findings-fix
+current_phase: null
+branch: null
+last_archived: play/archive/template-strictness
 review_pending: false
 ```
 

@@ -22,16 +22,27 @@
 STATE_FILE="${STATE_FILE:-state.md}"
 REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
-# HARD_BLOCK ファイル（admin でも回避不可）
-HARD_BLOCK_FILES=(
-    "CLAUDE.md"
-    ".claude/protected-files.txt"
-    ".claude/hooks/init-guard.sh"
-    ".claude/hooks/critic-guard.sh"
-    ".claude/hooks/scope-guard.sh"
-    ".claude/hooks/executor-guard.sh"
-    ".claude/hooks/playbook-guard.sh"
-)
+# HARD_BLOCK ファイルは protected-files.txt から読み込む（SSOT）
+# 形式: HARD_BLOCK:path
+PROTECTED_FILES="${REPO_ROOT}/.claude/protected-files.txt"
+HARD_BLOCK_FILES=()
+if [[ -f "$PROTECTED_FILES" ]]; then
+    while IFS= read -r line; do
+        # コメント行と空行をスキップ
+        [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+        # HARD_BLOCK: プレフィックスを持つ行を抽出
+        if [[ "$line" =~ ^HARD_BLOCK:(.+)$ ]]; then
+            HARD_BLOCK_FILES+=("${BASH_REMATCH[1]}")
+        fi
+    done < "$PROTECTED_FILES"
+fi
+# フォールバック: protected-files.txt が読めない場合の最小限の保護
+if [[ ${#HARD_BLOCK_FILES[@]} -eq 0 ]]; then
+    HARD_BLOCK_FILES=(
+        "CLAUDE.md"
+        ".claude/protected-files.txt"
+    )
+fi
 
 # Maintenance ホワイトリスト（admin + playbook=null で許可）
 MAINTENANCE_WHITELIST=(
@@ -84,11 +95,17 @@ is_compound_command() {
 
 # ファイルへのリダイレクトがあるか判定（/dev/null以外）
 # >, >>, &>, &>> でファイルに書き込む場合を検出
+# 注意: heredoc (<<) は input redirect であり、この関数では検出しない
 has_file_redirect() {
     local cmd="$1"
     # まず /dev/null へのリダイレクトを除去
     local normalized
     normalized=$(normalize_command "$cmd")
+
+    # heredoc (<<) を含む場合は、<< 以降を除去してから判定
+    # 例: git commit -m "$(cat <<EOF...)" の << はファイル書き込みではない
+    normalized=$(echo "$normalized" | sed 's/<<[^>]*//g')
+
     # 残ったリダイレクト（>, >>, &>, &>>）があれば書き込み
     # パターン: 数字?>、数字?>>、&>、&>>
     if [[ "$normalized" =~ [0-9]*\>[^\>] ]] || \
@@ -303,6 +320,21 @@ BOOTSTRAP_SINGLE_PATTERNS=(
     '^gh[[:space:]]+pr[[:space:]]+create'
     # gh pr merge（PR マージ用）
     '^gh[[:space:]]+pr[[:space:]]+merge'
+    # === Git Recovery コマンド（デッドロック防止） ===
+    # git rebase --abort（rebase 中断）
+    '^git[[:space:]]+rebase[[:space:]]+--abort'
+    # git merge --abort（merge 中断）
+    '^git[[:space:]]+merge[[:space:]]+--abort'
+    # git cherry-pick --abort（cherry-pick 中断）
+    '^git[[:space:]]+cherry-pick[[:space:]]+--abort'
+    # git reset --hard origin/（リモートブランチへの同期）
+    '^git[[:space:]]+reset[[:space:]]+--hard[[:space:]]+origin/'
+    # git rebase --skip（コンフリクトスキップ）
+    '^git[[:space:]]+rebase[[:space:]]+--skip'
+    # git rebase --continue（コンフリクト解決後の継続）
+    '^git[[:space:]]+rebase[[:space:]]+--continue'
+    # git branch -D / -d（ブランチ削除 - recovery 用）
+    '^git[[:space:]]+branch[[:space:]]+-[dD]'
 )
 
 # Admin Maintenance allowlist に一致するか判定

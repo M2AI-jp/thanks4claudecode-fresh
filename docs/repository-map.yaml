@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-20 07:26:43"
+  generated: "2026-01-28 03:56:29"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 198
+  total_files: 259
 
 hooks:
   directory: .claude/hooks/
@@ -25,8 +25,11 @@ hooks:
 
 events:
   directory: .claude/events/
-  count: 10
+  count: 11
   units:
+    - name: "lib"
+      chain: "chain.sh"
+      description: ""
     - name: "notification"
       chain: "chain.sh"
       description: "chain.sh - event unit: notification"
@@ -129,7 +132,7 @@ commands:
 
 docs:
   directory: docs/
-  count: 4
+  count: 5
   files:
     - name: "ARCHITECTURE.md"
       description: "ユーザー体験ベースの状態遷移マップ"
@@ -137,6 +140,8 @@ docs:
       description: "> Change log for CLAUDE.md (Frozen Constitution)"
     - name: "core-feature-reclassification.md"
       description: "> SSOT: Hook Unit catalog + dependency map (ideal -> current -> missing)."
+    - name: "validation-command-standards.md"
+      description: "目的"
 
 play:
   directory: play/
@@ -146,7 +151,7 @@ play:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 25
+      count: 33
     template:
       description: "playbook v2 テンプレート"
       count: 2
@@ -156,8 +161,6 @@ root:
   files:
     - name: "CLAUDE.md"
       description: "```yaml"
-    - name: "AGENTS.md"
-      description: "このファイルは純粋なコーディングルール。"
     - name: "README.md"
       description: "Event-unit Claude Code harness using Hook -> Event Unit -> Skill/SubAgent."
     - name: "state.md"
@@ -385,6 +388,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-20 07:26:43"
+  - date: "2026-01-28 03:56:29"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

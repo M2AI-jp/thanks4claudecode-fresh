@@ -1,0 +1,413 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "v2-design-enhancement",
+    "branch": "feat/new-repo-docs-sync",
+    "created": "2026-01-27",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "pm-self-review",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "v2-design の欠点補完: 既存ドキュメント（REBUILD-DESIGN-SPEC.md, BUILD-FROM-SCRATCH.md）から v2-design フォルダへ7項目を移植する",
+    "done_when": [
+      {
+        "criterion": "Phase -1 概念整理セクションが IMPLEMENTATION-PLAN-V2.md に存在する",
+        "command": "grep -c 'Phase -1' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "Layer 0-5 機能依存レイヤーが IMPLEMENTATION-PLAN-V2.md に存在する",
+        "command": "grep -c 'Layer 0' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "Evidence 3点検証セクションが REVIEW-PROTOCOL.md に存在する",
+        "command": "grep -c 'Evidence' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/REVIEW-PROTOCOL.md",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "時間的達成可能性セクションが REVIEW-PROTOCOL.md に存在する",
+        "command": "grep -c '時間的達成可能性' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/REVIEW-PROTOCOL.md",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "不足用語が GLOSSARY.md に追加されている",
+        "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/GLOSSARY.md | awk '{print ($1 > 50 ? \"expanded\" : \"not_expanded\")}'",
+        "expected": "expanded"
+      },
+      {
+        "criterion": "旧ドキュメントが archive に移動されている",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/archive/REBUILD-DESIGN-SPEC.md && echo 'archived'",
+        "expected": "archived"
+      },
+      {
+        "criterion": "参照整合性が確認済み（壊れた参照がない）",
+        "command": "grep -r 'REBUILD-DESIGN-SPEC.md\\|BUILD-FROM-SCRATCH.md' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/ 2>/dev/null | wc -l | awk '{print ($1 == 0 ? \"clean\" : \"broken\")}'",
+        "expected": "clean"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md への Phase -1 と Layer 0-5 追加",
+        "new-repo/v2-design/REVIEW-PROTOCOL.md への Evidence 3点検証と時間的達成可能性追加",
+        "new-repo/v2-design/GLOSSARY.md の用語追加",
+        "旧ドキュメントの archive 移動",
+        "参照整合性チェック"
+      ],
+      "excludes": [
+        "v2-design 以外のドキュメント変更",
+        "コード実装",
+        "新規概念の追加（既存内容の移植のみ）"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "開発者（Claude Code）",
+          "what": "v2-design フォルダへの既存ドキュメント内容移植（7項目）",
+          "when": "即時",
+          "where": "/Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/",
+          "why": "v2-design の欠点補完、コンテキスト分散解消、SSOT 化",
+          "how": "既存ドキュメントから必要セクションを抽出し、v2-design ドキュメントに統合",
+          "missing": []
+        },
+        "risks": [
+          {
+            "risk": "参照整合性の破損",
+            "severity": "high",
+            "mitigation": "移植後に参照整合性チェックを実施"
+          },
+          {
+            "risk": "移植時の内容重複や矛盾",
+            "severity": "medium",
+            "mitigation": "移植前に既存内容を確認済み"
+          },
+          {
+            "risk": "archive 移動後の参照切れ",
+            "severity": "medium",
+            "mitigation": "移動前に参照箇所を特定し更新"
+          }
+        ],
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 7,
+          "topics": [
+            {"id": 1, "summary": "Phase -1 概念整理を IMPLEMENTATION-PLAN-V2.md に追加", "type": "instruction"},
+            {"id": 2, "summary": "Layer 0-5 機能依存レイヤーを IMPLEMENTATION-PLAN-V2.md に追加", "type": "instruction"},
+            {"id": 3, "summary": "Evidence 3点検証を REVIEW-PROTOCOL.md に追加", "type": "instruction"},
+            {"id": 4, "summary": "時間的達成可能性を REVIEW-PROTOCOL.md に追加", "type": "instruction"},
+            {"id": 5, "summary": "GLOSSARY.md の不足用語追加", "type": "instruction"},
+            {"id": 6, "summary": "旧ドキュメントを archive に移動", "type": "instruction"},
+            {"id": 7, "summary": "参照整合性チェック", "type": "instruction"}
+          ],
+          "decomposition_needed": false,
+          "recommendation": "単一 playbook で 7 subtask として管理"
+        },
+        "success_criteria": {
+          "functional": [
+            "Phase -1 概念整理が IMPLEMENTATION-PLAN-V2.md に存在",
+            "Layer 0-5 機能依存レイヤーが IMPLEMENTATION-PLAN-V2.md に存在",
+            "Evidence 3点検証が REVIEW-PROTOCOL.md に存在",
+            "時間的達成可能性が REVIEW-PROTOCOL.md に存在",
+            "不足用語が GLOSSARY.md に追加済み",
+            "旧ドキュメントが archive に移動済み",
+            "参照整合性が確認済み"
+          ],
+          "breaking_changes": false
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-27",
+      "summary": "v2-design の欠点補完として7項目の移植作業を実施",
+      "approved_items": [
+        "Phase -1 概念整理の移植",
+        "Layer 0-5 機能依存レイヤーの移植",
+        "Evidence 3点検証の移植",
+        "時間的達成可能性の移植",
+        "GLOSSARY.md 用語追加",
+        "旧ドキュメントの archive 移動",
+        "参照整合性チェック"
+      ],
+      "technical_requirements_confirmed": [
+        "既存ブランチ feat/new-repo-docs-sync を使用"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "IMPLEMENTATION-PLAN-V2.md への追加",
+      "description": "Phase -1 概念整理と Layer 0-5 機能依存レイヤーを移植",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "Phase -1 概念整理セクションが IMPLEMENTATION-PLAN-V2.md に追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Phase -1' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'コンテキスト管理\\|Context' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'REBUILD-DESIGN-SPEC.md' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/REBUILD-DESIGN-SPEC.md 2>/dev/null | awk '{print ($1 >= 0 ? \"source_exists\" : \"source_missing\")}'",
+              "expected": "source_exists"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "Layer 0-5 機能依存レイヤーセクションが IMPLEMENTATION-PLAN-V2.md に追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Layer 0' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Layer [0-5]' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'Layer 5' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "REVIEW-PROTOCOL.md への追加",
+      "description": "Evidence 3点検証と時間的達成可能性を移植",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "Evidence 3点検証セクションが REVIEW-PROTOCOL.md に追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Evidence\\|3点検証' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/REVIEW-PROTOCOL.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'technical\\|consistency\\|completeness' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/REVIEW-PROTOCOL.md",
+              "expected": ">= 2"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'validation' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/REVIEW-PROTOCOL.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "時間的達成可能性セクションが REVIEW-PROTOCOL.md に追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c '時間的達成可能性\\|Temporal Achievability' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/REVIEW-PROTOCOL.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '評価時点\\|達成可能\\|前提条件' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/REVIEW-PROTOCOL.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'criterion' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/REVIEW-PROTOCOL.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "GLOSSARY.md 用語追加",
+      "description": "不足用語を GLOSSARY.md に追加",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "Evidence, 時間的達成可能性, Phase -1, Layer 等の用語が GLOSSARY.md に追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Evidence\\|時間的達成可能性\\|Phase -1\\|Layer' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/GLOSSARY.md",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '^##' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/GLOSSARY.md",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/GLOSSARY.md | awk '{print ($1 > 50 ? \"sufficient\" : \"insufficient\")}'",
+              "expected": "sufficient"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "旧ドキュメント archive 移動",
+      "description": "REBUILD-DESIGN-SPEC.md と BUILD-FROM-SCRATCH.md を archive に移動",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "REBUILD-DESIGN-SPEC.md が archive に移動されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/archive/REBUILD-DESIGN-SPEC.md && echo 'moved'",
+              "expected": "moved"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test ! -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/REBUILD-DESIGN-SPEC.md && echo 'removed_from_original'",
+              "expected": "removed_from_original"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/new-repo/archive/REBUILD-DESIGN-SPEC.md | awk '{print ($1 > 10 ? \"content_preserved\" : \"content_lost\")}'",
+              "expected": "content_preserved"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "BUILD-FROM-SCRATCH.md が archive に移動されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/archive/BUILD-FROM-SCRATCH.md && echo 'moved'",
+              "expected": "moved"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test ! -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md && echo 'removed_from_original'",
+              "expected": "removed_from_original"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/new-repo/archive/BUILD-FROM-SCRATCH.md | awk '{print ($1 > 10 ? \"content_preserved\" : \"content_lost\")}'",
+              "expected": "content_preserved"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "参照整合性チェック",
+      "description": "移動後の参照整合性を確認し、壊れた参照を修正",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "v2-design 内に旧ファイルへの壊れた参照がない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -r 'REBUILD-DESIGN-SPEC.md\\|BUILD-FROM-SCRATCH.md' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/ 2>/dev/null | wc -l | awk '{print ($1 == 0 ? \"clean\" : \"broken\")}'",
+              "expected": "clean"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -r '\\.\\./' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/*.md 2>/dev/null | grep -v archive | wc -l | awk '{print ($1 < 5 ? \"minimal_refs\" : \"many_refs\")}'",
+              "expected": "minimal_refs"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/*.md 2>/dev/null | wc -l | awk '{print ($1 >= 5 ? \"docs_complete\" : \"docs_incomplete\")}'",
+              "expected": "docs_complete"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "Execute all done_when commands and verify results",
+      "depends_on": ["p5"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'Phase -1' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Evidence' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/REVIEW-PROTOCOL.md | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/archive/REBUILD-DESIGN-SPEC.md && grep -r 'REBUILD-DESIGN-SPEC.md' /Users/amano/Desktop/thanks4claudecode-v2/new-repo/v2-design/ 2>/dev/null | wc -l | awk '{print ($1 == 0 ? \"all_done\" : \"incomplete\")}'",
+              "expected": "all_done"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

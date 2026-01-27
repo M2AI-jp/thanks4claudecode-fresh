@@ -1,0 +1,953 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "refactoring-cleanup",
+    "branch": "feat/refactoring-cleanup",
+    "created": "2026-01-27",
+    "status": "completed",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "リポジトリをモジュール単位で丁寧にリファクタリング（掃除）し、重複・不整合・不完全な実装を解消する",
+    "done_when": [
+      {
+        "criterion": "ルート直下の重複ドキュメント（AGENTS.md, BUILD-FROM-SCRATCH.md, REBUILD-DESIGN-SPEC.md, EXAMPLE-*.md）が削除されている",
+        "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/{AGENTS.md,BUILD-FROM-SCRATCH.md,REBUILD-DESIGN-SPEC.md,EXAMPLE-*.md} 2>&1 | grep -c 'No such file'",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": ".claude/schema/playbook.schema.json が存在する",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/playbook.schema.json && echo 'exists'",
+        "expected": "exists"
+      },
+      {
+        "criterion": ".claude/lib/{error.sh,logging.sh,testing.sh} が存在する",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/error.sh && test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/logging.sh && test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/testing.sh && echo 'all_exist'",
+        "expected": "all_exist"
+      },
+      {
+        "criterion": "各 Event Unit に validator.sh が存在する",
+        "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/events -name 'validator.sh' | wc -l | tr -d ' '",
+        "expected": ">= 5"
+      },
+      {
+        "criterion": "docs/repository-map.yaml の updated が 2026-01-27 以降",
+        "command": "grep 'updated:' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml | grep -c '2026-01-27'",
+        "expected": ">= 1"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "ルート直下の重複ドキュメント整理",
+        ".claude/schema/ にスキーマ定義作成",
+        ".claude/lib/ に共有ライブラリ作成",
+        ".claude/events/ の Event Unit 標準化",
+        ".claude/logs/ のアーカイブ構造化",
+        "repository-map.yaml の再生成"
+      ],
+      "excludes": [
+        "新機能の実装",
+        "CLAUDE.md の変更",
+        "外部サービス連携"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer (via Explore agent)",
+      "data": {
+        "5w1h": {
+          "what": "リポジトリ全体のリファクタリング（掃除）",
+          "why": "重複ドキュメント、空ファイル、古いマップ、不統一な構造を解消するため",
+          "who": "Claude Code が自律実行",
+          "when": "時間制限なし（完了まで継続）",
+          "where": "リポジトリ全体（.claude/, docs/, play/, ルート直下）",
+          "how": "モジュール単位で段階的にリファクタリング",
+          "missing": []
+        },
+        "risks": [
+          {
+            "type": "technical",
+            "description": "削除対象ファイルが他から参照されている可能性",
+            "severity": "medium",
+            "mitigation": "削除前に grep で参照箇所を確認"
+          },
+          {
+            "type": "scope",
+            "description": "リファクタリング範囲が広大",
+            "severity": "low",
+            "mitigation": "Phase を細かく分割し、各 Phase で完結させる"
+          }
+        ],
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "instruction": [
+            "ドキュメント重複の解消",
+            "スキーマ標準化",
+            "ライブラリ整備",
+            "Event Unit 標準化",
+            "ログ管理改善",
+            "最終検証"
+          ],
+          "question": [],
+          "context": []
+        },
+        "identified_issues": [
+          "AGENTS.md が 0 バイト",
+          "ルート直下に重複ドキュメント（4ファイル）",
+          "repository-map.yaml が 2026-01-20 で停止",
+          ".claude/lib が不十分",
+          "Skills ディレクトリ構造不統一",
+          "Event Unit 実装が chain.sh のみ",
+          "playbook の status 値が不統一",
+          "memo.md が草稿のまま",
+          "セッションログ 22 個、アーカイブなし",
+          "SubAgent ログ追跡不十分"
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "ユーザー承認",
+      "approved_at": "2026-01-27",
+      "summary": "AUTO_APPROVED: 超詳細計画でリファクタリング実行",
+      "approved_items": [
+        "7 Phase に分割した詳細計画",
+        "時間制限なしで完了まで継続",
+        "モジュール単位での段階的リファクタリング"
+      ],
+      "technical_requirements_confirmed": [
+        "各 Phase は独立して完了可能",
+        "削除前に参照確認を行う",
+        "スキーマ定義で playbook の揺らぎを解消"
+      ]
+    }
+  },
+  "max_iterations": 20,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "ドキュメント整理（Critical）",
+      "description": "ルート直下の重複・空ドキュメントを削除し、memo.md の内容を公式ドキュメントに統合する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "AGENTS.md が存在しない（削除済み）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -f /Users/amano/Desktop/thanks4claudecode-v2/AGENTS.md && echo 'deleted'",
+              "expected": "deleted"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -r 'AGENTS.md' /Users/amano/Desktop/thanks4claudecode-v2/docs/ 2>/dev/null | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "git status --porcelain /Users/amano/Desktop/thanks4claudecode-v2/AGENTS.md 2>/dev/null | grep -c 'D ' || echo '0'",
+              "expected": ">= 0"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "BUILD-FROM-SCRATCH.md がルート直下に存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -f /Users/amano/Desktop/thanks4claudecode-v2/BUILD-FROM-SCRATCH.md && echo 'deleted'",
+              "expected": "deleted"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -rn 'BUILD-FROM-SCRATCH.md' /Users/amano/Desktop/thanks4claudecode-v2/*.md /Users/amano/Desktop/thanks4claudecode-v2/docs/*.md 2>/dev/null | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/archive/BUILD-FROM-SCRATCH.md && echo 'archived' || echo 'not_archived'",
+              "expected": "archived"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "REBUILD-DESIGN-SPEC.md がルート直下に存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -f /Users/amano/Desktop/thanks4claudecode-v2/REBUILD-DESIGN-SPEC.md && echo 'deleted'",
+              "expected": "deleted"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -rn 'REBUILD-DESIGN-SPEC.md' /Users/amano/Desktop/thanks4claudecode-v2/*.md /Users/amano/Desktop/thanks4claudecode-v2/docs/*.md 2>/dev/null | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/new-repo/archive/REBUILD-DESIGN-SPEC.md && echo 'archived' || echo 'not_archived'",
+              "expected": "archived"
+            }
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "EXAMPLE-*.md ファイルがルート直下に存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/EXAMPLE-*.md 2>&1 | grep -c 'No such file'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -rn 'EXAMPLE-' /Users/amano/Desktop/thanks4claudecode-v2/docs/*.md 2>/dev/null | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/new-repo/archive/EXAMPLE-*.md 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.5",
+          "criterion": "memo.md の内容が公式ドキュメントに統合されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -f /Users/amano/Desktop/thanks4claudecode-v2/memo.md && echo 'removed' || echo 'exists'",
+              "expected": "removed"
+            },
+            "consistency": {
+              "type": "manual",
+              "command": "Review docs/ for integrated content from memo.md",
+              "expected": "Content integrated into appropriate docs"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -l 'memo.md' /Users/amano/Desktop/thanks4claudecode-v2/docs/*.md 2>/dev/null | wc -l | tr -d ' '",
+              "expected": "0"
+            }
+          }
+        },
+        {
+          "id": "p1.6",
+          "criterion": "repository-map.yaml が再生成されている（updated が 2026-01-27）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep 'updated:' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml | grep -c '2026-01-27'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml && echo 'exists'",
+              "expected": "exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'path:' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml",
+              "expected": ">= 50"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "スキーマ標準化（High）",
+      "description": "playbook と progress の JSON スキーマを定義し、揺らぎを解消する",
+      "depends_on": [
+        "p1"
+      ],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": ".claude/schema/playbook.schema.json が存在し、JSON Schema draft-07 形式である",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/playbook.schema.json && jq -e '.\"$schema\"' /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/playbook.schema.json | grep -c 'draft-07'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -e '.properties.meta' /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/playbook.schema.json > /dev/null && echo 'valid'",
+              "expected": "valid"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.properties | keys | length' /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/playbook.schema.json",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": ".claude/schema/progress.schema.json が存在し、JSON Schema draft-07 形式である",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/progress.schema.json && jq -e '.\"$schema\"' /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/progress.schema.json | grep -c 'draft-07'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -e '.properties.playbook' /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/progress.schema.json > /dev/null && echo 'valid'",
+              "expected": "valid"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.properties | keys | length' /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/progress.schema.json",
+              "expected": ">= 4"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "既存 playbook の status 値が統一されている（pending/in_progress/done/blocked のみ）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/play -name 'progress.json' -exec jq -r '.phases[].status' {} \\; 2>/dev/null | sort -u | grep -vE '^(pending|in_progress|done|blocked)$' | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/play -name 'plan.json' -exec jq -r '.meta.status' {} \\; 2>/dev/null | sort -u | grep -vE '^(draft|active|completed|archived)$' | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/play -name 'progress.json' | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": ".claude/scripts/validate-playbook.sh が存在し、スキーマ検証を実行できる",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/scripts/validate-playbook.sh && test -x /Users/amano/Desktop/thanks4claudecode-v2/.claude/scripts/validate-playbook.sh && echo 'executable'",
+              "expected": "executable"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'schema' /Users/amano/Desktop/thanks4claudecode-v2/.claude/scripts/validate-playbook.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "head -1 /Users/amano/Desktop/thanks4claudecode-v2/.claude/scripts/validate-playbook.sh | grep -c '#!/'",
+              "expected": "1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "ライブラリ再構成（High）",
+      "description": ".claude/lib/ に共有ライブラリを作成し、エラーハンドリング・ログ出力・テストユーティリティを標準化する",
+      "depends_on": [
+        "p1"
+      ],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": ".claude/lib/error.sh が存在し、die(), warn(), trap_error() 関数を含む",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/error.sh && grep -c 'die()\\|warn()\\|trap_error()' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/error.sh",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/error.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '^[a-z_]*()' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/error.sh",
+              "expected": ">= 3"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": ".claude/lib/logging.sh が存在し、log_info(), log_warn(), log_error(), log_debug() 関数を含む",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/logging.sh && grep -c 'log_info()\\|log_warn()\\|log_error()\\|log_debug()' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/logging.sh",
+              "expected": ">= 4"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/logging.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'LOG_LEVEL\\|LOG_FILE' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/logging.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": ".claude/lib/testing.sh が存在し、assert_eq(), assert_file_exists(), assert_command_success() 関数を含む",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/testing.sh && grep -c 'assert_eq()\\|assert_file_exists()\\|assert_command_success()' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/testing.sh",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/testing.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'TEST_PASS\\|TEST_FAIL' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/testing.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p3.4",
+          "criterion": ".claude/lib/common.sh が存在し、全ライブラリを source する統合エントリーポイントである",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/common.sh && grep -c 'source.*error.sh\\|source.*logging.sh\\|source.*testing.sh' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/common.sh",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/common.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'LIB_DIR' /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/common.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "Skill テンプレート標準化（High）",
+      "description": "Skill のディレクトリ構造を標準化し、テンプレートを作成する",
+      "depends_on": [
+        "p2"
+      ],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": ".claude/templates/skill/SKILL.md テンプレートが存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/templates/skill/SKILL.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '## Purpose\\|## When to Use\\|## Output' /Users/amano/Desktop/thanks4claudecode-v2/.claude/templates/skill/SKILL.md",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/.claude/templates/skill/SKILL.md | tr -d ' '",
+              "expected": ">= 30"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": ".claude/templates/skill/agents/ ディレクトリに agent テンプレートが存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/thanks4claudecode-v2/.claude/templates/skill/agents && ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/templates/skill/agents/*.md 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/templates/skill/agents/agent-template.md && echo 'template_exists'",
+              "expected": "template_exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '## Role\\|## Responsibilities\\|## Output Format' /Users/amano/Desktop/thanks4claudecode-v2/.claude/templates/skill/agents/agent-template.md 2>/dev/null || echo '0'",
+              "expected": ">= 2"
+            }
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "既存 Skill が標準構造に準拠している（SKILL.md + agents/ の形式）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for d in /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/*/; do test -f \"$d/SKILL.md\" && echo 'ok'; done | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills -type d -name 'agents' | wc -l | tr -d ' '",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls -d /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/*/ 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "Event Unit 完全化（Medium）",
+      "description": "各 Event Unit に validator.sh と telemetry.sh を追加し、標準構造を定義する",
+      "depends_on": [
+        "p3"
+      ],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": ".claude/events/README.md に Event Unit 標準構造が定義されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/README.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'validator.sh\\|telemetry.sh\\|chain.sh' /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/README.md",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'Event Unit' /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/README.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p5.2",
+          "criterion": "session-start Event に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/session-start/validator.sh && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/session-start/validator.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'validate\\|check' /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/session-start/validator.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p5.3",
+          "criterion": "pre-tool-edit Event に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/pre-tool-edit/validator.sh && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/pre-tool-edit/validator.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'file\\|edit' /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/pre-tool-edit/validator.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p5.4",
+          "criterion": "post-tool-edit Event に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/post-tool-edit/validator.sh && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/post-tool-edit/validator.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'file\\|edit' /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/post-tool-edit/validator.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p5.5",
+          "criterion": "stop Event に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/stop/validator.sh && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/stop/validator.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'stop\\|exit' /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/stop/validator.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p5.6",
+          "criterion": ".claude/events/lib/telemetry.sh が存在し、全 Event から利用可能",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/lib/telemetry.sh && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/lib/telemetry.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'log_event\\|record_metric' /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/lib/telemetry.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p6",
+      "name": "ログ管理改善（Medium）",
+      "description": "セッションログをアーカイブし、ログローテーション機能を追加する",
+      "depends_on": [
+        "p3"
+      ],
+      "subtasks": [
+        {
+          "id": "p6.1",
+          "criterion": ".claude/logs/archive/ ディレクトリが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/thanks4claudecode-v2/.claude/logs/archive && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/logs/archive/.gitkeep && echo 'gitkeep_exists'",
+              "expected": "gitkeep_exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls -la /Users/amano/Desktop/thanks4claudecode-v2/.claude/logs/archive/ 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p6.2",
+          "criterion": "14日以上前のセッションログが archive/ に移動されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/logs -maxdepth 1 -name 'session-*.log' -mtime +14 | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/logs/archive/*.log 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/logs/session-*.log 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 0"
+            }
+          }
+        },
+        {
+          "id": "p6.3",
+          "criterion": ".claude/scripts/rotate-logs.sh が存在し、実行可能である",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/scripts/rotate-logs.sh && test -x /Users/amano/Desktop/thanks4claudecode-v2/.claude/scripts/rotate-logs.sh && echo 'executable'",
+              "expected": "executable"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n /Users/amano/Desktop/thanks4claudecode-v2/.claude/scripts/rotate-logs.sh && echo 'syntax_ok'",
+              "expected": "syntax_ok"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'archive\\|rotate\\|move' /Users/amano/Desktop/thanks4claudecode-v2/.claude/scripts/rotate-logs.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p6.4",
+          "criterion": ".claude/logs/subagent/ ディレクトリが存在し、SubAgent ログの構造が定義されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/thanks4claudecode-v2/.claude/logs/subagent && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/logs/subagent/README.md && echo 'readme_exists'",
+              "expected": "readme_exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'pm\\|critic\\|reviewer' /Users/amano/Desktop/thanks4claudecode-v2/.claude/logs/subagent/README.md 2>/dev/null || echo '0'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_self_update",
+      "name": "セルフアップデート",
+      "description": "リファクタリング中に発見した改善点を反映し、ドキュメントを更新する",
+      "depends_on": [
+        "p4",
+        "p5",
+        "p6"
+      ],
+      "subtasks": [
+        {
+          "id": "p_self_update.1",
+          "criterion": "docs/ARCHITECTURE.md が Event Unit 標準構造を反映している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'validator.sh\\|telemetry.sh' /Users/amano/Desktop/thanks4claudecode-v2/docs/ARCHITECTURE.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Event Unit' /Users/amano/Desktop/thanks4claudecode-v2/docs/ARCHITECTURE.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/ARCHITECTURE.md && echo 'exists'",
+              "expected": "exists"
+            }
+          }
+        },
+        {
+          "id": "p_self_update.2",
+          "criterion": "新規作成したスキーマ・ライブラリが repository-map.yaml に含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'schema/playbook.schema.json\\|lib/error.sh' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml",
+              "expected": ">= 2"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep 'updated:' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml | grep -c '2026-01-27'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '.claude/lib/' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml",
+              "expected": ">= 3"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "全ての done_when を実行し、リファクタリングの完了を検証する",
+      "depends_on": [
+        "p_self_update"
+      ],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/{AGENTS.md,BUILD-FROM-SCRATCH.md,REBUILD-DESIGN-SPEC.md,EXAMPLE-*.md} 2>&1 | grep -c 'No such file'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/schema/playbook.schema.json && test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/lib/error.sh && echo 'all_exist'",
+              "expected": "all_exist"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/events -name 'validator.sh' | wc -l | tr -d ' '",
+              "expected": ">= 4"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "全スキーマバリデーションが PASS する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "/Users/amano/Desktop/thanks4claudecode-v2/.claude/scripts/validate-playbook.sh /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/refactoring-cleanup/plan.json 2>/dev/null && echo 'valid' || echo 'invalid'",
+              "expected": "valid"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -e '.format_version' /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/refactoring-cleanup/plan.json > /dev/null && echo 'valid_json'",
+              "expected": "valid_json"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.phases | length' /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/refactoring-cleanup/plan.json",
+              "expected": ">= 7"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "repository-map.yaml の updated が 2026-01-27 である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep 'updated:' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml | grep -c '2026-01-27'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml && echo 'exists'",
+              "expected": "exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'path:' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml",
+              "expected": ">= 50"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

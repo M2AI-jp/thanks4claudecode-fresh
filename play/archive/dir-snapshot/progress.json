@@ -3,7 +3,7 @@
   "playbook": {
     "id": "dir-snapshot",
     "plan_path": "play/archive/dir-snapshot/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": null,

@@ -1,0 +1,265 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "playbook.schema.json",
+  "title": "Playbook Schema",
+  "description": "JSON Schema for playbook plan.json files (format_version 2.2)",
+  "type": "object",
+  "required": ["format_version", "meta", "goal", "phases"],
+  "properties": {
+    "format_version": {
+      "type": "string",
+      "description": "Schema version identifier",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "examples": ["2.2"]
+    },
+    "meta": {
+      "type": "object",
+      "description": "Playbook metadata",
+      "required": ["id", "branch", "created", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique playbook identifier",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "branch": {
+          "type": "string",
+          "description": "Git branch name for this playbook",
+          "pattern": "^feat/[a-z0-9-]+$"
+        },
+        "created": {
+          "type": "string",
+          "description": "Creation date in YYYY-MM-DD format",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "status": {
+          "type": "string",
+          "description": "Playbook lifecycle status",
+          "enum": ["draft", "active", "completed", "archived"]
+        },
+        "review_profile": {
+          "type": "string",
+          "description": "Review strictness level",
+          "enum": ["minimal", "standard", "strict"],
+          "default": "standard"
+        },
+        "reviewed": {
+          "type": "boolean",
+          "description": "Whether playbook has been reviewed",
+          "default": false
+        },
+        "reviewed_by": {
+          "type": "string",
+          "description": "Reviewer identifier (e.g., 'reviewer', 'coderabbit')"
+        },
+        "roles": {
+          "type": "object",
+          "description": "Role assignments for this playbook",
+          "properties": {
+            "orchestrator": {
+              "type": "string",
+              "enum": ["claudecode", "user"],
+              "default": "claudecode"
+            },
+            "worker": {
+              "type": "string",
+              "enum": ["claudecode", "codex", "user"],
+              "default": "codex"
+            },
+            "reviewer": {
+              "type": "string",
+              "enum": ["coderabbit", "claudecode", "user"],
+              "default": "coderabbit"
+            },
+            "human": {
+              "type": "string",
+              "const": "user"
+            }
+          }
+        }
+      }
+    },
+    "goal": {
+      "type": "object",
+      "description": "Playbook goal definition",
+      "required": ["summary", "done_when"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Brief summary of the playbook goal",
+          "minLength": 10
+        },
+        "done_when": {
+          "type": "array",
+          "description": "Criteria for playbook completion",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["criterion"],
+            "properties": {
+              "criterion": {
+                "type": "string",
+                "description": "Human-readable completion criterion"
+              },
+              "command": {
+                "type": "string",
+                "description": "Bash command to verify criterion"
+              },
+              "expected": {
+                "type": "string",
+                "description": "Expected output from command"
+              }
+            }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "description": "Scope boundaries",
+          "properties": {
+            "includes": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Items explicitly in scope"
+            },
+            "excludes": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Items explicitly out of scope"
+            }
+          }
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "description": "Contextual information from planning phase",
+      "properties": {
+        "analysis_result": {
+          "type": "object",
+          "description": "Output from prompt-analyzer"
+        },
+        "user_approved_understanding": {
+          "type": "object",
+          "description": "Record of user approval"
+        }
+      }
+    },
+    "max_iterations": {
+      "type": "integer",
+      "description": "Maximum iterations before requiring user intervention",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    },
+    "phases": {
+      "type": "array",
+      "description": "Ordered list of phases",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/phase"
+      }
+    },
+    "final_tasks": {
+      "type": "array",
+      "description": "Tasks to run after all phases complete",
+      "items": { "type": "string" },
+      "default": []
+    }
+  },
+  "definitions": {
+    "phase": {
+      "type": "object",
+      "required": ["id", "name", "description", "subtasks"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Phase identifier (e.g., 'p1', 'p2', 'p_final')",
+          "pattern": "^p[0-9_a-z]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable phase name",
+          "minLength": 3
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed phase description"
+        },
+        "depends_on": {
+          "type": "array",
+          "description": "Phase IDs this phase depends on",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "subtasks": {
+          "type": "array",
+          "description": "Subtasks within this phase",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/subtask"
+          }
+        }
+      }
+    },
+    "subtask": {
+      "type": "object",
+      "required": ["id", "criterion", "executor", "validation_plan"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Subtask identifier (e.g., 'p1.1', 'p2.3')",
+          "pattern": "^p[0-9_a-z]+\\.[0-9]+$"
+        },
+        "criterion": {
+          "type": "string",
+          "description": "Completion criterion for this subtask"
+        },
+        "executor": {
+          "type": "string",
+          "description": "Who executes this subtask",
+          "enum": ["claudecode", "codex", "coderabbit", "user"]
+        },
+        "coding": {
+          "type": "boolean",
+          "description": "Whether this subtask involves writing code",
+          "default": false
+        },
+        "validation_plan": {
+          "type": "object",
+          "description": "3-point validation plan",
+          "required": ["technical", "consistency", "completeness"],
+          "properties": {
+            "technical": {
+              "$ref": "#/definitions/validation"
+            },
+            "consistency": {
+              "$ref": "#/definitions/validation"
+            },
+            "completeness": {
+              "$ref": "#/definitions/validation"
+            }
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Validation method",
+          "enum": ["automated", "manual"]
+        },
+        "command": {
+          "type": "string",
+          "description": "Command to run for automated validation"
+        },
+        "expected": {
+          "type": "string",
+          "description": "Expected result (exact match or comparison like '>= 1')"
+        }
+      }
+    }
+  }
+}

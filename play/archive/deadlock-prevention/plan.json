@@ -1,0 +1,309 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "deadlock-prevention",
+    "branch": "feat/deadlock-prevention",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "デッドロックパターンを先回りで検出・解消し、将来の同様の問題を防止する",
+    "done_when": [
+      {
+        "criterion": "contract.sh の BOOTSTRAP_SINGLE_PATTERNS に git recovery コマンドが含まれる",
+        "command": "grep -E 'rebase.*--abort|merge.*--abort|cherry-pick.*--abort|reset.*--hard' .claude/lib/contract.sh | wc -l | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+        "expected": "pass"
+      },
+      {
+        "criterion": "pending-guard.sh の許可リストに play/ が含まれる",
+        "command": "grep -q 'play/' .claude/skills/post-loop/guards/pending-guard.sh && echo 'pass' || echo 'fail'",
+        "expected": "pass"
+      },
+      {
+        "criterion": "session-start で stale pending ファイルの検出処理が存在する",
+        "command": "grep -q 'post-loop-pending' .claude/skills/session-manager/handlers/start.sh && echo 'pass' || echo 'fail'",
+        "expected": "pass"
+      }
+    ],
+    "scope": {
+      "includes": [
+        ".claude/lib/contract.sh の BOOTSTRAP_SINGLE_PATTERNS",
+        ".claude/skills/post-loop/guards/pending-guard.sh の許可リスト",
+        ".claude/skills/session-manager/handlers/start.sh の stale pending 検出"
+      ],
+      "excludes": [
+        "その他の guardrail スクリプト",
+        "playbook ロジック自体の変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "user-provided",
+      "data": {
+        "deadlock_patterns": [
+          {
+            "id": "git-recovery-block",
+            "description": "playbook=null で git rebase --abort, merge --abort 等がブロックされる",
+            "cause": "contract.sh の BOOTSTRAP_SINGLE_PATTERNS に含まれていない",
+            "solution": "git recovery コマンドを許可リストに追加"
+          },
+          {
+            "id": "play-creation-block",
+            "description": "playbook 作成自体が pending-guard でブロックされる",
+            "cause": "pending-guard.sh の許可リストに play/ がない",
+            "solution": "許可リストに play/ を追加"
+          },
+          {
+            "id": "stale-pending",
+            "description": "playbook 完了後に pending ファイルが残り Edit/Write がブロック",
+            "cause": "post-loop Skill が呼ばれずに終了",
+            "solution": "session-start で stale pending を検出・警告"
+          }
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user-prompt",
+      "approved_at": "2026-01-28",
+      "summary": "デッドロック防止の3つのパターンを解消する",
+      "approved_items": [
+        "contract.sh に git recovery コマンド許可を追加",
+        "pending-guard による play/ 作成ブロックを解消",
+        "将来のデッドロックを防止"
+      ],
+      "technical_requirements_confirmed": [
+        "BOOTSTRAP_SINGLE_PATTERNS に追加するコマンド: git rebase --abort, git merge --abort, git cherry-pick --abort, git reset --hard origin/"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Git recovery コマンドの許可追加",
+      "description": "contract.sh の BOOTSTRAP_SINGLE_PATTERNS に git recovery コマンドを追加",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "BOOTSTRAP_SINGLE_PATTERNS に git rebase --abort パターンが含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -q 'rebase.*--abort' .claude/lib/contract.sh && echo 'found' || echo 'not found'",
+              "expected": "found"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -c 'source .claude/lib/contract.sh && is_bootstrap_single_allowed \"git rebase --abort\" && echo allow || echo block'",
+              "expected": "allow"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'rebase.*--abort' .claude/lib/contract.sh | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "BOOTSTRAP_SINGLE_PATTERNS に git merge --abort パターンが含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -q 'merge.*--abort' .claude/lib/contract.sh && echo 'found' || echo 'not found'",
+              "expected": "found"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -c 'source .claude/lib/contract.sh && is_bootstrap_single_allowed \"git merge --abort\" && echo allow || echo block'",
+              "expected": "allow"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'merge.*--abort' .claude/lib/contract.sh | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "BOOTSTRAP_SINGLE_PATTERNS に git cherry-pick --abort パターンが含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -q 'cherry-pick.*--abort' .claude/lib/contract.sh && echo 'found' || echo 'not found'",
+              "expected": "found"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -c 'source .claude/lib/contract.sh && is_bootstrap_single_allowed \"git cherry-pick --abort\" && echo allow || echo block'",
+              "expected": "allow"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'cherry-pick.*--abort' .claude/lib/contract.sh | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "BOOTSTRAP_SINGLE_PATTERNS に git reset --hard origin/ パターンが含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -q 'reset.*--hard' .claude/lib/contract.sh && echo 'found' || echo 'not found'",
+              "expected": "found"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -c 'source .claude/lib/contract.sh && is_bootstrap_single_allowed \"git reset --hard origin/main\" && echo allow || echo block'",
+              "expected": "allow"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'reset.*--hard' .claude/lib/contract.sh | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "pending-guard の許可リスト更新",
+      "description": "pending-guard.sh の許可リストに play/ を追加してデッドロックを防止",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "pending-guard.sh の ALLOWLIST に play/ パターンが含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -A5 'ALLOWLIST=' .claude/skills/post-loop/guards/pending-guard.sh | grep -q 'play/' && echo 'found' || echo 'not found'",
+              "expected": "found"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'play/' .claude/skills/post-loop/guards/pending-guard.sh | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -E 'play/.*plan\\.json|play/.*progress\\.json' .claude/skills/post-loop/guards/pending-guard.sh | wc -l | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Stale pending 検出の追加",
+      "description": "session-start で古い pending ファイルを検出し、警告を出す仕組みを追加",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "session-manager/handlers/start.sh に post-loop-pending ファイルの存在チェックが含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -q 'post-loop-pending' .claude/skills/session-manager/handlers/start.sh && echo 'found' || echo 'not found'",
+              "expected": "found"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'stale\\|warning\\|WARNING' .claude/skills/session-manager/handlers/start.sh | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -E 'post-loop-pending.*exist|session-state' .claude/skills/session-manager/handlers/start.sh | wc -l | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "全ての done_when を検証し、main ブランチと同期",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -E 'rebase.*--abort|merge.*--abort|cherry-pick.*--abort|reset.*--hard' .claude/lib/contract.sh | wc -l | awk '{print ($1 >= 1 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -q 'play/' .claude/skills/post-loop/guards/pending-guard.sh && echo 'pass' || echo 'fail'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -q 'post-loop-pending' .claude/skills/session-manager/handlers/start.sh && echo 'pass' || echo 'fail'",
+              "expected": "pass"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "main ブランチが origin/main と同期されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "git fetch origin && git log main..origin/main --oneline | wc -l | awk '{print ($1 == 0 ? \"synced\" : \"behind\")}'",
+              "expected": "synced"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "git branch --show-current",
+              "expected": "main"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "git status --porcelain | wc -l | awk '{print ($1 == 0 ? \"clean\" : \"dirty\")}'",
+              "expected": "clean"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

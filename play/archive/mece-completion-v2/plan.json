@@ -1,0 +1,226 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "mece-completion-v2",
+    "branch": "feat/mece-completion",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "mece-completion playbook をやり直し、リポジトリの MECE 整理を完了する",
+    "done_when": [
+      {
+        "criterion": "new-repo ディレクトリが存在しない",
+        "command": "test ! -d new-repo && echo 'not_exists'",
+        "expected": "not_exists"
+      },
+      {
+        "criterion": "user-intent.md ファイルが存在しない",
+        "command": "test ! -f user-intent.md && echo 'not_exists'",
+        "expected": "not_exists"
+      },
+      {
+        "criterion": ".session-init ディレクトリが存在しない、または空である",
+        "command": "test ! -d .session-init && echo 'not_exists' || (test -z \"$(ls -A .session-init 2>/dev/null)\" && echo 'empty' || echo 'has_files')",
+        "expected": "not_exists"
+      },
+      {
+        "criterion": "docs/repository-map.yaml が存在し、最近更新されている",
+        "command": "test -f docs/repository-map.yaml && echo 'exists'",
+        "expected": "exists"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "new-repo, user-intent.md の削除確認",
+        ".session-init のクリーンアップ確認",
+        "repository-map.yaml の存在確認",
+        "全 done_when の最終検証"
+      ],
+      "excludes": [
+        "新規コード実装",
+        "アーキテクチャ変更",
+        "他の playbook のタスク"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "what": "mece-completion playbook のやり直し（reward-fraud-prevention 完了後の継続）",
+          "why": "前回の mece-completion で報酬詐欺が発生したため、改善後に再実行",
+          "who": "Claude Code（claudecode executor）",
+          "when": "現セッション内で完了",
+          "where": "リポジトリ全体（不要ファイル/ディレクトリの削除確認）",
+          "how": "done_when の4項目を検証し、全て PASS を確認する",
+          "missing": []
+        },
+        "risks": {
+          "technical": [],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-28",
+      "summary": "前回の報酬詐欺を防ぐため、validation_plan.command は必ず実行可能な形式にする",
+      "approved_items": [
+        "done_when の4項目を検証",
+        "HARD_BLOCK ファイルへのアクセスは禁止",
+        "critic 検証前に done を宣言しない"
+      ],
+      "technical_requirements_confirmed": [
+        "docs/validation-command-standards.md に準拠した command 形式"
+      ]
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Final verification",
+      "description": "全 done_when 項目の最終検証を実施",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "new-repo ディレクトリが存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -d new-repo && echo 'not_exists' || echo 'exists'",
+              "expected": "not_exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test ! -d new-repo && echo 'consistent'",
+              "expected": "consistent"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test ! -d new-repo && echo 'complete'",
+              "expected": "complete"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "user-intent.md ファイルが存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -f user-intent.md && echo 'not_exists' || echo 'exists'",
+              "expected": "not_exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test ! -f user-intent.md && echo 'consistent'",
+              "expected": "consistent"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test ! -f user-intent.md && echo 'complete'",
+              "expected": "complete"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": ".session-init ディレクトリが存在しない、または空である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -d .session-init && echo 'not_exists' || (test -z \"$(ls -A .session-init 2>/dev/null)\" && echo 'empty' || echo 'has_files')",
+              "expected": "not_exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test ! -d .session-init && echo 'consistent'",
+              "expected": "consistent"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test ! -d .session-init && echo 'complete'",
+              "expected": "complete"
+            }
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "docs/repository-map.yaml が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/repository-map.yaml && echo 'exists' || echo 'not_exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "head -1 docs/repository-map.yaml | grep -q 'Repository Map' && echo 'valid_header'",
+              "expected": "valid_header"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -E 'total_files: [0-9]+' docs/repository-map.yaml | grep -oE '[0-9]+' | awk '{print ($1 > 100 ? \"sufficient\" : \"insufficient\")}'",
+              "expected": "sufficient"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Goal verification",
+      "description": "全 goal.done_when の検証",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -d new-repo && test ! -f user-intent.md && test ! -d .session-init && test -f docs/repository-map.yaml && echo 'all_pass'",
+              "expected": "all_pass"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "echo 'playbook goals verified'",
+              "expected": "playbook goals verified"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "echo '4/4 done_when items passed'",
+              "expected": "4/4 done_when items passed"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

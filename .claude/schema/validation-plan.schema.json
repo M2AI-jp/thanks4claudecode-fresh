@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/thanks4claudecode/schema/validation-plan.schema.json",
+  "title": "Validation Plan Schema",
+  "description": "Schema for subtask validation_plan structure",
+  "type": "object",
+  "required": ["technical", "consistency", "completeness"],
+  "properties": {
+    "technical": {
+      "$ref": "#/$defs/validation_item",
+      "description": "Technical validation (automated or manual)"
+    },
+    "consistency": {
+      "$ref": "#/$defs/validation_item",
+      "description": "Consistency validation (checks alignment with other components)"
+    },
+    "completeness": {
+      "$ref": "#/$defs/validation_item",
+      "description": "Completeness validation (checks nothing is missing)"
+    }
+  },
+  "$defs": {
+    "validation_item": {
+      "type": "object",
+      "required": ["type", "command", "expected"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["automated", "manual"],
+          "description": "Validation type: automated (shell command) or manual (human check)"
+        },
+        "command": {
+          "type": "string",
+          "description": "Shell command to execute (automated) or check description (manual)"
+        },
+        "expected": {
+          "type": "string",
+          "description": "Expected result or comparison (e.g., '0', '>= 1', 'exists', 'contains X')"
+        }
+      }
+    }
+  }
+}

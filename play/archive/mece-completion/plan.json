@@ -1,0 +1,516 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "mece-completion",
+    "branch": "feat/mece-completion",
+    "created": "2026-01-27",
+    "status": "archived",
+    "review_profile": "strict",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "リポジトリ全体を MECE（Mutually Exclusive, Collectively Exhaustive）で完成させる。全ファイルに意味があり、無駄がなく、全モジュールが完全に機能する状態を達成する。",
+    "done_when": [
+      {
+        "criterion": "削除対象ファイル（new-repo/, 古いセッションファイル）が存在しない",
+        "command": "test ! -d new-repo && test ! -f .claude/.session-init/user-intent.md && echo 'clean'",
+        "expected": "clean"
+      },
+      {
+        "criterion": "全参照切れが解消されている",
+        "command": "bash .claude/hooks/session.sh 2>&1 | grep -c 'Errors:   0'",
+        "expected": "1"
+      },
+      {
+        "criterion": "全スキーマバリデーションが PASS",
+        "command": ".claude/scripts/validate-playbook.sh --all 2>&1 | tail -1 | grep -c 'passed'",
+        "expected": "1"
+      },
+      {
+        "criterion": "repository-map.yaml が最新で全ファイルを網羅",
+        "command": "grep 'generated:' docs/repository-map.yaml | grep -c '2026-01-27'",
+        "expected": "1"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "不要ファイル・ディレクトリの削除",
+        "参照切れの解消",
+        "SSOT の一元化",
+        "スキーマ・ドキュメントの整合性確保",
+        "未完成機能の完成またはドキュメント化",
+        "テストの整備"
+      ],
+      "excludes": [
+        "新機能の実装",
+        "CLAUDE.md の変更",
+        "外部サービスの設定変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "Explore agent MECE analysis",
+      "issues_count": 59,
+      "categories": {
+        "duplicate": 4,
+        "incomplete": 16,
+        "broken_reference": 5,
+        "inconsistency": 9,
+        "unused": 7,
+        "partial_implementation": 8,
+        "missing_docs": 6,
+        "missing_tests": 4
+      }
+    }
+  },
+  "max_iterations": 50,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "クリーンアップ（削除）",
+      "description": "不要なファイル・ディレクトリを削除し、リポジトリを軽量化する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "new-repo/ ディレクトリが削除されている（別リポジトリに移行済み）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test ! -d new-repo && echo 'deleted'", "expected": "deleted"},
+            "consistency": {"type": "automated", "command": "grep -r 'new-repo/' docs/ 2>/dev/null | wc -l | tr -d ' '", "expected": "0"},
+            "completeness": {"type": "automated", "command": "git status --porcelain new-repo/ 2>/dev/null | wc -l | tr -d ' '", "expected": "0"}
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": ".claude/.session-init/user-intent.md（308KB）が削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test ! -f .claude/.session-init/user-intent.md && echo 'deleted'", "expected": "deleted"},
+            "consistency": {"type": "automated", "command": "ls -la .claude/.session-init/ | wc -l | tr -d ' '", "expected": "<= 6"},
+            "completeness": {"type": "manual", "command": "Check no references to user-intent.md", "expected": "No references"}
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": ".claude/.session-init/ 内の不要ファイル（pending, required_playbook, repository-map.prev.yaml）が削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "ls .claude/.session-init/ | grep -c 'pending\\|required_playbook\\|.prev.yaml'", "expected": "0"},
+            "consistency": {"type": "automated", "command": "test -f .claude/.session-init/architecture-sync.yaml && echo 'kept'", "expected": "kept"},
+            "completeness": {"type": "automated", "command": "ls .claude/.session-init/ | wc -l | tr -d ' '", "expected": "<= 2"}
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "protected-files.txt から存在しない RUNBOOK.md の参照が削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c 'RUNBOOK.md' .claude/protected-files.txt || echo '0'", "expected": "0"},
+            "consistency": {"type": "automated", "command": "test ! -f RUNBOOK.md && echo 'not_exists'", "expected": "not_exists"},
+            "completeness": {"type": "automated", "command": "wc -l < .claude/protected-files.txt | tr -d ' '", "expected": ">= 10"}
+          }
+        },
+        {
+          "id": "p1.5",
+          "criterion": ".claude/scripts/validate-playbook.sh が存在し、tests/ ディレクトリが存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test -f .claude/scripts/validate-playbook.sh && echo 'exists'", "expected": "exists"},
+            "consistency": {"type": "automated", "command": "ls tests/ 2>/dev/null | wc -l | tr -d ' '", "expected": "0"},
+            "completeness": {"type": "automated", "command": "test ! -d tests || rmdir tests 2>/dev/null; echo 'ok'", "expected": "ok"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "参照整合性の修復",
+      "description": "存在しないファイルへの参照を削除または修正する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "failure-logger.sh への参照が docs/ARCHITECTURE.md から削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c 'failure-logger.sh' docs/ARCHITECTURE.md || echo '0'", "expected": "0"},
+            "consistency": {"type": "automated", "command": "test ! -f .claude/hooks/failure-logger.sh && echo 'not_exists'", "expected": "not_exists"},
+            "completeness": {"type": "automated", "command": "grep -c 'failure-logger' . -r 2>/dev/null | tail -1", "expected": "0"}
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "docs/design/ への参照が ARCHITECTURE.md に含まれているか、または docs/design/ が削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "ls docs/design/ 2>/dev/null | wc -l | tr -d ' '", "expected": ">= 0"},
+            "consistency": {"type": "manual", "command": "Check design/ references in ARCHITECTURE.md", "expected": "Consistent"},
+            "completeness": {"type": "automated", "command": "test -d docs/design && echo 'exists' || echo 'not_exists'", "expected": "exists or deleted"}
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "contract.sh の HARD_BLOCK_FILES が protected-files.txt と一致している",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c 'protected-files.txt' .claude/lib/contract.sh || echo '0'", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "bash -n .claude/lib/contract.sh && echo 'syntax_ok'", "expected": "syntax_ok"},
+            "completeness": {"type": "manual", "command": "Verify contract.sh reads from protected-files.txt", "expected": "Uses SSOT"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "SSOT 一元化",
+      "description": "Single Source of Truth を明確にし、重複定義を排除する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "core-feature-reclassification.md が Hook Unit の唯一の SSOT として確定している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c 'SSOT' docs/core-feature-reclassification.md", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "grep -c 'core-feature-reclassification.md' docs/ARCHITECTURE.md", "expected": ">= 1"},
+            "completeness": {"type": "automated", "command": "test -f docs/core-feature-reclassification.md && echo 'exists'", "expected": "exists"}
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "ARCHITECTURE.md が core-feature-reclassification.md への参照に特化している（重複内容削除）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "wc -l < docs/ARCHITECTURE.md | tr -d ' '", "expected": "<= 2000"},
+            "consistency": {"type": "manual", "command": "Verify ARCHITECTURE.md focuses on user flow diagram", "expected": "User flow focused"},
+            "completeness": {"type": "automated", "command": "grep -c 'ユーザーフロー\\|User Flow' docs/ARCHITECTURE.md", "expected": ">= 1"}
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "frameworks/ 内の検証フレームワークが統一されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "ls .claude/frameworks/*.md | wc -l | tr -d ' '", "expected": ">= 2"},
+            "consistency": {"type": "manual", "command": "Verify reviewer vs critic responsibilities are clear", "expected": "Clear separation"},
+            "completeness": {"type": "automated", "command": "grep -c 'reviewer\\|critic' .claude/frameworks/*.md | head -1", "expected": ">= 1"}
+          }
+        },
+        {
+          "id": "p3.4",
+          "criterion": "executor 役割定義が統一されている（claudecode/codex/coderabbit/user）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c 'executor' docs/core-feature-reclassification.md", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "grep 'executor' .claude/schema/playbook.schema.json | grep -c 'enum'", "expected": "1"},
+            "completeness": {"type": "manual", "command": "Verify executor roles documented", "expected": "Documented"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "スキーマ完全化",
+      "description": "全 JSON ファイルのスキーマを定義し、バリデーションを保証する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "state.schema.json が作成されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test -f .claude/schema/state.schema.json && jq -e '.\"$schema\"' .claude/schema/state.schema.json > /dev/null && echo 'valid'", "expected": "valid"},
+            "consistency": {"type": "automated", "command": "jq -e '.properties.playbook' .claude/schema/state.schema.json > /dev/null && echo 'has_playbook'", "expected": "has_playbook"},
+            "completeness": {"type": "automated", "command": "jq '.properties | keys | length' .claude/schema/state.schema.json", "expected": ">= 4"}
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "validation-plan.schema.json が作成されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test -f .claude/schema/validation-plan.schema.json && echo 'exists'", "expected": "exists"},
+            "consistency": {"type": "automated", "command": "jq -e '.properties.technical' .claude/schema/validation-plan.schema.json > /dev/null && echo 'valid'", "expected": "valid"},
+            "completeness": {"type": "automated", "command": "jq '.properties | keys | length' .claude/schema/validation-plan.schema.json", "expected": ">= 3"}
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "全スキーマが .claude/schema/ に集約されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "ls .claude/schema/*.json | wc -l | tr -d ' '", "expected": ">= 4"},
+            "consistency": {"type": "automated", "command": "find . -name '*.schema.json' -not -path './.claude/schema/*' | wc -l | tr -d ' '", "expected": "0"},
+            "completeness": {"type": "automated", "command": "ls .claude/schema/ | grep -c 'playbook\\|progress\\|state\\|validation'", "expected": ">= 3"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "Event Unit 完全化",
+      "description": "全 Event Unit に validator.sh を追加し、標準構造を完成させる",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "user-prompt-submit に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test -f .claude/events/user-prompt-submit/validator.sh && echo 'exists'", "expected": "exists"},
+            "consistency": {"type": "automated", "command": "bash -n .claude/events/user-prompt-submit/validator.sh && echo 'syntax_ok'", "expected": "syntax_ok"},
+            "completeness": {"type": "automated", "command": "grep -c 'validate' .claude/events/user-prompt-submit/validator.sh", "expected": ">= 1"}
+          }
+        },
+        {
+          "id": "p5.2",
+          "criterion": "pre-tool-bash に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test -f .claude/events/pre-tool-bash/validator.sh && echo 'exists'", "expected": "exists"},
+            "consistency": {"type": "automated", "command": "bash -n .claude/events/pre-tool-bash/validator.sh && echo 'syntax_ok'", "expected": "syntax_ok"},
+            "completeness": {"type": "automated", "command": "grep -c 'validate\\|bash\\|command' .claude/events/pre-tool-bash/validator.sh", "expected": ">= 1"}
+          }
+        },
+        {
+          "id": "p5.3",
+          "criterion": "subagent-stop に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test -f .claude/events/subagent-stop/validator.sh && echo 'exists'", "expected": "exists"},
+            "consistency": {"type": "automated", "command": "bash -n .claude/events/subagent-stop/validator.sh && echo 'syntax_ok'", "expected": "syntax_ok"},
+            "completeness": {"type": "automated", "command": "grep -c 'validate\\|subagent' .claude/events/subagent-stop/validator.sh", "expected": ">= 1"}
+          }
+        },
+        {
+          "id": "p5.4",
+          "criterion": "pre-compact に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test -f .claude/events/pre-compact/validator.sh && echo 'exists'", "expected": "exists"},
+            "consistency": {"type": "automated", "command": "bash -n .claude/events/pre-compact/validator.sh && echo 'syntax_ok'", "expected": "syntax_ok"},
+            "completeness": {"type": "automated", "command": "grep -c 'validate\\|compact' .claude/events/pre-compact/validator.sh", "expected": ">= 1"}
+          }
+        },
+        {
+          "id": "p5.5",
+          "criterion": "session-end に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test -f .claude/events/session-end/validator.sh && echo 'exists'", "expected": "exists"},
+            "consistency": {"type": "automated", "command": "bash -n .claude/events/session-end/validator.sh && echo 'syntax_ok'", "expected": "syntax_ok"},
+            "completeness": {"type": "automated", "command": "grep -c 'validate\\|session\\|end' .claude/events/session-end/validator.sh", "expected": ">= 1"}
+          }
+        },
+        {
+          "id": "p5.6",
+          "criterion": "notification に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test -f .claude/events/notification/validator.sh && echo 'exists'", "expected": "exists"},
+            "consistency": {"type": "automated", "command": "bash -n .claude/events/notification/validator.sh && echo 'syntax_ok'", "expected": "syntax_ok"},
+            "completeness": {"type": "automated", "command": "grep -c 'validate\\|notification' .claude/events/notification/validator.sh", "expected": ">= 1"}
+          }
+        },
+        {
+          "id": "p5.7",
+          "criterion": "全 Event Unit（10個）に validator.sh が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "find .claude/events -maxdepth 2 -name 'validator.sh' | wc -l | tr -d ' '", "expected": ">= 10"},
+            "consistency": {"type": "automated", "command": "for f in .claude/events/*/validator.sh; do bash -n \"$f\" 2>/dev/null || echo 'fail'; done | grep -c 'fail'", "expected": "0"},
+            "completeness": {"type": "automated", "command": "ls -d .claude/events/*/ | wc -l | tr -d ' '", "expected": "<= 12"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "p6",
+      "name": "ドキュメント完全化",
+      "description": "不足しているドキュメントを追加し、既存ドキュメントを更新する",
+      "depends_on": ["p3", "p4"],
+      "subtasks": [
+        {
+          "id": "p6.1",
+          "criterion": "executor-resolver SubAgent の判定ロジックがドキュメント化されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c '判定\\|判断\\|logic\\|decision' .claude/skills/executor-resolver/agents/executor-resolver.md", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "test -f .claude/skills/executor-resolver/agents/executor-resolver.md && echo 'exists'", "expected": "exists"},
+            "completeness": {"type": "automated", "command": "wc -l < .claude/skills/executor-resolver/agents/executor-resolver.md | tr -d ' '", "expected": ">= 50"}
+          }
+        },
+        {
+          "id": "p6.2",
+          "criterion": "git branch naming convention がドキュメント化されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c 'feat/\\|fix/\\|branch' docs/ARCHITECTURE.md", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "grep 'branch' .claude/schema/playbook.schema.json | grep -c 'pattern'", "expected": "1"},
+            "completeness": {"type": "manual", "command": "Verify branch naming documented", "expected": "Documented"}
+          }
+        },
+        {
+          "id": "p6.3",
+          "criterion": "playbook format_version 管理ポリシーがドキュメント化されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c 'format_version\\|version' .claude/schema/playbook.schema.json", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "grep -c '2.2\\|2.0' play/template/plan.json", "expected": ">= 1"},
+            "completeness": {"type": "manual", "command": "Verify version migration policy exists", "expected": "Documented"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "p7",
+      "name": "refactoring-cleanup 完了処理",
+      "description": "前の playbook の progress.json を更新し、アーカイブする",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p7.1",
+          "criterion": "refactoring-cleanup/progress.json の全 phase が done に更新されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "jq '.phases | to_entries | map(select(.value.status != \"done\")) | length' play/standalone/refactoring-cleanup/progress.json", "expected": "0"},
+            "consistency": {"type": "automated", "command": "jq '.playbook.status' play/standalone/refactoring-cleanup/progress.json", "expected": "\"completed\""},
+            "completeness": {"type": "automated", "command": "jq '.phases | keys | length' play/standalone/refactoring-cleanup/progress.json", "expected": ">= 7"}
+          }
+        },
+        {
+          "id": "p7.2",
+          "criterion": "refactoring-cleanup/plan.json の status が completed に更新されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "jq -r '.meta.status' play/standalone/refactoring-cleanup/plan.json", "expected": "completed"},
+            "consistency": {"type": "automated", "command": "test -f play/standalone/refactoring-cleanup/plan.json && echo 'exists'", "expected": "exists"},
+            "completeness": {"type": "automated", "command": "jq '.meta.reviewed' play/standalone/refactoring-cleanup/plan.json", "expected": "true"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "p8",
+      "name": "状態ファイル更新",
+      "description": "state.md と関連ファイルを最新状態に更新する",
+      "depends_on": ["p7"],
+      "subtasks": [
+        {
+          "id": "p8.1",
+          "criterion": "state.md の playbook.active が mece-completion を指している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c 'mece-completion' state.md", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "grep 'active:' state.md | grep -c 'play/standalone/mece-completion'", "expected": "1"},
+            "completeness": {"type": "automated", "command": "grep -c 'current_phase:' state.md", "expected": "1"}
+          }
+        },
+        {
+          "id": "p8.2",
+          "criterion": "state.md の last_archived が refactoring-cleanup を記録している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "grep -c 'refactoring-cleanup' state.md", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "grep 'last_archived:' state.md | head -1", "expected": "contains refactoring-cleanup"},
+            "completeness": {"type": "manual", "command": "Verify state.md is consistent", "expected": "Consistent"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "p9",
+      "name": "最終検証",
+      "description": "全体の整合性を検証し、MECE 完成を確認する",
+      "depends_on": ["p5", "p6", "p8"],
+      "subtasks": [
+        {
+          "id": "p9.1",
+          "criterion": "repository integrity check が全て PASS",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "bash .claude/hooks/session.sh 2>&1 | grep -c 'PASSED'", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "bash .claude/hooks/session.sh 2>&1 | grep 'Errors:' | grep -c '0'", "expected": "1"},
+            "completeness": {"type": "automated", "command": "bash .claude/hooks/session.sh 2>&1 | grep 'Warnings:' | grep -c '0'", "expected": "1"}
+          }
+        },
+        {
+          "id": "p9.2",
+          "criterion": "全 playbook のスキーマバリデーションが PASS",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": ".claude/scripts/validate-playbook.sh play/standalone/mece-completion/plan.json 2>&1 | grep -c 'passed'", "expected": "1"},
+            "consistency": {"type": "automated", "command": ".claude/scripts/validate-playbook.sh --all 2>&1 | tail -5 | grep -c 'failed'", "expected": "0"},
+            "completeness": {"type": "automated", "command": "find play -name 'plan.json' -not -path '*/archive/*' -not -path '*/template/*' | wc -l | tr -d ' '", "expected": ">= 1"}
+          }
+        },
+        {
+          "id": "p9.3",
+          "criterion": "repository-map.yaml が再生成され最新になっている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "bash .claude/hooks/generate-repository-map.sh && grep 'generated:' docs/repository-map.yaml | grep -c '2026-01-27'", "expected": ">= 1"},
+            "consistency": {"type": "automated", "command": "bash .claude/hooks/session.sh 2>&1 | grep -c 'DRIFT'", "expected": "0"},
+            "completeness": {"type": "automated", "command": "grep 'total_files:' docs/repository-map.yaml | awk '{print $2}'", "expected": ">= 200"}
+          }
+        },
+        {
+          "id": "p9.4",
+          "criterion": "全 goal.done_when が PASS",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {"type": "automated", "command": "test ! -d new-repo && test ! -f .claude/.session-init/user-intent.md && echo 'clean'", "expected": "clean"},
+            "consistency": {"type": "automated", "command": "bash .claude/hooks/session.sh 2>&1 | grep -c 'Errors:   0'", "expected": "1"},
+            "completeness": {"type": "automated", "command": "grep 'generated:' docs/repository-map.yaml | grep -c '2026-01-27'", "expected": "1"}
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": [
+    "git commit -m 'feat(mece-completion): repository MECE completion'",
+    "archive this playbook to play/archive/"
+  ]
+}

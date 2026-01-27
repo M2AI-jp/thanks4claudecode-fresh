@@ -3,7 +3,7 @@
   "playbook": {
     "id": "project-json-fix",
     "plan_path": "play/project-json-fix/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",

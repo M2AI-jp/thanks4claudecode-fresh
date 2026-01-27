@@ -1,0 +1,395 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "new-repo-setup",
+    "branch": "feat/new-repo-setup",
+    "created": "2026-01-27",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "完全に新しいリポジトリをローカルと GitHub に作成し、v2-design ドキュメント（5ファイル）を移行する",
+    "done_when": [
+      {
+        "criterion": "/Users/amano/Desktop/claude-framework-v2 ディレクトリが存在する",
+        "command": "test -d /Users/amano/Desktop/claude-framework-v2 && echo 'exists'",
+        "expected": "exists"
+      },
+      {
+        "criterion": "GitHub リポジトリ claude-framework-v2 が存在する（private）",
+        "command": "gh repo view amano/claude-framework-v2 --json name -q '.name' 2>/dev/null || echo 'not found'",
+        "expected": "claude-framework-v2"
+      },
+      {
+        "criterion": "設計ドキュメント5ファイルが新リポジトリに存在する",
+        "command": "ls /Users/amano/Desktop/claude-framework-v2/*.md 2>/dev/null | wc -l | tr -d ' '",
+        "expected": ">= 5"
+      },
+      {
+        "criterion": "README.md が新リポジトリに存在する",
+        "command": "test -f /Users/amano/Desktop/claude-framework-v2/README.md && echo 'exists'",
+        "expected": "exists"
+      },
+      {
+        "criterion": "git remote origin が正しく設定されている",
+        "command": "cd /Users/amano/Desktop/claude-framework-v2 && git remote get-url origin 2>/dev/null || echo 'not set'",
+        "expected": "contains: claude-framework-v2"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "ローカルフォルダ作成: /Users/amano/Desktop/claude-framework-v2",
+        "GitHub リポジトリ作成: claude-framework-v2 (private)",
+        "ドキュメント移行: new-repo/ 配下の5ファイル",
+        "README.md 作成",
+        "git 初期化と remote 設定"
+      ],
+      "excludes": [
+        "フレームワーク実装（Phase 0 以降）",
+        ".claude/ ディレクトリの構築",
+        "Hook/Event Unit の実装",
+        "state.md, CLAUDE.md の作成"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "ready_for_playbook": true,
+        "blocking_issues": [],
+        "5w1h": {
+          "who": "ユーザー（Claude Code と協調）",
+          "what": "完全に新しいリポジトリをローカルと GitHub に作成し、v2-design に基づくフレームワーク実装を開始",
+          "when": "即時",
+          "where": "ローカル + GitHub",
+          "why": "クリーンな状態から再構築したい",
+          "how": "Phase 0 から段階的に構築"
+        },
+        "success_criteria": [
+          "ローカルに /Users/amano/Desktop/claude-framework-v2 フォルダが作成される",
+          "GitHub に claude-framework-v2 リポジトリが作成される（private）",
+          "設計ドキュメント（new-repo/ の 5 ファイル）が新リポジトリに移行される",
+          "最小 README.md が作成される",
+          "git remote が正しく設定される"
+        ],
+        "risks": [
+          {
+            "risk": "スコープ肥大リスク",
+            "mitigation": "Phase 0 の最小構成に絞る"
+          }
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-27",
+      "summary": "AUTO_APPROVED",
+      "approved_items": [
+        "repo_name: claude-framework-v2",
+        "local_path: /Users/amano/Desktop/claude-framework-v2",
+        "visibility: private"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Infrastructure Preparation",
+      "description": "ローカルフォルダ作成、GitHub リポジトリ作成、git 初期化",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "/Users/amano/Desktop/claude-framework-v2 ディレクトリが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/claude-framework-v2 && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls -la /Users/amano/Desktop/ | grep claude-framework-v2 | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/claude-framework-v2 && echo 'complete'",
+              "expected": "complete"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "GitHub リポジトリ claude-framework-v2 が private で存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "gh repo view amano/claude-framework-v2 --json name,visibility -q '.name + \":\" + .visibility' 2>/dev/null || echo 'not found'",
+              "expected": "claude-framework-v2:PRIVATE"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "gh repo list --json name -q '.[].name' | grep -c claude-framework-v2 || echo '0'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "gh repo view amano/claude-framework-v2 --json name -q '.name' 2>/dev/null || echo 'missing'",
+              "expected": "claude-framework-v2"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "ローカルリポジトリが git 初期化され、remote origin が設定されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/claude-framework-v2/.git && echo 'git initialized'",
+              "expected": "git initialized"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/claude-framework-v2 && git remote get-url origin 2>/dev/null | grep -c claude-framework-v2 || echo '0'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/claude-framework-v2 && git remote -v | grep -c origin || echo '0'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Document Migration",
+      "description": "new-repo/ 配下の 5 ファイルを新リポジトリにコピー",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "BUILD-FROM-SCRATCH.md が新リポジトリに存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/claude-framework-v2/BUILD-FROM-SCRATCH.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "diff /Users/amano/Desktop/thanks4claudecode-v2/new-repo/BUILD-FROM-SCRATCH.md /Users/amano/Desktop/claude-framework-v2/BUILD-FROM-SCRATCH.md > /dev/null 2>&1 && echo 'match' || echo 'differ'",
+              "expected": "match"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < /Users/amano/Desktop/claude-framework-v2/BUILD-FROM-SCRATCH.md | tr -d ' '",
+              "expected": ">= 1000"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "REBUILD-DESIGN-SPEC.md が新リポジトリに存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/claude-framework-v2/REBUILD-DESIGN-SPEC.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "diff /Users/amano/Desktop/thanks4claudecode-v2/new-repo/REBUILD-DESIGN-SPEC.md /Users/amano/Desktop/claude-framework-v2/REBUILD-DESIGN-SPEC.md > /dev/null 2>&1 && echo 'match' || echo 'differ'",
+              "expected": "match"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < /Users/amano/Desktop/claude-framework-v2/REBUILD-DESIGN-SPEC.md | tr -d ' '",
+              "expected": ">= 1000"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "PROJECT-STORY.md が新リポジトリに存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/claude-framework-v2/PROJECT-STORY.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "diff /Users/amano/Desktop/thanks4claudecode-v2/new-repo/PROJECT-STORY.md /Users/amano/Desktop/claude-framework-v2/PROJECT-STORY.md > /dev/null 2>&1 && echo 'match' || echo 'differ'",
+              "expected": "match"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < /Users/amano/Desktop/claude-framework-v2/PROJECT-STORY.md | tr -d ' '",
+              "expected": ">= 1000"
+            }
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": "EXAMPLE-CHATGPT-CLONE.md が新リポジトリに存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/claude-framework-v2/EXAMPLE-CHATGPT-CLONE.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "diff /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-CHATGPT-CLONE.md /Users/amano/Desktop/claude-framework-v2/EXAMPLE-CHATGPT-CLONE.md > /dev/null 2>&1 && echo 'match' || echo 'differ'",
+              "expected": "match"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < /Users/amano/Desktop/claude-framework-v2/EXAMPLE-CHATGPT-CLONE.md | tr -d ' '",
+              "expected": ">= 1000"
+            }
+          }
+        },
+        {
+          "id": "p2.5",
+          "criterion": "EXAMPLE-FRAMEWORK-BUILD.md が新リポジトリに存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/claude-framework-v2/EXAMPLE-FRAMEWORK-BUILD.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "diff /Users/amano/Desktop/thanks4claudecode-v2/new-repo/EXAMPLE-FRAMEWORK-BUILD.md /Users/amano/Desktop/claude-framework-v2/EXAMPLE-FRAMEWORK-BUILD.md > /dev/null 2>&1 && echo 'match' || echo 'differ'",
+              "expected": "match"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < /Users/amano/Desktop/claude-framework-v2/EXAMPLE-FRAMEWORK-BUILD.md | tr -d ' '",
+              "expected": ">= 1000"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Initial Commit and Push",
+      "description": "README.md 作成、初期コミット、リモートへプッシュ",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "README.md が新リポジトリに存在し、プロジェクト概要を含む",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/claude-framework-v2/README.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'claude-framework-v2' /Users/amano/Desktop/claude-framework-v2/README.md || echo '0'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/claude-framework-v2/README.md | tr -d ' '",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "初期コミットが作成され、main ブランチにプッシュされている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/claude-framework-v2 && git log --oneline -1 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/claude-framework-v2 && git status --porcelain | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/claude-framework-v2 && git remote show origin 2>/dev/null | grep -c 'pushes to main' || echo '0'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification",
+      "description": "全ての done_when 条件を検証",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/claude-framework-v2 && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/claude-framework-v2/*.md 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 6"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/claude-framework-v2 && git remote get-url origin 2>/dev/null | grep -c claude-framework-v2 || echo '0'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

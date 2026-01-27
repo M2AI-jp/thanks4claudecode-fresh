@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "progress.schema.json",
+  "title": "Progress Schema",
+  "description": "JSON Schema for playbook progress.json files (format_version 2.0)",
+  "type": "object",
+  "required": ["format_version", "playbook", "active", "phases", "subtasks"],
+  "properties": {
+    "format_version": {
+      "type": "string",
+      "description": "Schema version identifier",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "examples": ["2.0"]
+    },
+    "playbook": {
+      "type": "object",
+      "description": "Reference to the parent playbook",
+      "required": ["id", "plan_path", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Playbook identifier (must match plan.json meta.id)",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "plan_path": {
+          "type": "string",
+          "description": "Relative path to the plan.json file",
+          "pattern": "^play/.+/plan\\.json$"
+        },
+        "status": {
+          "type": "string",
+          "description": "Overall playbook status (synced from plan.json)",
+          "enum": ["draft", "active", "completed", "archived"]
+        }
+      }
+    },
+    "active": {
+      "type": "object",
+      "description": "Currently active phase and subtask",
+      "required": ["phase", "subtask"],
+      "properties": {
+        "phase": {
+          "type": "string",
+          "description": "Current phase ID",
+          "pattern": "^p[0-9_a-z]+$"
+        },
+        "subtask": {
+          "type": "string",
+          "description": "Current subtask ID",
+          "pattern": "^p[0-9_a-z]+\\.[0-9]+$"
+        }
+      }
+    },
+    "phases": {
+      "type": "object",
+      "description": "Status tracking for each phase",
+      "additionalProperties": {
+        "$ref": "#/definitions/phase_progress"
+      }
+    },
+    "subtasks": {
+      "type": "object",
+      "description": "Status and validation tracking for each subtask",
+      "additionalProperties": {
+        "$ref": "#/definitions/subtask_progress"
+      }
+    },
+    "final_tasks": {
+      "type": "array",
+      "description": "Status of final tasks (empty if not started)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "done", "blocked"]
+          }
+        }
+      },
+      "default": []
+    },
+    "critic": {
+      "type": "object",
+      "description": "Final critic validation status",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Critic validation status",
+          "enum": ["PENDING", "PASS", "FAIL"]
+        },
+        "evidence": {
+          "type": "array",
+          "description": "Evidence collected during critic validation",
+          "items": { "type": "string" }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes from critic"
+        }
+      },
+      "default": {
+        "status": "PENDING",
+        "evidence": [],
+        "notes": ""
+      }
+    }
+  },
+  "definitions": {
+    "phase_progress": {
+      "type": "object",
+      "description": "Progress tracking for a single phase",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Phase execution status",
+          "enum": ["pending", "in_progress", "done", "blocked"]
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Last update timestamp (ISO 8601 or empty)"
+        }
+      }
+    },
+    "subtask_progress": {
+      "type": "object",
+      "description": "Progress tracking for a single subtask",
+      "required": ["status", "validations"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Subtask execution status",
+          "enum": ["pending", "in_progress", "done", "blocked"]
+        },
+        "validated_at": {
+          "type": "string",
+          "description": "Validation timestamp (ISO 8601 or empty)"
+        },
+        "validated_by": {
+          "type": "string",
+          "description": "Validator identifier (e.g., 'claudecode', 'coderabbit')"
+        },
+        "validations": {
+          "type": "object",
+          "description": "3-point validation results",
+          "required": ["technical", "consistency", "completeness"],
+          "properties": {
+            "technical": {
+              "$ref": "#/definitions/validation_result"
+            },
+            "consistency": {
+              "$ref": "#/definitions/validation_result"
+            },
+            "completeness": {
+              "$ref": "#/definitions/validation_result"
+            }
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes for this subtask"
+        }
+      }
+    },
+    "validation_result": {
+      "type": "object",
+      "description": "Result of a single validation check",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Validation result",
+          "enum": ["PENDING", "PASS", "FAIL"]
+        },
+        "evidence": {
+          "type": "array",
+          "description": "Evidence supporting the validation result",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    }
+  }
+}

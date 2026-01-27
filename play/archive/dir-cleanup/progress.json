@@ -3,7 +3,7 @@
   "playbook": {
     "id": "dir-cleanup",
     "plan_path": "play/dir-cleanup/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",
@@ -35,15 +35,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test -f docs/PROMPT_CHANGELOG.md -> PASS"]
+          "evidence": [
+            "test -f docs/PROMPT_CHANGELOG.md -> PASS"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["governance/PROMPT_CHANGELOG.md と同内容"]
+          "evidence": [
+            "governance/PROMPT_CHANGELOG.md と同内容"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["ファイル移動完了"]
+          "evidence": [
+            "ファイル移動完了"
+          ]
         }
       },
       "notes": ""
@@ -55,15 +61,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test -f .claude/lib/contract.sh -> PASS"]
+          "evidence": [
+            "test -f .claude/lib/contract.sh -> PASS"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["scripts/contract.sh と同内容"]
+          "evidence": [
+            "scripts/contract.sh と同内容"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["ファイル移動完了"]
+          "evidence": [
+            "ファイル移動完了"
+          ]
         }
       },
       "notes": ""

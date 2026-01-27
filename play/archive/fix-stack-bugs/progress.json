@@ -3,7 +3,7 @@
   "playbook": {
     "id": "fix-stack-bugs",
     "plan_path": "play/fix-stack-bugs/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",

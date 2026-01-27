@@ -1,0 +1,325 @@
+{
+  "format_version": "2.2",
+  "meta": {
+    "id": "v2-design-docs",
+    "branch": "feat/new-repo-docs-sync",
+    "created": "2026-01-22",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "new-repo/v2-design/ フォルダを作成し、6つの設計ドキュメント（HARNESS-ANALYSIS.md, IMPLEMENTATION-PLAN-V2.md, REVIEW-PROTOCOL.md, TEST-PROTOCOL.md, FAILURE-CATALOG.md, GLOSSARY.md）を欠損なく作成する",
+    "done_when": [
+      {
+        "criterion": "new-repo/v2-design/ ディレクトリが存在する",
+        "command": "test -d new-repo/v2-design && echo 'exists'",
+        "expected": "exists"
+      },
+      {
+        "criterion": "HARNESS-ANALYSIS.md が存在し、1000文字以上",
+        "command": "test -f new-repo/v2-design/HARNESS-ANALYSIS.md && wc -c < new-repo/v2-design/HARNESS-ANALYSIS.md | awk '{print ($1 >= 1000 ? \"pass\" : \"fail\")}'",
+        "expected": "pass"
+      },
+      {
+        "criterion": "IMPLEMENTATION-PLAN-V2.md が存在し、1000文字以上",
+        "command": "test -f new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md && wc -c < new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md | awk '{print ($1 >= 1000 ? \"pass\" : \"fail\")}'",
+        "expected": "pass"
+      },
+      {
+        "criterion": "REVIEW-PROTOCOL.md が存在し、500文字以上",
+        "command": "test -f new-repo/v2-design/REVIEW-PROTOCOL.md && wc -c < new-repo/v2-design/REVIEW-PROTOCOL.md | awk '{print ($1 >= 500 ? \"pass\" : \"fail\")}'",
+        "expected": "pass"
+      },
+      {
+        "criterion": "TEST-PROTOCOL.md が存在し、500文字以上",
+        "command": "test -f new-repo/v2-design/TEST-PROTOCOL.md && wc -c < new-repo/v2-design/TEST-PROTOCOL.md | awk '{print ($1 >= 500 ? \"pass\" : \"fail\")}'",
+        "expected": "pass"
+      },
+      {
+        "criterion": "FAILURE-CATALOG.md が存在し、500文字以上",
+        "command": "test -f new-repo/v2-design/FAILURE-CATALOG.md && wc -c < new-repo/v2-design/FAILURE-CATALOG.md | awk '{print ($1 >= 500 ? \"pass\" : \"fail\")}'",
+        "expected": "pass"
+      },
+      {
+        "criterion": "GLOSSARY.md が存在し、500文字以上",
+        "command": "test -f new-repo/v2-design/GLOSSARY.md && wc -c < new-repo/v2-design/GLOSSARY.md | awk '{print ($1 >= 500 ? \"pass\" : \"fail\")}'",
+        "expected": "pass"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "new-repo/v2-design/ フォルダ作成",
+        "HARNESS-ANALYSIS.md - claude-code-harness の深層分析",
+        "IMPLEMENTATION-PLAN-V2.md - 統合改善案（Phase 0-4）",
+        "REVIEW-PROTOCOL.md - レビュー手順の厳密な定義",
+        "TEST-PROTOCOL.md - テスト手順の厳密な定義",
+        "FAILURE-CATALOG.md - 失敗カタログ",
+        "GLOSSARY.md - 用語定義"
+      ],
+      "excludes": [
+        "既存ドキュメントの修正",
+        "コード実装"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "topic_type": "instruction",
+        "confidence": "high",
+        "ready_for_playbook": true,
+        "blocking_issues": [],
+        "5w1h": {
+          "what": "new-repo に v2-design フォルダを作成し、6つの設計ドキュメントを作成",
+          "why": "セッションで策定した上位内容（harness分析、統合改善案、レビュー/テストの厳密な定義、失敗カタログ、用語定義）を欠損なく永続化",
+          "who": "claudecode（ドキュメント作成）",
+          "when": "このセッション",
+          "where": "new-repo/v2-design/",
+          "how": "Markdown ファイルとして作成"
+        },
+        "risks": [
+          {
+            "risk": "内容の欠損",
+            "probability": "medium",
+            "impact": "high",
+            "mitigation": "セッションで策定した内容を網羅的に含める"
+          }
+        ],
+        "ambiguity": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-22",
+      "summary": "6ファイル作成、フォルダにまとめる",
+      "approved_items": [
+        "v2-design フォルダ作成",
+        "6ファイル構成（HARNESS-ANALYSIS.md, IMPLEMENTATION-PLAN-V2.md, REVIEW-PROTOCOL.md, TEST-PROTOCOL.md, FAILURE-CATALOG.md, GLOSSARY.md）",
+        "高優先度（Phase 1）: HARNESS-ANALYSIS.md, IMPLEMENTATION-PLAN-V2.md",
+        "中優先度（Phase 2）: REVIEW-PROTOCOL.md, TEST-PROTOCOL.md, FAILURE-CATALOG.md, GLOSSARY.md"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "高優先度ドキュメント作成",
+      "description": "v2-design フォルダを作成し、HARNESS-ANALYSIS.md と IMPLEMENTATION-PLAN-V2.md を作成",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "new-repo/v2-design/ ディレクトリが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -d new-repo/v2-design && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls -la new-repo/ | grep -c v2-design",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -d new-repo/v2-design && echo 'complete'",
+              "expected": "complete"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "new-repo/v2-design/HARNESS-ANALYSIS.md が存在し、claude-code-harness の深層分析を含む",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f new-repo/v2-design/HARNESS-ANALYSIS.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'harness' new-repo/v2-design/HARNESS-ANALYSIS.md 2>/dev/null || echo 0",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < new-repo/v2-design/HARNESS-ANALYSIS.md | awk '{print ($1 >= 1000 ? \"complete\" : \"incomplete\")}'",
+              "expected": "complete"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md が存在し、Phase 0-4 の統合改善案を含む",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Phase' new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md 2>/dev/null || echo 0",
+              "expected": ">= 4"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < new-repo/v2-design/IMPLEMENTATION-PLAN-V2.md | awk '{print ($1 >= 1000 ? \"complete\" : \"incomplete\")}'",
+              "expected": "complete"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "中優先度ドキュメント作成",
+      "description": "REVIEW-PROTOCOL.md, TEST-PROTOCOL.md, FAILURE-CATALOG.md, GLOSSARY.md を作成",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "new-repo/v2-design/REVIEW-PROTOCOL.md が存在し、レビュー手順の厳密な定義を含む",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f new-repo/v2-design/REVIEW-PROTOCOL.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -ci 'review\\|レビュー' new-repo/v2-design/REVIEW-PROTOCOL.md 2>/dev/null || echo 0",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < new-repo/v2-design/REVIEW-PROTOCOL.md | awk '{print ($1 >= 500 ? \"complete\" : \"incomplete\")}'",
+              "expected": "complete"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "new-repo/v2-design/TEST-PROTOCOL.md が存在し、テスト手順の厳密な定義を含む",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f new-repo/v2-design/TEST-PROTOCOL.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -ci 'test\\|テスト' new-repo/v2-design/TEST-PROTOCOL.md 2>/dev/null || echo 0",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < new-repo/v2-design/TEST-PROTOCOL.md | awk '{print ($1 >= 500 ? \"complete\" : \"incomplete\")}'",
+              "expected": "complete"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "new-repo/v2-design/FAILURE-CATALOG.md が存在し、失敗カタログを含む",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f new-repo/v2-design/FAILURE-CATALOG.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -ci 'fail\\|失敗\\|error' new-repo/v2-design/FAILURE-CATALOG.md 2>/dev/null || echo 0",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < new-repo/v2-design/FAILURE-CATALOG.md | awk '{print ($1 >= 500 ? \"complete\" : \"incomplete\")}'",
+              "expected": "complete"
+            }
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": "new-repo/v2-design/GLOSSARY.md が存在し、用語定義を含む",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f new-repo/v2-design/GLOSSARY.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c ':' new-repo/v2-design/GLOSSARY.md 2>/dev/null || echo 0",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -c < new-repo/v2-design/GLOSSARY.md | awk '{print ($1 >= 500 ? \"complete\" : \"incomplete\")}'",
+              "expected": "complete"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "全6ファイルの存在と内容を最終検証",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls new-repo/v2-design/*.md | wc -l | awk '{print ($1 == 6 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in HARNESS-ANALYSIS IMPLEMENTATION-PLAN-V2 REVIEW-PROTOCOL TEST-PROTOCOL FAILURE-CATALOG GLOSSARY; do test -f new-repo/v2-design/$f.md || echo \"missing: $f\"; done | wc -l | awk '{print ($1 == 0 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "total=0; for f in new-repo/v2-design/*.md; do total=$((total + $(wc -c < \"$f\"))); done; echo $total | awk '{print ($1 >= 5000 ? \"pass\" : \"fail\")}'",
+              "expected": "pass"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

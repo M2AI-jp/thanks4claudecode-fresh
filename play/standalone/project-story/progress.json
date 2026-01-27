@@ -1,0 +1,88 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "project-story",
+    "plan_path": "play/standalone/project-story/plan.json",
+    "status": "completed"
+  },
+  "active": {
+    "phase": null,
+    "subtask": null
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-21T00:15:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-21T00:16:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-21T00:15:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "file exists: PROJECT-STORY.md",
+            "14,457 chars >= 10,000"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "references BUILD-FROM-SCRATCH.md, EXAMPLE-CHATGPT-CLONE.md, REBUILD-DESIGN-SPEC.md"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "38 sections >= 5"
+          ]
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-21T00:16:00Z",
+      "validated_by": "claudecode",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "test -f PROJECT-STORY.md -> exists"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "wc -c >= 10000 -> pass (14,457)"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c '##' >= 5 -> pass (38)"
+          ]
+        }
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "All done_when verified by commands",
+      "14,457 chars >= 10,000",
+      "38 sections >= 5",
+      "Content covers: failures, Claude Code specs, orchestration, human workflow"
+    ],
+    "notes": "Independent verification by critic SubAgent"
+  }
+}

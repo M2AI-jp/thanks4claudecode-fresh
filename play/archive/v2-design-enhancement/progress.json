@@ -1,0 +1,295 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "v2-design-enhancement",
+    "plan_path": "play/standalone/v2-design-enhancement/plan.json",
+    "status": "completed"
+  },
+  "active": {
+    "phase": null,
+    "subtask": null
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-27T00:00:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-27T00:00:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-27T00:00:00Z"
+    },
+    "p4": {
+      "status": "done",
+      "updated_at": "2026-01-27T00:00:00Z"
+    },
+    "p5": {
+      "status": "done",
+      "updated_at": "2026-01-27T00:00:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-27T00:00:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-27T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "Phase -1 section added to IMPLEMENTATION-PLAN-V2.md (lines 144-214)"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Content matches BUILD-FROM-SCRATCH.md §8.0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "All 6 concept ordering items, deliverables, done_criteria included"
+          ]
+        }
+      },
+      "notes": "Phase -1 概念整理 added successfully"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-27T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "Layer 0-5 section added to IMPLEMENTATION-PLAN-V2.md (lines 216-271)"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Content matches BUILD-FROM-SCRATCH.md §8.1"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "All 6 layers with components and dependencies included"
+          ]
+        }
+      },
+      "notes": "Layer 0-5 機能依存レイヤー added successfully"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-27T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "Evidence 3点検証 section added to REVIEW-PROTOCOL.md (lines 257-324)"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Content matches REBUILD-DESIGN-SPEC.md §9.3"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "3 points definition, validation order, output format included"
+          ]
+        }
+      },
+      "notes": "Evidence 3点検証 added successfully"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-27T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "時間的達成可能性 section added to REVIEW-PROTOCOL.md (lines 327-384)"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Content matches REBUILD-DESIGN-SPEC.md §10"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "Definition, fail examples, review checklist, application rules included"
+          ]
+        }
+      },
+      "notes": "時間的達成可能性 added successfully"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-27T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "8 new terms added to GLOSSARY.md"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Terms consistent with new sections in other documents"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "Phase -1, Layer 0-5, Temporal Achievability, 3点検証, Module, Invoker パターン, 概念マップ, MECE all included"
+          ]
+        }
+      },
+      "notes": "GLOSSARY.md updated with 8 new terms"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-27T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "archive/ directory created, 4 files moved"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "README.md structure updated to match"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "BUILD-FROM-SCRATCH.md, REBUILD-DESIGN-SPEC.md, EXAMPLE-*.md all archived"
+          ]
+        }
+      },
+      "notes": "Legacy documents archived successfully"
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-27T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "README.md updated with correct structure and reading order"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Structure matches actual file layout"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "SSOT policy, notes, reading order all documented"
+          ]
+        }
+      },
+      "notes": "README.md updated successfully"
+    },
+    "p5.1": {
+      "status": "done",
+      "validated_at": "2026-01-27T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep found no broken references to non-existent files"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "All cross-references verified and fixed"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "HARNESS-ANALYSIS, REVIEW-PROTOCOL, TEST-PROTOCOL, GLOSSARY all checked"
+          ]
+        }
+      },
+      "notes": "Reference integrity verified and fixed"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-27T00:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "critic PASS on 7/7 criteria"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "All v2-design documents internally consistent"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "All required migrations completed, CodeRabbit feedback addressed"
+          ]
+        }
+      },
+      "notes": "Final validation passed. CodeRabbit Phase 3/4 inconsistency fixed."
+    }
+  },
+  "final_tasks": [
+    {
+      "task": "Fix Phase 3/4 inconsistency in IMPLEMENTATION-PLAN-V2.md",
+      "status": "done",
+      "evidence": "Changed 'Hook 自動化は Phase 3（最後）' to 'Hook 自動化は Phase 4（最後）'"
+    },
+    {
+      "task": "Fix SPECIFICATION.md reference in verification_points",
+      "status": "done",
+      "evidence": "Changed to IMPLEMENTATION-PLAN-V2.md"
+    }
+  ],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "All 7 done_criteria validated",
+      "Reference integrity verified",
+      "CodeRabbit feedback addressed"
+    ],
+    "notes": "Second critic run passed after fixing ARCHITECTURE.md/SPECIFICATION.md references"
+  }
+}
