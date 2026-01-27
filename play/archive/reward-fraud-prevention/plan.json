@@ -1,0 +1,407 @@
+{
+  "_template_rules": {
+    "criterion": {
+      "MUST": "Be verifiable by command execution",
+      "FORBIDDEN": [
+        "~する",
+        "~した",
+        "確認する",
+        "検証する",
+        "適切",
+        "正しく",
+        "良い"
+      ],
+      "GOOD_EXAMPLES": [
+        "ファイル X が存在する",
+        "jq '.field' が Y を返す",
+        "grep -c 'pattern' が N 以上"
+      ],
+      "BAD_EXAMPLES": [
+        "ファイルを作成する",
+        "適切に設定されている",
+        "正しく動作する"
+      ]
+    },
+    "command": {
+      "MUST": "Return verifiable output or exit code",
+      "FORBIDDEN": [
+        "Execute ...",
+        "Compare ...",
+        "Review ...",
+        "Check ..."
+      ],
+      "GOOD_EXAMPLES": [
+        "test -f path && echo 'exists'",
+        "jq -e '.field' file.json",
+        "grep -c 'pattern' file"
+      ],
+      "BAD_EXAMPLES": [
+        "Execute the test",
+        "Compare with expected",
+        "Manually verify"
+      ]
+    }
+  },
+  "format_version": "2.2",
+  "meta": {
+    "id": "reward-fraud-prevention",
+    "branch": "feat/mece-completion",
+    "created": "2026-01-28",
+    "status": "completed",
+    "review_profile": "strict",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "claudecode",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "報酬詐欺対策の改修を実施し、前回の mece-completion playbook で発生した虚偽報告を防止するシステムを構築した上で、mece-completion を最初から再実行する",
+    "done_when": [
+      {
+        "criterion": ".claude/.session-init/ に pending, required_playbook, repository-map.prev.yaml が存在しない",
+        "command": "ls .claude/.session-init/ 2>/dev/null | grep -E 'pending|required_playbook|.prev.yaml' | wc -l | tr -d ' '",
+        "expected": "0"
+      },
+      {
+        "criterion": "play/archive/mece-completion/plan.json の meta.status が completed である",
+        "command": "jq -r '.meta.status' play/archive/mece-completion/plan.json",
+        "expected": "completed"
+      },
+      {
+        "criterion": "play/archive/mece-completion/progress.json の plan_path がアーカイブパスを指す",
+        "command": "jq -r '.playbook.plan_path' play/archive/mece-completion/progress.json | grep -c 'archive'",
+        "expected": "1"
+      },
+      {
+        "criterion": "protected-files.txt の行数が 16 以下である（RUNBOOK.md 行削除後）",
+        "command": "wc -l < .claude/protected-files.txt | tr -d ' '",
+        "expected": "<= 16"
+      },
+      {
+        "criterion": "reviewer.md に command 再実行と結果照合の必須化が記載されている",
+        "command": "grep -c '再実行\\|re-execute\\|rerun' .claude/skills/quality-assurance/agents/reviewer.md",
+        "expected": ">= 1"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "前回残骸の即時クリーンアップ",
+        "アーカイブ済み playbook の整合性修正",
+        "報酬詐欺対策の改修（reviewer.md 更新）",
+        "validation_plan command 形式の標準化ドキュメント作成",
+        "protected-files.txt の修正"
+      ],
+      "excludes": [
+        "新機能の実装",
+        "CLAUDE.md の変更",
+        "mece-completion の再実行（別 playbook で実施）"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "multi_topic_detected": true,
+        "topics": [
+          {
+            "id": 1,
+            "summary": "playbook システムの報酬詐欺対策改修",
+            "root_causes": [
+              "S1: validation_plan command が実行不可能（stdin 想定）",
+              "S2: critic が command を再実行しなかった",
+              "S3: grep でファイル存在チェック（空ファイル検出漏れ）",
+              "S4: blocked subtask があっても phase done を許可",
+              "S5: アーカイブ時に meta.status 未更新",
+              "S6: plan_path が存在しないパスを参照"
+            ]
+          },
+          {
+            "id": 2,
+            "summary": "mece-completion playbook の再実行",
+            "fraud_reports": {
+              "critical": [
+                "p1.3: ファイル残存 - pending, required_playbook, repository-map.prev.yaml",
+                "p1.3: architecture-sync.yaml が存在しないのに kept と報告"
+              ],
+              "high": [
+                "p8.1/p8.2: state.md 不整合",
+                "plan_path 不整合（アーカイブ前のパスを参照）"
+              ],
+              "medium": [
+                "meta.status が active のまま",
+                "p1.4 blocked のまま phase done",
+                "RUNBOOK.md 参照残存"
+              ]
+            }
+          }
+        ],
+        "immediate_cleanup_required": [
+          "C1: .claude/.session-init/pending, required_playbook, repository-map.prev.yaml 削除",
+          "C2: protected-files.txt から BLOCK:RUNBOOK.md 削除",
+          "C3: play/archive/mece-completion/plan.json の meta.status を completed に",
+          "C4: play/archive/mece-completion/progress.json の plan_path を archive パスに修正"
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "prompt-analyzer",
+      "approved_at": "2026-01-28T00:15:00Z",
+      "summary": "AUTO_APPROVED",
+      "approved_items": [
+        "即時クリーンアップの実施",
+        "アーカイブ整合性の修正",
+        "報酬詐欺対策の改修",
+        "validation_plan 標準化",
+        "protected-files.txt 修正"
+      ],
+      "technical_requirements_confirmed": [
+        "validation_plan command は test -f/-d 形式を推奨",
+        "stdin 想定の command は禁止",
+        "blocked subtask がある phase は done 禁止",
+        "アーカイブ時は meta.status を completed に更新",
+        "plan_path はアーカイブ後のパスを指す"
+      ]
+    }
+  },
+  "max_iterations": 10,
+  "phases": [
+    {
+      "id": "p0",
+      "name": "即時クリーンアップ",
+      "description": "前回 playbook の残骸を削除し、アーカイブの整合性を修正する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p0.1",
+          "criterion": ".claude/.session-init/ の不要ファイル（pending, required_playbook, repository-map.prev.yaml）が削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls .claude/.session-init/ 2>/dev/null | grep -E 'pending|required_playbook|.prev.yaml' | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls .claude/.session-init/ 2>/dev/null | wc -l | tr -d ' '",
+              "expected": "<= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test ! -f .claude/.session-init/pending && test ! -f .claude/.session-init/required_playbook && test ! -f .claude/.session-init/repository-map.prev.yaml && echo 'clean'",
+              "expected": "clean"
+            }
+          }
+        },
+        {
+          "id": "p0.2",
+          "criterion": "play/archive/mece-completion/plan.json の meta.status が completed である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '.meta.status' play/archive/mece-completion/plan.json",
+              "expected": "completed"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -r '.playbook.status' play/archive/mece-completion/progress.json",
+              "expected": "completed"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f play/archive/mece-completion/plan.json && test -f play/archive/mece-completion/progress.json && echo 'both_exist'",
+              "expected": "both_exist"
+            }
+          }
+        },
+        {
+          "id": "p0.3",
+          "criterion": "play/archive/mece-completion/progress.json の plan_path がアーカイブパスを指す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '.playbook.plan_path' play/archive/mece-completion/progress.json",
+              "expected": "play/archive/mece-completion/plan.json"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f \"$(jq -r '.playbook.plan_path' play/archive/mece-completion/progress.json)\" && echo 'path_valid'",
+              "expected": "path_valid"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '.playbook.plan_path' play/archive/mece-completion/progress.json | grep -c 'archive'",
+              "expected": "1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p1",
+      "name": "報酬詐欺対策の改修",
+      "description": "reviewer.md に command 再実行と結果照合の必須化を追加し、validation_plan 標準化ドキュメントを作成する",
+      "depends_on": [
+        "p0"
+      ],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "reviewer.md に command 再実行と結果照合の必須化セクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c '再実行\\|re-execute\\|rerun' .claude/skills/quality-assurance/agents/reviewer.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'command.*実行\\|execute.*command' .claude/skills/quality-assurance/agents/reviewer.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '報酬詐欺\\|fraud\\|虚偽' .claude/skills/quality-assurance/agents/reviewer.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "validation_plan command 標準化ガイドが存在する（docs/validation-command-standards.md）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/validation-command-standards.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'test -f\\|test -d' docs/validation-command-standards.md",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'stdin\\|禁止\\|FORBIDDEN' docs/validation-command-standards.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "plan.json テンプレートの _template_rules に validation_plan command の標準が反映されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.command.GOOD_EXAMPLES | length' play/template/plan.json",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'test -f' play/template/plan.json",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -r '._template_rules.command.FORBIDDEN | length' play/template/plan.json",
+              "expected": ">= 3"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "protected-files.txt の修正",
+      "description": "存在しないファイルへの参照を削除する（HARD_BLOCK ファイルのため user executor）",
+      "depends_on": [
+        "p0"
+      ],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "protected-files.txt から BLOCK:RUNBOOK.md の行が削除されている",
+          "executor": "user",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "manual",
+              "command": "Read ツールで .claude/protected-files.txt を読み、RUNBOOK.md が含まれないことを確認",
+              "expected": "RUNBOOK.md の記載なし"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test ! -f RUNBOOK.md && echo 'not_exists'",
+              "expected": "not_exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < .claude/protected-files.txt | tr -d ' '",
+              "expected": "<= 16"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "全 done_when が達成されていることを検証する",
+      "depends_on": [
+        "p1",
+        "p2"
+      ],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全項目が PASS である",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls .claude/.session-init/ 2>/dev/null | grep -E 'pending|required_playbook|.prev.yaml' | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -r '.meta.status' play/archive/mece-completion/plan.json",
+              "expected": "completed"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < .claude/protected-files.txt | tr -d ' '",
+              "expected": "<= 16"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": [
+    {
+      "id": "ft1",
+      "description": "git commit with message",
+      "command": "git add -A && git commit -m 'feat(reward-fraud-prevention): implement fraud prevention measures'",
+      "auto": true
+    }
+  ]
+}

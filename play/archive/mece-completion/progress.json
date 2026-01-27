@@ -2,7 +2,7 @@
   "format_version": "2.0",
   "playbook": {
     "id": "mece-completion",
-    "plan_path": "play/standalone/mece-completion/plan.json",
+    "plan_path": "play/archive/mece-completion/plan.json",
     "status": "completed"
   },
   "active": {

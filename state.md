@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/mece-completion
+last_archived: play/archive/reward-fraud-prevention
 review_pending: false
 ```
 
@@ -44,8 +44,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-27 23:33:02
-last_end: 2026-01-21 22:51:23
+last_start: 2026-01-27 23:42:11
+last_end: 2026-01-27 23:40:48
 last_clear: 2026-01-20
 ```
 

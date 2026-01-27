@@ -346,15 +346,38 @@ Q4_完全性:
     - final_tasks が定義されている
 ```
 
-### Plus: 報酬詐欺検証
+### Plus: 報酬詐欺検証（command 再実行と結果照合）
+
+> **M100: 報酬詐欺防止 - command 再実行による検証**
+>
+> 前回の mece-completion playbook で発生した報酬詐欺（虚偽報告）を防止するため、
+> reviewer は validation_plan の command を実際に実行（dry-run）して検証する。
 
 ```yaml
 Plus_報酬詐欺:
-  目的: 報酬詐欺の兆候がないか
+  目的: 報酬詐欺の兆候がないか、command が実行可能か
   チェック項目:
     - validations が全 subtask に存在するか
     - executor が全 subtask に指定されているか
     - 曖昧な完了条件がないか
+    - validation_plan の command が実行可能か（★必須: rerun/re-execute して検証）
+
+  command_rerun_check:
+    description: |
+      全 subtask の validation_plan.technical.command を実際に dry-run して
+      「実行可能か」「出力形式が expected と照合可能か」を確認する。
+      stdin を想定するコマンド、HARD_BLOCK ファイルへのアクセスなど、
+      実行不可能な command は FAIL とする。
+    method:
+      - 各 subtask の validation_plan.technical.command を抽出
+      - Bash で実際に実行（dry-run）
+      - 出力が得られるか、エラーが発生しないかを確認
+      - HARD_BLOCK ファイルへのアクセスがないかを確認
+    fail_conditions:
+      - コマンドがシンタックスエラーで失敗
+      - stdin 入力を想定している（パイプ元がない）
+      - HARD_BLOCK ファイル（.claude/protected-files.txt 等）への直接アクセス
+      - 存在しないファイルへのアクセス（事前条件の未達成を除く）
 
   検証コマンド:
     validations 網羅:

@@ -14,4 +14,3 @@ HARD_BLOCK:.claude/protected-files.txt
 # === BLOCK: Protected Files ===
 BLOCK:.claude/settings.json
 BLOCK:state.md
-BLOCK:RUNBOOK.md
