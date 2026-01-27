@@ -8,7 +8,8 @@
       "MUST": [
         "State a single, atomic condition that is either true or false",
         "Be verifiable by exactly one command execution",
-        "Describe observable state, not action or intent"
+        "Describe observable state, not action or intent",
+        "Be semantically aligned with its verification command"
       ],
       "PROHIBITED_PATTERNS": {
         "hollow_criterion": {
@@ -25,19 +26,37 @@
           "description": "A criterion written as an action to perform",
           "examples": ["ファイルを作成する", "テストを実行する", "設定を確認する"],
           "why_prohibited": "Criterion describes state, not action. Use past participle or existence."
+        },
+        "proxy_criterion": {
+          "description": "Criterion that tests existence/syntax when semantics matter",
+          "examples": ["関数が定義されている（when logic correctness matters）", "ファイルが存在する（when content correctness matters）"],
+          "why_prohibited": "Existence != correctness. Test the actual behavior, not its proxy."
+        },
+        "tautological_criterion": {
+          "description": "Criterion that cannot logically fail",
+          "examples": ["0件以上存在する", "ファイルの内容がファイルと一致する", "空または空でない"],
+          "why_prohibited": "If true by definition, it proves nothing."
+        },
+        "semantic_compound": {
+          "description": "Criterion that appears single but implies multiple conditions",
+          "examples": ["API レスポンスの形式が仕様通り（=API稼働+JSON有効+スキーマ準拠）", "ビルドが成功する（=依存解決+コンパイル+リンク）"],
+          "why_prohibited": "Decompose high-level concepts into atomic testable units."
         }
       },
       "SELF_CHECK": [
         "Can this criterion fail? If not, it's hollow.",
         "Does this criterion test exactly one thing? If not, split it.",
-        "Is this describing state (what IS) or action (what TO DO)? Must be state."
+        "Is this describing state (what IS) or action (what TO DO)? Must be state.",
+        "Would a hollow implementation pass this? If yes, strengthen.",
+        "Does the command test the SPECIFIC noun in the criterion, not a proxy?"
       ]
     },
     "command": {
       "MUST": [
         "Be a valid shell command that can be copy-pasted and executed",
         "Return a verifiable exit code or output",
-        "Test exactly one condition (no && or ; chaining)"
+        "Test exactly one condition (no && or ; chaining)",
+        "Use fresh/current data, not cached artifacts"
       ],
       "PROHIBITED_PATTERNS": {
         "pseudo_command": {
@@ -54,18 +73,31 @@
           "description": "Commands that always succeed",
           "examples": ["echo 'done'", "true", "exit 0"],
           "why_prohibited": "Proves nothing. Command must actually test something."
+        },
+        "output_filtering": {
+          "description": "Commands that hide failures through filtering",
+          "examples": ["grep -v 'error'", "|| true", "|| echo 0", "2>/dev/null (hiding errors)"],
+          "why_prohibited": "Hides evidence of failure. Output must be unfiltered."
+        },
+        "stale_check": {
+          "description": "Checking cached/old artifacts without regeneration",
+          "examples": ["test -d dist (without preceding build)", "cat old-log.txt"],
+          "why_prohibited": "May pass on stale success. Validate current state."
         }
       },
       "SELF_CHECK": [
         "Can I paste this into a terminal right now? If not, rewrite.",
         "Does this command test exactly one thing?",
-        "Can this command fail when the criterion is not met?"
+        "Can this command fail when the criterion is not met?",
+        "Is the output unfiltered? No grep -v, || true, or error suppression?",
+        "Am I testing fresh output, not cached artifacts?"
       ]
     },
     "expected": {
       "MUST": [
         "Be a concrete, observable value or exit code",
-        "Be comparable by machine (not human interpretation)"
+        "Be comparable by machine (not human interpretation)",
+        "Reject at least 50% of possible outcomes (meaningful threshold)"
       ],
       "PROHIBITED_PATTERNS": {
         "subjective_expected": {
@@ -77,9 +109,18 @@
           "description": "Values that sound complete but mean nothing",
           "examples": ["All pass", "100% success", "No errors"],
           "why_prohibited": "What is 'all'? Define the specific check."
+        },
+        "vacuous_threshold": {
+          "description": "Thresholds that almost anything passes",
+          "examples": [">= 0", ">= 1 line", "not empty (on any file)", "any output"],
+          "why_prohibited": "No meaningful quality gate. Threshold must exclude failures."
         }
       },
-      "VALID_FORMS": ["exit 0", "exit 1", ">= N", "== N", "contains 'X'", "exact string"]
+      "VALID_FORMS": ["exit 0", "exit 1", ">= N (where N > trivial)", "== N", "contains 'X'", "exact string"],
+      "SELF_CHECK": [
+        "What percentage of random inputs would pass this? If > 90%, too weak.",
+        "Would a hollow implementation's output pass? If yes, strengthen."
+      ]
     },
     "subtask": {
       "MUST": [
@@ -122,9 +163,22 @@
         ],
         "rule": "Evidence must be from actual command execution, not manual creation."
       }
+    },
+    "semantic_integrity": {
+      "principle": "The trinity (criterion, command, expected) must be semantically aligned",
+      "checks": [
+        "Criterion noun == Command target (criterion says 'auth logic', command tests 'auth logic' not 'any function')",
+        "Criterion specificity <= Command specificity (if criterion is specific, command must be equally or more specific)",
+        "Expected must reject hollow implementations (if empty stub would pass, expected is too weak)"
+      ],
+      "detection_questions": [
+        "If I replace the implementation with an empty stub, would this validation pass?",
+        "If I hardcode the expected output, would this validation pass?",
+        "Does the command actually test what the criterion claims?"
+      ]
     }
   },
-  "format_version": "2.3",
+  "format_version": "2.4",
   "meta": {
     "id": "example-playbook-id",
     "branch": "feat/example-feature",
