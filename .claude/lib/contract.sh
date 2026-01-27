@@ -411,12 +411,15 @@ contract_check_bash() {
     playbook=$(get_state_value "playbook" "null")
     security=$(get_state_value "security" "strict")
 
+    local normalized_for_hardblock
+    normalized_for_hardblock=$(normalize_command "$command")
+
     # 1. HARD_BLOCK ファイルへの書き込みチェック
     # 1a. 明示的リスト (HARD_BLOCK_FILES)
     for blocked in "${HARD_BLOCK_FILES[@]}"; do
         if [[ "$command" == *"$blocked"* ]]; then
             # 書き込みパターンを含むか確認
-            if [[ "$command" =~ (sed\ -i|>|tee|rm\ ) ]]; then
+            if [[ "$normalized_for_hardblock" =~ (sed\ -i|>|tee|rm\ ) ]]; then
                 cat >&2 <<EOF
 ========================================
   [HARD_BLOCK] Bash による絶対守護ファイルへの書き込み
@@ -441,7 +444,7 @@ EOF
         local pattern_prefix="${pattern%/*}"
         if [[ "$command" == *"$pattern_prefix"* ]]; then
             # 書き込みパターンを含むか確認
-            if [[ "$command" =~ (sed\ -i|>|>>|tee\ |rm\ |mv\ |cp\ ) ]]; then
+            if [[ "$normalized_for_hardblock" =~ (sed\ -i|>|>>|tee\ |rm\ |mv\ |cp\ ) ]]; then
                 cat >&2 <<EOF
 ========================================
   [HARD_BLOCK] Bash による自動保護ファイルへの書き込み
