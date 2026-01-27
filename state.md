@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/repository-completion/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: feat/repository-completion
-last_archived: play/archive/auto-hard-block
+current_phase: null
+branch: null
+last_archived: play/archive/repository-completion
 review_pending: false
 ```
 
@@ -34,14 +34,9 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: p1
-done_criteria:
-  - "docs/completion-criteria.md が存在し、完成状態の定義が記載されている"
-  - "全 Skill（13種）が SKILL.md を持ち、配下モジュールが整合している"
-  - "全 SubAgent（7種）が .claude/agents/ と skills/*/agents/ で整合している"
-  - "報酬詐欺耐性テストスクリプトが exit 0 で終了する"
-  - "Bash 保護の誤検出が 0 件である"
-status: in_progress
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
