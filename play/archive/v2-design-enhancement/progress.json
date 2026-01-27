@@ -3,7 +3,7 @@
   "playbook": {
     "id": "v2-design-enhancement",
     "plan_path": "play/standalone/v2-design-enhancement/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": null,
@@ -43,15 +43,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["Phase -1 section added to IMPLEMENTATION-PLAN-V2.md (lines 144-214)"]
+          "evidence": [
+            "Phase -1 section added to IMPLEMENTATION-PLAN-V2.md (lines 144-214)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Content matches BUILD-FROM-SCRATCH.md §8.0"]
+          "evidence": [
+            "Content matches BUILD-FROM-SCRATCH.md §8.0"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["All 6 concept ordering items, deliverables, done_criteria included"]
+          "evidence": [
+            "All 6 concept ordering items, deliverables, done_criteria included"
+          ]
         }
       },
       "notes": "Phase -1 概念整理 added successfully"
@@ -63,15 +69,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["Layer 0-5 section added to IMPLEMENTATION-PLAN-V2.md (lines 216-271)"]
+          "evidence": [
+            "Layer 0-5 section added to IMPLEMENTATION-PLAN-V2.md (lines 216-271)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Content matches BUILD-FROM-SCRATCH.md §8.1"]
+          "evidence": [
+            "Content matches BUILD-FROM-SCRATCH.md §8.1"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["All 6 layers with components and dependencies included"]
+          "evidence": [
+            "All 6 layers with components and dependencies included"
+          ]
         }
       },
       "notes": "Layer 0-5 機能依存レイヤー added successfully"
@@ -83,15 +95,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["Evidence 3点検証 section added to REVIEW-PROTOCOL.md (lines 257-324)"]
+          "evidence": [
+            "Evidence 3点検証 section added to REVIEW-PROTOCOL.md (lines 257-324)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Content matches REBUILD-DESIGN-SPEC.md §9.3"]
+          "evidence": [
+            "Content matches REBUILD-DESIGN-SPEC.md §9.3"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["3 points definition, validation order, output format included"]
+          "evidence": [
+            "3 points definition, validation order, output format included"
+          ]
         }
       },
       "notes": "Evidence 3点検証 added successfully"
@@ -103,15 +121,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["時間的達成可能性 section added to REVIEW-PROTOCOL.md (lines 327-384)"]
+          "evidence": [
+            "時間的達成可能性 section added to REVIEW-PROTOCOL.md (lines 327-384)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Content matches REBUILD-DESIGN-SPEC.md §10"]
+          "evidence": [
+            "Content matches REBUILD-DESIGN-SPEC.md §10"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["Definition, fail examples, review checklist, application rules included"]
+          "evidence": [
+            "Definition, fail examples, review checklist, application rules included"
+          ]
         }
       },
       "notes": "時間的達成可能性 added successfully"
@@ -123,15 +147,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["8 new terms added to GLOSSARY.md"]
+          "evidence": [
+            "8 new terms added to GLOSSARY.md"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Terms consistent with new sections in other documents"]
+          "evidence": [
+            "Terms consistent with new sections in other documents"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["Phase -1, Layer 0-5, Temporal Achievability, 3点検証, Module, Invoker パターン, 概念マップ, MECE all included"]
+          "evidence": [
+            "Phase -1, Layer 0-5, Temporal Achievability, 3点検証, Module, Invoker パターン, 概念マップ, MECE all included"
+          ]
         }
       },
       "notes": "GLOSSARY.md updated with 8 new terms"
@@ -143,15 +173,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["archive/ directory created, 4 files moved"]
+          "evidence": [
+            "archive/ directory created, 4 files moved"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["README.md structure updated to match"]
+          "evidence": [
+            "README.md structure updated to match"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["BUILD-FROM-SCRATCH.md, REBUILD-DESIGN-SPEC.md, EXAMPLE-*.md all archived"]
+          "evidence": [
+            "BUILD-FROM-SCRATCH.md, REBUILD-DESIGN-SPEC.md, EXAMPLE-*.md all archived"
+          ]
         }
       },
       "notes": "Legacy documents archived successfully"
@@ -163,15 +199,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["README.md updated with correct structure and reading order"]
+          "evidence": [
+            "README.md updated with correct structure and reading order"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Structure matches actual file layout"]
+          "evidence": [
+            "Structure matches actual file layout"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["SSOT policy, notes, reading order all documented"]
+          "evidence": [
+            "SSOT policy, notes, reading order all documented"
+          ]
         }
       },
       "notes": "README.md updated successfully"
@@ -183,15 +225,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["grep found no broken references to non-existent files"]
+          "evidence": [
+            "grep found no broken references to non-existent files"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["All cross-references verified and fixed"]
+          "evidence": [
+            "All cross-references verified and fixed"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["HARNESS-ANALYSIS, REVIEW-PROTOCOL, TEST-PROTOCOL, GLOSSARY all checked"]
+          "evidence": [
+            "HARNESS-ANALYSIS, REVIEW-PROTOCOL, TEST-PROTOCOL, GLOSSARY all checked"
+          ]
         }
       },
       "notes": "Reference integrity verified and fixed"
@@ -203,15 +251,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["critic PASS on 7/7 criteria"]
+          "evidence": [
+            "critic PASS on 7/7 criteria"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["All v2-design documents internally consistent"]
+          "evidence": [
+            "All v2-design documents internally consistent"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["All required migrations completed, CodeRabbit feedback addressed"]
+          "evidence": [
+            "All required migrations completed, CodeRabbit feedback addressed"
+          ]
         }
       },
       "notes": "Final validation passed. CodeRabbit Phase 3/4 inconsistency fixed."

@@ -560,7 +560,6 @@ Format:
 
 ```
 .
-├── AGENTS.md
 ├── CLAUDE.md
 ├── README.md
 ├── state.md
@@ -664,7 +663,6 @@ Docs (SSOT)
 
 保持対象:
 - `CLAUDE.md`
-- `AGENTS.md`
 - `README.md`
 - `state.md`
 - `docs/ARCHITECTURE.md`

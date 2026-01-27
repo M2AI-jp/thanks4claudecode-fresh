@@ -218,7 +218,6 @@ Plus_批判的思考:
 ## 参照ファイル
 
 - `.claude/frameworks/playbook-review-criteria.md` - playbook レビュー基準（必須参照）
-- AGENTS.md - コーディング規約
 - state.md - 現在のコンテキスト
 - pm.md - 役割定義
 - play/template/plan.json - playbook v2 テンプレート

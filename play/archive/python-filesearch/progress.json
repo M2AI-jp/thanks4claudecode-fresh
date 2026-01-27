@@ -3,7 +3,7 @@
   "playbook": {
     "id": "python-filesearch",
     "plan_path": "play/archive/python-filesearch/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": null,

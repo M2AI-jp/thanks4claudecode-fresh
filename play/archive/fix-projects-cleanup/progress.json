@@ -3,7 +3,7 @@
   "playbook": {
     "id": "fix-projects-cleanup",
     "plan_path": "play/fix-projects-cleanup/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",
@@ -39,15 +39,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test ! -d play/archive/projects/play/ → 成功（ディレクトリ存在しない）"]
+          "evidence": [
+            "test ! -d play/archive/projects/play/ → 成功（ディレクトリ存在しない）"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["git status: 不正パスのファイル削除済み、正しいパスに gap-analysis 移動済み"]
+          "evidence": [
+            "git status: 不正パスのファイル削除済み、正しいパスに gap-analysis 移動済み"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["play/archive/projects/play/ 配下の全ファイル（plan.json, progress.json）を正しいパスに移動後削除"]
+          "evidence": [
+            "play/archive/projects/play/ 配下の全ファイル（plan.json, progress.json）を正しいパスに移動後削除"
+          ]
         }
       },
       "notes": "gap-analysis を play/archive/projects/design-validation/playbooks/ に移動し、不正ディレクトリを削除"
@@ -59,15 +65,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test -f で全4パス（gap-analysis, audit-verification, post-loop-fix, playbook-completion）の存在確認済み"]
+          "evidence": [
+            "test -f で全4パス（gap-analysis, audit-verification, post-loop-fix, playbook-completion）の存在確認済み"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["全パスが play/archive/projects/design-validation/playbooks/ 配下を参照"]
+          "evidence": [
+            "全パスが play/archive/projects/design-validation/playbooks/ 配下を参照"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["m1: gap-analysis (1件), m2: audit-verification, post-loop-fix, playbook-completion (3件) の全4件を検証"]
+          "evidence": [
+            "m1: gap-analysis (1件), m2: audit-verification, post-loop-fix, playbook-completion (3件) の全4件を検証"
+          ]
         }
       },
       "notes": "3件のパスを play/projects/... から play/archive/projects/... に修正"
@@ -79,15 +91,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["jq で meta.status='closed', m1='done', m2='done', m3='skipped' を確認"]
+          "evidence": [
+            "jq で meta.status='closed', m1='done', m2='done', m3='skipped' を確認"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["closed project で pending milestone が存在しない（m3 を skipped に変更済み）"]
+          "evidence": [
+            "closed project で pending milestone が存在しない（m3 を skipped に変更済み）"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["m1, m2, m3 全ての status が確認済み。m3 には skip_reason を追加"]
+          "evidence": [
+            "m1, m2, m3 全ての status が確認済み。m3 には skip_reason を追加"
+          ]
         }
       },
       "notes": "m3.status を pending から skipped に変更、skip_reason を追加"
@@ -99,15 +117,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["milestone: id, title, order, status, playbooks フィールドが全 milestone (m1, m2, m3) に存在"]
+          "evidence": [
+            "milestone: id, title, order, status, playbooks フィールドが全 milestone (m1, m2, m3) に存在"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["playbook: id, title, status, path フィールドが全 playbook (4件) に存在"]
+          "evidence": [
+            "playbook: id, title, status, path フィールドが全 playbook (4件) に存在"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["全 milestone (3件) と全 playbook (4件) を検証。追加フィールド (description, skip_reason, context) は拡張として許容"]
+          "evidence": [
+            "全 milestone (3件) と全 playbook (4件) を検証。追加フィールド (description, skip_reason, context) は拡張として許容"
+          ]
         }
       },
       "notes": "template との必須フィールド整合性を確認。追加フィールドは拡張として許容"
@@ -119,15 +143,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["各 done_when 項目に対する検証コマンドを実行済み"]
+          "evidence": [
+            "各 done_when 項目に対する検証コマンドを実行済み"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["全 Phase の成果物と整合性確認済み"]
+          "evidence": [
+            "全 Phase の成果物と整合性確認済み"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["4つの done_when 全てが PASS"]
+          "evidence": [
+            "4つの done_when 全てが PASS"
+          ]
         }
       },
       "notes": "reviewer による最終検証完了。全 done_when 条件を満たしている"
@@ -136,7 +166,10 @@
   "final_tasks": [],
   "critic": {
     "status": "PASS",
-    "evidence": ["p1.1, p2.1, p3.1, p4.1 全て critic PASS", "p_final.1 は reviewer PASS"],
+    "evidence": [
+      "p1.1, p2.1, p3.1, p4.1 全て critic PASS",
+      "p_final.1 は reviewer PASS"
+    ],
     "notes": "全 subtask が検証済み。playbook 完了条件を満たしている"
   }
 }

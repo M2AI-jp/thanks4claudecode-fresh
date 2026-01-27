@@ -4,7 +4,7 @@
     "id": "dir-snapshot",
     "branch": "feat/python-filesearch",
     "created": "2026-01-06",
-    "status": "done",
+    "status": "completed",
     "review_profile": "standard",
     "reviewed": true,
     "reviewed_by": "coderabbit",
@@ -56,7 +56,9 @@
           "missing": []
         },
         "test_strategy": {
-          "test_types": ["unit"],
+          "test_types": [
+            "unit"
+          ],
           "coverage_target": "standard",
           "edge_cases": [
             "空ディレクトリ",
@@ -143,7 +145,9 @@
       "id": "p2",
       "name": "テスト作成",
       "description": "tmp/test_dir_snapshot.py を作成し、pytest を実行する",
-      "depends_on": ["p1"],
+      "depends_on": [
+        "p1"
+      ],
       "subtasks": [
         {
           "id": "p2.1",
@@ -173,7 +177,9 @@
       "id": "p_final",
       "name": "Final review",
       "description": "全 done_when の検証と git push",
-      "depends_on": ["p2"],
+      "depends_on": [
+        "p2"
+      ],
       "subtasks": [
         {
           "id": "p_final.1",

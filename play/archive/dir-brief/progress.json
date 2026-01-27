@@ -3,7 +3,7 @@
   "playbook": {
     "id": "dir-brief",
     "plan_path": "play/archive/dir-brief/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": null,

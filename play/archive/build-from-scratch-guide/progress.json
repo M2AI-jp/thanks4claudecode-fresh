@@ -3,7 +3,7 @@
   "playbook": {
     "id": "build-from-scratch-guide",
     "plan_path": "play/standalone/build-from-scratch-guide/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",
@@ -35,15 +35,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["ARCHITECTURE.md exists and contains Hook event documentation"]
+          "evidence": [
+            "ARCHITECTURE.md exists and contains Hook event documentation"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Hook events match official specification (9 types)"]
+          "evidence": [
+            "Hook events match official specification (9 types)"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["All 9 hook events documented"]
+          "evidence": [
+            "All 9 hook events documented"
+          ]
         }
       },
       "notes": "Hook イベント一覧を ARCHITECTURE.md から抽出完了"
@@ -55,15 +61,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["settings.json exists and is valid JSON"]
+          "evidence": [
+            "settings.json exists and is valid JSON"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Settings structure matches documentation"]
+          "evidence": [
+            "Settings structure matches documentation"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["permissions, hooks, enableAllProjectMcpServers documented"]
+          "evidence": [
+            "permissions, hooks, enableAllProjectMcpServers documented"
+          ]
         }
       },
       "notes": "settings.json の設定項目を把握完了"
@@ -75,15 +87,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["Build order draft created with Phase 0-6"]
+          "evidence": [
+            "Build order draft created with Phase 0-6"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Dependencies respected: Phase 0 → 1 → 2 → 3 → 4 → 5 → 6"]
+          "evidence": [
+            "Dependencies respected: Phase 0 → 1 → 2 → 3 → 4 → 5 → 6"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["All major features covered in 7 phases"]
+          "evidence": [
+            "All major features covered in 7 phases"
+          ]
         }
       },
       "notes": "構築順序のドラフト作成完了"
@@ -95,15 +113,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test -f BUILD-FROM-SCRATCH.md → exists"]
+          "evidence": [
+            "test -f BUILD-FROM-SCRATCH.md → exists"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["File starts with markdown header"]
+          "evidence": [
+            "File starts with markdown header"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["wc -l → 965 lines (>= 100)"]
+          "evidence": [
+            "wc -l → 965 lines (>= 100)"
+          ]
         }
       },
       "notes": "BUILD-FROM-SCRATCH.md 作成完了"
@@ -115,15 +139,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["grep -c Hook events → 35 (>= 9)"]
+          "evidence": [
+            "grep -c Hook events → 35 (>= 9)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Hook keyword count → 35 (>= 5)"]
+          "evidence": [
+            "Hook keyword count → 35 (>= 5)"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["All 9 hooks explained in table format"]
+          "evidence": [
+            "All 9 hooks explained in table format"
+          ]
         }
       },
       "notes": "Hook イベント 9 種の説明を含む"
@@ -135,15 +165,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["grep -c SubAgent|subagent_type → 35 (>= 3)"]
+          "evidence": [
+            "grep -c SubAgent|subagent_type → 35 (>= 3)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Task( examples included"]
+          "evidence": [
+            "Task( examples included"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["SubAgent spec documented with tool restrictions"]
+          "evidence": [
+            "SubAgent spec documented with tool restrictions"
+          ]
         }
       },
       "notes": "SubAgent/Task の仕様説明を含む"
@@ -155,15 +191,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["grep -c Phase → 42 (>= 5)"]
+          "evidence": [
+            "grep -c Phase → 42 (>= 5)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Dependencies documented in each phase"]
+          "evidence": [
+            "Dependencies documented in each phase"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["Phase 0-6 all documented"]
+          "evidence": [
+            "Phase 0-6 all documented"
+          ]
         }
       },
       "notes": "機能構築の推奨順序（Phase 0-6）を含む"
@@ -175,15 +217,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["grep -ci verify|validation|test|check → 21 (>= 10)"]
+          "evidence": [
+            "grep -ci verify|validation|test|check → 21 (>= 10)"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["Each phase has verification section"]
+          "evidence": [
+            "Each phase has verification section"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["Verification methods for all 7 phases"]
+          "evidence": [
+            "Verification methods for all 7 phases"
+          ]
         }
       },
       "notes": "各 Phase の検証方法を含む"
@@ -195,15 +243,21 @@
       "validations": {
         "technical": {
           "status": "PASS",
-          "evidence": ["test -f BUILD-FROM-SCRATCH.md → exists"]
+          "evidence": [
+            "test -f BUILD-FROM-SCRATCH.md → exists"
+          ]
         },
         "consistency": {
           "status": "PASS",
-          "evidence": ["grep Hook events → 35 >= 9 → pass"]
+          "evidence": [
+            "grep Hook events → 35 >= 9 → pass"
+          ]
         },
         "completeness": {
           "status": "PASS",
-          "evidence": ["grep Phase → 42 >= 5 → pass"]
+          "evidence": [
+            "grep Phase → 42 >= 5 → pass"
+          ]
         }
       },
       "notes": "critic PASS: 全 5 項目の done_when を満たす"

@@ -3,7 +3,7 @@
   "playbook": {
     "id": "executor-naming-unification",
     "plan_path": "play/standalone/executor-naming-unification/plan.json",
-    "status": "done"
+    "status": "completed"
   },
   "active": {
     "phase": "p_final",

@@ -4,7 +4,7 @@
     "id": "python-filesearch",
     "branch": "feat/python-filesearch",
     "created": "2026-01-06",
-    "status": "done",
+    "status": "completed",
     "review_profile": "standard",
     "reviewed": true,
     "reviewed_by": "coderabbit",
@@ -81,7 +81,9 @@
           ]
         },
         "test_strategy": {
-          "test_types": ["unit"],
+          "test_types": [
+            "unit"
+          ],
           "coverage_target": "standard",
           "edge_cases": [
             "空ディレクトリでのサマリー表示（明示的に要求）",
@@ -97,7 +99,10 @@
             ]
           },
           "dependencies": {
-            "installed": ["Python 3.x", "pytest"],
+            "installed": [
+              "Python 3.x",
+              "pytest"
+            ],
             "required": []
           },
           "constraints": {
@@ -199,7 +204,9 @@
       "id": "p2",
       "name": "テスト作成",
       "description": "pytest 用のテストファイルを作成し、エッジケースを含むテストを実装する",
-      "depends_on": ["p1"],
+      "depends_on": [
+        "p1"
+      ],
       "subtasks": [
         {
           "id": "p2.1",
@@ -229,7 +236,9 @@
       "id": "p_final",
       "name": "最終検証",
       "description": "done_when の全項目を独立検証する",
-      "depends_on": ["p2"],
+      "depends_on": [
+        "p2"
+      ],
       "subtasks": [
         {
           "id": "p_final.1",
