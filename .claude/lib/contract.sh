@@ -44,6 +44,29 @@ if [[ ${#HARD_BLOCK_FILES[@]} -eq 0 ]]; then
     )
 fi
 
+# パターンベース自動 HARD_BLOCK（protected-files.txt が HARD_BLOCK で編集不可のため）
+# これにより、新しい保護対象を追加する際にユーザーの手動介入が不要になる
+#
+# 重要: 保護チェーンの全要素を含める
+# - contract.sh を保護しても、それを呼び出す Hook が無防備では無意味
+# - settings.json で Hook を無効化されたら全保護が崩壊
+AUTO_HARD_BLOCK_PATTERNS=(
+    # === レイヤー0: 設定（保護チェーンのルート） ===
+    ".claude/settings.json"
+    ".claude/settings.local.json"
+    # === レイヤー1: 保護の根幹（Hook インフラ） ===
+    ".claude/hooks/*.sh"
+    ".claude/events/*/chain.sh"
+    ".claude/events/*/*.sh"
+    # === レイヤー2: 保護ロジック ===
+    ".claude/lib/*.sh"
+    # === レイヤー3: 検証基準・SubAgent 定義・Skill 定義 ===
+    ".claude/agents/*.md"
+    ".claude/skills/*/agents/*.md"
+    ".claude/skills/*/SKILL.md"
+    ".claude/frameworks/*.md"
+)
+
 # Maintenance ホワイトリスト（admin + playbook=null で許可）
 MAINTENANCE_WHITELIST=(
     "state.md"
@@ -151,15 +174,28 @@ get_state_value() {
 # ==============================================================================
 
 # パスが HARD_BLOCK か判定
+# 1. 明示的リスト (HARD_BLOCK_FILES) をチェック
+# 2. パターンマッチング (AUTO_HARD_BLOCK_PATTERNS) をチェック
 is_hard_block() {
     local path="$1"
     local relative_path="${path#$REPO_ROOT/}"
 
+    # 1. 明示的 HARD_BLOCK リスト
     for blocked in "${HARD_BLOCK_FILES[@]}"; do
         if [[ "$relative_path" == "$blocked" ]]; then
             return 0
         fi
     done
+
+    # 2. パターンベース自動検出
+    for pattern in "${AUTO_HARD_BLOCK_PATTERNS[@]}"; do
+        # shellcheck disable=SC2053
+        # glob パターンマッチング（例: .claude/agents/*.md）
+        if [[ "$relative_path" == $pattern ]]; then
+            return 0
+        fi
+    done
+
     return 1
 }
 
@@ -376,6 +412,7 @@ contract_check_bash() {
     security=$(get_state_value "security" "strict")
 
     # 1. HARD_BLOCK ファイルへの書き込みチェック
+    # 1a. 明示的リスト (HARD_BLOCK_FILES)
     for blocked in "${HARD_BLOCK_FILES[@]}"; do
         if [[ "$command" == *"$blocked"* ]]; then
             # 書き込みパターンを含むか確認
@@ -389,6 +426,32 @@ contract_check_bash() {
   保護ファイル: $blocked
 
   HARD_BLOCK ファイルは Bash からも保護されています。
+
+========================================
+EOF
+                return 2
+            fi
+        fi
+    done
+
+    # 1b. パターンベース自動検出 (AUTO_HARD_BLOCK_PATTERNS)
+    # コマンド文字列内に保護対象パスが含まれ、かつ書き込み操作の場合はブロック
+    for pattern in "${AUTO_HARD_BLOCK_PATTERNS[@]}"; do
+        # パターンからディレクトリプレフィックスを抽出（例: .claude/hooks/ から .claude/hooks を取得）
+        local pattern_prefix="${pattern%/*}"
+        if [[ "$command" == *"$pattern_prefix"* ]]; then
+            # 書き込みパターンを含むか確認
+            if [[ "$command" =~ (sed\ -i|>|>>|tee\ |rm\ |mv\ |cp\ ) ]]; then
+                cat >&2 <<EOF
+========================================
+  [HARD_BLOCK] Bash による自動保護ファイルへの書き込み
+========================================
+
+  コマンド: $command
+  保護パターン: $pattern
+
+  AUTO_HARD_BLOCK_PATTERNS で保護されたファイルは
+  Bash からも保護されています。
 
 ========================================
 EOF

@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/auto-hard-block/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: feat/auto-hard-block
 last_archived: play/archive/template-strictness
 review_pending: false
 ```
@@ -34,9 +34,12 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - "contract.sh に AUTO_HARD_BLOCK_PATTERNS 配列が定義されている"
+  - "is_hard_block() 関数が AUTO_HARD_BLOCK_PATTERNS を使用している"
+  - ".claude/agents/pm.md が is_hard_block() で検出される"
+status: in_progress
 ```
 
 ---
@@ -44,7 +47,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 04:31:10
+last_start: 2026-01-28 05:43:29
 last_end: 2026-01-28 02:47:07
 last_clear: 2026-01-20
 ```

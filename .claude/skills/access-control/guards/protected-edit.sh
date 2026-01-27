@@ -82,19 +82,29 @@ fi
 # --------------------------------------------------
 # HARD_BLOCK を先にチェック（developer モードでも保護）
 # --------------------------------------------------
+# 新アーキテクチャ: contract.sh の is_hard_block() を使用
+# これにより AUTO_HARD_BLOCK_PATTERNS も適用される
 IS_HARD_BLOCK=false
-while IFS= read -r line || [ -n "$line" ]; do
-    [[ "$line" =~ ^#.*$ ]] && continue
-    [[ -z "$line" ]] && continue
-    if [[ "$line" =~ ^HARD_BLOCK:(.+)$ ]]; then
-        PROTECTED_PATH="${BASH_REMATCH[1]}"
-        # shellcheck disable=SC2053  # Intentional glob matching for wildcard patterns
-        if [[ "$RELATIVE_PATH" == "$PROTECTED_PATH" ]] || [[ "$RELATIVE_PATH" == $PROTECTED_PATH ]]; then
-            IS_HARD_BLOCK=true
-            break
-        fi
+if type is_hard_block &>/dev/null; then
+    # contract.sh が正常に source されている場合
+    if is_hard_block "$RELATIVE_PATH"; then
+        IS_HARD_BLOCK=true
     fi
-done < "$PROTECTED_LIST"
+else
+    # フォールバック: contract.sh がない場合は protected-files.txt を直接読む
+    while IFS= read -r line || [ -n "$line" ]; do
+        [[ "$line" =~ ^#.*$ ]] && continue
+        [[ -z "$line" ]] && continue
+        if [[ "$line" =~ ^HARD_BLOCK:(.+)$ ]]; then
+            PROTECTED_PATH="${BASH_REMATCH[1]}"
+            # shellcheck disable=SC2053  # Intentional glob matching for wildcard patterns
+            if [[ "$RELATIVE_PATH" == "$PROTECTED_PATH" ]] || [[ "$RELATIVE_PATH" == $PROTECTED_PATH ]]; then
+                IS_HARD_BLOCK=true
+                break
+            fi
+        fi
+    done < "$PROTECTED_LIST"
+fi
 
 # HARD_BLOCK の処理（M079: admin でも回避不可）
 if [ "$IS_HARD_BLOCK" = true ]; then
