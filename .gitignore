@@ -51,6 +51,12 @@ tmp/*
 !tmp/dir_brief.py
 !tmp/test_dir_brief.py
 
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
 # Coverage
 coverage/
 
