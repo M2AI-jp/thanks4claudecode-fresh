@@ -45,7 +45,7 @@ status: idle
 
 ```yaml
 last_start: 2026-01-28 14:11:38
-last_end: 2026-01-28 02:47:07
+last_end: 2026-01-28 15:12:57
 last_clear: 2026-01-20
 ```
 
