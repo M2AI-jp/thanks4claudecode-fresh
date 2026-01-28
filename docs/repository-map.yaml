@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-28 20:58:15"
+  generated: "2026-01-28 23:28:24"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 318
+  total_files: 361
 
 hooks:
   directory: .claude/hooks/
@@ -129,7 +129,7 @@ commands:
 
 docs:
   directory: docs/
-  count: 7
+  count: 8
   files:
     - name: "ARCHITECTURE.md"
       description: "ユーザー体験ベースの状態遷移マップ"
@@ -141,6 +141,8 @@ docs:
       description: "> SSOT: Hook Unit catalog + dependency map (ideal -> current -> missing)."
     - name: "file-inventory.md"
       description: "リポジトリ内全ファイルのインベントリ"
+    - name: "reward-guard-inventory.md"
+      description: "**Purpose**: Document all reward fraud prevention mechanisms in the repository."
     - name: "validation-command-standards.md"
       description: "目的"
 
@@ -152,7 +154,7 @@ play:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 39
+      count: 40
     template:
       description: "playbook v2 テンプレート"
       count: 2
@@ -389,6 +391,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-28 20:58:15"
+  - date: "2026-01-28 23:28:24"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"
