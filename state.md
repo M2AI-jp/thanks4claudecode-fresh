@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/health-dashboard-cli/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p4
+branch: feat/health-dashboard-cli
 last_archived: play/archive/standalone/hook-unit-completion
 review_pending: false
 ```
@@ -34,9 +34,14 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - tools/health-dashboard/cli.sh が存在する
+  - CLI が全 10 Event Unit の telemetry ログを読み取れる
+  - CLI が健全性サマリを標準出力に表示できる
+  - CLI が JSON 形式でレポートを出力できる
+  - CLI が YAML 形式でレポートを出力できる
+status: in_progress
 ```
 
 ---
@@ -44,7 +49,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 16:53:32
+last_start: 2026-01-28 19:05:43
 last_end: 2026-01-28 15:12:57
 last_clear: 2026-01-20
 ```
