@@ -1,0 +1,1 @@
+../../../scripts/telemetry-stop.sh
