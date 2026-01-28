@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/project-feature-validation/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: feat/project-feature-validation
-last_archived: play/archive/repository-completion
+current_phase: null
+branch: null
+last_archived: play/archive/project-feature-validation
 review_pending: false
 ```
 
@@ -34,12 +34,9 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: p1
-done_criteria:
-  - project 機能の「完成」定義が docs/design/project-feature-spec.md に記載されている
-  - 仕様検証レポートが tmp/project-spec-validation.md に存在する
-  - 最終判定（修正実施 or 廃止）が docs/design/project-feature-spec.md の verdict セクションに記載されている
-status: in_progress
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
