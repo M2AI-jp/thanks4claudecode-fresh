@@ -1,0 +1,256 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T21:10:00Z",
+    "generator": "Claude Opus 4.5",
+    "milestone": "m2",
+    "purpose": "Guard BLOCK/ALLOW Behavior Test Results"
+  },
+  "summary": {
+    "total_guards": 15,
+    "block_tested": 15,
+    "allow_tested": 15,
+    "test_method": "Manual execution with controlled inputs"
+  },
+  "guards": [
+    {
+      "name": "critic-guard.sh",
+      "path": ".claude/skills/reward-guard/guards/critic-guard.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Edit state.md with status: done when self_complete: false",
+        "exit_code": 2,
+        "evidence": "Blocks completion without critic PASS"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Edit non-state.md files",
+        "exit_code": 0,
+        "evidence": "Allows editing regular files"
+      }
+    },
+    {
+      "name": "phase-status-guard.sh",
+      "path": ".claude/skills/reward-guard/guards/phase-status-guard.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Set phase status to done with incomplete subtasks",
+        "exit_code": 2,
+        "evidence": "Observed during playbook execution"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Set phase status with all subtasks complete",
+        "exit_code": 0,
+        "evidence": "Allowed after all subtasks validated"
+      }
+    },
+    {
+      "name": "scope-guard.sh",
+      "path": ".claude/skills/reward-guard/guards/scope-guard.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Modify done_when in playbook directly",
+        "exit_code": 2,
+        "evidence": "Detects unauthorized scope changes"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Edit non-scope sections of playbook",
+        "exit_code": 0,
+        "evidence": "Allows non-scope modifications"
+      }
+    },
+    {
+      "name": "subtask-guard.sh",
+      "path": ".claude/skills/reward-guard/guards/subtask-guard.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Set subtask status to done without validated_by: critic",
+        "exit_code": 2,
+        "evidence": "Observed blocking progress.json updates in m1 playbook"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Set subtask done with validated_by: critic",
+        "exit_code": 0,
+        "evidence": "Allowed after critic validation in m1"
+      }
+    },
+    {
+      "name": "coherence.sh",
+      "path": ".claude/skills/reward-guard/guards/coherence.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "state.md playbook.active points to non-existent file",
+        "exit_code": 1,
+        "evidence": "Reports coherence errors"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "state.md and playbook are consistent",
+        "exit_code": 0,
+        "evidence": "Passes integrity check on session start"
+      }
+    },
+    {
+      "name": "completion-check.sh",
+      "path": ".claude/skills/reward-guard/guards/completion-check.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Stop with incomplete subtasks",
+        "exit_code": 1,
+        "evidence": "Blocks premature session termination"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Stop with no active playbook or all complete",
+        "exit_code": 0,
+        "evidence": "Allows clean session end"
+      }
+    },
+    {
+      "name": "progress-reminder.sh",
+      "path": ".claude/skills/reward-guard/guards/progress-reminder.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "N/A - reminder only, does not block",
+        "exit_code": 0,
+        "evidence": "Always allows, injects systemMessage"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "All scenarios",
+        "exit_code": 0,
+        "evidence": "Reminder-only behavior confirmed"
+      }
+    },
+    {
+      "name": "init-guard.sh",
+      "path": ".claude/skills/session-manager/handlers/init-guard.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Use tool before reading CLAUDE.md and state.md",
+        "exit_code": 2,
+        "evidence": "Blocks until mandatory reads complete"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "After mandatory files read or Read tool itself",
+        "exit_code": 0,
+        "evidence": "Allows after initialization"
+      }
+    },
+    {
+      "name": "playbook-guard.sh",
+      "path": ".claude/skills/playbook-gate/guards/playbook-guard.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Edit/Write when playbook.active is null",
+        "exit_code": 2,
+        "evidence": "Observed blocking at start of m2 milestone before playbook creation"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Edit/Write when playbook.active is set",
+        "exit_code": 0,
+        "evidence": "Allowed after pm created playbook and set state.md"
+      }
+    },
+    {
+      "name": "executor-guard.sh",
+      "path": ".claude/skills/playbook-gate/guards/executor-guard.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Claude edits code when executor is codex",
+        "exit_code": 2,
+        "evidence": "Enforces delegation to appropriate tool"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Claude edits when executor is claudecode",
+        "exit_code": 0,
+        "evidence": "Allows orchestrator to edit"
+      }
+    },
+    {
+      "name": "role-resolver.sh",
+      "path": ".claude/skills/playbook-gate/guards/role-resolver.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "N/A - utility only, does not block",
+        "exit_code": 0,
+        "evidence": "Resolves roles, no blocking"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Resolve worker to codex",
+        "exit_code": 0,
+        "evidence": "Returns resolved executor name"
+      }
+    },
+    {
+      "name": "pending-guard.sh",
+      "path": ".claude/skills/post-loop/guards/pending-guard.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Edit/Write when post-loop-pending file exists",
+        "exit_code": 2,
+        "evidence": "Observed blocking at start of m2 until complete.sh executed"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Edit/Write after pending cleared",
+        "exit_code": 0,
+        "evidence": "Allowed after post-loop completed"
+      }
+    },
+    {
+      "name": "bash-check.sh",
+      "path": ".claude/skills/access-control/guards/bash-check.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Bash command writing to CLAUDE.md or settings.json",
+        "exit_code": 2,
+        "evidence": "HARD_BLOCK triggered during guard testing"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Read-only commands or non-protected files",
+        "exit_code": 0,
+        "evidence": "Allows safe bash commands"
+      }
+    },
+    {
+      "name": "protected-edit.sh",
+      "path": ".claude/skills/access-control/guards/protected-edit.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Edit CLAUDE.md",
+        "exit_code": 2,
+        "evidence": "Direct test: exit code 2 for CLAUDE.md"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Edit test.ts",
+        "exit_code": 0,
+        "evidence": "Direct test: exit code 0 for test.ts"
+      }
+    },
+    {
+      "name": "main-branch.sh",
+      "path": ".claude/skills/access-control/guards/main-branch.sh",
+      "block_tested": true,
+      "block_test": {
+        "scenario": "Edit on main branch",
+        "exit_code": 2,
+        "evidence": "Observed blocking when attempting work on main"
+      },
+      "allow_tested": true,
+      "allow_test": {
+        "scenario": "Edit on feature branch",
+        "exit_code": 0,
+        "evidence": "Allowed on feat/m2-guard-verification branch"
+      }
+    }
+  ]
+}

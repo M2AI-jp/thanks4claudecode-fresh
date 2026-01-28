@@ -30,7 +30,7 @@
       "id": "m1",
       "title": "Milestone 1: Event Unit Verification",
       "order": 1,
-      "status": "pending",
+      "status": "completed",
       "description": "Verify all 10 Event Units fire correctly and log their execution",
       "done_when": [
         {
@@ -52,7 +52,7 @@
       "id": "m2",
       "title": "Milestone 2: Guard System Verification",
       "order": 2,
-      "status": "pending",
+      "status": "in_progress",
       "description": "Verify all 15 Guard systems (HARD_BLOCK, playbook-guard, critic-guard, protected-edit, etc.)",
       "done_when": [
         {
@@ -65,7 +65,7 @@
         {
           "id": "pb-m2-guards",
           "title": "Guard System Verification",
-          "status": "pending",
+          "status": "done",
           "path": "play/projects/repository-complete-verification/playbooks/pb-m2-guards/plan.json"
         }
       ]
@@ -161,8 +161,8 @@
   ],
   "progress": {
     "total_playbooks": 6,
-    "completed_playbooks": 1,
-    "current_milestone": "m1",
+    "completed_playbooks": 2,
+    "current_milestone": "m2",
     "current_playbook": null
   },
   "context": {
