@@ -1022,6 +1022,15 @@ Task(subagent_type='executor-resolver')
     └─→ pm SubAgent から呼び出し
 ```
 
+### crit/
+```
+.claude/skills/crit/
+├── SKILL.md                    # 報酬詐欺防止: Codex 経由の独立検証
+└── handlers/
+    └── verify.sh               # Codex 経由の critic 実行ハンドラー
+        └─→ codex-delegate SubAgent に委譲（自己評価防止）
+```
+
 ---
 
 ## 8.5. play/ ディレクトリ構造

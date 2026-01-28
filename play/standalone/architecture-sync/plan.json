@@ -1,0 +1,175 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "architecture-sync",
+    "branch": "docs/architecture-sync-crit",
+    "created": "2026-01-29",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    },
+    "requires_functional_test": false
+  },
+  "goal": {
+    "summary": "ARCHITECTURE.md のセクション 8（Skills 一覧）に crit skill セクションを追加し、ARCHITECTURE_SYNC_REQUIRED を解消する",
+    "done_when": [
+      {
+        "criterion": "docs/ARCHITECTURE.md のセクション 8 に crit/ セクションが存在する",
+        "command": "grep -A10 '### crit/' docs/ARCHITECTURE.md",
+        "expected": "contains SKILL.md"
+      },
+      {
+        "criterion": "crit/ セクションに handlers/verify.sh が記載されている",
+        "command": "grep 'verify.sh' docs/ARCHITECTURE.md",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "crit/ セクションが understanding-check/ の後、## 8.5 の前に配置されている",
+        "command": "grep -n 'understanding-check/\\|### crit/\\|## 8.5' docs/ARCHITECTURE.md | head -3",
+        "expected": "crit/ が understanding-check/ より後、8.5 より前の行番号"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "docs/ARCHITECTURE.md セクション 8 への crit skill 追加"
+      ],
+      "excludes": [
+        "他セクションの変更",
+        "crit skill 自体の実装変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "who": "Claude (orchestrator)",
+          "what": "ARCHITECTURE.md のセクション 8 に crit skill セクションを追加",
+          "when": "今すぐ",
+          "where": "docs/ARCHITECTURE.md セクション 8",
+          "why": "session hook で検出された ARCHITECTURE_SYNC_REQUIRED への対応",
+          "how": "既存 skill と同じフォーマットで追加"
+        },
+        "risks": {
+          "technical": [],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "instruction": "ARCHITECTURE.md に crit skill セクションを追加",
+          "question": [],
+          "context": "ARCHITECTURE_SYNC_REQUIRED 検出への対応"
+        },
+        "test_strategy": {
+          "test_level": "grep による存在確認",
+          "coverage_goal": "100%",
+          "edge_cases": []
+        },
+        "preconditions": {
+          "existing_code": ".claude/skills/crit/ ディレクトリが存在する",
+          "dependencies": [],
+          "constraints": []
+        },
+        "success_criteria": {
+          "functional": [
+            "ARCHITECTURE.md のセクション 8 に crit/ セクションが存在する",
+            "crit/ の構造が実際のディレクトリ構造と一致する",
+            "他の skill セクションと同じフォーマットで記述されている"
+          ],
+          "non_functional": [],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": {
+          "affected_components": [],
+          "risk_level": "low"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-29T00:48:00+09:00",
+      "summary": "AUTO_APPROVED（単純なドキュメント同期タスク）",
+      "approved_items": [
+        "ARCHITECTURE.md セクション 8 への crit skill 追加"
+      ],
+      "technical_requirements_confirmed": [
+        "挿入位置: understanding-check/ の後、## 8.5 の前",
+        "crit skill 構造: SKILL.md + handlers/verify.sh"
+      ]
+    }
+  },
+  "max_iterations": 3,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "crit skill セクション追加",
+      "description": "ARCHITECTURE.md のセクション 8 に crit skill セクションを追加",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "docs/ARCHITECTURE.md のセクション 8 に crit/ セクションが追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c '### crit/' docs/ARCHITECTURE.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -A5 '### crit/' docs/ARCHITECTURE.md | grep -c 'SKILL.md'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -A10 '### crit/' docs/ARCHITECTURE.md | grep -c 'verify.sh'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "全 done_when 条件を検証",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "crit/ セクションが正しい位置に配置されている（done_when[2]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -n 'understanding-check/\\|### crit/\\|## 8.5' docs/ARCHITECTURE.md | head -3",
+              "expected": "crit/ が understanding-check/ より後の行番号"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '### crit/' docs/ARCHITECTURE.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -A15 '### crit/' docs/ARCHITECTURE.md | wc -l",
+              "expected": ">= 10"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
