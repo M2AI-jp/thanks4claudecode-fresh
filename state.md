@@ -44,7 +44,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-29 00:08:55
+last_start: 2026-01-29 00:46:55
 last_end: 2026-01-28 23:04:17
 last_clear: 2026-01-20
 ```
