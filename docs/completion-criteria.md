@@ -73,20 +73,55 @@ find .claude/hooks -name '*.sh' -type f | wc -l
 
 ---
 
-### 4. 報酬詐欺耐性
+### 4. 報酬詐欺耐性（5層防御システム）
 
 **定義**: critic/reviewer を経由しない done 宣言が構造的にブロックされること
 
 ```bash
-# 検証コマンド（テストスクリプト）
-bash scripts/reward-fraud-test.sh
-# 期待値: exit 0
+# 検証コマンド（各guardがexit 2を返すか確認）
+for guard in critic-guard subtask-guard phase-status-guard scope-guard completion-check; do
+  test -f ".claude/skills/reward-guard/guards/${guard}.sh" && echo "PASS: $guard exists"
+done
+# 期待値: 5件のPASS
+```
+
+**5層防御システム**:
+
+| Layer | Guard | 役割 | ブロック条件 |
+|-------|-------|------|-------------|
+| 1 | pre-tool.sh | critic 直接呼び出しブロック | Task(subagent_type='critic') を直接呼び出し |
+| 2 | /crit Skill | Codex 経由の独立検証 | Claude 自身による done 判定 |
+| 3 | critic-guard.sh | self_complete チェック | state.md の self_complete: true なしで status: done |
+| 4 | subtask-guard.sh | validated_by チェック | validated_by: 'critic' なしで subtask done |
+| 5 | completion-check.sh | Stop 時チェック | 未完了 subtask がある状態で応答終了 |
+
+**追加 Guard**:
+
+| Guard | 役割 | 動作 |
+|-------|------|------|
+| phase-status-guard.sh | Phase 完了チェック | 全 subtask 未完了で Phase done をブロック |
+| scope-guard.sh | スコープ変更検出 | done_when/done_criteria の変更を警告/ブロック |
+| progress-reminder.sh | リマインダー | progress.json 更新を促す（非ブロック） |
+| coherence.sh | 整合性チェック | state.md と playbook の整合性を検証 |
+
+**検証コマンド**:
+```bash
+# critic-guard.sh が exit 2 を返すか
+echo '{"tool_input":{"file_path":"state.md","new_string":"status: done"}}' | \
+  bash .claude/skills/reward-guard/guards/critic-guard.sh 2>&1; echo "exit: $?"
+# 期待値: exit: 2
+
+# subtask-guard.sh が validated_by なしでブロックするか
+# (テスト用の一時ファイルで検証)
 ```
 
 **詳細要件**:
+- pre-tool.sh が Task(subagent_type='critic') の直接呼び出しをブロック
+- /crit Skill 経由でのみ critic を呼び出し可能（Codex 経由）
 - subtask-guard.sh が progress.json の validated_by: 'critic' を検証
 - critic SubAgent なしで status: done への変更がブロックされる
 - reviewer 検証なしで playbook.reviewed: true への変更がブロックされる
+- completion-check.sh が未完了 subtask を検出して Stop をブロック
 
 ---
 

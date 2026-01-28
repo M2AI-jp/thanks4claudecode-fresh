@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/repository-verification/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1_definition
+branch: feat/repository-verification
 last_archived: play/archive/standalone/architecture-sync
 review_pending: false
 ```
@@ -32,11 +32,15 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: true
+self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1_definition
+done_criteria:
+  - docs/completion-criteria.md にリポジトリ完成状態の定義が存在する
+  - 全7つの reward-guard スクリプトが exit 2 でブロック動作することが確認されている
+  - Hook -> Event Unit -> Skill チェーンが全て動作することが確認されている
+  - 孤立ファイルが0件または正当な理由が文書化されている
+status: in_progress
 ```
 
 ---
@@ -44,7 +48,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-29 00:08:55
+last_start: 2026-01-29 01:21:36
 last_end: 2026-01-28 23:04:17
 last_clear: 2026-01-20
 ```

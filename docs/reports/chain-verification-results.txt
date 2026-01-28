@@ -1,0 +1,18 @@
+=== Chain Verification Results ===
+Generated: 2026-01-29T01:06:00+09:00
+
+1. Event Unit chain.sh - VERIFIED (10 files found, expected >= 10)
+2. Event Unit directories - VERIFIED (10 directories)
+3. SKILL.md files - VERIFIED (14 files found, expected >= 10)
+4. Skill directories - VERIFIED (14 directories)
+5. SubAgent definition files - VERIFIED (7 files found, expected >= 5)
+6. SubAgent registry (.claude/agents/) - VERIFIED (7 files)
+7. Hook files - VERIFIED (6 hooks registered in settings.json)
+8. pre-tool.sh chain - VERIFIED (calls pre-tool-edit and pre-tool-bash)
+9. post-tool.sh chain - VERIFIED (calls post-tool-edit)
+10. session.sh chain - VERIFIED (calls session-start)
+11. prompt.sh chain - VERIFIED (calls user-prompt-submit)
+12. subagent-stop.sh chain - VERIFIED (calls subagent-stop)
+
+Total: 12 VERIFIED, 0 FAILED
+

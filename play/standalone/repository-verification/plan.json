@@ -1,0 +1,636 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "repository-verification",
+    "branch": "feat/repository-verification",
+    "created": "2026-01-29",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    },
+    "requires_functional_test": true
+  },
+  "goal": {
+    "summary": "Verify repository completion state, test reward fraud prevention guards, verify Hook->Event->Skill chains, and detect orphan files",
+    "done_when": [
+      {
+        "criterion": "docs/completion-criteria.md にリポジトリ完成状態の定義が存在する",
+        "command": "test -f docs/completion-criteria.md",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "全7つの reward-guard スクリプトが exit 2 でブロック動作することが確認されている",
+        "command": "cat .claude/session-state/guard-test-results.txt | grep -c 'PASS'",
+        "expected": ">= 7"
+      },
+      {
+        "criterion": "Hook -> Event Unit -> Skill チェーンが全て動作することが確認されている",
+        "command": "cat .claude/session-state/chain-verification-results.txt | grep -c 'VERIFIED'",
+        "expected": ">= 10"
+      },
+      {
+        "criterion": "孤立ファイルが0件または正当な理由が文書化されている",
+        "command": "test -f docs/orphan-audit.md && grep -c 'AUDIT COMPLETE' docs/orphan-audit.md",
+        "expected": ">= 1"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "docs/completion-criteria.md の作成",
+        ".claude/skills/reward-guard/guards/*.sh の実テスト",
+        ".claude/events/*/chain.sh の動作検証",
+        "孤立ファイル・デッドコードの検出と監査"
+      ],
+      "excludes": [
+        "新機能の実装",
+        "既存コードのリファクタリング",
+        "テストコードの追加"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "multi_topic_detection": {
+          "detected": true,
+          "decomposition_needed": true,
+          "recommendation": "4つのPhaseに分割してplaybook作成"
+        },
+        "5w1h": {
+          "who": "Claude (orchestrator)",
+          "what": "4つのタスク（定義作成、guardテスト、チェーン検証、orphan check）",
+          "when": "即時",
+          "where": ".claude/skills/reward-guard/guards/*.sh, .claude/events/*/chain.sh, docs/",
+          "why": "5層報酬詐欺防止システムの検証が不十分、スコープ置換詐欺が発生",
+          "how": "各guardを実行してexit codeを確認、チェーン追跡、孤立ファイル検出",
+          "missing": []
+        },
+        "risks": [
+          {
+            "type": "technical",
+            "description": "guardが実際には機能していない",
+            "severity": "critical",
+            "mitigation": "実際に実行してexit codeを確認"
+          },
+          {
+            "type": "scope",
+            "description": "「検証した」と報告するだけの報酬詐欺",
+            "severity": "critical",
+            "mitigation": "コマンド出力をevidenceとして記録"
+          }
+        ],
+        "ambiguity": [],
+        "test_strategy": {
+          "test_level": "integration",
+          "coverage_target": "all guards and chains",
+          "edge_cases": ["guard bypass attempts", "chain breakage"]
+        },
+        "preconditions": {
+          "existing_code": "7 guard scripts exist, event unit directories exist",
+          "dependencies": ["jq", "python3", "bash"],
+          "constraints": []
+        },
+        "success_criteria": {
+          "functional": [
+            "全7つのreward-guardスクリプトがexit 2でブロック動作することを確認",
+            "Hook -> Event Unit -> Skill -> SubAgentのチェーンが正しく動作することを確認",
+            "孤立ファイルが0件であることを確認（または正当な理由を文書化）",
+            "docs/completion-criteria.mdにリポジトリ完成状態の定義が作成されていること"
+          ],
+          "non_functional": [],
+          "breaking_changes": []
+        },
+        "reverse_dependencies": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-29T01:00:00+09:00",
+      "summary": "4Phase構成でリポジトリ検証を実施",
+      "approved_items": [
+        "p1: リポジトリ完成状態の定義作成",
+        "p2: 7つのguardスクリプトの実テスト",
+        "p3: Hook -> Event -> Skill チェーンの検証",
+        "p4: 孤立ファイル・デッドコード検出"
+      ],
+      "technical_requirements_confirmed": [
+        "guard は exit 2 でブロック動作すること",
+        "証拠は実行結果をファイルに記録すること",
+        "報告だけではなく実行してexit codeを確認すること"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1_definition",
+      "name": "Repository Completion Criteria Definition",
+      "description": "リポジトリ完成状態の定義を docs/completion-criteria.md に作成",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "docs/completion-criteria.md が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/completion-criteria.md",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '## ' docs/completion-criteria.md",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -cE '(Hook|Skill|SubAgent|Event Unit|Guard)' docs/completion-criteria.md",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "docs/completion-criteria.md に5層報酬詐欺防止の定義が含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'reward' docs/completion-criteria.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -cE '(critic-guard|subtask-guard|phase-status-guard|scope-guard|completion-check)' docs/completion-criteria.md",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'exit 2' docs/completion-criteria.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2_guard_test",
+      "name": "Guard Scripts Functional Test",
+      "description": "7つのreward-guardスクリプトを実際に実行し、exit 2でブロックすることを確認",
+      "depends_on": ["p1_definition"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "critic-guard.sh が不正入力で exit 2 を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "echo '{\"tool_input\":{\"file_path\":\"state.md\",\"new_string\":\"status: done\"}}' | bash .claude/skills/reward-guard/guards/critic-guard.sh; echo $?",
+              "expected": "exit 2"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f .claude/skills/reward-guard/guards/critic-guard.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'exit 2' .claude/skills/reward-guard/guards/critic-guard.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "subtask-guard.sh が不正入力で exit 2 を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash -c 'TEST_PROGRESS=$(mktemp) && echo \"{\\\"subtasks\\\":{\\\"p1.1\\\":{\\\"status\\\":\\\"pending\\\"}}}\" > $TEST_PROGRESS && echo \"{\\\"tool_input\\\":{\\\"file_path\\\":\\\"$TEST_PROGRESS\\\",\\\"old_string\\\":\\\"pending\\\",\\\"new_string\\\":\\\"done\\\"}}\" | bash .claude/skills/reward-guard/guards/subtask-guard.sh; EXIT_CODE=$?; rm -f $TEST_PROGRESS; exit $EXIT_CODE'",
+              "expected": "exit 2"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f .claude/skills/reward-guard/guards/subtask-guard.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'validated_by' .claude/skills/reward-guard/guards/subtask-guard.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "phase-status-guard.sh が不正入力で exit 2 を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/skills/reward-guard/guards/phase-status-guard.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'exit 2' .claude/skills/reward-guard/guards/phase-status-guard.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'subtasks' .claude/skills/reward-guard/guards/phase-status-guard.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": "scope-guard.sh がスコープ変更を検出する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/skills/reward-guard/guards/scope-guard.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'done_when' .claude/skills/reward-guard/guards/scope-guard.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'STRICT_MODE' .claude/skills/reward-guard/guards/scope-guard.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.5",
+          "criterion": "coherence.sh が整合性チェックを実行できる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash .claude/skills/reward-guard/guards/coherence.sh > /dev/null 2>&1; echo $?",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f .claude/skills/reward-guard/guards/coherence.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'state.md' .claude/skills/reward-guard/guards/coherence.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.6",
+          "criterion": "completion-check.sh が未完了 subtask を検出できる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/skills/reward-guard/guards/completion-check.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'progress.json' .claude/skills/reward-guard/guards/completion-check.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'exit 1' .claude/skills/reward-guard/guards/completion-check.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.7",
+          "criterion": "progress-reminder.sh がリマインダーを出力できる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/skills/reward-guard/guards/progress-reminder.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'systemMessage' .claude/skills/reward-guard/guards/progress-reminder.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'progress.json' .claude/skills/reward-guard/guards/progress-reminder.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.8",
+          "criterion": "全guardのテスト結果が .claude/session-state/guard-test-results.txt に記録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/session-state/guard-test-results.txt",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cat .claude/session-state/guard-test-results.txt | grep -c 'PASS'",
+              "expected": ">= 7"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cat .claude/session-state/guard-test-results.txt | wc -l",
+              "expected": ">= 7"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3_chain_verification",
+      "name": "Hook -> Event -> Skill Chain Verification",
+      "description": "Hook -> Event Unit -> Skill -> SubAgent のチェーンが正しく動作することを検証",
+      "depends_on": ["p2_guard_test"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "全Event Unitディレクトリにchain.shシンボリックリンクが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls -la .claude/events/*/chain.sh 2>/dev/null | wc -l",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find .claude/events -name 'chain.sh' -type l | wc -l",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls -d .claude/events/*/ | wc -l",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "全Skill定義ファイル(SKILL.md)が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find .claude/skills -name 'SKILL.md' | wc -l",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls -d .claude/skills/*/ | wc -l",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find .claude/skills -name 'SKILL.md' -exec grep -l 'Purpose' {} \\; | wc -l",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "全SubAgent定義ファイルが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find .claude/skills -path '*/agents/*.md' | wc -l",
+              "expected": ">= 5"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find .claude/skills -path '*/agents/*.md' -exec grep -l 'Purpose\\|Role' {} \\; | wc -l",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls .claude/skills/*/agents/*.md 2>/dev/null | wc -l",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p3.4",
+          "criterion": "チェーン検証結果が .claude/session-state/chain-verification-results.txt に記録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/session-state/chain-verification-results.txt",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cat .claude/session-state/chain-verification-results.txt | grep -c 'VERIFIED'",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cat .claude/session-state/chain-verification-results.txt | wc -l",
+              "expected": ">= 10"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4_orphan_check",
+      "name": "Orphan Files and Dead Code Detection",
+      "description": "孤立ファイル・デッドコードを検出し、監査結果を文書化",
+      "depends_on": ["p3_chain_verification"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "repository-map.yaml が最新状態である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/repository-map.yaml",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'path:' docs/repository-map.yaml",
+              "expected": ">= 50"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'purpose:' docs/repository-map.yaml",
+              "expected": ">= 50"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "孤立ファイル監査結果が docs/orphan-audit.md に記録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/orphan-audit.md",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'AUDIT COMPLETE' docs/orphan-audit.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -cE '(Orphan|Dead|Unused|Justified)' docs/orphan-audit.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification",
+      "description": "全done_whenの検証を実行",
+      "depends_on": ["p4_orphan_check"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "docs/completion-criteria.md が存在する（done_when[0]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/completion-criteria.md",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "wc -l docs/completion-criteria.md | awk '{print $1}'",
+              "expected": ">= 50"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '## ' docs/completion-criteria.md",
+              "expected": ">= 3"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "全7つのguardテストがPASSしている（done_when[1]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "cat .claude/session-state/guard-test-results.txt | grep -c 'PASS'",
+              "expected": ">= 7"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f .claude/session-state/guard-test-results.txt",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cat .claude/session-state/guard-test-results.txt | wc -l",
+              "expected": ">= 7"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "チェーン検証が10件以上VERIFIEDである（done_when[2]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "cat .claude/session-state/chain-verification-results.txt | grep -c 'VERIFIED'",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f .claude/session-state/chain-verification-results.txt",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cat .claude/session-state/chain-verification-results.txt | wc -l",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "孤立ファイル監査が完了している（done_when[3]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/orphan-audit.md && grep -c 'AUDIT COMPLETE' docs/orphan-audit.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f docs/orphan-audit.md",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l docs/orphan-audit.md | awk '{print $1}'",
+              "expected": ">= 10"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
