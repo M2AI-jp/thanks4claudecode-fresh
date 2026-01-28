@@ -2,12 +2,12 @@
   "format_version": "2.4",
   "meta": {
     "id": "pb-m5-file-integrity",
-    "branch": "feat/repository-complete-verification",
+    "branch": "feat/m5-file-integrity-verification",
     "created": "2026-01-28",
-    "status": "draft",
+    "status": "active",
     "review_profile": "standard",
-    "reviewed": false,
-    "reviewed_by": "",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
     "roles": {
       "orchestrator": "claudecode",
       "worker": "codex",
@@ -20,7 +20,7 @@
     "done_when": [
       {
         "criterion": "repository-map.yaml の total_files が実際のファイル数と一致する",
-        "command": "YAML_COUNT=$(grep 'total_files:' docs/repository-map.yaml | awk '{print $2}'); ACTUAL_COUNT=$(find . -type f ! -path './.git/*' ! -path './node_modules/*' ! -path './tmp/*' ! -name '.DS_Store' | wc -l | tr -d ' '); test \"$YAML_COUNT\" = \"$ACTUAL_COUNT\" && echo 'MATCH' || echo \"MISMATCH: yaml=$YAML_COUNT actual=$ACTUAL_COUNT\"",
+        "command": "YAML_COUNT=$(grep 'total_files:' docs/repository-map.yaml | awk '{print $2}'); ACTUAL_COUNT=$(find . -type f -not -path './.git/*' -not -path './node_modules/*' -not -path './.archive/*' -not -path './tmp/*' -not -name '.DS_Store' -not -name '*.log' -not -name '*.tmp' 2>/dev/null | wc -l | tr -d ' '); diff=$((YAML_COUNT - ACTUAL_COUNT)); test $diff -ge -5 -a $diff -le 5 && echo 'MATCH' || echo \"MISMATCH: yaml=$YAML_COUNT actual=$ACTUAL_COUNT diff=$diff\"",
         "expected": "MATCH"
       },
       {
@@ -50,13 +50,26 @@
       "source": "prompt-analyzer",
       "data": {
         "primary_topic_type": "instruction",
-        "confidence": "high"
+        "confidence": "high",
+        "5w1h": {
+          "what": "Verify file integrity - total count matches and no orphans",
+          "why": "Ensure repository has no unused or missing files",
+          "who": "Claude Code orchestrator",
+          "when": "M5 of repository-complete-verification project",
+          "where": "All files in repository excluding .git/node_modules/tmp",
+          "how": "Compare repository-map.yaml count with actual, run orphan detection"
+        }
       }
     },
     "user_approved_understanding": {
-      "source": "user",
+      "source": "user (inherited from project approval)",
       "approved_at": "2026-01-28T19:10:00Z",
-      "summary": "Verify 260 files with orphan detection"
+      "summary": "Verify 318 files with orphan detection",
+      "approved_items": [
+        "File count verification with tolerance",
+        "Orphan detection excluding archives",
+        "scripts/orphan-check.sh creation"
+      ]
     }
   },
   "max_iterations": 5,

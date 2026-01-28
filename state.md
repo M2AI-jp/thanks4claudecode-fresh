@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: m4
+current_milestone: m5
 status: idle
 ```
 
@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/projects/repository-complete-verification/pb-m4-skills
+last_archived: play/archive/projects/play/projects/repository-complete-verification/project.json/pb-m5-file-integrity
 review_pending: false
 ```
 

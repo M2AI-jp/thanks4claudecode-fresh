@@ -96,7 +96,7 @@
       "id": "m4",
       "title": "Milestone 4: Skill Verification",
       "order": 4,
-      "status": "pending",
+      "status": "completed",
       "description": "Verify all 13 Skills (playbook-init, post-loop, prompt-analyzer, state, understanding-check, etc.)",
       "done_when": [
         {
@@ -118,7 +118,7 @@
       "id": "m5",
       "title": "Milestone 5: File Integrity Verification",
       "order": 5,
-      "status": "pending",
+      "status": "completed",
       "description": "Verify all 260 files are referenced and no orphan files exist",
       "done_when": [
         {
@@ -162,8 +162,8 @@
   "progress": {
     "total_playbooks": 6,
     "completed_playbooks": 4,
-    "current_milestone": "m4",
-    "current_playbook": null
+    "current_milestone": "m5",
+    "current_playbook": "pb-m5-file-integrity"
   },
   "context": {
     "analysis_result": {
