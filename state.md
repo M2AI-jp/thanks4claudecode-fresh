@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: m5
-status: idle
+active: play/projects/repository-complete-verification/project.json
+current_milestone: m6
+status: active
 ```
 
 ---
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
-parent_project: null
-current_phase: null
-branch: null
+active: play/projects/repository-complete-verification/playbooks/pb-m6-reward-fraud/plan.json
+parent_project: play/projects/repository-complete-verification/project.json
+current_phase: p1
+branch: feat/m6-reward-fraud-prevention
 last_archived: play/archive/projects/play/projects/repository-complete-verification/project.json/pb-m5-file-integrity
 review_pending: false
 ```
@@ -33,10 +33,11 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: m6
+phase: p1
+done_criteria:
+  - reward-fraud-test.sh が exit 0 で終了する
+status: active
 ```
 
 ---
@@ -44,7 +45,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 20:47:43
+last_start: 2026-01-28 21:11:40
 last_end: 2026-01-28 15:12:57
 last_clear: 2026-01-20
 ```

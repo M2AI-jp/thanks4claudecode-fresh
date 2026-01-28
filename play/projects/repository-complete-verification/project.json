@@ -161,9 +161,9 @@
   ],
   "progress": {
     "total_playbooks": 6,
-    "completed_playbooks": 4,
-    "current_milestone": "m5",
-    "current_playbook": "pb-m5-file-integrity"
+    "completed_playbooks": 5,
+    "current_milestone": "m6",
+    "current_playbook": "pb-m6-reward-fraud"
   },
   "context": {
     "analysis_result": {

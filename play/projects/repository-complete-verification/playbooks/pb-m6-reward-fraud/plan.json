@@ -2,12 +2,12 @@
   "format_version": "2.4",
   "meta": {
     "id": "pb-m6-reward-fraud",
-    "branch": "feat/repository-complete-verification",
+    "branch": "feat/m6-reward-fraud-prevention",
     "created": "2026-01-28",
-    "status": "draft",
+    "status": "active",
     "review_profile": "standard",
-    "reviewed": false,
-    "reviewed_by": "",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
     "roles": {
       "orchestrator": "claudecode",
       "worker": "codex",
@@ -52,13 +52,26 @@
       "source": "prompt-analyzer",
       "data": {
         "primary_topic_type": "instruction",
-        "confidence": "high"
+        "confidence": "high",
+        "5w1h": {
+          "what": "Verify reward fraud prevention mechanisms work",
+          "why": "Ensure done_criteria cannot be bypassed fraudulently",
+          "who": "Claude Code orchestrator with critic validation",
+          "when": "M6 of repository-complete-verification project",
+          "where": ".claude/skills/reward-guard/guards/*.sh",
+          "how": "Test BLOCK behavior and create verification script"
+        }
       }
     },
     "user_approved_understanding": {
-      "source": "user",
+      "source": "user (inherited from project approval)",
       "approved_at": "2026-01-28T19:10:00Z",
-      "summary": "Verify reward fraud prevention with BLOCK testing"
+      "summary": "Verify reward fraud prevention with BLOCK testing",
+      "approved_items": [
+        "Test critic-guard.sh BLOCK behavior",
+        "Test subtask-guard.sh validated_by requirement",
+        "Create reward-fraud-test.sh script"
+      ]
     }
   },
   "max_iterations": 5,
