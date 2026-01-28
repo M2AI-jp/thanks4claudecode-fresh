@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: play/projects/repository-complete-verification/project.json
+active: null
 current_milestone: m5
-status: active
+status: idle
 ```
 
 ---
@@ -19,11 +19,11 @@ status: active
 ## playbook
 
 ```yaml
-active: play/projects/repository-complete-verification/playbooks/pb-m5-file-integrity/plan.json
-parent_project: play/projects/repository-complete-verification/project.json
-current_phase: p1
-branch: feat/m5-file-integrity-verification
-last_archived: play/archive/projects/repository-complete-verification/pb-m4-skills
+active: null
+parent_project: null
+current_phase: null
+branch: null
+last_archived: play/archive/projects/play/projects/repository-complete-verification/project.json/pb-m5-file-integrity
 review_pending: false
 ```
 
@@ -33,11 +33,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: m5
-phase: p1
-done_criteria:
-  - repository-map.yaml の total_files が実際のファイル数と一致する
-status: active
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
