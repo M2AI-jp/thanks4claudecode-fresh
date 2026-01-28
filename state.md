@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/projects/play/projects/repository-complete-verification/project.json/pb-m6-reward-fraud
+last_archived: play/archive/mini-lisp
 review_pending: false
 ```
 

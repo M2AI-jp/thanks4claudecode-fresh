@@ -1,0 +1,746 @@
+{
+  "_template_rules": {
+    "_philosophy": {
+      "principle": "LLM は提案者、ルールは裁判官。キーワード禁止は無意味（言い換え可能）。行動パターンを禁止する。",
+      "reference": "claude-code-harness の implementation-quality.md / test-quality.md"
+    }
+  },
+  "format_version": "2.4",
+  "meta": {
+    "id": "mini-lisp",
+    "branch": "feat/mini-lisp-interpreter",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Python で Mini Lisp インタプリタを実装する（Lexer, Parser, Evaluator, REPL を含む完全な実装）",
+    "done_when": [
+      {
+        "criterion": "products/mini_lisp/lexer.py が存在する",
+        "command": "test -f products/mini_lisp/lexer.py",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "products/mini_lisp/parser.py が存在する",
+        "command": "test -f products/mini_lisp/parser.py",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "products/mini_lisp/evaluator.py が存在する",
+        "command": "test -f products/mini_lisp/evaluator.py",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "products/mini_lisp/repl.py が存在する",
+        "command": "test -f products/mini_lisp/repl.py",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "python -m pytest products/mini_lisp/tests/ が exit 0 で終了する",
+        "command": "python -m pytest products/mini_lisp/tests/ -v",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "(+ 1 2) が 3 を返す",
+        "command": "echo '(+ 1 2)' | python products/mini_lisp/main.py",
+        "expected": "contains '3'"
+      },
+      {
+        "criterion": "(define x 10) (+ x 5) が 15 を返す",
+        "command": "echo '(define x 10) (+ x 5)' | python products/mini_lisp/main.py",
+        "expected": "contains '15'"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "Lexer（S 式のトークン化）",
+        "Parser（トークンから AST 構築）",
+        "Evaluator（AST の評価）",
+        "REPL（対話的実行環境）",
+        "特殊形式（define, if, lambda, quote, begin）",
+        "算術演算（+, -, *, /）",
+        "リスト操作（car, cdr, cons, list, null?）",
+        "比較演算（=, <, >, <=, >=）",
+        "ユニットテストと統合テスト"
+      ],
+      "excludes": [
+        "マクロシステム",
+        "ファイル I/O",
+        "外部ライブラリ連携",
+        "パフォーマンス最適化"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "開発者（Claude Code）",
+          "what": "Mini Lisp インタプリタの Python 実装",
+          "where": "products/mini_lisp/",
+          "when": "今回のセッション",
+          "why": "Lisp インタプリタの学習・実装練習",
+          "how": "Python で Lexer → Parser → Evaluator → REPL"
+        },
+        "success_criteria": {
+          "functional": [
+            "Lexer が S 式をトークン列に変換できる",
+            "Parser がトークン列を AST に変換できる",
+            "Evaluator が AST を評価して結果を返せる",
+            "REPL が対話的にプログラムを実行できる",
+            "特殊形式（define, if, lambda, quote, begin）が動作",
+            "算術演算（+, -, *, /）が動作",
+            "リスト操作（car, cdr, cons, list, null?）が動作",
+            "比較演算（=, <, >, <=, >=）が動作",
+            "テストが全てパス"
+          ]
+        },
+        "test_strategy": {
+          "test_types": ["unit", "integration"],
+          "coverage_target": "high",
+          "edge_cases": [
+            "空プログラム",
+            "不正構文",
+            "未定義変数",
+            "ゼロ除算",
+            "深いネスト",
+            "再帰",
+            "クロージャ"
+          ]
+        },
+        "ready_for_playbook": true
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-28T21:50:00Z",
+      "summary": "Mini Lisp インタプリタを Python で実装（Lexer, Parser, Evaluator, REPL）",
+      "approved_items": [
+        "products/mini_lisp/ に実装ファイルを配置",
+        "特殊形式・算術演算・リスト操作・比較演算をサポート",
+        "ユニットテストと統合テストを含む"
+      ],
+      "technical_requirements_confirmed": [
+        "Python 3.x で実装",
+        "外部ライブラリは最小限",
+        "テストは pytest を使用"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Lexer 実装",
+      "description": "S 式をトークン列に変換する Lexer を実装",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "products/mini_lisp/__init__.py が存在する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/__init__.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"import sys; sys.path.insert(0, '.'); from products.mini_lisp import *\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -d products/mini-lisp",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "products/mini_lisp/lexer.py が存在し Token クラスと tokenize 関数を含む",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/lexer.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'class Token' products/mini_lisp/lexer.py",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'def tokenize' products/mini_lisp/lexer.py",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "Lexer が '(+ 1 2)' を正しくトークン化する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; tokens = tokenize('(+ 1 2)'); print([str(t) for t in tokens])\"",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; tokens = tokenize('(+ 1 2)'); assert len(tokens) >= 5\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; tokens = tokenize('(define x 10)'); assert len(tokens) >= 5\"",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Parser 実装",
+      "description": "トークン列を AST に変換する Parser を実装",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "products/mini_lisp/parser.py が存在し parse 関数を含む",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/parser.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'def parse' products/mini_lisp/parser.py",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.parser import parse\"",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "Parser が '(+ 1 2)' を AST に変換する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; ast = parse(tokenize('(+ 1 2)')); print(ast)\"",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; ast = parse(tokenize('(+ 1 2)')); assert isinstance(ast, list)\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; ast = parse(tokenize('(define x (+ 1 2))')); assert isinstance(ast, list)\"",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Evaluator 実装",
+      "description": "AST を評価して結果を返す Evaluator を実装",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "products/mini_lisp/evaluator.py が存在し evaluate 関数と Environment クラスを含む",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/evaluator.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'def evaluate' products/mini_lisp/evaluator.py",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'class Environment' products/mini_lisp/evaluator.py",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "算術演算（+, -, *, /）が正しく動作する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(+ 1 2)')), env) == 3\"",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(- 10 3)')), env) == 7\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(* 4 5)')), env) == 20; assert evaluate(parse(tokenize('(/ 20 4)')), env) == 5\"",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "特殊形式 define が正しく動作する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); evaluate(parse(tokenize('(define x 10)')), env); assert evaluate(parse(tokenize('x')), env) == 10\"",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); evaluate(parse(tokenize('(define x 10)')), env); assert evaluate(parse(tokenize('(+ x 5)')), env) == 15\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); evaluate(parse(tokenize('(define y (+ 1 2))')), env); assert evaluate(parse(tokenize('y')), env) == 3\"",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p3.4",
+          "criterion": "特殊形式 if が正しく動作する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(if (> 5 3) 1 0)')), env) == 1\"",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(if (< 5 3) 1 0)')), env) == 0\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(if (= 5 5) 100 200)')), env) == 100\"",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p3.5",
+          "criterion": "特殊形式 lambda が正しく動作する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('((lambda (x) (+ x 1)) 5)')), env) == 6\"",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); evaluate(parse(tokenize('(define add1 (lambda (x) (+ x 1)))')), env); assert evaluate(parse(tokenize('(add1 10)')), env) == 11\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('((lambda (x y) (+ x y)) 3 4)')), env) == 7\"",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p3.6",
+          "criterion": "リスト操作（car, cdr, cons, list, null?）が正しく動作する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(car (quote (1 2 3)))')), env) == 1\"",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); result = evaluate(parse(tokenize('(cdr (quote (1 2 3)))')), env); assert result == [2, 3]\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); result = evaluate(parse(tokenize('(cons 1 (quote (2 3)))')), env); assert result == [1, 2, 3]\"",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p3.7",
+          "criterion": "比較演算（=, <, >, <=, >=）が正しく動作する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(= 5 5)')), env) == True\"",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(< 3 5)')), env) == True; assert evaluate(parse(tokenize('(> 5 3)')), env) == True\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(<= 3 3)')), env) == True; assert evaluate(parse(tokenize('(>= 5 5)')), env) == True\"",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p3.8",
+          "criterion": "特殊形式 begin が正しく動作する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); assert evaluate(parse(tokenize('(begin 1 2 3)')), env) == 3\"",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); result = evaluate(parse(tokenize('(begin (define x 1) (define y 2) (+ x y))')), env); assert result == 3\"",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.lexer import tokenize; from products.mini_lisp.parser import parse; from products.mini_lisp.evaluator import evaluate, Environment; env = Environment(); result = evaluate(parse(tokenize('(begin (+ 1 1))')), env); assert result == 2\"",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "REPL 実装",
+      "description": "対話的実行環境（REPL）を実装",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "products/mini_lisp/repl.py が存在する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/repl.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'def repl' products/mini_lisp/repl.py",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"from products.mini_lisp.repl import repl\"",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "products/mini_lisp/main.py が存在しエントリポイントとして動作する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/main.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c \"if __name__\" products/mini_lisp/main.py",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "echo '(+ 1 2)' | python products/mini_lisp/main.py",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "テスト作成",
+      "description": "ユニットテストと統合テストを作成",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "products/mini_lisp/tests/__init__.py が存在する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/tests/__init__.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -d products/mini_lisp/tests",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -c \"import products.mini_lisp.tests\"",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p5.2",
+          "criterion": "products/mini_lisp/tests/test_lexer.py が存在しテストが通る",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/tests/test_lexer.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'def test_' products/mini_lisp/tests/test_lexer.py",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -m pytest products/mini_lisp/tests/test_lexer.py -v",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p5.3",
+          "criterion": "products/mini_lisp/tests/test_parser.py が存在しテストが通る",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/tests/test_parser.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'def test_' products/mini_lisp/tests/test_parser.py",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -m pytest products/mini_lisp/tests/test_parser.py -v",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p5.4",
+          "criterion": "products/mini_lisp/tests/test_evaluator.py が存在しテストが通る",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/tests/test_evaluator.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'def test_' products/mini_lisp/tests/test_evaluator.py",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -m pytest products/mini_lisp/tests/test_evaluator.py -v",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p5.5",
+          "criterion": "products/mini_lisp/tests/test_integration.py が存在しエッジケースを含む",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/tests/test_integration.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'def test_' products/mini_lisp/tests/test_integration.py",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -m pytest products/mini_lisp/tests/test_integration.py -v",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "統合テスト & 完成確認",
+      "description": "全ての done_when コマンドを実行し結果を検証",
+      "depends_on": ["p5"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "全てのファイルが存在する（done_when[0-3]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/lexer.py",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/parser.py",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f products/mini_lisp/evaluator.py",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "pytest 全テストが通る（done_when[4]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "python -m pytest products/mini_lisp/tests/ -v",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "python -m pytest products/mini_lisp/tests/ --tb=short",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "python -m pytest products/mini_lisp/tests/ -q",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "(+ 1 2) が 3 を返す（done_when[5]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "echo '(+ 1 2)' | python products/mini_lisp/main.py",
+              "expected": "contains '3'"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "echo '(+ 1 2)' | python products/mini_lisp/main.py | grep -c '3'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "echo '(+ 1 2)' | python products/mini_lisp/main.py",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "(define x 10) (+ x 5) が 15 を返す（done_when[6]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "echo '(define x 10) (+ x 5)' | python products/mini_lisp/main.py",
+              "expected": "contains '15'"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "echo '(define x 10) (+ x 5)' | python products/mini_lisp/main.py | grep -c '15'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "echo '(define x 10) (+ x 5)' | python products/mini_lisp/main.py",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
