@@ -11,7 +11,7 @@
 ```yaml
 active: null
 current_milestone: m1
-status: null
+status: idle
 ```
 
 ---
@@ -19,11 +19,11 @@ status: null
 ## playbook
 
 ```yaml
-active: play/standalone/project-fix/plan.json
+active: null
 parent_project: null
-current_phase: p_final
-branch: feat/repository-cleanup-and-project-deprecation
-last_archived: play/archive/project-feature-validation
+current_phase: null
+branch: null
+last_archived: play/archive/project-fix
 review_pending: false
 ```
 
