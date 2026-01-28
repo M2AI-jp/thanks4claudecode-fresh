@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-28 15:11:22"
+  generated: "2026-01-28 20:58:15"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 260
+  total_files: 318
 
 hooks:
   directory: .claude/hooks/
@@ -27,39 +27,36 @@ events:
   directory: .claude/events/
   count: 11
   units:
-    - name: "lib"
-      chain: "chain.sh"
-      description: ""
     - name: "notification"
       chain: "chain.sh"
-      description: "chain.sh - event unit: notification"
+      description: "notification-chain.sh - event unit: notification"
     - name: "post-tool-edit"
       chain: "chain.sh"
-      description: "chain.sh - event unit: post-tool-edit"
+      description: "post-tool-edit-chain.sh - event unit: post-tool-edit"
     - name: "pre-compact"
       chain: "chain.sh"
-      description: "chain.sh - event unit: pre-compact"
+      description: "pre-compact-chain.sh - event unit: pre-compact"
     - name: "pre-tool-bash"
       chain: "chain.sh"
-      description: "chain.sh - event unit: pre-tool-bash"
+      description: "pre-tool-bash-chain.sh - event unit: pre-tool-bash"
     - name: "pre-tool-edit"
       chain: "chain.sh"
-      description: "chain.sh - event unit: pre-tool-edit"
+      description: "pre-tool-edit-chain.sh - event unit: pre-tool-edit"
     - name: "session-end"
       chain: "chain.sh"
-      description: "chain.sh - event unit: session-end"
+      description: "session-end-chain.sh - event unit: session-end"
     - name: "session-start"
       chain: "chain.sh"
-      description: "chain.sh - event unit: session-start"
+      description: "session-start-chain.sh - event unit: session-start"
     - name: "stop"
       chain: "chain.sh"
-      description: "chain.sh - event unit: stop"
+      description: "stop-chain.sh - event unit: stop"
     - name: "subagent-stop"
       chain: "chain.sh"
-      description: "chain.sh - event unit: subagent-stop"
+      description: "subagent-stop-chain.sh - event unit: subagent-stop"
     - name: "user-prompt-submit"
       chain: "chain.sh"
-      description: "chain.sh - event unit: user-prompt-submit"
+      description: "user-prompt-submit-chain.sh - event unit: user-prompt-submit"
 
 agents:
   directory: .claude/skills/*/agents/
@@ -155,7 +152,7 @@ play:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 38
+      count: 39
     template:
       description: "playbook v2 テンプレート"
       count: 2
@@ -392,6 +389,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-28 15:11:22"
+  - date: "2026-01-28 20:58:15"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

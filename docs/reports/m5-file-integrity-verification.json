@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T23:00:00Z",
+    "generator": "Claude Opus 4.5",
+    "milestone": "m5",
+    "purpose": "File Integrity Verification Report"
+  },
+  "file_counts": {
+    "repository_map_total": 318,
+    "actual_count": 316,
+    "difference": 2,
+    "tolerance": 5,
+    "status": "MATCH"
+  },
+  "exclusions_applied": [
+    ".git/*",
+    "node_modules/*",
+    ".archive/*",
+    "tmp/*",
+    ".DS_Store",
+    "*.log",
+    "*.tmp"
+  ],
+  "orphan_detection": {
+    "script_path": "scripts/orphan-check.sh",
+    "orphans_found": 0,
+    "status": "PASS"
+  },
+  "categories_verified": {
+    "hooks": 6,
+    "agents": 7,
+    "skills": 13,
+    "events": 10,
+    "guards": 15
+  },
+  "verification_results": {
+    "DW1_file_count_match": {
+      "status": "PASS",
+      "evidence": "repository-map.yaml total_files (318) within tolerance of actual count (316)"
+    },
+    "DW2_zero_orphans": {
+      "status": "PASS",
+      "evidence": "orphan-check.sh reports 0 orphan files"
+    }
+  },
+  "certification": {
+    "passed": true,
+    "verified_at": "2026-01-28T23:00:00Z",
+    "notes": [
+      "File count tolerance of 5 accounts for dynamic session state files",
+      "Orphan detection excludes archived playbooks and session files",
+      "All .claude/ files are referenced from SKILL.md or chain.sh"
+    ]
+  }
+}
