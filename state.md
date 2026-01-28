@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/reward-fraud-prevention-v2/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: feat/reward-fraud-prevention-v2
-last_archived: play/standalone/repo-integrity-v1
+current_phase: null
+branch: null
+last_archived: play/archive/reward-fraud-prevention-v2
 review_pending: false
 ```
 
@@ -34,13 +34,9 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: p1
-done_criteria:
-  - "critic.md に PROXY_VERIFICATION_BLOCKLIST が定義されている"
-  - "done-criteria-validation.md に IMMUTABLE_RULES セクションが存在する"
-  - "play/template/plan.json に requires_functional_test: true が追加されている"
-  - "tests/framework-tests/ に 3 つのテストスクリプトが存在し動作する"
-status: in_progress
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
