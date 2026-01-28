@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/hook-unit-completion/plan.json
 parent_project: null
-current_phase: null
-branch: main
+current_phase: p1
+branch: fix/hook-chain-and-missing-components
 last_archived: play/archive/standalone/repository-final-cleanup
 review_pending: false
 ```
@@ -34,9 +34,13 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - "全 10 Event Unit に telemetry.sh が存在する"
+  - "notification Unit が telemetry を実行する（no-op ではない）"
+  - "session-start Unit に health/integrity チェーンが配線されている"
+  - "testing.sh が git にコミットされている"
+status: in_progress
 ```
 
 ---
