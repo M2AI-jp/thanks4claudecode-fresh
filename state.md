@@ -19,12 +19,12 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/module-verification/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: feat/module-verification-test
 last_archived: play/archive/completion-verification
-review_pending: true
+review_pending: false
 ```
 
 ---
@@ -32,11 +32,15 @@ review_pending: true
 ## goal
 
 ```yaml
-self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+self_complete: true
+milestone: module-verification
+phase: p_final
+done_criteria:
+  - "14 Skills の SKILL.md が when/action 定義を持ち、関連スクリプトが構文エラーなく実行可能"
+  - "7 SubAgents の agent 定義が必須フィールドを持ち、Task 呼び出しパターンと整合"
+  - "10 Event Units の chain.sh が存在し、実行パスが正しく設定されている"
+  - "全ファイルが SSOT と整合し、孤立ファイルが 0 件"
+status: done
 ```
 
 ---
