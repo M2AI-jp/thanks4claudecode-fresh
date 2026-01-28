@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-01-28T19:45:00Z",
+  "event_units": [
+    {"name": "session-start", "chain_exists": true, "executable": true},
+    {"name": "session-end", "chain_exists": true, "executable": true},
+    {"name": "user-prompt-submit", "chain_exists": true, "executable": true},
+    {"name": "pre-tool-edit", "chain_exists": true, "executable": true},
+    {"name": "pre-tool-bash", "chain_exists": true, "executable": true},
+    {"name": "post-tool-edit", "chain_exists": true, "executable": true},
+    {"name": "subagent-stop", "chain_exists": true, "executable": true},
+    {"name": "pre-compact", "chain_exists": true, "executable": true},
+    {"name": "stop", "chain_exists": true, "executable": true},
+    {"name": "notification", "chain_exists": true, "executable": true}
+  ]
+}

@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/health-dashboard-cli
+last_archived: play/archive/projects/repository-complete-verification/pb-m1-event-units
 review_pending: false
 ```
 
@@ -44,7 +44,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 19:05:43
+last_start: 2026-01-28 19:49:03
 last_end: 2026-01-28 15:12:57
 last_clear: 2026-01-20
 ```

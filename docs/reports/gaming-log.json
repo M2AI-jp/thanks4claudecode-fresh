@@ -1,0 +1,156 @@
+{
+  "adversarial_test_metadata": {
+    "tester": "Claude Opus 4.5",
+    "date": "2026-01-28",
+    "purpose": "Identify weaknesses in verification criteria",
+    "test_location": "/tmp/adv-test"
+  },
+  "attempts": {
+    "DW1": [
+      {
+        "method": "Empty executable files",
+        "description": "Created 10 empty files with chmod +x",
+        "command": "touch chain.sh && chmod +x chain.sh",
+        "attempted": true,
+        "result": "success",
+        "reason": "find -perm +111 only checks permission bits, not file content or validity"
+      },
+      {
+        "method": "Symlinks to non-existent files",
+        "description": "Created symlinks pointing to /nonexistent/script.sh",
+        "command": "ln -s /nonexistent/script.sh chain.sh",
+        "attempted": true,
+        "result": "success",
+        "reason": "find checks symlink permissions, not target existence or validity"
+      },
+      {
+        "method": "Directories named chain.sh",
+        "description": "Created directories instead of files named chain.sh",
+        "command": "mkdir chain.sh && chmod +x chain.sh",
+        "attempted": true,
+        "result": "success",
+        "reason": "find does not distinguish between files and directories by default"
+      },
+      {
+        "method": "Directories with spaces in names",
+        "description": "Created unit directories with spaces like 'unit 1'",
+        "command": "mkdir 'unit 1' && touch 'unit 1/chain.sh'",
+        "attempted": true,
+        "result": "success",
+        "reason": "find handles spaces correctly but proves naming is not validated"
+      }
+    ],
+    "DW3": [
+      {
+        "method": "Comment containing telemetry",
+        "description": "Files with only '# telemetry comment' - no actual telemetry call",
+        "command": "echo '# telemetry' > chain.sh",
+        "attempted": true,
+        "result": "success",
+        "reason": "grep -q 'telemetry' only checks for string presence, not semantic usage"
+      },
+      {
+        "method": "Variable name containing telemetry",
+        "description": "Files with 'telemetry_disabled=true' - no actual call",
+        "command": "echo 'telemetry_disabled=true' > chain.sh",
+        "attempted": true,
+        "result": "success",
+        "reason": "grep matches any occurrence, including disabled or negated references"
+      },
+      {
+        "method": "Binary file with telemetry string",
+        "description": "Non-script binary containing null bytes + 'telemetry'",
+        "command": "printf '\\x00telemetry\\x00' > chain.sh",
+        "attempted": true,
+        "result": "success",
+        "reason": "grep can match strings in binary files, regardless of file validity"
+      },
+      {
+        "method": "Symlinks to shared stub file",
+        "description": "All 10 chain.sh symlinks point to single telemetry-stub.sh",
+        "command": "ln -s ../telemetry-stub.sh chain.sh",
+        "attempted": true,
+        "result": "success",
+        "reason": "No deduplication check - same telemetry source can satisfy all units"
+      }
+    ],
+    "DW4": [
+      {
+        "method": "Fake report with PASS on separate lines",
+        "description": "Created markdown table with | unit | PASS | format",
+        "command": "echo '| unit1 | PASS |' >> report.md",
+        "attempted": true,
+        "result": "success",
+        "reason": "grep -c counts lines containing PASS, not actual verification results"
+      },
+      {
+        "method": "PASS as substring in unrelated words",
+        "description": "Used words like PASSENGER, COMPASS, PASSPORT, BYPASS",
+        "command": "echo 'PASSENGER was here' >> report.md",
+        "attempted": true,
+        "result": "success",
+        "reason": "grep matches partial strings, not word boundaries"
+      },
+      {
+        "method": "PASS in code blocks with disclaimer",
+        "description": "10 PASS lines in code block followed by 'No actual verification'",
+        "command": "echo 'PASS' in code block",
+        "attempted": true,
+        "result": "success",
+        "reason": "No semantic validation of report content or structure"
+      }
+    ]
+  },
+  "summary": {
+    "DW1_weakness": "Checks only file existence and permission bits. Does not validate: file type (vs directory), symlink targets, script content, shebang presence, or execution viability.",
+    "DW3_weakness": "Simple string matching. Does not validate: actual function calls, proper import/sourcing, semantic context, or whether telemetry is enabled/disabled.",
+    "DW4_weakness": "Line counting. Does not validate: report structure, actual test execution, evidence linkage, or whether PASS is in meaningful context.",
+    "recommendations": {
+      "DW1": [
+        "Add '-type f' to find command to exclude directories",
+        "Check for valid shebang (head -1 should start with #!)",
+        "Verify symlink targets exist with -L",
+        "Check minimum file size > 0"
+      ],
+      "DW3": [
+        "Use 'grep -w' for word boundary matching",
+        "Require specific function call pattern like 'telemetry_emit' or 'source.*telemetry'",
+        "Exclude commented lines",
+        "Verify the telemetry call is not negated (! or false)"
+      ],
+      "DW4": [
+        "Use structured format (JSON/YAML) with schema validation",
+        "Require specific report sections (Evidence, Timestamp, Test Command)",
+        "Cryptographically sign verification results",
+        "Include test execution logs or timestamps"
+      ]
+    },
+    "all_criteria_gamed": true,
+    "security_rating": "WEAK - All criteria can be trivially gamed"
+  },
+  "evaluation": {
+    "completed": true,
+    "evaluated_at": "2026-01-28T19:50:00Z",
+    "evaluated_by": "claudecode",
+    "any_succeeded": true,
+    "criteria_strengthened": true,
+    "strengthening_round": 1
+  },
+  "strengthened_criteria": {
+    "DW1": {
+      "old": "find .claude/events -maxdepth 2 -name 'chain.sh' -perm +111 | wc -l",
+      "new": "for d in session-start session-end user-prompt-submit pre-tool-edit pre-tool-bash post-tool-edit subagent-stop pre-compact stop notification; do test -f \".claude/events/$d/chain.sh\" && test -x \".claude/events/$d/chain.sh\" && head -1 \".claude/events/$d/chain.sh\" | grep -q '^#!/bin/bash' && echo 'VALID'; done | grep -c 'VALID'",
+      "reason": "Check specific directories, file type, executable, and shebang"
+    },
+    "DW3": {
+      "old": "grep -q 'telemetry'",
+      "new": "grep -E '^[^#]*source.*telemetry\\.sh|^[^#]*\\. .*telemetry\\.sh'",
+      "reason": "Require actual source/. command, exclude comments"
+    },
+    "DW4": {
+      "old": "grep -c 'PASS'",
+      "new": "jq -e '.verifications | map(select(.status == \"PASS\")) | length >= 10'",
+      "reason": "Use structured JSON with schema validation"
+    }
+  }
+}

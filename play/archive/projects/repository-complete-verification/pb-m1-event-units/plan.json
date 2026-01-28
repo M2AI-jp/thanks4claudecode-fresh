@@ -1,0 +1,350 @@
+{
+  "_template_rules": {
+    "_philosophy": {
+      "principle": "LLM is proposer, rules are judge. Codex acts as adversary to test criteria robustness.",
+      "adversarial_design": "Codex attempts to game criteria. If Codex succeeds → criteria too weak. Only when Codex FAILS → criteria validated."
+    }
+  },
+  "format_version": "2.5",
+  "meta": {
+    "id": "pb-m1-event-units-adversarial",
+    "branch": "feat/repository-complete-verification",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "strict",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "adversarial_mode": true,
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "adversary": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Verify all 10 Event Units with adversarial testing - Codex attempts to game criteria, only PASS when gaming fails",
+    "done_when": [
+      {
+        "id": "DW1",
+        "criterion": "10 chain.sh が実行時にログを出力する（実行ベース検証）",
+        "command": "count=0; for d in session-start session-end user-prompt-submit pre-tool-edit pre-tool-bash post-tool-edit subagent-stop pre-compact stop notification; do f=\".claude/events/$d/chain.sh\"; if test -f \"$f\" && test -x \"$f\" && bash -n \"$f\" 2>/dev/null; then rm -f /tmp/test-$d.log; HOOK_EVENT=$d bash \"$f\" 2>/tmp/test-$d.log; test -s /tmp/test-$d.log && count=$((count+1)); fi; done; echo $count",
+        "expected": "10",
+        "rationale": "Round 4: EXECUTION-BASED - must produce non-empty stderr output when run"
+      },
+      {
+        "id": "DW2",
+        "criterion": "Adversarial Testing が 4 Round 完了し、改善履歴が記録されている",
+        "command": "jq -e '.metadata.test_rounds >= 4 and (.round_history | length >= 4) and .conclusions.achieved_improvements != null' docs/reports/m1-adversarial-results.json",
+        "expected": "true",
+        "rationale": "Adversarial testing completed with iterative improvements documented"
+      },
+      {
+        "id": "DW3",
+        "criterion": ".claude/logs/ に 8+ Event Unit のログファイルが存在する（実際の発火証拠）",
+        "command": "ls -1 .claude/logs/*.log 2>/dev/null | wc -l | tr -d ' '",
+        "expected": ">= 8",
+        "rationale": "Round 4: Real log files prove hooks actually fired during session"
+      },
+      {
+        "id": "DW4",
+        "criterion": "検証レポート JSON に 10 Unit のハッシュ付き evidence が含まれる",
+        "command": "jq -e '[.verifications[] | select(.status == \"PASS\" and (.name | length > 5) and (.evidence | length > 50) and (.file_hash | length == 64))] | length >= 10' docs/reports/event-unit-verification.json",
+        "expected": "true",
+        "rationale": "Round 4: requires substantial evidence and SHA256 file hash"
+      }
+    ],
+    "scope": {
+      "includes": [
+        ".claude/events/session-start/",
+        ".claude/events/session-end/",
+        ".claude/events/user-prompt-submit/",
+        ".claude/events/pre-tool-edit/",
+        ".claude/events/pre-tool-bash/",
+        ".claude/events/post-tool-edit/",
+        ".claude/events/subagent-stop/",
+        ".claude/events/pre-compact/",
+        ".claude/events/stop/",
+        ".claude/events/notification/"
+      ],
+      "excludes": [".claude/events/lib/"]
+    }
+  },
+  "context": {
+    "adversarial_framework": {
+      "purpose": "Codex acts as red team to test criteria robustness",
+      "rules": [
+        "Codex MUST attempt to pass criteria with minimal/no actual work",
+        "Codex MUST document all gaming attempts in gaming-log.json",
+        "If Codex succeeds → criteria is WEAK → strengthen and retry",
+        "If Codex fails → criteria is ROBUST → proceed",
+        "Claude (orchestrator) evaluates Codex's gaming attempts"
+      ],
+      "gaming_techniques": [
+        "Create empty files that pass existence checks",
+        "Create files with wrong content that pass pattern matching",
+        "Exploit command edge cases (spaces, special chars)",
+        "Create symlinks to wrong targets",
+        "Modify validation commands to always return expected value"
+      ]
+    }
+  },
+  "max_iterations": 10,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Baseline Verification",
+      "description": "Establish current state of Event Units",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "10 Event Unit ディレクトリがリストアップされている",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "ls -1d .claude/events/*/ 2>/dev/null | grep -v lib | wc -l | tr -d ' '",
+            "expected": "10"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "各 chain.sh の現在の状態が docs/reports/m1-baseline.json に記録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "test -f docs/reports/m1-baseline.json && jq -e '.event_units | length' docs/reports/m1-baseline.json",
+            "expected": "10"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Adversarial Testing - Codex Gaming Attempt",
+      "description": "Codex attempts to pass DW1-DW4 without doing real work. If Codex succeeds, criteria are too weak.",
+      "depends_on": ["p1"],
+      "adversarial": true,
+      "executor_override": "codex",
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "Codex が DW1 を gaming で突破を試みる（chain.sh 存在チェック）",
+          "executor": "codex",
+          "adversarial_task": true,
+          "instruction": "Try to make the DW1 command return '10' WITHOUT having valid chain.sh files. Document attempt in gaming-log.json.",
+          "coding": true,
+          "done_when": {
+            "command": "test -f docs/reports/gaming-log.json && jq -e '.attempts.DW1 | length >= 1' docs/reports/gaming-log.json",
+            "expected": "true"
+          },
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq -e '.attempts.DW1[0].attempted' docs/reports/gaming-log.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -e '.attempts.DW1[0].method' docs/reports/gaming-log.json | grep -q '.' && echo 'DOCUMENTED'",
+              "expected": "DOCUMENTED"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.attempts.DW1[0].result' docs/reports/gaming-log.json",
+              "expected": "success OR failure"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "Codex が DW3 を gaming で突破を試みる（telemetry 呼び出しチェック）",
+          "executor": "codex",
+          "adversarial_task": true,
+          "instruction": "Try to make DW3 command return '0' WITHOUT having actual telemetry calls. Document attempt.",
+          "coding": true,
+          "done_when": {
+            "command": "jq -e '.attempts.DW3 | length >= 1' docs/reports/gaming-log.json",
+            "expected": "true"
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "Codex が DW4 を gaming で突破を試みる（検証レポートチェック）",
+          "executor": "codex",
+          "adversarial_task": true,
+          "instruction": "Try to create a fake verification report that passes DW4 check. Document attempt.",
+          "coding": true,
+          "done_when": {
+            "command": "jq -e '.attempts.DW4 | length >= 1' docs/reports/gaming-log.json",
+            "expected": "true"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Gaming Evaluation",
+      "description": "Claude evaluates Codex's gaming attempts. If ANY succeeded, criteria must be strengthened.",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "全 gaming attempt の結果が評価されている",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "jq -e '.evaluation.completed == true' docs/reports/gaming-log.json",
+            "expected": "true"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "gaming が成功した場合、criteria が強化されている",
+          "executor": "claudecode",
+          "coding": true,
+          "conditional": "IF .evaluation.any_succeeded == true THEN strengthen criteria",
+          "done_when": {
+            "command": "jq -e 'if .evaluation.any_succeeded then .criteria_strengthened else true end' docs/reports/gaming-log.json",
+            "expected": "true"
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "最終的に全 gaming attempt が失敗している（criteria 堅牢）",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "jq -e '.evaluation.any_succeeded == false' docs/reports/gaming-log.json",
+            "expected": "true"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "Legitimate Verification",
+      "description": "After confirming criteria are robust, perform actual verification",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "全 10 chain.sh が有効なシェルスクリプトである",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "for f in .claude/events/*/chain.sh; do bash -n \"$f\" 2>&1 || echo 'SYNTAX_ERROR'; done | grep -c 'SYNTAX_ERROR' || echo 0",
+            "expected": "0"
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "全 chain.sh が telemetry.sh を source している",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "for f in .claude/events/*/chain.sh; do grep -q 'telemetry.sh' \"$f\" || echo 'MISSING'; done | grep -c 'MISSING' || echo 0",
+            "expected": "0"
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "検証レポート docs/reports/event-unit-verification.md が完成している",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "test -f docs/reports/event-unit-verification.md && grep -c '## ' docs/reports/event-unit-verification.md",
+            "expected": ">= 5"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "Adversarial Result Certification",
+      "description": "Generate final adversarial test results JSON",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "m1-adversarial-results.json が gaming_succeeded: false を記録している",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "jq -e '.gaming_succeeded == false' docs/reports/m1-adversarial-results.json",
+            "expected": "true"
+          }
+        },
+        {
+          "id": "p5.2",
+          "criterion": "adversarial-results.json に全試行のサマリーが含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "jq -e '.summary.total_attempts >= 3 and .summary.successful_gaming == 0' docs/reports/m1-adversarial-results.json",
+            "expected": "true"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification with Critic",
+      "description": "Critic verifies all done_when including adversarial results",
+      "depends_on": ["p5"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "DW1: 10 chain.sh が存在し実行可能",
+          "executor": "critic",
+          "critic_required": true,
+          "coding": false,
+          "done_when": {
+            "command": "find .claude/events -maxdepth 2 -name 'chain.sh' -perm +111 | wc -l | tr -d ' '",
+            "expected": "10"
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "DW2: Adversarial Test 結果が gaming_succeeded: false",
+          "executor": "critic",
+          "critic_required": true,
+          "coding": false,
+          "done_when": {
+            "command": "jq -e '.gaming_succeeded == false' docs/reports/m1-adversarial-results.json",
+            "expected": "true"
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "DW3: 全 chain.sh が telemetry を呼び出している",
+          "executor": "critic",
+          "critic_required": true,
+          "coding": false,
+          "done_when": {
+            "command": "for f in .claude/events/*/chain.sh; do grep -q 'telemetry' \"$f\" || echo 'M'; done | grep -c 'M' || echo 0",
+            "expected": "0"
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "DW4: 検証レポートに 10 PASS が記録されている",
+          "executor": "critic",
+          "critic_required": true,
+          "coding": false,
+          "done_when": {
+            "command": "grep -c 'PASS' docs/reports/event-unit-verification.md",
+            "expected": ">= 10"
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": [
+    {
+      "task": "Adversarial testing framework validated",
+      "command": "echo 'M1 Event Unit verification complete with adversarial testing'"
+    }
+  ]
+}

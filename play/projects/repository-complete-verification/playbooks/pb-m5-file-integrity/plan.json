@@ -1,0 +1,213 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "pb-m5-file-integrity",
+    "branch": "feat/repository-complete-verification",
+    "created": "2026-01-28",
+    "status": "draft",
+    "review_profile": "standard",
+    "reviewed": false,
+    "reviewed_by": "",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Verify all files in repository-map.yaml exist and no orphan files remain",
+    "done_when": [
+      {
+        "criterion": "repository-map.yaml の total_files が実際のファイル数と一致する",
+        "command": "YAML_COUNT=$(grep 'total_files:' docs/repository-map.yaml | awk '{print $2}'); ACTUAL_COUNT=$(find . -type f ! -path './.git/*' ! -path './node_modules/*' ! -path './tmp/*' ! -name '.DS_Store' | wc -l | tr -d ' '); test \"$YAML_COUNT\" = \"$ACTUAL_COUNT\" && echo 'MATCH' || echo \"MISMATCH: yaml=$YAML_COUNT actual=$ACTUAL_COUNT\"",
+        "expected": "MATCH"
+      },
+      {
+        "criterion": "孤立ファイル（どこからも参照されていないファイル）が 0 件である",
+        "command": "bash scripts/orphan-check.sh 2>/dev/null | grep -c 'ORPHAN' || echo 0",
+        "expected": "0"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "All files tracked in repository-map.yaml",
+        "All .claude/ files",
+        "All docs/ files",
+        "All play/ files",
+        "All scripts/ files"
+      ],
+      "excludes": [
+        ".git/",
+        "node_modules/",
+        "tmp/",
+        ".DS_Store"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high"
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user",
+      "approved_at": "2026-01-28T19:10:00Z",
+      "summary": "Verify 260 files with orphan detection"
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "File Count Verification",
+      "description": "Verify repository-map.yaml total_files matches actual count",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "repository-map.yaml が最新で total_files が正確である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/repository-map.yaml && grep -q 'total_files:' docs/repository-map.yaml && echo 'EXISTS'",
+              "expected": "EXISTS"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep 'total_files:' docs/repository-map.yaml | awk '{print $2}'",
+              "expected": ">= 200"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'name:' docs/repository-map.yaml",
+              "expected": ">= 50"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "実際のファイル数を計測しレポートに記録する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find . -type f ! -path './.git/*' ! -path './node_modules/*' ! -path './tmp/*' ! -name '.DS_Store' | wc -l | tr -d ' '",
+              "expected": ">= 200"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find .claude -type f | wc -l | tr -d ' '",
+              "expected": ">= 40"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find docs -type f | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Orphan Detection Script",
+      "description": "Create and run orphan file detection script",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "scripts/orphan-check.sh が存在し孤立ファイルを検出する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f scripts/orphan-check.sh && bash -n scripts/orphan-check.sh && echo 'VALID'",
+              "expected": "VALID"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'ORPHAN\\|orphan' scripts/orphan-check.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'find\\|grep' scripts/orphan-check.sh",
+              "expected": ">= 2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Reference Check",
+      "description": "Verify all files are referenced from state.md or playbook",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "全 .claude/ ファイルが SKILL.md または chain.sh から参照されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash scripts/orphan-check.sh 2>/dev/null | grep '.claude/' | grep -c 'ORPHAN' || echo 0",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find .claude -name '*.sh' -type f | wc -l | tr -d ' '",
+              "expected": ">= 30"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find .claude -name '*.md' -type f | wc -l | tr -d ' '",
+              "expected": ">= 20"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification",
+      "description": "Create file integrity report and confirm zero orphans",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "ファイル整合性レポートが docs/reports/file-integrity-verification.md に存在する",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/reports/file-integrity-verification.md && echo 'EXISTS'",
+              "expected": "EXISTS"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'total\\|count\\|files' docs/reports/file-integrity-verification.md",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'orphan\\|ORPHAN\\|0' docs/reports/file-integrity-verification.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
