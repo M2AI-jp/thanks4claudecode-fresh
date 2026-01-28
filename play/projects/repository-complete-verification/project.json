@@ -65,7 +65,7 @@
         {
           "id": "pb-m2-guards",
           "title": "Guard System Verification",
-          "status": "active",
+          "status": "done",
           "path": "play/projects/repository-complete-verification/playbooks/pb-m2-guards/plan.json"
         }
       ]
@@ -161,9 +161,9 @@
   ],
   "progress": {
     "total_playbooks": 6,
-    "completed_playbooks": 1,
+    "completed_playbooks": 2,
     "current_milestone": "m2",
-    "current_playbook": "pb-m2-guards"
+    "current_playbook": null
   },
   "context": {
     "analysis_result": {
