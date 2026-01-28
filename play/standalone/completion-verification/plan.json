@@ -1,0 +1,444 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "completion-verification",
+    "branch": "feat/completion-check-script",
+    "created": "2026-01-29",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    },
+    "requires_functional_test": true
+  },
+  "goal": {
+    "summary": "リポジトリ完成状態の定義を検証し、報酬詐欺耐性・モジュール動作・MECE状態を最大限試行して確認する",
+    "done_when": [
+      {
+        "criterion": "scripts/completion-check.sh が存在し、exit 0 で終了する",
+        "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "報酬詐欺バイパス試行が全て失敗する（5層全てでブロック）",
+        "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/scripts/reward-fraud-test.sh",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "docs/reports/completion-verification-final.md が存在する",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/reports/completion-verification-final.md",
+        "expected": "exit 0"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "scripts/completion-check.sh の作成",
+        "報酬詐欺バイパス試行（5層全て）",
+        "Hook チェーン動的検証",
+        "MECE 検証（孤立ファイル検出）",
+        "最終検証レポート作成"
+      ],
+      "excludes": [
+        "新機能の実装",
+        "アーキテクチャ変更"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "what": "リポジトリ完成状態の検証と報酬詐欺耐性の確認",
+          "why": "単なるファイル存在確認ではなく、実際に動作して正しくブロックされることを確認するため",
+          "who": "Claude Code エージェント",
+          "when": "即時（このセッション）",
+          "where": "thanks4claudecode-v2 リポジトリ全体",
+          "how": "completion-check.sh 作成、guard exit code 実テスト、バイパス試行"
+        },
+        "risks": {
+          "technical": {
+            "severity": "medium",
+            "description": "guard スクリプトが実環境で正しく動作しない可能性",
+            "mitigation": "実際の exit code を確認"
+          },
+          "scope": {
+            "severity": "low",
+            "description": "検証範囲が広すぎる",
+            "mitigation": "5フェーズに分割して段階的に実行"
+          }
+        },
+        "ambiguity": [
+          {
+            "phrase": "最大限試行",
+            "clarification": "静的チェックではなく、実際にコマンドを実行して exit code を確認"
+          }
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user-feedback",
+      "approved_at": "2026-01-29",
+      "summary": "単騎目標だけでなく、5フェーズで最大限試行を行う",
+      "approved_items": [
+        "completion-check.sh の作成",
+        "報酬詐欺バイパス試行（5層全て）",
+        "Hook チェーン動的検証",
+        "MECE検証",
+        "最終レポート作成"
+      ],
+      "technical_requirements_confirmed": [
+        "guard exit code の実テスト",
+        "バイパス試行で失敗確認"
+      ]
+    }
+  },
+  "max_iterations": 10,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "completion-check.sh の作成",
+      "description": "docs/completion-criteria.md の7条件を一括検証するスクリプトを作成",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "scripts/completion-check.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "head -5 /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh | grep -c 'completion-check'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|FAIL' /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh",
+              "expected": ">= 7"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "completion-check.sh が7条件全てを検証する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -cE 'Skill|SubAgent|Hook|報酬詐欺|MECE|Bash|ドキュメント' /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh",
+              "expected": ">= 7"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh --dry-run 2>&1 | grep -c 'check'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'exit' /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh",
+              "expected": ">= 2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "報酬詐欺バイパス試行（5層全て）",
+      "description": "5層防御の各層でバイパスを試行し、全てブロックされることを確認",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "Layer 1: critic-guard.sh が self_complete なしで status:done をブロック（exit 2）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "echo '{\"tool_input\":{\"file_path\":\"state.md\",\"new_string\":\"status: done\"}}' | bash /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/reward-guard/guards/critic-guard.sh 2>&1; echo \"exit:$?\"",
+              "expected": "contains 'exit:2'"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'exit 2' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/reward-guard/guards/critic-guard.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'self_complete' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/reward-guard/guards/critic-guard.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "Layer 4: subtask-guard.sh が validated_by:critic なしで done をブロック（exit 2）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "manual",
+              "command": "# テスト用 progress.json で実行確認",
+              "expected": "exit 2"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'validated_by.*critic' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/reward-guard/guards/subtask-guard.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'exit 2' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/reward-guard/guards/subtask-guard.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "Layer 5: completion-check.sh（guard版）が未完了 subtask で exit 1",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'exit 1' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/reward-guard/guards/completion-check.sh",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'subtask' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/reward-guard/guards/completion-check.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'progress.json' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/reward-guard/guards/completion-check.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": "reward-fraud-test.sh が5層テストを全て実行し exit 0",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/scripts/reward-fraud-test.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -cE 'Layer|層' /Users/amano/Desktop/thanks4claudecode-v2/scripts/reward-fraud-test.sh",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'exit' /Users/amano/Desktop/thanks4claudecode-v2/scripts/reward-fraud-test.sh",
+              "expected": ">= 2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Hook チェーン動的検証",
+      "description": "Hook -> Event -> Skill -> SubAgent チェーンが正しく動作することを確認",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "SessionStart Hook (session.sh) が実行可能",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -x /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/session.sh || chmod +x /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/session.sh; echo '{\"session_id\":\"test\"}' | bash /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/session.sh; echo \"exit:$?\"",
+              "expected": "contains 'exit:0'"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'session-start' /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/session.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/session.sh && echo 'exists'",
+              "expected": "exists"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "PreToolUse Hook (pre-tool.sh) が保護ファイルをブロック（exit 2）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "echo '{\"tool_input\":{\"command\":\"rm CLAUDE.md\"}}' | bash /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/pre-tool.sh 2>&1; echo \"exit:$?\"",
+              "expected": "contains 'exit:2'"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'HARD_BLOCK\\|BLOCK' /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/pre-tool.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'CLAUDE.md' /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/pre-tool.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "読み取り専用コマンド (ls, cat) が通過（exit 0）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "echo '{\"tool_input\":{\"command\":\"ls -la .claude/\"}}' | bash /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/pre-tool.sh 2>&1; echo \"exit:$?\"",
+              "expected": "contains 'exit:0'"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'read.*command\\|READ_ONLY' /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/pre-tool.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -cE 'ls|cat|grep' /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/pre-tool.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "MECE検証",
+      "description": "全ファイルの参照トレースと孤立ファイル検出",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "orphan-check.sh が孤立ファイルを検出する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/scripts/orphan-check.sh 2>&1 | head -20; echo \"exit:$?\"",
+              "expected": "exit 0 or explicit orphan list"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'orphan\\|孤立' /Users/amano/Desktop/thanks4claudecode-v2/scripts/orphan-check.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/scripts/orphan-check.sh && echo 'exists'",
+              "expected": "exists"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "docs/file-inventory.md または docs/repository-map.yaml で全ファイルが追跡可能",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml && wc -l < /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml",
+              "expected": ">= 100"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '.claude' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'skills' /Users/amano/Desktop/thanks4claudecode-v2/docs/repository-map.yaml",
+              "expected": ">= 5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証レポート作成",
+      "description": "全検証結果を集約し、docs/reports/completion-verification-final.md を作成",
+      "depends_on": ["p2", "p3", "p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "docs/reports/completion-verification-final.md が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/reports/completion-verification-final.md",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|FAIL' /Users/amano/Desktop/thanks4claudecode-v2/docs/reports/completion-verification-final.md",
+              "expected": ">= 7"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '報酬詐欺\\|バイパス' /Users/amano/Desktop/thanks4claudecode-v2/docs/reports/completion-verification-final.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "scripts/completion-check.sh が exit 0 で終了する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh 2>&1 | grep -c 'PASS'",
+              "expected": ">= 7"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/scripts/completion-check.sh 2>&1 | grep -c 'FAIL'",
+              "expected": "== 0"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

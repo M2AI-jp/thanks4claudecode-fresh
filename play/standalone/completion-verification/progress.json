@@ -1,0 +1,314 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "completion-verification",
+    "plan_path": "play/standalone/completion-verification/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.2"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:30:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:35:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:40:00Z"
+    },
+    "p4": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:45:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:51:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f scripts/completion-check.sh: exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["head -5 scripts/completion-check.sh: contains 'completion-check'"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c PASS/FAIL: >= 7"]
+        }
+      },
+      "notes": "scripts/completion-check.sh created successfully"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["7 conditions verified in script"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["--dry-run option works"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["exit 0/1 logic implemented"]
+        }
+      },
+      "notes": "7-condition verification logic implemented"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:35:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["critic-guard.sh blocks with exit 2"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'exit 2': >= 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'self_complete': >= 1"]
+        }
+      },
+      "notes": "Layer 1 critic-guard exit 2 verified"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:35:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["subtask-guard.sh blocks without validated_by:critic"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'validated_by.*critic': >= 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'exit 2': >= 1"]
+        }
+      },
+      "notes": "Layer 4 subtask-guard exit 2 verified"
+    },
+    "p2.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:35:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["completion-check.sh (guard) exits 1 for incomplete subtasks"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'subtask': >= 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'progress.json': >= 1"]
+        }
+      },
+      "notes": "Layer 5 completion-check exit 1 verified"
+    },
+    "p2.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:35:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["bash scripts/reward-fraud-test.sh: exit 0, 14/14 PASS"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c Layer: >= 5"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All 5 layers tested"]
+        }
+      },
+      "notes": "reward-fraud-test.sh 5-layer test passed"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:40:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["session.sh executable and runs with exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'session-start': >= 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["session.sh exists"]
+        }
+      },
+      "notes": "SessionStart Hook verified"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:40:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["pre-tool.sh blocks rm CLAUDE.md with exit 2"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c HARD_BLOCK/BLOCK: >= 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["CLAUDE.md protection active"]
+        }
+      },
+      "notes": "PreToolUse Hook blocks destructive commands"
+    },
+    "p3.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:40:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["ls -la .claude/ passes with exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Read-only commands not blocked"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Whitelist functioning"]
+        }
+      },
+      "notes": "Read-only commands pass through"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["orphan-check.sh exists and runs"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c orphan: >= 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Orphan detection implemented"]
+        }
+      },
+      "notes": "orphan-check.sh verified"
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["docs/repository-map.yaml: 398 lines"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c .claude: >= 10"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c skills: >= 5"]
+        }
+      },
+      "notes": "Repository map comprehensive"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:51:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["docs/reports/completion-verification-final.md exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c PASS/FAIL: >= 7"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Report includes all verification results"]
+        }
+      },
+      "notes": "Final report created"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:51:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["bash scripts/completion-check.sh: exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["7/7 PASS, 0 FAIL"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All 7 conditions verified"]
+        }
+      },
+      "notes": "completion-check.sh exits 0"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "validated_by": "codex-delegate",
+    "validated_at": "2026-01-29T01:51:00Z",
+    "evidence": [
+      "done_when[0]: scripts/completion-check.sh exit 0 - PASS (7/7 conditions)",
+      "done_when[1]: scripts/reward-fraud-test.sh exit 0 - PASS (14/14 tests)",
+      "done_when[2]: docs/reports/completion-verification-final.md exists - PASS",
+      "IR01_PROXY_VERIFICATION_PROHIBITION: PASS",
+      "IR02_EVIDENCE_REQUIREMENT: PASS",
+      "IR03_FUNCTIONAL_TEST_MANDATORY: PASS",
+      "IR04_NO_SELF_REWARD: PASS",
+      "IR05_HOLLOW_IMPLEMENTATION_DETECTION: PASS",
+      "IR06_TEST_TAMPERING_PROHIBITION: PASS"
+    ],
+    "notes": "Codex 経由の独立検証完了。全 done_when 条件と IMMUTABLE_RULES を検証。"
+  }
+}

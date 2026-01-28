@@ -19,12 +19,12 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/completion-verification/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: feat/completion-check-script
 last_archived: play/archive/repository-verification
-review_pending: false
+review_pending: true
 ```
 
 ---
@@ -32,11 +32,14 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: false
+self_complete: true
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p_final
+done_criteria:
+  - scripts/completion-check.sh が存在し exit 0 で終了
+  - 報酬詐欺バイパス試行が全て失敗する
+  - docs/reports/completion-verification-final.md が存在する
+status: done
 ```
 
 ---
@@ -44,7 +47,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-29 01:21:36
+last_start: 2026-01-29 01:49:34
 last_end: 2026-01-28 23:04:17
 last_clear: 2026-01-20
 ```
