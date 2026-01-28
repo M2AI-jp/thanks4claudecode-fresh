@@ -1,0 +1,385 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "repository-cleanup",
+    "branch": "chore/repository-cleanup",
+    "created": "2026-01-29",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    },
+    "requires_functional_test": true
+  },
+  "goal": {
+    "summary": "リポジトリのキャッシュファイル削除、全モジュールテスト実行、Hook起動検証、不要ファイル特定・削除を行う",
+    "done_when": [
+      {
+        "criterion": "__pycache__ ディレクトリがリポジトリ内に存在しない",
+        "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -type d -name '__pycache__' | wc -l | tr -d ' '",
+        "expected": "== 0"
+      },
+      {
+        "criterion": ".pytest_cache ディレクトリがリポジトリ内に存在しない",
+        "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -type d -name '.pytest_cache' | wc -l | tr -d ' '",
+        "expected": "== 0"
+      },
+      {
+        "criterion": "pytest が exit 0 で終了する",
+        "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && python -m pytest products/",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "Hook 設定ファイル(.claude/settings.local.json)が存在する",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/settings.local.json",
+        "expected": "exit 0"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "__pycache__ ディレクトリの削除",
+        ".pytest_cache ディレクトリの削除",
+        "products/ 配下のテスト実行",
+        "Hook 設定の検証",
+        "不要ファイルの特定と削除"
+      ],
+      "excludes": [
+        "新機能の追加",
+        "コードのリファクタリング",
+        "ドキュメントの更新"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "ready_for_playbook": true,
+        "5w1h": {
+          "who": "Claude / 開発者",
+          "what": "リポジトリクリーンアップと検証（4段階作業）",
+          "when": "即時",
+          "where": "/Users/amano/Desktop/thanks4claudecode-v2",
+          "why": "リポジトリの整理と動作確認",
+          "how": "キャッシュ削除→テスト実行→Hook検証→不要ファイル削除"
+        },
+        "test_strategy": {
+          "test_types": ["unit", "integration"],
+          "coverage_target": "existing",
+          "rationale": "既存テストの実行確認が主目的"
+        },
+        "success_criteria": {
+          "functional": [
+            "全__pycache__と.pytest_cacheが削除されている",
+            "全テストがパスする",
+            "Hook設定が正常に動作する",
+            "不要ファイルが特定・削除されている"
+          ],
+          "non_functional": [
+            "保護対象ファイルが維持されている"
+          ],
+          "breaking_changes": false
+        },
+        "risks": {
+          "technical": [],
+          "scope": [],
+          "dependency": []
+        },
+        "ambiguity": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user",
+      "approved_at": "2026-01-29T00:15:00Z",
+      "summary": "AUTO_APPROVED - ユーザーは「人間は何もしないよ」と明言",
+      "approved_items": [
+        "キャッシュファイル削除",
+        "全モジュール動作テスト",
+        "Hook起動検証",
+        "不要ファイル特定と削除"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "キャッシュファイル削除",
+      "description": "__pycache__ と .pytest_cache ディレクトリを削除する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "__pycache__ ディレクトリがリポジトリ内に存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -type d -name '__pycache__' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -name '*.pyc' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -name '*.pyo' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": ".pytest_cache ディレクトリがリポジトリ内に存在しない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -type d -name '.pytest_cache' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -type d -name '.mypy_cache' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/products/",
+              "expected": "no cache directories"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "全モジュール動作テスト",
+      "description": "pytest を実行して全テストが PASS することを確認する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "pytest が exit 0 で終了する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && python -m pytest products/ -v",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && python -m pytest products/ --collect-only -q | tail -1",
+              "expected": "contains 'test'"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && python -c 'import products; print(\"import ok\")'",
+              "expected": "contains 'import ok'"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Hook起動検証",
+      "description": "Hook 設定の整合性を確認する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "Hook 設定ファイル(.claude/settings.local.json)が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/settings.local.json",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -e '.hooks' /Users/amano/Desktop/thanks4claudecode-v2/.claude/settings.local.json > /dev/null",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.hooks | length' /Users/amano/Desktop/thanks4claudecode-v2/.claude/settings.local.json",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "Hook スクリプト(.claude/hooks/pre-tool.sh)が実行可能である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -x /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/pre-tool.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "head -1 /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/pre-tool.sh",
+              "expected": "contains '#!/'"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls -la /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/*.sh | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "不要ファイル特定と削除",
+      "description": "orphan ファイルや未使用ファイルを特定し、必要に応じて削除する",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "git status で untracked ファイルのリストが確認できる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && git status --porcelain",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && git ls-files --others --exclude-standard | wc -l | tr -d ' '",
+              "expected": ">= 0"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && git clean -n",
+              "expected": "list of files"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "done_when の全条件を検証する",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "__pycache__ ディレクトリがリポジトリ内に存在しない（done_when[0]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -type d -name '__pycache__' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -name '*.pyc' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -name '*.pyo' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": ".pytest_cache ディレクトリがリポジトリ内に存在しない（done_when[1]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -type d -name '.pytest_cache' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2 -type d -name '.mypy_cache' | wc -l | tr -d ' '",
+              "expected": "== 0"
+            },
+            "completeness": {
+              "type": "manual",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/products/",
+              "expected": "no cache directories"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "pytest が exit 0 で終了する（done_when[2]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && python -m pytest products/ -v",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && python -c 'import products; print(\"import ok\")'",
+              "expected": "contains 'import ok'"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cd /Users/amano/Desktop/thanks4claudecode-v2 && python -m pytest products/ --tb=short 2>&1 | tail -5",
+              "expected": "contains 'passed'"
+            }
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "Hook 設定ファイル(.claude/settings.local.json)が存在する（done_when[3]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/.claude/settings.local.json",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq -e '.hooks' /Users/amano/Desktop/thanks4claudecode-v2/.claude/settings.local.json > /dev/null",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.hooks | length' /Users/amano/Desktop/thanks4claudecode-v2/.claude/settings.local.json",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

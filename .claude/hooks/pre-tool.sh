@@ -45,6 +45,44 @@ fi
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 
+
+# === critic 直接呼び出しブロック（playbook の有無に関係なく実行） ===
+# critic は Codex 経由（/crit または codex-delegate）でのみ呼び出し可能
+check_critic_direct_call() {
+    local input="$1"
+    local tool_name
+    tool_name=$(echo "$input" | jq -r '.tool_name // empty')
+
+    if [[ "$tool_name" == "Task" ]]; then
+        local subagent_type
+        subagent_type=$(echo "$input" | jq -r '.tool_input.subagent_type // empty')
+
+        if [[ "$subagent_type" == "critic" ]]; then
+            # codex-delegate からの呼び出しは許可（環境変数で判定）
+            if [[ "${CODEX_DELEGATE_CALLING:-}" != "true" ]]; then
+                cat >&2 <<CRITIC_BLOCK
+========================================
+  [BLOCK] critic 直接呼び出し禁止
+========================================
+
+  critic SubAgent は自己評価防止のため
+  直接呼び出しが禁止されています。
+
+  正しい呼び出し方法:
+    /crit コマンドを使用してください
+    （Codex 経由で独立検証を行います）
+
+========================================
+CRITIC_BLOCK
+                exit 2
+            fi
+        fi
+    fi
+}
+
+# critic チェックを実行（最優先）
+check_critic_direct_call "$INPUT"
+
 # === prompt-analyzer 強制ガード ===
 # マーカーがない場合、prompt-analyzer 以外をブロック（読み取り系は例外）
 if [[ ! -f "$MARKER_FILE" ]]; then
@@ -60,7 +98,7 @@ if [[ ! -f "$MARKER_FILE" ]]; then
             Task)
                 SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // empty')
                 BLOCK_DETAIL="subagent=$SUBAGENT_TYPE"
-                if [[ "$SUBAGENT_TYPE" == "prompt-analyzer" ]]; then
+                            if [[ "$SUBAGENT_TYPE" == "prompt-analyzer" ]]; then
                     # prompt-analyzer → マーカー作成して許可
                     SHOULD_SET_MARKER=true
                     ALLOW_WITHOUT_ANALYZER=true

@@ -4,6 +4,32 @@
 
 set -euo pipefail
 
+# === reviewer 証拠永続化チェック ===
+# reviewed: true を設定する際、evidence が必須
+check_reviewer_evidence() {
+    local input="$1"
+    local tool_name
+    tool_name=$(echo "$input" | jq -r '.tool_name // empty')
+
+    if [[ "$tool_name" == "Edit" || "$tool_name" == "Write" ]]; then
+        local file_path
+        file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty')
+
+        # plan.json への書き込みで reviewed: true が含まれる場合
+        if [[ "$file_path" == *"plan.json" ]]; then
+            local content
+            content=$(echo "$input" | jq -r '.tool_input.content // .tool_input.new_string // empty')
+
+            if echo "$content" | grep -q '"reviewed": true'; then
+                # reviewer_evidence が空でないか確認
+                # （実際の検証は progress.json を確認する必要がある）
+                echo "[WARN] reviewed: true が設定されました。reviewer_evidence を確認してください。" >&2
+            fi
+        fi
+    fi
+}
+
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_DIR="$SCRIPT_DIR/../skills"
 EVENTS_DIR="$SCRIPT_DIR/../events"
