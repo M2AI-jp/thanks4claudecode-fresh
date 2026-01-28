@@ -1,0 +1,227 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "project-fix",
+    "plan_path": "play/standalone/project-fix/plan.json",
+    "status": "completed"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.4"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-28T13:28:00+09:00"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-28T13:35:00+09:00"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-28T13:45:00+09:00"
+    },
+    "p4": {
+      "status": "done",
+      "updated_at": "2026-01-28T14:05:00+09:00"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-28T14:10:00+09:00"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T13:28:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f archive/project.json -> exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["test ! -f projects/project.json -> exit 0"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["jq .meta.id -> new-repo-docs-sync"]
+        }
+      },
+      "notes": "project.json を archive へ移動完了"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T13:28:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test ! -d new-repo-docs-sync -> exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["ls projects | grep -v template | wc -l -> 0"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["find non-template dirs -> 0"]
+        }
+      },
+      "notes": "空ディレクトリ削除完了"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T13:35:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep status: null -> 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep active: null -> 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep status: idle -> 0"]
+        }
+      },
+      "notes": "state.md の project.status を idle から null に変更完了"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T13:45:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep mkdir.*playbooks pm.md -> 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep playbooks/ pm.md -> 6件"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -n mkdir pm.md -> 535行と539行"]
+        }
+      },
+      "notes": "pm.md Step 0.1 に mkdir 指示を追加完了"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T14:05:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep verdict: fix -> 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep verdict: deprecate -> 0"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["line 277: verdict: fix"]
+        }
+      },
+      "notes": "verdict を fix に変更、Update History に履歴追加"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T14:10:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["find non-template dirs -> 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["ls projects | grep -v template -> 0"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["test -d archive/new-repo-docs-sync -> exists"]
+        }
+      },
+      "notes": "done_when[0] 検証完了"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T14:10:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep status: null -> 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep idle -> 0"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["status: null in project section"]
+        }
+      },
+      "notes": "done_when[1] 検証完了"
+    },
+    "p_final.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T14:10:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep mkdir.*playbooks -> 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["mkdir in line 535"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Step 0.1 section updated"]
+        }
+      },
+      "notes": "done_when[2] 検証完了"
+    },
+    "p_final.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T14:10:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep verdict: fix -> 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep verdict: deprecate -> 0"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["line 277: verdict: fix"]
+        }
+      },
+      "notes": "done_when[3] 検証完了"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "done_when[0]: play/projects に壊れた project なし -> PASS",
+      "done_when[1]: state.md project.status = null -> PASS",
+      "done_when[2]: pm.md に mkdir 指示あり -> PASS",
+      "done_when[3]: verdict: fix -> PASS"
+    ],
+    "notes": "全 done_when 条件が PASS。playbook 完了。"
+  }
+}

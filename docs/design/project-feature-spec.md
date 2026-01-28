@@ -271,29 +271,35 @@ root_cause:
 
 ---
 
-## verdict: 廃止判定
+## verdict: 修正判定
 
 ```yaml
-verdict: deprecate
+verdict: fix
 rationale: |
-  Phase 2-3 の検証結果に基づき、project 機能の廃止を判定する。
+  Codex との3回の再検討結果に基づき、project 機能の最小限修正を判定する。
+
+  再検討経緯:
+  - 当初は deprecate と判定（7 PASS / 5 FAIL = 58%）
+  - ユーザーから「長期目標管理は必須機能」との指摘
+  - Codex と3回の徹底的な再検討を実施
+
+  修正内容（最小限）:
+  1. 壊れた project (new-repo-docs-sync) を archive へ移動
+  2. state.md の project.status を idle から null に修正
+  3. pm.md Step 0.1 に明示的な mkdir 指示を追加
+
+  修正後のステータス:
+  - play/projects/ に壊れた project が存在しない（クリーンアップ済み）
+  - pm.md が playbooks/ ディレクトリ作成を明示的に指示
+  - 既存機能の改修のみで新規ファイル追加なし
 
   判定理由:
-  1. 検証結果が 7 PASS / 5 FAIL（58% 成功率）で基準未達
-  2. Critical 1件 + High 2件の重大な問題が存在
-  3. 既存の project (new-repo-docs-sync) は一度も正常動作していない
-  4. standalone playbook は正常に動作しており、十分な機能を提供
-  5. 2層管理（project + standalone）は複雑性を増すだけでメリットがない
-
-  廃止後のアクション:
-  1. pm.md から M090（project 階層サポート）を削除
-  2. state.md の project セクションを削除
-  3. play/projects/ ディレクトリを削除（archive 含む）
-  4. play/projects/template/project.json を削除
-  5. standalone playbook を唯一のモードとして最適化
+  1. 長期目標管理は PM コスト分散のため必須
+  2. 最小限の修正（3点）で問題解決可能
+  3. 既存コード資産（35個の state.md パーサー）を活用
 
 decision_date: 2026-01-28
-decided_by: project-feature-validation playbook
+decided_by: project-fix playbook (Codex 再検討に基づく)
 ```
 
 ---
@@ -305,3 +311,4 @@ decided_by: project-feature-validation playbook
 | 2026-01-28 | Initial creation (p1.1) |
 | 2026-01-28 | Phase 2-3 validation results added |
 | 2026-01-28 | Phase 4: issues documented, verdict=deprecate |
+| 2026-01-28 | Codex 再検討: verdict=fix に変更、最小限修正を実施 |

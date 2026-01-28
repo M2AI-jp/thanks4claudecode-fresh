@@ -1,0 +1,366 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "project-fix",
+    "branch": "feat/repository-cleanup-and-project-deprecation",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Project 機能を最小限の修正で正常動作させる（Codex との3回の再検討結果に基づく）",
+    "done_when": [
+      {
+        "criterion": "play/projects/ に壊れた project（playbooks ディレクトリなし）が存在しない",
+        "command": "find /Users/amano/Desktop/thanks4claudecode-v2/play/projects -maxdepth 1 -type d ! -name 'projects' ! -name 'template' -exec sh -c 'test -d \"$1/playbooks\" || echo \"$1\"' _ {} \\; | wc -l | tr -d ' '",
+        "expected": "0"
+      },
+      {
+        "criterion": "state.md の project.status が null である",
+        "command": "grep -A2 '^## project' /Users/amano/Desktop/thanks4claudecode-v2/state.md | grep 'status:' | grep -c 'null'",
+        "expected": "1"
+      },
+      {
+        "criterion": "pm.md Step 0.1 に mkdir 指示が含まれる",
+        "command": "grep -c 'mkdir.*playbooks' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/golden-path/agents/pm.md",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "docs/design/project-feature-spec.md の verdict が fix である",
+        "command": "grep -c 'verdict: fix' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+        "expected": "1"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "壊れた project のアーカイブ移動",
+        "state.md の status 修正（idle -> null）",
+        "pm.md Step 0.1 への mkdir 指示追加",
+        "project-feature-spec.md の verdict 変更"
+      ],
+      "excludes": [
+        "Project 機能の廃止",
+        "新規 project 機能の追加",
+        "他の playbook への影響"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer + Codex 3回再検討",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code / pm SubAgent",
+          "what": "Project 機能の最小限修正（Codex 再検討結果に基づく）",
+          "when": "即時",
+          "where": "pm.md, state.md, play/projects/new-repo-docs-sync/",
+          "why": "Project 機能を廃止せず、最小限の修正で正常動作させる",
+          "how": "4ステップ（クリーンアップ、status修正、pm.md修正、検証）"
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "35個の state.md パーサーへの影響",
+              "severity": "medium",
+              "mitigation": "grep/sed パターンを事前確認済み"
+            },
+            {
+              "risk": "pm.md 修正が LLM 解釈に依存",
+              "severity": "low",
+              "mitigation": "明示的な mkdir 指示を追加"
+            }
+          ]
+        },
+        "codex_conclusion": {
+          "round_1": "project.goal 保持が必要",
+          "round_2": "修正は pm.md Step 0.1 のみで十分",
+          "round_3": "追加で壊れた project クリーンアップと status 修正も必要",
+          "final_tasks": [
+            "壊れた project.json を archive へ移動",
+            "state.md の status を idle から null に修正",
+            "pm.md Step 0.1 に明示的な mkdir 指示を追加",
+            "project 作成フローを検証"
+          ]
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "AUTO_APPROVED",
+      "approved_at": "2026-01-28T13:24:00+09:00",
+      "summary": "Codex 3回再検討済み、セッション継続で AUTO_APPROVED",
+      "approved_items": [
+        "壊れた project のクリーンアップ",
+        "state.md の status 修正",
+        "pm.md への mkdir 指示追加",
+        "verdict を fix に変更"
+      ],
+      "technical_requirements_confirmed": [
+        "play/archive/projects/ へ移動",
+        "grep/sed パターン確認済み"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "壊れた project のクリーンアップ",
+      "description": "playbooks ディレクトリがない壊れた project を archive に移動し、空ディレクトリを削除",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "play/projects/new-repo-docs-sync/project.json が play/archive/projects/new-repo-docs-sync/project.json に移動されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/play/archive/projects/new-repo-docs-sync/project.json",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test ! -f /Users/amano/Desktop/thanks4claudecode-v2/play/projects/new-repo-docs-sync/project.json",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq -e '.meta.id' /Users/amano/Desktop/thanks4claudecode-v2/play/archive/projects/new-repo-docs-sync/project.json",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "play/projects/new-repo-docs-sync/ ディレクトリが削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -d /Users/amano/Desktop/thanks4claudecode-v2/play/projects/new-repo-docs-sync",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/play/projects/ | grep -v template | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/play/projects -maxdepth 1 -type d ! -name 'projects' ! -name 'template' | wc -l | tr -d ' '",
+              "expected": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "state.md の status 修正",
+      "description": "project.status を idle から null に修正",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "state.md の project.status が null である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -A5 '^## project' /Users/amano/Desktop/thanks4claudecode-v2/state.md | grep 'status: null'",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -A5 '^## project' /Users/amano/Desktop/thanks4claudecode-v2/state.md | grep -c 'active: null'",
+              "expected": "1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -A5 '^## project' /Users/amano/Desktop/thanks4claudecode-v2/state.md | grep -c 'status: idle'",
+              "expected": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "pm.md Step 0.1 修正",
+      "description": "Step 0.1 に明示的な mkdir 指示を追加して playbooks/ ディレクトリ作成を保証",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "pm.md の Step 0.1 に mkdir -p play/projects/<project-id>/playbooks 指示が含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -A20 'project 作成時:' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/golden-path/agents/pm.md | grep -c 'mkdir.*playbooks'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'playbooks/<playbook-id>' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/golden-path/agents/pm.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -B5 -A10 'Step 0.1\\|step_0.1\\|project 作成' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/golden-path/agents/pm.md | grep -c 'mkdir'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "project-feature-spec 更新",
+      "description": "verdict を deprecate から fix に変更",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "docs/design/project-feature-spec.md の verdict が fix である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'verdict: fix' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": "1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'verdict: deprecate' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -A2 'verdict:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md | head -1",
+              "expected": "contains 'fix'"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "全ての done_when 条件を検証",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "play/projects/ に壊れた project が存在しない（done_when[0]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/play/projects -maxdepth 1 -type d ! -name 'projects' ! -name 'template' -exec sh -c 'test -d \"$1/playbooks\" || echo \"$1\"' _ {} \\; | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/play/projects/ | grep -v template | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/thanks4claudecode-v2/play/archive/projects/new-repo-docs-sync",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "state.md の project.status が null である（done_when[1]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -A2 '^## project' /Users/amano/Desktop/thanks4claudecode-v2/state.md | grep 'status:' | grep -c 'null'",
+              "expected": "1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -A5 '^## project' /Users/amano/Desktop/thanks4claudecode-v2/state.md | grep -c 'idle'",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep 'status: null' /Users/amano/Desktop/thanks4claudecode-v2/state.md | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "pm.md に mkdir 指示が含まれる（done_when[2]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'mkdir.*playbooks' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/golden-path/agents/pm.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep 'mkdir' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/golden-path/agents/pm.md | head -1",
+              "expected": "contains 'playbooks'"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'project 作成時' /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/golden-path/agents/pm.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "project-feature-spec.md の verdict が fix である（done_when[3]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'verdict: fix' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": "1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'verdict: deprecate' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
