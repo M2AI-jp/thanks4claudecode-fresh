@@ -43,7 +43,7 @@
         {
           "id": "pb-m1-event-units",
           "title": "Event Unit Verification",
-          "status": "pending",
+          "status": "done",
           "path": "play/projects/repository-complete-verification/playbooks/pb-m1-event-units/plan.json"
         }
       ]
@@ -161,9 +161,9 @@
   ],
   "progress": {
     "total_playbooks": 6,
-    "completed_playbooks": 0,
+    "completed_playbooks": 1,
     "current_milestone": "m1",
-    "current_playbook": "pb-m1-event-units"
+    "current_playbook": null
   },
   "context": {
     "analysis_result": {
@@ -185,7 +185,10 @@
           "files": 260
         },
         "test_strategy": {
-          "test_types": ["integration", "e2e"],
+          "test_types": [
+            "integration",
+            "e2e"
+          ],
           "coverage_target": "comprehensive",
           "key_edge_cases": [
             "Hook firing failure fallback",

@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: play/projects/repository-complete-verification/project.json
+active: null
 current_milestone: m1
-status: in_progress
+status: idle
 ```
 
 ---
@@ -19,11 +19,11 @@ status: in_progress
 ## playbook
 
 ```yaml
-active: play/projects/repository-complete-verification/playbooks/pb-m1-event-units/plan.json
-parent_project: repository-complete-verification
-current_phase: p1
-branch: feat/repository-complete-verification
-last_archived: play/archive/health-dashboard-cli
+active: null
+parent_project: null
+current_phase: null
+branch: null
+last_archived: play/archive/projects/repository-complete-verification/pb-m1-event-units
 review_pending: false
 ```
 
@@ -33,14 +33,10 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: m1
-phase: p1
-done_criteria:
-  - "DW1: 10 Event Unit chain.sh が存在し実行可能"
-  - "DW2: Adversarial Test - Codex gaming_succeeded: false"
-  - "DW3: 全 chain.sh が telemetry を呼び出している"
-  - "DW4: 検証レポートに 10 PASS が記録されている"
-status: in_progress
+milestone: null
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
