@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/mini-lisp/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: feat/mini-lisp-interpreter
-last_archived: play/archive/projects/play/projects/repository-complete-verification/project.json/pb-m6-reward-fraud
+current_phase: null
+branch: null
+last_archived: play/archive/mini-lisp
 review_pending: false
 ```
 
@@ -34,16 +34,9 @@ review_pending: false
 ```yaml
 self_complete: false
 milestone: null
-phase: p1
-done_criteria:
-  - "products/mini_lisp/lexer.py が存在する"
-  - "products/mini_lisp/parser.py が存在する"
-  - "products/mini_lisp/evaluator.py が存在する"
-  - "products/mini_lisp/repl.py が存在する"
-  - "python -m pytest products/mini_lisp/tests/ が exit 0 で終了する"
-  - "(+ 1 2) が 3 を返す"
-  - "(define x 10) (+ x 5) が 15 を返す"
-status: in_progress
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
