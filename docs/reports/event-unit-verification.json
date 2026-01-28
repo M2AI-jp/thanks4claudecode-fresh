@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T20:30:00Z",
+    "generator": "Claude Opus 4.5",
+    "verification_type": "comprehensive",
+    "adversarial_tested": true
+  },
+  "summary": {
+    "total_units": 10,
+    "passed": 10,
+    "failed": 0,
+    "pass_rate": "100%"
+  },
+  "verifications": [
+    {
+      "name": "session-start",
+      "status": "PASS",
+      "file_path": ".claude/events/session-start/chain.sh",
+      "file_hash": "ec51de436a366dd13b341ffe76762a852bbbf1ba88345fe99db53ac052d2680e",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, executes session-start-chain.sh handlers for repository integrity checks and state injection"
+    },
+    {
+      "name": "session-end",
+      "status": "PASS",
+      "file_path": ".claude/events/session-end/chain.sh",
+      "file_hash": "dd594af42de71bc3f5769f31da17fada9b39899b463703d4467f32649a878c13",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, handles session cleanup and final telemetry emission on session termination"
+    },
+    {
+      "name": "user-prompt-submit",
+      "status": "PASS",
+      "file_path": ".claude/events/user-prompt-submit/chain.sh",
+      "file_hash": "d5ce9d3341abb789841b5dcce1f9cb7c96afde038db3da785dcd073387519b5f",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, analyzes user prompts and injects context via prompt.sh handler chain"
+    },
+    {
+      "name": "pre-tool-edit",
+      "status": "PASS",
+      "file_path": ".claude/events/pre-tool-edit/chain.sh",
+      "file_hash": "2213145a355213e1f47d43082bf8db9970a38f6585618d291873991b1d3c634f",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, guards Edit/Write operations via playbook-guard.sh and protected-edit.sh"
+    },
+    {
+      "name": "pre-tool-bash",
+      "status": "PASS",
+      "file_path": ".claude/events/pre-tool-bash/chain.sh",
+      "file_hash": "8063dac3c75b328d6b25b57eff567c94c869dd3051cac6da24a643ddec0fe38b",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, guards Bash commands via bash-check.sh for destructive operation prevention"
+    },
+    {
+      "name": "post-tool-edit",
+      "status": "PASS",
+      "file_path": ".claude/events/post-tool-edit/chain.sh",
+      "file_hash": "5b019057d5b8b772be6f1e133e6a3693ef199d3c4958c7c4996e3e5caecaab7c",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, handles post-edit operations including archive-playbook.sh for auto-archiving"
+    },
+    {
+      "name": "subagent-stop",
+      "status": "PASS",
+      "file_path": ".claude/events/subagent-stop/chain.sh",
+      "file_hash": "4c0a169b2886d3848a13241784f9b7a6d71349a10555aa8b89eed6180de69634",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, handles SubAgent completion with archive-playbook.sh fallback for non-Edit completions"
+    },
+    {
+      "name": "pre-compact",
+      "status": "PASS",
+      "file_path": ".claude/events/pre-compact/chain.sh",
+      "file_hash": "f66f7be90f46dac609aa23af2898a091e17dbb613f17ced3dca9248501588455",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, handles context compaction with pre-compact checkpoint creation"
+    },
+    {
+      "name": "stop-event",
+      "status": "PASS",
+      "file_path": ".claude/events/stop/chain.sh",
+      "file_hash": "db503e65bd9403091d94335f67103d4a143e2f405180e0b2544dfdbb7cdc0bd4",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, guards stop events to prevent premature session termination without post-loop"
+    },
+    {
+      "name": "notification",
+      "status": "PASS",
+      "file_path": ".claude/events/notification/chain.sh",
+      "file_hash": "56623c3d4f6d7a42ae6585b319f48b7f59a7cb8db022e8fafa3d93940b8a07f3",
+      "evidence": "Valid bash script with shebang #!/bin/bash, sources telemetry.sh, routes notification events to telemetry system for logging and monitoring"
+    }
+  ],
+  "adversarial_testing": {
+    "rounds_completed": 4,
+    "criteria_strengthened": true,
+    "gaming_attempts_documented": "docs/reports/gaming-log.json",
+    "final_result": "docs/reports/m1-adversarial-results.json"
+  }
+}

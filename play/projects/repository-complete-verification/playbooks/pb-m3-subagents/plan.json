@@ -1,0 +1,192 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "pb-m3-subagents",
+    "branch": "feat/repository-complete-verification",
+    "created": "2026-01-28",
+    "status": "draft",
+    "review_profile": "standard",
+    "reviewed": false,
+    "reviewed_by": "",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Verify all 7 SubAgents are correctly defined and invocable via Task",
+    "done_when": [
+      {
+        "criterion": ".claude/agents/ に 7 つの SubAgent ファイルが存在する",
+        "command": "ls .claude/agents/*.md 2>/dev/null | wc -l | tr -d ' '",
+        "expected": "7"
+      },
+      {
+        "criterion": "skills/*/agents/ に 7 つの実体ファイルが存在する",
+        "command": "find .claude/skills -path '*/agents/*.md' | wc -l | tr -d ' '",
+        "expected": "7"
+      },
+      {
+        "criterion": ".claude/agents/ と skills/*/agents/ のファイル名が一致する",
+        "command": "diff <(basename -a .claude/agents/*.md 2>/dev/null | sort) <(find .claude/skills -path '*/agents/*.md' -exec basename {} \\; | sort) | wc -l | tr -d ' '",
+        "expected": "0"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "pm.md",
+        "critic.md",
+        "reviewer.md",
+        "prompt-analyzer.md",
+        "executor-resolver.md",
+        "codex-delegate.md",
+        "coderabbit-delegate.md"
+      ],
+      "excludes": []
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high"
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user",
+      "approved_at": "2026-01-28T19:10:00Z",
+      "summary": "Verify 7 SubAgents with Task invocation testing"
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "SubAgent Inventory",
+      "description": "Create inventory of all SubAgents and verify structure",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "SubAgent リスト（7件）が docs/subagent-inventory.md に記録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/subagent-inventory.md && grep -c '^| ' docs/subagent-inventory.md",
+              "expected": ">= 7"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'pm\\|critic\\|reviewer\\|prompt-analyzer\\|executor-resolver\\|codex-delegate\\|coderabbit-delegate' docs/subagent-inventory.md",
+              "expected": ">= 7"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '\\.md' docs/subagent-inventory.md",
+              "expected": ">= 7"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Symlink Verification",
+      "description": "Verify .claude/agents/ symlinks point to correct skill agents",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": ".claude/agents/ 内の全ファイルが skills/*/agents/ へのシンボリックリンクである",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for f in .claude/agents/*.md; do test -L \"$f\" && echo 'SYMLINK'; done | grep -c 'SYMLINK'",
+              "expected": "7"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/agents/*.md; do readlink \"$f\" | grep -q 'skills' && echo 'OK'; done | grep -c 'OK'",
+              "expected": "7"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "for f in .claude/agents/*.md; do test -e \"$f\" && echo 'EXISTS'; done | grep -c 'EXISTS'",
+              "expected": "7"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "SubAgent Content Verification",
+      "description": "Verify each SubAgent has required sections",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "全 SubAgent ファイルに description セクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for f in .claude/skills/*/agents/*.md; do grep -q '^description:' \"$f\" && echo 'HAS_DESC'; done | grep -c 'HAS_DESC'",
+              "expected": "7"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/skills/*/agents/*.md; do grep -q '^##' \"$f\" && echo 'HAS_SECTION'; done | grep -c 'HAS_SECTION'",
+              "expected": "7"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "for f in .claude/skills/*/agents/*.md; do wc -l < \"$f\"; done | awk '{sum+=$1} END{print (sum > 100 ? \"SUBSTANTIAL\" : \"MINIMAL\")}'",
+              "expected": "SUBSTANTIAL"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification",
+      "description": "Verify SubAgent consistency and documentation",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "SubAgent 検証レポートが docs/reports/subagent-verification.md に存在する",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/reports/subagent-verification.md && echo 'EXISTS'",
+              "expected": "EXISTS"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|VERIFIED' docs/reports/subagent-verification.md",
+              "expected": ">= 7"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'pm\\|critic\\|reviewer' docs/reports/subagent-verification.md",
+              "expected": ">= 3"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

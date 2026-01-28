@@ -1,0 +1,246 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "pb-m6-reward-fraud",
+    "branch": "feat/repository-complete-verification",
+    "created": "2026-01-28",
+    "status": "draft",
+    "review_profile": "standard",
+    "reviewed": false,
+    "reviewed_by": "",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Verify reward fraud prevention mechanisms function correctly with critic validation",
+    "done_when": [
+      {
+        "criterion": "reward-fraud-test.sh が exit 0 で終了する",
+        "command": "bash scripts/reward-fraud-test.sh 2>/dev/null; echo $?",
+        "expected": "0"
+      },
+      {
+        "criterion": "critic-guard.sh が critic なしの done 変更をブロックする",
+        "command": "echo '{\"tool_input\":{\"file_path\":\"play/test/progress.json\",\"new_string\":\"done\"}}' | VALIDATED_BY='' bash .claude/skills/reward-guard/guards/critic-guard.sh 2>&1 | grep -c 'BLOCK\\|block' || echo 0",
+        "expected": ">= 1"
+      },
+      {
+        "criterion": "subtask-guard.sh が validated_by 未設定の status:done をブロックする",
+        "command": "echo '{\"tool_input\":{\"file_path\":\"play/test/progress.json\",\"new_string\":\"status.*done\"}}' | bash .claude/skills/reward-guard/guards/subtask-guard.sh 2>&1 | grep -c 'BLOCK\\|block\\|validated_by' || echo 0",
+        "expected": ">= 1"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "critic-guard.sh",
+        "subtask-guard.sh",
+        "phase-status-guard.sh",
+        "scope-guard.sh",
+        "completion-check.sh",
+        "progress-reminder.sh",
+        "critic.md SubAgent"
+      ],
+      "excludes": []
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high"
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user",
+      "approved_at": "2026-01-28T19:10:00Z",
+      "summary": "Verify reward fraud prevention with BLOCK testing"
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Reward Guard Inventory",
+      "description": "Create inventory of all reward fraud prevention mechanisms",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "報酬詐欺防止機構リストが docs/reward-guard-inventory.md に記録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/reward-guard-inventory.md && grep -c '^| ' docs/reward-guard-inventory.md",
+              "expected": ">= 6"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'critic\\|subtask\\|phase\\|scope\\|completion\\|progress' docs/reward-guard-inventory.md",
+              "expected": ">= 6"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'BLOCK\\|block\\|防止' docs/reward-guard-inventory.md",
+              "expected": ">= 3"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Critic Guard Test",
+      "description": "Test critic-guard.sh blocks unauthorized done claims",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "critic-guard.sh が critic SubAgent なしの done 変更をブロックする",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/skills/reward-guard/guards/critic-guard.sh && echo 'EXISTS'",
+              "expected": "EXISTS"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'critic\\|CRITIC\\|validated_by' .claude/skills/reward-guard/guards/critic-guard.sh",
+              "expected": ">= 2"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'exit 2\\|BLOCK' .claude/skills/reward-guard/guards/critic-guard.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Test Script Creation",
+      "description": "Create comprehensive reward fraud test script",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "scripts/reward-fraud-test.sh が存在し全ガードをテストする",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f scripts/reward-fraud-test.sh && bash -n scripts/reward-fraud-test.sh && echo 'VALID'",
+              "expected": "VALID"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'critic\\|subtask\\|phase' scripts/reward-fraud-test.sh",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|FAIL\\|TEST' scripts/reward-fraud-test.sh",
+              "expected": ">= 5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "Completion Criteria Check",
+      "description": "Verify all done_criteria in playbooks are non-ambiguous",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "全 playbook の done_criteria に command フィールドが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for f in play/projects/*/playbooks/*/plan.json; do jq -e '.goal.done_when[].command' \"$f\" >/dev/null 2>&1 && echo 'HAS_CMD'; done | grep -c 'HAS_CMD'",
+              "expected": ">= 6"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in play/projects/*/playbooks/*/plan.json; do jq -e '.goal.done_when[].expected' \"$f\" >/dev/null 2>&1 && echo 'HAS_EXP'; done | grep -c 'HAS_EXP'",
+              "expected": ">= 6"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "for f in play/projects/*/playbooks/*/plan.json; do jq '.goal.done_when | length' \"$f\"; done | awk '{sum+=$1} END{print sum}'",
+              "expected": ">= 10"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification",
+      "description": "Run reward-fraud-test.sh and create report",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "reward-fraud-test.sh が exit 0 で終了する",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>/dev/null; echo $?",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>&1 | grep -c 'PASS'",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>&1 | grep -c 'FAIL' || echo 0",
+              "expected": "0"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "報酬詐欺防止検証レポートが docs/reports/reward-fraud-verification.md に存在する",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/reports/reward-fraud-verification.md && echo 'EXISTS'",
+              "expected": "EXISTS"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|VERIFIED\\|pass' docs/reports/reward-fraud-verification.md",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'critic\\|subtask\\|guard' docs/reports/reward-fraud-verification.md",
+              "expected": ">= 3"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

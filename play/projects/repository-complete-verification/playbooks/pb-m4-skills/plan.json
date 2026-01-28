@@ -1,0 +1,221 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "pb-m4-skills",
+    "branch": "feat/repository-complete-verification",
+    "created": "2026-01-28",
+    "status": "draft",
+    "review_profile": "standard",
+    "reviewed": false,
+    "reviewed_by": "",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Verify all 13 Skills have consistent SKILL.md and submodule structure",
+    "done_when": [
+      {
+        "criterion": "全 13 Skill ディレクトリに SKILL.md が存在する",
+        "command": "find .claude/skills -maxdepth 2 -name 'SKILL.md' | wc -l | tr -d ' '",
+        "expected": "13"
+      },
+      {
+        "criterion": "全 SKILL.md に Purpose セクションが存在する",
+        "command": "for f in .claude/skills/*/SKILL.md; do grep -q '## Purpose\\|## purpose\\|Purpose' \"$f\" && echo 'HAS'; done | grep -c 'HAS'",
+        "expected": "13"
+      },
+      {
+        "criterion": "全 SKILL.md に When to Use セクションが存在する",
+        "command": "for f in .claude/skills/*/SKILL.md; do grep -q 'When to Use\\|When To Use\\|triggers' \"$f\" && echo 'HAS'; done | grep -c 'HAS'",
+        "expected": "13"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "access-control",
+        "executor-resolver",
+        "git-workflow",
+        "golden-path",
+        "playbook-gate",
+        "playbook-init",
+        "post-loop",
+        "prompt-analyzer",
+        "quality-assurance",
+        "reward-guard",
+        "session-manager",
+        "state",
+        "understanding-check"
+      ],
+      "excludes": []
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high"
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user",
+      "approved_at": "2026-01-28T19:10:00Z",
+      "summary": "Verify 13 Skills with SKILL.md structure validation"
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Skill Inventory",
+      "description": "Create inventory of all Skills and verify SKILL.md existence",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "Skill リスト（13件）が docs/skill-inventory.md に記録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/skill-inventory.md && grep -c '^| ' docs/skill-inventory.md",
+              "expected": ">= 13"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'access-control\\|executor-resolver\\|git-workflow\\|golden-path\\|playbook-gate\\|playbook-init\\|post-loop\\|prompt-analyzer\\|quality-assurance\\|reward-guard\\|session-manager\\|state\\|understanding-check' docs/skill-inventory.md",
+              "expected": ">= 13"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'SKILL.md' docs/skill-inventory.md",
+              "expected": ">= 13"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "SKILL.md Structure Verification",
+      "description": "Verify each SKILL.md has required sections",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "全 SKILL.md に Purpose セクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for f in .claude/skills/*/SKILL.md; do grep -q 'Purpose\\|purpose' \"$f\" && echo 'HAS'; done | grep -c 'HAS'",
+              "expected": "13"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/skills/*/SKILL.md; do grep -q '^## ' \"$f\" && echo 'HAS_SECTIONS'; done | grep -c 'HAS_SECTIONS'",
+              "expected": "13"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "for f in .claude/skills/*/SKILL.md; do wc -l < \"$f\"; done | awk '{sum+=$1} END{print (sum > 200 ? \"SUBSTANTIAL\" : \"MINIMAL\")}'",
+              "expected": "SUBSTANTIAL"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "全 SKILL.md に When to Use セクションが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for f in .claude/skills/*/SKILL.md; do grep -q 'When to Use\\|triggers\\|When To Use' \"$f\" && echo 'HAS'; done | grep -c 'HAS'",
+              "expected": "13"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/skills/*/SKILL.md; do grep -q 'trigger\\|invocation' \"$f\" && echo 'HAS_TRIGGER'; done | grep -c 'HAS_TRIGGER'",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "for f in .claude/skills/*/SKILL.md; do grep -c 'Related Files\\|Related\\|参照' \"$f\"; done | awk '{sum+=$1} END{print (sum > 10 ? \"HAS_REFS\" : \"NO_REFS\")}'",
+              "expected": "HAS_REFS"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Submodule Consistency",
+      "description": "Verify skill submodules match SKILL.md documentation",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "各 Skill の配下モジュールが SKILL.md で参照されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for d in .claude/skills/*/; do test -d \"${d}agents\" && grep -q 'agents' \"${d}SKILL.md\" && echo 'OK'; done | grep -c 'OK' || echo 0",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for d in .claude/skills/*/; do test -d \"${d}guards\" && grep -q 'guards' \"${d}SKILL.md\" && echo 'OK'; done | grep -c 'OK' || echo 0",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "for d in .claude/skills/*/; do test -d \"${d}handlers\" && grep -q 'handlers' \"${d}SKILL.md\" && echo 'OK'; done | grep -c 'OK' || echo 0",
+              "expected": ">= 2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final Verification",
+      "description": "Create verification report and confirm all Skills pass",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "Skill 検証レポートが docs/reports/skill-verification.md に存在する",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/reports/skill-verification.md && echo 'EXISTS'",
+              "expected": "EXISTS"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|VERIFIED' docs/reports/skill-verification.md",
+              "expected": ">= 13"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'access-control\\|golden-path\\|reward-guard' docs/reports/skill-verification.md",
+              "expected": ">= 3"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

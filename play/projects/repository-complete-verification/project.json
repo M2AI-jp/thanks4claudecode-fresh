@@ -1,0 +1,229 @@
+{
+  "format_version": "1.2",
+  "meta": {
+    "id": "repository-complete-verification",
+    "title": "Repository Complete Verification Project",
+    "created": "2026-01-28",
+    "status": "active",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "closed_at": null,
+    "closed_by": null
+  },
+  "goal": {
+    "summary": "Verify all features and files in the repository to prove completion status with fraud-resistant done_criteria",
+    "done_when": [
+      {
+        "criterion": "全 6 milestone が completed ステータスである",
+        "command": "jq -e '[.milestones[] | select(.status != \"completed\")] | length' play/projects/repository-complete-verification/project.json",
+        "expected": "0"
+      },
+      {
+        "criterion": "completion-criteria.md の 7 項目全てが PASS である",
+        "command": "bash scripts/completion-check.sh 2>/dev/null && echo 'PASS'",
+        "expected": "PASS"
+      }
+    ]
+  },
+  "milestones": [
+    {
+      "id": "m1",
+      "title": "Milestone 1: Event Unit Verification",
+      "order": 1,
+      "status": "pending",
+      "description": "Verify all 10 Event Units fire correctly and log their execution",
+      "done_when": [
+        {
+          "criterion": "10 Event Unit 全てで chain.sh が存在し実行可能である",
+          "command": "find .claude/events -maxdepth 2 -name 'chain.sh' -perm +111 | wc -l | tr -d ' '",
+          "expected": "10"
+        }
+      ],
+      "playbooks": [
+        {
+          "id": "pb-m1-event-units",
+          "title": "Event Unit Verification",
+          "status": "pending",
+          "path": "play/projects/repository-complete-verification/playbooks/pb-m1-event-units/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m2",
+      "title": "Milestone 2: Guard System Verification",
+      "order": 2,
+      "status": "pending",
+      "description": "Verify all 15 Guard systems (HARD_BLOCK, playbook-guard, critic-guard, protected-edit, etc.)",
+      "done_when": [
+        {
+          "criterion": "15 Guard スクリプト全てが存在し実行可能である",
+          "command": "find .claude -name '*guard*.sh' -perm +111 -o -name 'bash-check.sh' -perm +111 -o -name 'role-resolver.sh' -perm +111 -o -name 'coherence.sh' -perm +111 -o -name 'completion-check.sh' -perm +111 -o -name 'progress-reminder.sh' -perm +111 | wc -l | tr -d ' '",
+          "expected": ">= 15"
+        }
+      ],
+      "playbooks": [
+        {
+          "id": "pb-m2-guards",
+          "title": "Guard System Verification",
+          "status": "pending",
+          "path": "play/projects/repository-complete-verification/playbooks/pb-m2-guards/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m3",
+      "title": "Milestone 3: SubAgent Verification",
+      "order": 3,
+      "status": "pending",
+      "description": "Verify all 7 SubAgents (pm, critic, reviewer, prompt-analyzer, executor-resolver, codex-delegate, coderabbit-delegate)",
+      "done_when": [
+        {
+          "criterion": ".claude/agents/ と skills/*/agents/ の SubAgent ファイル数が一致する",
+          "command": "diff <(ls .claude/agents/*.md 2>/dev/null | wc -l) <(find .claude/skills -path '*/agents/*.md' | wc -l) && echo 'MATCH'",
+          "expected": "MATCH"
+        }
+      ],
+      "playbooks": [
+        {
+          "id": "pb-m3-subagents",
+          "title": "SubAgent Verification",
+          "status": "pending",
+          "path": "play/projects/repository-complete-verification/playbooks/pb-m3-subagents/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m4",
+      "title": "Milestone 4: Skill Verification",
+      "order": 4,
+      "status": "pending",
+      "description": "Verify all 13 Skills (playbook-init, post-loop, prompt-analyzer, state, understanding-check, etc.)",
+      "done_when": [
+        {
+          "criterion": "全 13 Skill ディレクトリに SKILL.md が存在する",
+          "command": "find .claude/skills -maxdepth 2 -name 'SKILL.md' | wc -l | tr -d ' '",
+          "expected": "13"
+        }
+      ],
+      "playbooks": [
+        {
+          "id": "pb-m4-skills",
+          "title": "Skill Verification",
+          "status": "pending",
+          "path": "play/projects/repository-complete-verification/playbooks/pb-m4-skills/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m5",
+      "title": "Milestone 5: File Integrity Verification",
+      "order": 5,
+      "status": "pending",
+      "description": "Verify all 260 files are referenced and no orphan files exist",
+      "done_when": [
+        {
+          "criterion": "repository-map.yaml の total_files が実際のファイル数と一致する",
+          "command": "diff <(yq '.meta.total_files' docs/repository-map.yaml) <(find . -type f ! -path './.git/*' ! -path './node_modules/*' ! -path './tmp/*' | wc -l | tr -d ' ') && echo 'MATCH'",
+          "expected": "MATCH"
+        }
+      ],
+      "playbooks": [
+        {
+          "id": "pb-m5-file-integrity",
+          "title": "File Integrity Verification",
+          "status": "pending",
+          "path": "play/projects/repository-complete-verification/playbooks/pb-m5-file-integrity/plan.json"
+        }
+      ]
+    },
+    {
+      "id": "m6",
+      "title": "Milestone 6: Reward Fraud Prevention Verification",
+      "order": 6,
+      "status": "pending",
+      "description": "Verify done_criteria are not ambiguous and critic functions correctly",
+      "done_when": [
+        {
+          "criterion": "reward-fraud-test.sh が exit 0 で終了する",
+          "command": "bash scripts/reward-fraud-test.sh 2>/dev/null; echo $?",
+          "expected": "0"
+        }
+      ],
+      "playbooks": [
+        {
+          "id": "pb-m6-reward-fraud",
+          "title": "Reward Fraud Prevention Verification",
+          "status": "pending",
+          "path": "play/projects/repository-complete-verification/playbooks/pb-m6-reward-fraud/plan.json"
+        }
+      ]
+    }
+  ],
+  "progress": {
+    "total_playbooks": 6,
+    "completed_playbooks": 0,
+    "current_milestone": "m1",
+    "current_playbook": "pb-m1-event-units"
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "ready_for_playbook": true,
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 6,
+          "recommendation": "Project structure with 6 milestones, each playbook handles 1 topic"
+        },
+        "components_to_verify": {
+          "event_units": 10,
+          "guards": 15,
+          "subagents": 7,
+          "skills": 13,
+          "files": 260
+        },
+        "test_strategy": {
+          "test_types": ["integration", "e2e"],
+          "coverage_target": "comprehensive",
+          "key_edge_cases": [
+            "Hook firing failure fallback",
+            "Guard returning exit 2 (BLOCK)",
+            "SubAgent returning FAIL",
+            "state.md inconsistency behavior",
+            "Edit operation when playbook.active = null"
+          ]
+        },
+        "success_criteria": {
+          "functional": [
+            "All 10 Event Units log their execution",
+            "All 15 Guards show BLOCK/ALLOW behavior",
+            "All 7 SubAgents can be invoked via Task",
+            "All 13 Skills have consistent SKILL.md and submodules",
+            "All 260 files in repository-map.yaml exist with 0 orphans",
+            "All 7 items in completion-criteria.md PASS"
+          ]
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user",
+      "approved_at": "2026-01-28T19:10:00Z",
+      "summary": "6 Milestone project structure with objective verification commands for each done_criteria",
+      "approved_items": [
+        "6 milestones corresponding to 6 topics",
+        "All done_criteria have executable verification commands",
+        "Fraud-resistant criteria that cannot be easily bypassed"
+      ],
+      "technical_requirements_confirmed": [
+        "Event Unit verification with log confirmation",
+        "Guard BLOCK/ALLOW testing",
+        "SubAgent invocation testing",
+        "Skill structure validation",
+        "File reference check",
+        "Reward fraud prevention testing"
+      ]
+    }
+  }
+}

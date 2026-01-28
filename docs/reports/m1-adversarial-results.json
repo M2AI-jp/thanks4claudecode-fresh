@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "test_rounds": 4,
+    "final_round": 4,
+    "date": "2026-01-28",
+    "tester": "Claude Opus 4.5 / Codex adversarial testing"
+  },
+  "summary": {
+    "total_criteria": 4,
+    "successfully_gamed_round1": 3,
+    "successfully_gamed_round2": 3,
+    "successfully_gamed_round3": 3,
+    "successfully_gamed_round4": 3,
+    "robust_criteria": 0
+  },
+  "round_history": {
+    "round1": {
+      "approach": "Pattern-based file checks",
+      "gaming_method": "Comments, string literals, empty files"
+    },
+    "round2": {
+      "approach": "Shebang + pattern checks",
+      "gaming_method": "Minimal valid scripts with pattern in comments"
+    },
+    "round3": {
+      "approach": "No-op filtering",
+      "gaming_method": "Alternative no-ops (if false, || true, variable assignment)"
+    },
+    "round4": {
+      "approach": "Execution-based output checks",
+      "gaming_method": "Minimal valid output (echo '' >&2), fake hashes, fake log files"
+    }
+  },
+  "conclusions": {
+    "fundamental_limitation": "Static analysis and superficial execution checks cannot prevent sophisticated gaming. Pattern matching always has edge cases. Length checks can be satisfied with padding.",
+    "recommendations": [
+      "Accept that perfect fraud prevention is impossible via static checks",
+      "Use multiple layers of verification (defense in depth)",
+      "Require human-observable evidence (screenshots, commit history)",
+      "Use cross-referential checks (hash verification against actual files)",
+      "Time-based verification (log timestamps during actual session)",
+      "Make gaming effort exceed legitimate work effort"
+    ],
+    "achieved_improvements": [
+      "Round 1→2: Blocked empty files, required shebang",
+      "Round 2→3: Blocked comments, required non-commented function calls",
+      "Round 3→4: Blocked : and false&& no-ops, required execution output",
+      "Each round increased gaming effort significantly"
+    ]
+  },
+  "final_result": {
+    "gaming_succeeded": true,
+    "note": "Gaming is possible but requires increasingly sophisticated techniques. The goal is not perfect prevention but making gaming harder than legitimate work.",
+    "recommendation": "Proceed with actual verification. The adversarial testing has identified weaknesses that inform better criteria design for future milestones."
+  }
+}
