@@ -6,8 +6,8 @@ set -euo pipefail
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Source library files (analyzer.sh sources collector.sh which sources log-parser.sh)
-source "$SCRIPT_DIR/lib/analyzer.sh"
+# Source library files (formatter.sh sources analyzer.sh which sources collector.sh which sources log-parser.sh)
+source "$SCRIPT_DIR/lib/formatter.sh"
 
 # ANSI color codes
 COLOR_GREEN='\033[0;32m'
@@ -35,7 +35,10 @@ Examples:
   cli.sh --help
   cli.sh --summary
   cli.sh --check-units
+  cli.sh --format json
+  cli.sh --format yaml
   cli.sh --format json --output report.json
+  cli.sh --format yaml --output report.yaml
 USAGE
 }
 
@@ -76,6 +79,11 @@ main() {
         esac
     done
     
+    # If only format is specified without action, default to generating a report
+    if [[ -z "$action" && "$format" != "text" ]]; then
+        action="report"
+    fi
+    
     # Default action: show help
     if [[ -z "$action" ]]; then
         usage
@@ -86,10 +94,33 @@ main() {
     local result=""
     case "$action" in
         summary)
-            result=$(generate_summary)
+            if [[ "$format" == "json" ]]; then
+                result=$(format_json)
+            elif [[ "$format" == "yaml" ]]; then
+                result=$(format_yaml)
+            else
+                result=$(generate_summary)
+            fi
             ;;
         check-units)
             result=$(check_all_units)
+            ;;
+        report)
+            case "$format" in
+                json)
+                    result=$(format_json)
+                    ;;
+                yaml)
+                    result=$(format_yaml)
+                    ;;
+                text)
+                    result=$(generate_summary)
+                    ;;
+                *)
+                    echo "Unknown format: $format" >&2
+                    exit 1
+                    ;;
+            esac
             ;;
     esac
     
