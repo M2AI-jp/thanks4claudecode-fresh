@@ -131,8 +131,8 @@
         {
           "id": "pb-m5-file-integrity",
           "title": "File Integrity Verification",
-          "status": "pending",
-          "path": "play/projects/repository-complete-verification/playbooks/pb-m5-file-integrity/plan.json"
+          "status": "done",
+          "path": "play/archive/projects/play/projects/repository-complete-verification/project.json/pb-m5-file-integrity/plan.json"
         }
       ]
     },
@@ -140,7 +140,7 @@
       "id": "m6",
       "title": "Milestone 6: Reward Fraud Prevention Verification",
       "order": 6,
-      "status": "pending",
+      "status": "completed",
       "description": "Verify done_criteria are not ambiguous and critic functions correctly",
       "done_when": [
         {
@@ -153,17 +153,17 @@
         {
           "id": "pb-m6-reward-fraud",
           "title": "Reward Fraud Prevention Verification",
-          "status": "pending",
-          "path": "play/projects/repository-complete-verification/playbooks/pb-m6-reward-fraud/plan.json"
+          "status": "done",
+          "path": "play/archive/projects/play/projects/repository-complete-verification/project.json/pb-m6-reward-fraud/plan.json"
         }
       ]
     }
   ],
   "progress": {
     "total_playbooks": 6,
-    "completed_playbooks": 5,
-    "current_milestone": "m6",
-    "current_playbook": "pb-m6-reward-fraud"
+    "completed_playbooks": 6,
+    "current_milestone": null,
+    "current_playbook": null
   },
   "context": {
     "analysis_result": {
