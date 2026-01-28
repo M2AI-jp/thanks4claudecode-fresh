@@ -1,0 +1,323 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "hook-unit-completion",
+    "plan_path": "play/standalone/hook-unit-completion/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.4"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-28T07:43:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-28T07:43:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-28T07:43:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-28T07:43:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p1.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p2.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p2.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p_final.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p_final.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "telemetry.sh: 10/10 units verified",
+      "notification chain calls telemetry",
+      "session-start wires health/integrity",
+      "testing.sh committed"
+    ],
+    "notes": ""
+  }
+}

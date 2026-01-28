@@ -1,0 +1,1 @@
+../../../scripts/telemetry-user-prompt-submit.sh

@@ -1,0 +1,1 @@
+../../../scripts/telemetry-notification.sh

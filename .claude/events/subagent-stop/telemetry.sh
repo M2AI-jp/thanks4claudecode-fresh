@@ -1,0 +1,1 @@
+../../../scripts/telemetry-subagent-stop.sh
