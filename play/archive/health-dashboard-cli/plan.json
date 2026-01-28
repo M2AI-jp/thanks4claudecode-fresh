@@ -1,0 +1,316 @@
+{
+  "format_version": "2.5",
+  "meta": {
+    "id": "health-dashboard-cli-v2",
+    "branch": "feat/health-dashboard-cli",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "strict",
+    "reviewed": false,
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Repository Health Dashboard CLI を作成し、全 Event Unit の telemetry ログを集約・分析してリポジトリの健全性レポートを生成する。全 Hook チェーン、SubAgent オーケストレーション、Guard システムを通しで検証する。",
+    "done_when": [
+      {
+        "id": "DW1",
+        "criterion": "Health Score が 80% 以上である",
+        "command": "bash tools/health-dashboard/cli.sh --format json | jq -e '.health_score >= 80'",
+        "expected": "true",
+        "rationale": "健全なリポジトリの最低基準。36% では機能していない。"
+      },
+      {
+        "id": "DW2",
+        "criterion": "9/10 以上の Event Unit が OK または WARN である（session-end はセッション中のため除外可）",
+        "command": "bash tools/health-dashboard/cli.sh --format json | jq '[.event_units[] | select(.status == \"OK\" or .status == \"WARN\")] | length >= 9'",
+        "expected": "true",
+        "rationale": "MISSING や ERROR が多いと telemetry システムが機能していない。"
+      },
+      {
+        "id": "DW3",
+        "criterion": "総エントリ数が 100 件以上である",
+        "command": "bash tools/health-dashboard/cli.sh --format json | jq -e '.entries.total >= 100'",
+        "expected": "true",
+        "rationale": "実際にログが記録されている証拠。"
+      },
+      {
+        "id": "DW4",
+        "criterion": "Success Rate が 90% 以上である",
+        "command": "bash tools/health-dashboard/cli.sh --format json | jq -e '.entries.success_rate >= 90'",
+        "expected": "true",
+        "rationale": "エラーが多いとシステムが不安定。"
+      },
+      {
+        "id": "DW5",
+        "criterion": "Integration Tests が 6/6 PASS である",
+        "command": "bash tools/health-dashboard/tests/integration-test.sh 2>&1 | tail -5 | grep -E 'Tests Passed: 6'",
+        "expected": "exit 0",
+        "rationale": "テスト数まで検証することで、テストが追加/削除されていないことを確認。"
+      },
+      {
+        "id": "DW6",
+        "criterion": "E2E Tests が 4/4 PASS である",
+        "command": "bash tools/health-dashboard/tests/e2e-test.sh 2>&1 | tail -5 | grep -E 'Tests Passed: 4'",
+        "expected": "exit 0",
+        "rationale": "テスト数まで検証することで、テストが追加/削除されていないことを確認。"
+      },
+      {
+        "id": "DW7",
+        "criterion": "pre-tool-bash のエントリ数が 100 件以上である（pretty-printed JSON パース修正の証拠）",
+        "command": "bash tools/health-dashboard/cli.sh --format json | jq -e '[.event_units[] | select(.name == \"pre-tool-bash\")] | .[0].entries >= 100'",
+        "expected": "true",
+        "rationale": "pretty-printed JSON のパースバグが修正されている証拠。修正前は 0 件だった。"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "tools/health-dashboard/ 配下の CLI 実装",
+        "telemetry ログパーサー（JSONL + pretty-printed JSON 両対応）",
+        "健全性スコア算出ロジック",
+        "JSON/YAML/テキスト出力フォーマッター",
+        "全 Event Unit の統合テスト",
+        "E2E 検証スクリプト"
+      ],
+      "excludes": [
+        "GUI/Web インターフェース",
+        "外部サービス連携",
+        "リアルタイム監視機能"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "known_issues": [
+          {
+            "issue": "jq -s 'length' が pretty-printed JSON で失敗する",
+            "severity": "high",
+            "fix": "grep ベースのフォールバックを実装"
+          },
+          {
+            "issue": "$(cmd) || echo 0 が二重出力する",
+            "severity": "high",
+            "fix": "$(cmd) || var=0 パターンに変更"
+          },
+          {
+            "issue": "status='recorded' が success としてカウントされない",
+            "severity": "medium",
+            "fix": "recorded を success ステータスリストに追加"
+          }
+        ]
+      }
+    }
+  },
+  "max_iterations": 10,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "既存コードのバグ修正確認",
+      "description": "前回の修正が正しく適用されているか確認する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "analyzer.sh の grep パターンが正しい（$(cmd) || var=0 形式）",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "grep -c '|| s1=0' tools/health-dashboard/lib/analyzer.sh",
+            "expected": "1",
+            "evidence_required": "grep の出力を添付"
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "analyzer.sh が status='recorded' を success としてカウントする",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "grep -c '\"status\": \"recorded\"' tools/health-dashboard/lib/analyzer.sh",
+            "expected": ">= 1",
+            "evidence_required": "grep の出力を添付"
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "pre-tool-bash.log のエントリ数が 100 以上でカウントされる",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/cli.sh --format json | jq '.event_units[] | select(.name == \"pre-tool-bash\") | .entries'",
+            "expected": ">= 100",
+            "evidence_required": "jq の出力を添付"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Health Score 数値検証",
+      "description": "Health Score が 80% 以上であることを検証する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "Health Score が 80 以上である",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/cli.sh --format json | jq '.health_score'",
+            "expected": ">= 80",
+            "evidence_required": "jq の出力を添付（数値）"
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "Success Rate が 90% 以上である",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/cli.sh --format json | jq '.entries.success_rate'",
+            "expected": ">= 90",
+            "evidence_required": "jq の出力を添付（数値）"
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "総エントリ数が 100 以上である",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/cli.sh --format json | jq '.entries.total'",
+            "expected": ">= 100",
+            "evidence_required": "jq の出力を添付（数値）"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Event Unit 状態検証",
+      "description": "9/10 以上の Event Unit が OK/WARN であることを検証する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "OK/WARN 状態の Unit 数が 9 以上である",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/cli.sh --format json | jq '[.event_units[] | select(.status == \"OK\" or .status == \"WARN\")] | length'",
+            "expected": ">= 9",
+            "evidence_required": "jq の出力を添付（数値）"
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "ERROR 状態の Unit が 0 である",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/cli.sh --format json | jq '[.event_units[] | select(.status == \"ERROR\")] | length'",
+            "expected": "0",
+            "evidence_required": "jq の出力を添付（数値）"
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "MISSING 状態の Unit が 1 以下である（session-end のみ許容）",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/cli.sh --format json | jq '[.event_units[] | select(.status == \"MISSING\")] | length'",
+            "expected": "<= 1",
+            "evidence_required": "jq の出力と MISSING の Unit 名を添付"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "テスト実行と結果検証",
+      "description": "Integration Tests と E2E Tests を実行し、結果を数値で検証する",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "Integration Tests が 6/6 PASS である",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/tests/integration-test.sh 2>&1 | grep 'Tests Passed:'",
+            "expected": "Tests Passed: 6",
+            "evidence_required": "テスト出力全体を添付"
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "E2E Tests が 4/4 PASS である",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/tests/e2e-test.sh 2>&1 | grep 'Tests Passed:'",
+            "expected": "Tests Passed: 4",
+            "evidence_required": "テスト出力全体を添付"
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "Integration Tests に FAIL が 0 である",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/tests/integration-test.sh 2>&1 | grep 'Tests Failed:'",
+            "expected": "Tests Failed: 0",
+            "evidence_required": "grep の出力を添付"
+          }
+        },
+        {
+          "id": "p4.4",
+          "criterion": "E2E Tests に FAIL が 0 である",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "bash tools/health-dashboard/tests/e2e-test.sh 2>&1 | grep 'Tests Failed:'",
+            "expected": "Tests Failed: 0",
+            "evidence_required": "grep の出力を添付"
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "最終検証（critic 必須）",
+      "description": "全 done_when を critic で検証し、evidence を添付する",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "DW1-DW7 の全てが PASS であることを critic が検証する",
+          "executor": "claudecode",
+          "coding": false,
+          "done_when": {
+            "command": "echo 'critic SubAgent による検証が必要'",
+            "expected": "critic が PASS を返す",
+            "evidence_required": "critic の出力全体を添付"
+          },
+          "critic_required": true
+        }
+      ]
+    }
+  ],
+  "final_tasks": [
+    {
+      "task": "全 done_when を実行し、結果を evidence として記録する",
+      "command": "bash -c 'for i in 1 2 3 4 5 6 7; do echo \"=== DW$i ===\"; done'"
+    }
+  ]
+}

@@ -1,0 +1,203 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "health-dashboard-cli-v2",
+    "plan_path": "play/standalone/health-dashboard-cli/plan.json",
+    "status": "completed"
+  },
+  "active": {
+    "phase": null,
+    "subtask": null
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-28T18:45:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-28T18:45:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-28T18:45:00Z"
+    },
+    "p4": {
+      "status": "done",
+      "updated_at": "2026-01-28T18:45:00Z"
+    },
+    "p5": {
+      "status": "done",
+      "updated_at": "2026-01-28T18:45:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["grep -c '|| s1=0' tools/health-dashboard/lib/analyzer.sh => 1"]},
+        "consistency": {"status": "PASS", "evidence": ["Pattern matches plan.json p1.1 criterion"]},
+        "completeness": {"status": "PASS", "evidence": ["No additional patterns needed"]}
+      },
+      "notes": ""
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["grep -c '\"status\": \"recorded\"' analyzer.sh => 1"]},
+        "consistency": {"status": "PASS", "evidence": ["Pattern matches plan.json p1.2 criterion"]},
+        "completeness": {"status": "PASS", "evidence": ["recorded status is counted as success"]}
+      },
+      "notes": ""
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["cli.sh --format json | jq pre-tool-bash entries => 426"]},
+        "consistency": {"status": "PASS", "evidence": ["426 >= 100 as required by plan.json"]},
+        "completeness": {"status": "PASS", "evidence": ["Pretty-printed JSON parsing fixed"]}
+      },
+      "notes": ""
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["cli.sh --format json | jq .health_score => 96"]},
+        "consistency": {"status": "PASS", "evidence": ["96 >= 80 as required"]},
+        "completeness": {"status": "PASS", "evidence": ["Score calculated from all units"]}
+      },
+      "notes": ""
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["cli.sh --format json | jq .entries.success_rate => 100"]},
+        "consistency": {"status": "PASS", "evidence": ["100 >= 90 as required"]},
+        "completeness": {"status": "PASS", "evidence": ["All status types counted correctly"]}
+      },
+      "notes": ""
+    },
+    "p2.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["cli.sh --format json | jq .entries.total => 550"]},
+        "consistency": {"status": "PASS", "evidence": ["550 >= 100 as required"]},
+        "completeness": {"status": "PASS", "evidence": ["All log files parsed"]}
+      },
+      "notes": ""
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["jq OK/WARN count => 9"]},
+        "consistency": {"status": "PASS", "evidence": ["9 >= 9 as required"]},
+        "completeness": {"status": "PASS", "evidence": ["All 10 units checked"]}
+      },
+      "notes": ""
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["jq ERROR count => 0"]},
+        "consistency": {"status": "PASS", "evidence": ["0 == 0 as required"]},
+        "completeness": {"status": "PASS", "evidence": ["No error statuses found"]}
+      },
+      "notes": ""
+    },
+    "p3.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["jq MISSING count => 1 (session-end)"]},
+        "consistency": {"status": "PASS", "evidence": ["1 <= 1 as required"]},
+        "completeness": {"status": "PASS", "evidence": ["session-end MISSING is expected during session"]}
+      },
+      "notes": ""
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["integration-test.sh | grep 'Tests Passed: 6'"]},
+        "consistency": {"status": "PASS", "evidence": ["6/6 tests passed"]},
+        "completeness": {"status": "PASS", "evidence": ["All integration tests executed"]}
+      },
+      "notes": ""
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["e2e-test.sh | grep 'Tests Passed: 4'"]},
+        "consistency": {"status": "PASS", "evidence": ["4/4 tests passed"]},
+        "completeness": {"status": "PASS", "evidence": ["All E2E tests executed"]}
+      },
+      "notes": ""
+    },
+    "p4.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["integration-test.sh | grep 'Tests Failed: 0'"]},
+        "consistency": {"status": "PASS", "evidence": ["0 failures"]},
+        "completeness": {"status": "PASS", "evidence": ["No test failures"]}
+      },
+      "notes": ""
+    },
+    "p4.4": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["e2e-test.sh | grep 'Tests Failed: 0'"]},
+        "consistency": {"status": "PASS", "evidence": ["0 failures"]},
+        "completeness": {"status": "PASS", "evidence": ["No test failures"]}
+      },
+      "notes": ""
+    },
+    "p5.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T18:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {"status": "PASS", "evidence": ["critic SubAgent verified DW1-DW7"]},
+        "consistency": {"status": "PASS", "evidence": ["All criteria matched plan.json done_when"]},
+        "completeness": {"status": "PASS", "evidence": ["Independent verification of all values"]}
+      },
+      "notes": "critic_required: true - critic SubAgent executed and returned PASS"
+    }
+  },
+  "critic": {
+    "status": "PASS",
+    "verified_at": "2026-01-28T18:45:00Z",
+    "evidence": [
+      "DW1: Health Score 96 >= 80",
+      "DW2: OK/WARN Units 9 >= 9",
+      "DW3: Total Entries 555 >= 100",
+      "DW4: Success Rate 100 >= 90",
+      "DW5: Integration Tests 6/6",
+      "DW6: E2E Tests 4/4",
+      "DW7: pre-tool-bash 444 >= 100"
+    ]
+  }
+}

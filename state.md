@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/standalone/hook-unit-completion
+last_archived: play/archive/health-dashboard-cli
 review_pending: false
 ```
 
@@ -44,7 +44,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 16:53:32
+last_start: 2026-01-28 19:05:43
 last_end: 2026-01-28 15:12:57
 last_clear: 2026-01-20
 ```
