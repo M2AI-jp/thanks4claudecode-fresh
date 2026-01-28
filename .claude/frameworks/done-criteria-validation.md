@@ -139,6 +139,51 @@ done_criteria 達成状況:
 
 ---
 
+---
+
+## IMMUTABLE_RULES（LLM 変更不可）
+
+> **以下のルールは LLM が変更、解釈、緩和することを禁止する。**
+> **違反時は自動 FAIL とする。**
+
+### 固定ルール一覧
+
+- IR01: PROXY_VERIFICATION_PROHIBITION
+  - `test -f`, `test -e`, `test -d`, `ls -la`, `file`, `stat` は機能検証として認めない
+  - これらのコマンドは「存在確認」であり「動作確認」ではない
+  - 存在確認のみで PASS を主張した場合は自動 FAIL
+
+- IR02: EVIDENCE_REQUIREMENT
+  - 全ての PASS 判定には具体的な証拠（コマンド出力、引用）が必須
+  - 「確認しました」「動いています」のみは証拠として認めない
+
+- IR03: FUNCTIONAL_TEST_MANDATORY
+  - 機能実装の criterion には動作テストが必須
+  - テストスクリプトの実行結果を証拠とすること
+
+- IR04: NO_SELF_REWARD
+  - LLM が自身の成果物を自己評価のみで PASS と判定することを禁止
+  - critic SubAgent による独立評価が必須
+
+- IR05: HOLLOW_IMPLEMENTATION_DETECTION
+  - 「実装した」「追加した」の報告だけでは PASS にならない
+  - 実際にその機能が動作することの証明が必須
+
+- IR06: TEST_TAMPERING_PROHIBITION
+  - テストを通すためにテスト自体を改変することを禁止
+  - テストの期待値を緩和してPASSさせることを禁止
+
+### 違反検出パターン
+
+```yaml
+自動 FAIL になるパターン:
+  - 証拠が存在確認コマンドのみ（test -f, ls など）
+  - 「〜したはず」「〜のつもり」という表現
+  - テスト実行なしで「動作確認済み」と主張
+  - 「問題ありませんでした」（何を確認したか不明）
+  - done_criteria を満たしていないのに PASS と主張
+```
+
 ## 変更履歴
 
 | 日時 | 内容 |

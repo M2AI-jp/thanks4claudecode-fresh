@@ -1,0 +1,284 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "reward-fraud-prevention-v2",
+    "plan_path": "play/standalone/reward-fraud-prevention-v2/plan.json",
+    "status": "completed"
+  },
+  "active": null,
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-29T00:05:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-29T00:05:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-29T00:05:00Z"
+    },
+    "p4": {
+      "status": "done",
+      "updated_at": "2026-01-29T00:05:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-29T00:05:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'IMMUTABLE_RULES' = 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'violation auto FAIL' = 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -cE 'IR[0-9]+:' = 6"]
+        }
+      },
+      "notes": "IMMUTABLE_RULES section added with 6 rules"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'PROXY_VERIFICATION_PROHIBITION' = 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'test -f' = 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All blocked commands defined"]
+        }
+      },
+      "notes": "PROXY_VERIFICATION_PROHIBITION rule added"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'PROXY_VERIFICATION_BLOCKLIST' critic.md = 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Blocked commands defined"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Auto FAIL statement present"]
+        }
+      },
+      "notes": "PROXY_VERIFICATION_BLOCKLIST added to critic.md"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'PROXY_VERIFICATION_BLOCKLIST' skill-critic.md = 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Same content as agents/critic.md"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Both critic.md files synchronized"]
+        }
+      },
+      "notes": "PROXY_VERIFICATION_BLOCKLIST added to skill version"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["jq '.meta.requires_functional_test' = true"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["Field exists in meta section"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Value is boolean true"]
+        }
+      },
+      "notes": "requires_functional_test added to template"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["jq '._template_rules.functional_test_requirement' exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["PROHIBITED_VERIFICATION contains test -f"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["MUST and REQUIRED_VERIFICATION fields exist"]
+        }
+      },
+      "notes": "functional_test_requirement section added"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["bash critic-proxy-detection-test.sh -> exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'PROXY_VERIFICATION' = 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All proxy detection tests passed"]
+        }
+      },
+      "notes": "critic-proxy-detection-test.sh created and executable"
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["bash immutable-rules-test.sh -> exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'IMMUTABLE_RULES' = 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All immutable rules tests passed"]
+        }
+      },
+      "notes": "immutable-rules-test.sh created and executable"
+    },
+    "p4.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["bash template-functional-test-requirement.sh -> exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'requires_functional_test' = 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Template validation passed"]
+        }
+      },
+      "notes": "template-functional-test-requirement.sh created and executable"
+    },
+    "p4.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["bash run-all.sh -> exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["All 3 test scripts referenced"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["3/3 tests passed"]
+        }
+      },
+      "notes": "run-all.sh created and executable"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["bash run-all.sh -> '3/3 tests passed'"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["exit 0"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["SUCCESS: All tests passed"]
+        }
+      },
+      "notes": "Integration test passed"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:05:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["critic-proxy-detection-test.sh tests proxy blocking"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["IMMUTABLE_RULES contains PROXY_VERIFICATION_PROHIBITION"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["4 test cases in critic-proxy-detection-test.sh"]
+        }
+      },
+      "notes": "Proxy verification blocking verified"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "bash tests/framework-tests/run-all.sh -> 3/3 tests passed",
+      "IMMUTABLE_RULES: 6 rules defined",
+      "PROXY_VERIFICATION_BLOCKLIST: defined in both critic.md files",
+      "requires_functional_test: true in template"
+    ],
+    "notes": "All done_when criteria satisfied with functional tests"
+  }
+}

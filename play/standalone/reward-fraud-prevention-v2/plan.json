@@ -1,0 +1,501 @@
+{
+  "_template_rules": "See play/template/plan.json for full validation rules",
+  "format_version": "2.4",
+  "meta": {
+    "id": "reward-fraud-prevention-v2",
+    "branch": "feat/reward-fraud-prevention-v2",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "strict",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "報酬詐欺防止の仕組みを強化し、存在確認系コマンドを機能検証として認めない構造を構築する",
+    "done_when": [
+      {
+        "criterion": "critic.md に PROXY_VERIFICATION_BLOCKLIST が定義され、test -f/test -e/test -d/ls -la/file/stat が機能検証として認められない",
+        "command": "bash tests/framework-tests/critic-proxy-detection-test.sh",
+        "expected": "exit 0 かつ出力に 'All proxy detection tests passed' を含む"
+      },
+      {
+        "criterion": "done-criteria-validation.md に IMMUTABLE_RULES セクションが存在し、LLM が変更不可能な固定ルールが定義されている",
+        "command": "bash tests/framework-tests/immutable-rules-test.sh",
+        "expected": "exit 0 かつ出力に 'All immutable rules tests passed' を含む"
+      },
+      {
+        "criterion": "play/template/plan.json に requires_functional_test: true が追加され、p_final に動作テスト subtask が必須化されている",
+        "command": "bash tests/framework-tests/template-functional-test-requirement.sh",
+        "expected": "exit 0 かつ出力に 'Template validation passed' を含む"
+      },
+      {
+        "criterion": "tests/framework-tests/ に 3 つのテストスクリプトが存在し、全て実行可能で期待通りに動作する",
+        "command": "bash tests/framework-tests/run-all.sh",
+        "expected": "exit 0 かつ出力に '3/3 tests passed' を含む"
+      }
+    ],
+    "scope": {
+      "includes": [
+        ".claude/agents/critic.md",
+        ".claude/skills/reward-guard/agents/critic.md",
+        ".claude/frameworks/done-criteria-validation.md",
+        "play/template/plan.json",
+        "tests/framework-tests/*.sh"
+      ],
+      "excludes": [
+        "他の agent 定義ファイル",
+        "他のテンプレートファイル",
+        "実行時の playbook"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "what": "報酬詐欺防止の仕組み強化。critic 判定基準強化、動作テストスクリプト作成、playbook テンプレート修正、done-criteria-validation.md 強化",
+          "why": "ユーザーが何度も存在確認だけで PASS とされる報酬詐欺を経験しており、構造的に防ぐ必要がある",
+          "who": "Claude Code エージェント（critic, pm）が使用。ユーザーが恩恵を受ける",
+          "when": "即時実施（緊急度: 高）",
+          "where": ".claude/agents/, .claude/frameworks/, play/template/, tests/framework-tests/",
+          "how": "PROXY_VERIFICATION_BLOCKLIST の導入、IMMUTABLE_RULES の定義、テストスクリプトによる検証強制",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "既存の playbook との非互換",
+              "severity": "medium",
+              "mitigation": "新規 playbook から適用、既存は移行期間を設ける"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "変更範囲が広く、意図しない副作用",
+              "severity": "medium",
+              "mitigation": "各 Phase で動作テストを実施し、副作用を早期検出"
+            }
+          ],
+          "dependency": [
+            {
+              "risk": "テストスクリプトが正しく機能しない",
+              "severity": "high",
+              "mitigation": "テストスクリプト自体をテストする run-all.sh を作成"
+            }
+          ]
+        },
+        "ambiguity": [],
+        "multi_topic_detection": {
+          "topics": [
+            {
+              "type": "instruction",
+              "content": "critic 判定基準強化（PROXY_VERIFICATION_BLOCKLIST）"
+            },
+            {
+              "type": "instruction",
+              "content": "done-criteria-validation.md 強化（IMMUTABLE_RULES）"
+            },
+            {
+              "type": "instruction",
+              "content": "playbook テンプレート修正（requires_functional_test）"
+            },
+            {
+              "type": "instruction",
+              "content": "動作テストスクリプト作成"
+            }
+          ]
+        },
+        "test_strategy": {
+          "test_level": "integration",
+          "coverage_goal": "100% - 全ての修正箇所がテストスクリプトで検証される",
+          "edge_cases": [
+            "存在確認のみで PASS しようとするケース",
+            "IMMUTABLE_RULES を回避しようとするケース",
+            "テストスクリプトが false positive を出すケース"
+          ]
+        },
+        "preconditions": {
+          "existing_code": "critic.md、done-criteria-validation.md、plan.json テンプレートが存在",
+          "dependencies": "bash、jq、grep が利用可能",
+          "constraints": "HARD_BLOCK により .claude/agents/*.md は直接編集不可"
+        },
+        "success_criteria": {
+          "functional": [
+            "存在確認のみの検証が自動的に FAIL になる",
+            "IMMUTABLE_RULES 違反が自動検出される",
+            "新規 playbook で動作テストが必須になる"
+          ],
+          "non_functional": [
+            "テストスクリプトの実行時間が 10 秒以内"
+          ],
+          "breaking_changes": [
+            "既存の criterion で存在確認のみのものは FAIL になる（意図的）"
+          ]
+        },
+        "reverse_dependencies": {
+          "components": [
+            "critic SubAgent",
+            "pm SubAgent（playbook 作成時）",
+            "reviewer SubAgent（playbook レビュー時）"
+          ],
+          "risk_level": "medium"
+        }
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-28",
+      "summary": "報酬詐欺防止の仕組み強化。存在確認系コマンドを機能検証として認めない、動作テスト必須化",
+      "approved_items": [
+        "critic.md に PROXY_VERIFICATION_BLOCKLIST 追加",
+        "done-criteria-validation.md に IMMUTABLE_RULES 追加",
+        "play/template/plan.json に requires_functional_test 追加",
+        "tests/framework-tests/ にテストスクリプト 3 つ作成"
+      ],
+      "technical_requirements_confirmed": [
+        "存在確認コマンド（test -f, ls -la 等）は機能検証として認めない",
+        "IMMUTABLE_RULES は LLM が変更不可能な構造にする",
+        "テストスクリプトは bash で実行可能"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "done-criteria-validation.md 強化",
+      "description": "IMMUTABLE_RULES セクションを追加し、LLM が変更できない固定ルールを定義する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": ".claude/frameworks/done-criteria-validation.md に IMMUTABLE_RULES セクションが存在し、6 つの固定ルールが定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "hybrid",
+              "command": "grep -c 'IMMUTABLE_RULES' /Users/amano/Desktop/thanks4claudecode-v2/.claude/frameworks/done-criteria-validation.md",
+              "expected": ">= 1",
+              "user_prompt": ".claude/frameworks/done-criteria-validation.md に IMMUTABLE_RULES セクションを追加してください（HARD_BLOCK ファイルのため手動編集が必要）"
+            },
+            "consistency": {
+              "type": "hybrid",
+              "command": "grep -c '違反時は自動 FAIL' /Users/amano/Desktop/thanks4claudecode-v2/.claude/frameworks/done-criteria-validation.md",
+              "expected": ">= 1",
+              "user_prompt": "IMMUTABLE_RULES 違反時に自動 FAIL と明記されているか確認してください"
+            },
+            "completeness": {
+              "type": "hybrid",
+              "command": "grep -E '^[[:space:]]*-[[:space:]]+IR[0-9]+:' /Users/amano/Desktop/thanks4claudecode-v2/.claude/frameworks/done-criteria-validation.md | wc -l | tr -d ' '",
+              "expected": ">= 6",
+              "user_prompt": "6 つの固定ルール（IR01-IR06）が全て定義されているか確認してください"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "IMMUTABLE_RULES に PROXY_VERIFICATION_PROHIBITION ルールが含まれ、禁止コマンドリストが明記されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "hybrid",
+              "command": "grep -c 'PROXY_VERIFICATION_PROHIBITION' /Users/amano/Desktop/thanks4claudecode-v2/.claude/frameworks/done-criteria-validation.md",
+              "expected": ">= 1",
+              "user_prompt": "PROXY_VERIFICATION_PROHIBITION ルールが定義されているか確認してください"
+            },
+            "consistency": {
+              "type": "hybrid",
+              "command": "grep -c 'test -f' /Users/amano/Desktop/thanks4claudecode-v2/.claude/frameworks/done-criteria-validation.md",
+              "expected": ">= 1",
+              "user_prompt": "禁止コマンドリストに test -f が含まれているか確認してください"
+            },
+            "completeness": {
+              "type": "hybrid",
+              "command": "grep -E 'test -[fed]|ls -la|file |stat ' /Users/amano/Desktop/thanks4claudecode-v2/.claude/frameworks/done-criteria-validation.md | wc -l | tr -d ' '",
+              "expected": ">= 3",
+              "user_prompt": "禁止コマンドリストに test -f, test -e, test -d, ls -la, file, stat が全て含まれているか確認してください"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "critic.md 判定基準強化",
+      "description": "両方の critic.md に PROXY_VERIFICATION_BLOCKLIST を追加し、存在確認のみの検証を FAIL にする",
+      "depends_on": [
+        "p1"
+      ],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": ".claude/agents/critic.md に PROXY_VERIFICATION_BLOCKLIST セクションが存在し、禁止コマンドが定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "manual",
+              "user_prompt": ".claude/agents/critic.md に PROXY_VERIFICATION_BLOCKLIST を追加してください。ユーザーによる手動編集が必要です（HARD_BLOCK ファイルのため）"
+            },
+            "consistency": {
+              "type": "manual",
+              "user_prompt": "done-criteria-validation.md の IMMUTABLE_RULES と整合しているか確認してください"
+            },
+            "completeness": {
+              "type": "manual",
+              "user_prompt": "test -f, test -e, test -d, ls -la, file, stat が全て禁止リストに含まれているか確認してください"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": ".claude/skills/reward-guard/agents/critic.md に PROXY_VERIFICATION_BLOCKLIST セクションが存在し、禁止コマンドが定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "manual",
+              "user_prompt": ".claude/skills/reward-guard/agents/critic.md に PROXY_VERIFICATION_BLOCKLIST を追加してください。ユーザーによる手動編集が必要です（HARD_BLOCK ファイルのため）"
+            },
+            "consistency": {
+              "type": "manual",
+              "user_prompt": ".claude/agents/critic.md と同一の PROXY_VERIFICATION_BLOCKLIST が定義されているか確認してください"
+            },
+            "completeness": {
+              "type": "manual",
+              "user_prompt": "test -f, test -e, test -d, ls -la, file, stat が全て禁止リストに含まれているか確認してください"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "playbook テンプレート修正",
+      "description": "play/template/plan.json に requires_functional_test: true を追加し、p_final に動作テスト subtask を必須化する",
+      "depends_on": [
+        "p1"
+      ],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "play/template/plan.json の meta セクションに requires_functional_test: true が定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq '.meta.requires_functional_test' /Users/amano/Desktop/thanks4claudecode-v2/play/template/plan.json",
+              "expected": "true"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '.meta | has(\"requires_functional_test\")' /Users/amano/Desktop/thanks4claudecode-v2/play/template/plan.json",
+              "expected": "true"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq '.meta.requires_functional_test == true' /Users/amano/Desktop/thanks4claudecode-v2/play/template/plan.json",
+              "expected": "true"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "play/template/plan.json の _template_rules に functional_test_requirement セクションが追加され、動作テストの必須要件が文書化されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "jq '._template_rules.functional_test_requirement' /Users/amano/Desktop/thanks4claudecode-v2/play/template/plan.json | grep -c 'MUST'",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '._template_rules.functional_test_requirement.PROHIBITED_VERIFICATION' /Users/amano/Desktop/thanks4claudecode-v2/play/template/plan.json | grep -c 'test -f'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq '._template_rules.functional_test_requirement | keys | length' /Users/amano/Desktop/thanks4claudecode-v2/play/template/plan.json",
+              "expected": ">= 3"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "動作テストスクリプト作成",
+      "description": "tests/framework-tests/ に 3 つのテストスクリプトと run-all.sh を作成",
+      "depends_on": [
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "tests/framework-tests/critic-proxy-detection-test.sh が存在し、存在確認のみで PASS しようとすると FAIL を返すことを検証できる",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -x /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/critic-proxy-detection-test.sh && echo 'executable'",
+              "expected": "executable"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'PROXY_VERIFICATION' /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/critic-proxy-detection-test.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/critic-proxy-detection-test.sh 2>&1 | grep -c 'passed'",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "tests/framework-tests/immutable-rules-test.sh が存在し、done-criteria-validation.md の IMMUTABLE_RULES が正しく定義されていることを検証できる",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -x /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/immutable-rules-test.sh && echo 'executable'",
+              "expected": "executable"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'IMMUTABLE_RULES' /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/immutable-rules-test.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/immutable-rules-test.sh 2>&1 | grep -c 'passed'",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "tests/framework-tests/template-functional-test-requirement.sh が存在し、plan.json テンプレートの requires_functional_test が正しく設定されていることを検証できる",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -x /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/template-functional-test-requirement.sh && echo 'executable'",
+              "expected": "executable"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'requires_functional_test' /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/template-functional-test-requirement.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/template-functional-test-requirement.sh 2>&1 | grep -c 'passed'",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p4.4",
+          "criterion": "tests/framework-tests/run-all.sh が存在し、3 つのテストを順次実行して結果を集計できる",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -x /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/run-all.sh && echo 'executable'",
+              "expected": "executable"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'critic-proxy-detection-test.sh' /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/run-all.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -E 'immutable-rules-test.sh|template-functional-test-requirement.sh' /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/run-all.sh | wc -l | tr -d ' '",
+              "expected": ">= 2"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "統合テスト",
+      "description": "全てのテストスクリプトを実行し、報酬詐欺防止の仕組みが正しく機能することを検証する",
+      "depends_on": [
+        "p2",
+        "p3",
+        "p4"
+      ],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "run-all.sh を実行して 3/3 tests passed が出力される",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/run-all.sh 2>&1",
+              "expected": "contains '3/3 tests passed' かつ exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/run-all.sh 2>&1 | grep -v 'FAIL'",
+              "expected": "FAIL を含まない"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/run-all.sh 2>&1 | grep -c 'passed'",
+              "expected": ">= 3"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "存在確認のみ（test -f）で検証しようとするシナリオをシミュレートし、FAIL が返ることを確認",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/critic-proxy-detection-test.sh 2>&1 | grep 'proxy verification.*blocked'",
+              "expected": "not empty"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep 'test -f' /Users/amano/Desktop/thanks4claudecode-v2/.claude/frameworks/done-criteria-validation.md | grep -i 'prohibit\\|block\\|fail'",
+              "expected": "not empty"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tests/framework-tests/critic-proxy-detection-test.sh 2>&1 | grep -c 'test case'",
+              "expected": ">= 3"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
