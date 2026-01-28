@@ -23,8 +23,8 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/repository-verification
-review_pending: false
+last_archived: play/archive/completion-verification
+review_pending: true
 ```
 
 ---
@@ -44,7 +44,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-29 01:21:36
+last_start: 2026-01-29 01:49:34
 last_end: 2026-01-28 23:04:17
 last_clear: 2026-01-20
 ```
