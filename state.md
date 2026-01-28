@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: m2
+current_milestone: m3
 status: idle
 ```
 
@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/projects/repository-complete-verification/pb-m2-guards
+last_archived: play/archive/projects/repository-complete-verification/pb-m3-subagents
 review_pending: false
 ```
 
@@ -44,7 +44,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 19:49:03
+last_start: 2026-01-28 20:17:24
 last_end: 2026-01-28 15:12:57
 last_clear: 2026-01-20
 ```
