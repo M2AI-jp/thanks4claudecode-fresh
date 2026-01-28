@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
+active: play/standalone/architecture-sync/plan.json
 parent_project: null
-current_phase: null
-branch: null
+current_phase: p1
+branch: docs/architecture-sync-crit
 last_archived: play/archive/standalone/repository-cleanup
 review_pending: false
 ```
@@ -34,9 +34,12 @@ review_pending: false
 ```yaml
 self_complete: true
 milestone: null
-phase: null
-done_criteria: []
-status: idle
+phase: p1
+done_criteria:
+  - docs/ARCHITECTURE.md のセクション 8 に crit/ セクションが存在する
+  - crit/ セクションに handlers/verify.sh が記載されている
+  - crit/ セクションが understanding-check/ の後、## 8.5 の前に配置されている
+status: in_progress
 ```
 
 ---
