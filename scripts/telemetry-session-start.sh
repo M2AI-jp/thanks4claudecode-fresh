@@ -2,7 +2,8 @@
 # telemetry-session-start.sh - session-start event telemetry
 # Symlinked from .claude/events/session-start/telemetry.sh
 set -euo pipefail
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REAL_PATH="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "$REAL_PATH")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 LOG_DIR="$REPO_ROOT/.claude/logs"
 LOG_FILE="$LOG_DIR/session-start.log"

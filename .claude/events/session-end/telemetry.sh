@@ -1,0 +1,1 @@
+../../../scripts/telemetry-session-end.sh

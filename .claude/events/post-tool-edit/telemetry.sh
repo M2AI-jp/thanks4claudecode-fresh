@@ -1,0 +1,1 @@
+../../../scripts/telemetry-post-tool-edit.sh
