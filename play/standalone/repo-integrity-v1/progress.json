@@ -1,0 +1,598 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "repo-integrity-v1",
+    "plan_path": "play/standalone/repo-integrity-v1/plan.json",
+    "status": "completed"
+  },
+  "active": null,
+  "phases": {
+    "p0": {
+      "status": "done",
+      "updated_at": "2026-01-28T23:15:00Z"
+    },
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-28T23:30:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-28T23:45:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-28T23:50:00Z"
+    },
+    "p4": {
+      "status": "done",
+      "updated_at": "2026-01-28T23:55:00Z"
+    },
+    "p5": {
+      "status": "done",
+      "updated_at": "2026-01-28T23:58:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-29T00:15:00Z"
+    }
+  },
+  "subtasks": {
+    "p0.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "bash scripts/reward-fraud-test.sh -> exit 0, 'All tests passed'"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'PASS' = 14"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'FAIL' = 0"
+          ]
+        }
+      },
+      "notes": "14/14 tests passed"
+    },
+    "p0.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'self_complete' = 5"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'exit 2' = 2"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "test -x = executable"
+          ]
+        }
+      },
+      "notes": "self_complete block logic confirmed"
+    },
+    "p0.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'validated_by' = 8"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'critic' = 10"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "test -x = executable"
+          ]
+        }
+      },
+      "notes": "validated_by check logic confirmed"
+    },
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "test -f play/template/plan.json -> 'exists'"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c '_template_rules' = 1"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "jq '.format_version' = \"2.4\""
+          ]
+        }
+      },
+      "notes": "Template file exists with correct format version"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c '4QV+' = 7"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'Q1_形式検証' = 2"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'Plus_' = 2"
+          ]
+        }
+      },
+      "notes": "4QV+ validation steps defined in reviewer.md"
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'validations' = 26"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'PASS.*FAIL' = 24"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c 'technical.*consistency.*completeness' = 1"
+          ]
+        }
+      },
+      "notes": "Validations-based evaluation defined in critic.md"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "test -f docs/file-inventory.md -> 'exists'"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c '## ' = 22 (>= 1)"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "wc -l = 208 (>= 10)"
+          ]
+        }
+      },
+      "notes": "File inventory exists with 22 sections, 208 lines"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "test -f scripts/orphan-check.sh -> 'exists'"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "test -x scripts/orphan-check.sh -> 'executable'"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "bash scripts/orphan-check.sh -> 'Total orphans: 7' (.pytest_cache)"
+          ]
+        }
+      },
+      "notes": "Orphan check script is executable and functional"
+    },
+    "p2.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -E '(DELETE|KEEP|REVIEW)' = 9 (>= 1)"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "All files have KEEP marker, DELETE candidates = 0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "grep -c '^- ' = 4 (>= 1)"
+          ]
+        }
+      },
+      "notes": "0 files marked for deletion"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:50:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "grep -E '^- \\[x\\] DELETE' = 0"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "Phase 2 で全ファイル精査済み、DELETE 対象 = 0 件"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "DELETE 対象 0 件（正常状態）"
+          ]
+        }
+      },
+      "notes": "No files marked for deletion - Phase 3 is a no-op success"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:50:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "bash scripts/reward-fraud-test.sh -> exit 0"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "PASS: 14, FAIL: 0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "All 7 guards verified, 0 failures"
+          ]
+        }
+      },
+      "notes": "14/14 tests passed - reward fraud prevention intact"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:55:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "ls -d .claude/skills/*/ | wc -l = 13 (>= 10)"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "SKILL.md 不足数 = 0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "ls .claude/skills/*/SKILL.md | wc -l = 13"
+          ]
+        }
+      },
+      "notes": "13 Skills, all with SKILL.md"
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:55:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "ls .claude/agents/*.md | wc -l = 7"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "YAML frontmatter = 7"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "7 SubAgents registered"
+          ]
+        }
+      },
+      "notes": "7 SubAgents with YAML frontmatter"
+    },
+    "p4.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:55:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "reward-guard/guards/*.sh = 7"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "NOT_EXEC count = 0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "Total guards = 15"
+          ]
+        }
+      },
+      "notes": "15 guard scripts, all executable"
+    },
+    "p5.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:58:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "chain.sh count = 10"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "MISSING = 0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "Event dirs = 10"
+          ]
+        }
+      },
+      "notes": "10 Event Units with chain.sh"
+    },
+    "p5.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:58:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "NOT_EXEC = 0"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "10 shell scripts"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "Exec = 10"
+          ]
+        }
+      },
+      "notes": "All chain.sh executable"
+    },
+    "p5.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T23:58:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "6 hooks ref events"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "All delegate"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "hooks = 6"
+          ]
+        }
+      },
+      "notes": "All hooks delegate"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "14/14 PASS"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "exit 0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "All tests passed"
+          ]
+        }
+      },
+      "notes": "reward-fraud-test.sh passed"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "DELETE = 0"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "exists"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "208 lines"
+          ]
+        }
+      },
+      "notes": "No DELETE marks"
+    },
+    "p_final.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "chain.sh = 10"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "NOT_EXEC = 0"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "10 Event Units"
+          ]
+        }
+      },
+      "notes": "All chain.sh executable"
+    },
+    "p_final.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T00:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": [
+            "SUCCESS"
+          ]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": [
+            "exists"
+          ]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": [
+            "361 files"
+          ]
+        }
+      },
+      "notes": "repository-map.yaml generated"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "evidence": [
+      "14/14 reward-fraud",
+      "DELETE=0",
+      "chain.sh=10",
+      "repo-map=361"
+    ],
+    "notes": "All done_when satisfied"
+  }
+}

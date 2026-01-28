@@ -151,21 +151,28 @@
 
 ### 5.1 Potentially Orphan Files
 
-| ファイル | 状態 | 判定 |
-|----------|------|------|
-| .claude/lib/testing.sh | 参照なし | **保持**: テスト用ライブラリ |
-| tmp/README.md | 参照なし | **保持**: 一時ファイル用 |
-| .claude/logs/archive/.gitkeep | 参照なし | **保持**: Git 用プレースホルダ |
-| .claude/templates/skill/SKILL.md | 参照なし | **保持**: Skill テンプレート |
-| .claude/templates/skill/agents/agent-template.md | 参照なし | **保持**: Agent テンプレート |
+| ファイル | 状態 | マーク |
+|----------|------|--------|
+| .claude/lib/testing.sh | 参照なし | KEEP: テスト用ライブラリ |
+| tmp/README.md | 参照なし | KEEP: 一時ファイル用 |
+| .claude/logs/archive/.gitkeep | 参照なし | KEEP: Git 用プレースホルダ |
+| .claude/templates/skill/SKILL.md | 参照なし | KEEP: Skill テンプレート |
+| .claude/templates/skill/agents/agent-template.md | 参照なし | KEEP: Agent テンプレート |
 
-### 5.2 Session Logs
+### 5.2 pytest_cache (orphan-check.sh 検出)
 
-| ディレクトリ | ファイル数 | 判定 |
-|--------------|-----------|------|
-| .claude/logs/sessions/ | 25+ | **保持**: セッション履歴 |
+| ファイル | 状態 | マーク |
+|----------|------|--------|
+| .pytest_cache/* | テストキャッシュ | KEEP: .gitignore 対象 |
+| products/mini_lisp/.pytest_cache/* | テストキャッシュ | KEEP: .gitignore 対象 |
 
-**状態**: 孤立ファイル 0 件（削除対象なし）
+### 5.3 Session Logs
+
+| ディレクトリ | ファイル数 | マーク |
+|--------------|-----------|--------|
+| .claude/logs/sessions/ | 25+ | KEEP: セッション履歴 |
+
+**状態**: DELETE 対象ファイル 0 件
 
 ---
 

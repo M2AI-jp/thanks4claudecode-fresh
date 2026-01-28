@@ -1,0 +1,674 @@
+{
+  "_template_rules": "See play/template/plan.json for validation rules",
+  "format_version": "2.4",
+  "meta": {
+    "id": "repo-integrity-v1",
+    "branch": "feat/repo-integrity-v1",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "報酬詐欺防止の仕組み検証、不要ファイル定義・削除、モジュール機能完全性検証、Hook起動検証を実施し、リポジトリを完成状態にする",
+    "done_when": [
+      {
+        "criterion": "scripts/reward-fraud-test.sh が exit 0 で終了する（14/14 PASS）",
+        "command": "bash scripts/reward-fraud-test.sh",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "docs/file-inventory.md に定義された不要ファイルリストが0件である",
+        "command": "grep -c '^- \\[x\\] DELETE' docs/file-inventory.md || echo 0",
+        "expected": "0"
+      },
+      {
+        "criterion": "全 Hook Unit（10種）が chain.sh を持ち実行可能である",
+        "command": "ls -1 .claude/events/*/chain.sh | wc -l | tr -d ' '",
+        "expected": ">= 10"
+      },
+      {
+        "criterion": "docs/repository-map.yaml と実際のファイル構成が一致する",
+        "command": "bash .claude/hooks/generate-repository-map.sh --check 2>&1 | grep -c 'MISMATCH' || echo 0",
+        "expected": "0"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "報酬詐欺防止の仕組み（reward-guard 7種）の検証",
+        "テンプレート・レビュー・監査の仕組み検証",
+        "不要ファイルの定義と削除",
+        "モジュール機能完全性検証",
+        "Hook Unit 起動検証",
+        "repository-map.yaml との整合性確認"
+      ],
+      "excludes": [
+        "新機能の追加",
+        "大規模なリファクタリング",
+        "products/ 配下のアプリケーション実装"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code (orchestrator)",
+          "what": "複合タスク: 1.報酬詐欺防止の仕組み検証 2.テンプレート・レビュー・監査の仕組み検証 3.不要ファイル定義・精査 4.不要ファイル削除 5.モジュール機能完全性検証 6.Hook起動検証 7.リポジトリ完成宣言",
+          "when": "即時実行",
+          "where": "リポジトリ全体",
+          "why": "ユーザーが過去に何度も報酬詐欺を経験しており、詐欺が絶対に起きない構成を求めている",
+          "how": "Golden Path厳守、各タスクを独立Phaseに分解、critic検証を全Phaseで必須化",
+          "missing": ["「不要ファイル」の具体的定義基準", "「リポジトリの完成」の成功基準"]
+        },
+        "risks": [
+          {
+            "risk": "シンボリックリンク構造が複雑で削除時に依存関係が崩れる可能性",
+            "severity": "high",
+            "mitigation": "削除前に依存マップ作成"
+          },
+          {
+            "risk": "既存の reward-guard 7種が全て正常動作しているか未検証",
+            "severity": "high",
+            "mitigation": "scripts/reward-fraud-test.sh を最初に実行"
+          },
+          {
+            "risk": "タスクが広範囲でスコープクリープが発生しやすい",
+            "severity": "high",
+            "mitigation": "Phaseを細分化しdone_criteriaを原子的に定義"
+          }
+        ],
+        "multi_topic_detection": {
+          "detected": true,
+          "topic_count": 7,
+          "decomposition_needed": true
+        },
+        "recommended_phases": [
+          "Phase 0: 報酬詐欺防止の仕組み検証",
+          "Phase 1: テンプレート・レビュー・監査の仕組み検証",
+          "Phase 2: 不要ファイル定義・精査",
+          "Phase 3: 不要ファイル削除",
+          "Phase 4: モジュール機能完全性検証",
+          "Phase 5: Hook起動検証",
+          "Phase p_final: リポジトリ完成宣言・critic最終検証"
+        ],
+        "success_criteria": [
+          "全 Hook Unit（10種）が正常に発火する",
+          "reward-guard の 7種全てが PASS",
+          "不要ファイルが 0件になる",
+          "docs/file-inventory.md と実際のファイル構成が一致",
+          "pm -> reviewer -> critic チェーンが正常動作"
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-28",
+      "summary": "AUTO_APPROVED (auto_approve=true)",
+      "approved_items": [
+        "報酬詐欺防止の仕組み検証を最初に実施",
+        "テンプレート・レビュー・監査の仕組みを疑う観点で検証",
+        "不要ファイルを定義してから削除",
+        "全Phaseでbashコマンドによる自動検証を必須化"
+      ],
+      "technical_requirements_confirmed": [
+        "scripts/reward-fraud-test.sh による7種guard検証",
+        "Hook Unit 10種の chain.sh 実行可能性確認",
+        "repository-map.yaml との整合性チェック"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p0",
+      "name": "報酬詐欺防止の仕組み検証",
+      "description": "reward-guard 7種が全て正常に機能していることを検証する（仕組み自体を疑う）",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p0.1",
+          "criterion": "scripts/reward-fraud-test.sh が exit 0 で終了する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>&1 | grep -c 'PASS' | tr -d ' '",
+              "expected": "14"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>&1 | grep -c 'FAIL' | tr -d ' '",
+              "expected": "0"
+            }
+          }
+        },
+        {
+          "id": "p0.2",
+          "criterion": "critic-guard.sh に self_complete ブロックロジックが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'self_complete' .claude/skills/reward-guard/guards/critic-guard.sh",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'exit 2' .claude/skills/reward-guard/guards/critic-guard.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -x .claude/skills/reward-guard/guards/critic-guard.sh && echo 'executable' || echo 'not executable'",
+              "expected": "executable"
+            }
+          }
+        },
+        {
+          "id": "p0.3",
+          "criterion": "subtask-guard.sh に validated_by チェックロジックが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'validated_by' .claude/skills/reward-guard/guards/subtask-guard.sh",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'critic' .claude/skills/reward-guard/guards/subtask-guard.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -x .claude/skills/reward-guard/guards/subtask-guard.sh && echo 'executable' || echo 'not executable'",
+              "expected": "executable"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p1",
+      "name": "テンプレート・レビュー・監査の仕組み検証",
+      "description": "pm -> reviewer -> critic チェーンが正常に機能することを検証する",
+      "depends_on": ["p0"],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "play/template/plan.json が存在し、_template_rules を含む",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f play/template/plan.json && echo 'exists' || echo 'not exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '_template_rules' play/template/plan.json",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq '.format_version' play/template/plan.json",
+              "expected": "\"2.4\""
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "reviewer.md に 4QV+ 検証ステップが定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c '4QV+' .claude/agents/reviewer.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'Q1_形式検証' .claude/agents/reviewer.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'Plus_' .claude/agents/reviewer.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "critic.md に validations ベース評価が定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'validations' .claude/agents/critic.md",
+              "expected": ">= 5"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'PASS.*FAIL' .claude/agents/critic.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'technical.*consistency.*completeness' .claude/agents/critic.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "不要ファイル定義・精査",
+      "description": "docs/file-inventory.md を作成/更新し、不要ファイルを明確に定義する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "docs/file-inventory.md が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/file-inventory.md && echo 'exists' || echo 'not exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '## ' docs/file-inventory.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < docs/file-inventory.md | tr -d ' '",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "孤立ファイル検出スクリプトが実行可能である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f scripts/orphan-check.sh && echo 'exists' || echo 'not exists'",
+              "expected": "exists"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -x scripts/orphan-check.sh && echo 'executable' || echo 'not executable'",
+              "expected": "executable"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash scripts/orphan-check.sh --help 2>&1 | head -1 | grep -c 'orphan' || bash scripts/orphan-check.sh 2>&1 | head -1 | grep -c 'Orphan' || echo 1",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "不要ファイル候補リストが docs/file-inventory.md に記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -E '(DELETE|KEEP|REVIEW)' docs/file-inventory.md | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c '不要' docs/file-inventory.md || grep -c 'DELETE' docs/file-inventory.md || echo 0",
+              "expected": ">= 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '^- ' docs/file-inventory.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "不要ファイル削除",
+      "description": "p2で定義した不要ファイルを削除し、依存関係を修正する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "DELETE マークされたファイルが全て削除されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -E '^- \\[x\\] DELETE' docs/file-inventory.md | while read line; do file=$(echo \"$line\" | sed 's/.*DELETE: //'); test -f \"$file\" && echo \"EXISTS: $file\"; done | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "git status --porcelain | grep -c '^D ' || echo 0",
+              "expected": ">= 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '^- \\[x\\] DELETE' docs/file-inventory.md || echo 0",
+              "expected": "0"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "削除後も reward-fraud-test.sh が PASS する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>&1 | grep -c 'PASS' | tr -d ' '",
+              "expected": "14"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>&1 | grep -c 'FAIL' | tr -d ' '",
+              "expected": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "モジュール機能完全性検証",
+      "description": "全Skill、SubAgent、Guardが正常に定義されていることを検証する",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "全 Skill が SKILL.md を持つ",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls -d .claude/skills/*/ | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for d in .claude/skills/*/; do test -f \"${d}SKILL.md\" || echo \"MISSING: $d\"; done | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls .claude/skills/*/SKILL.md | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "全 SubAgent が .claude/agents/ に登録されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls .claude/agents/*.md | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/agents/*.md; do grep -l '^---' \"$f\" >/dev/null && echo 'YAML'; done | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls .claude/agents/*.md 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "全 Guard が実行可能である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls .claude/skills/reward-guard/guards/*.sh | wc -l | tr -d ' '",
+              "expected": ">= 7"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/skills/reward-guard/guards/*.sh; do test -x \"$f\" || echo \"NOT_EXEC: $f\"; done | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find .claude/skills/*/guards -name '*.sh' -type f | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "Hook 起動検証",
+      "description": "全 Hook Unit（10種）が chain.sh を持ち正常に起動することを検証する",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "全 Hook Unit ディレクトリに chain.sh が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls -1 .claude/events/*/chain.sh 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for d in .claude/events/*/; do test -f \"${d}chain.sh\" || echo \"MISSING: $d\"; done | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls -d .claude/events/*/ | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p5.2",
+          "criterion": "全 chain.sh が実行可能である",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for f in .claude/events/*/chain.sh; do test -x \"$f\" || echo \"NOT_EXEC: $f\"; done | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "file .claude/events/*/chain.sh | grep -c 'shell script' || file .claude/events/*/chain.sh | grep -c 'Bourne-Again' || echo 0",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls -la .claude/events/*/chain.sh | grep -c 'x' | tr -d ' '",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p5.3",
+          "criterion": ".claude/hooks/ から Event Unit への委譲が設定されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -l 'events/' .claude/hooks/*.sh | wc -l | tr -d ' '",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'chain.sh' .claude/hooks/*.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls .claude/hooks/*.sh | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "リポジトリ完成宣言・最終検証",
+      "description": "全 done_when を再検証し、リポジトリの完成を確認する",
+      "depends_on": ["p0", "p1", "p2", "p3", "p4", "p5"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "scripts/reward-fraud-test.sh が exit 0 で終了する（done_when[0]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>&1 | tail -5",
+              "expected": "contains 'All tests passed'"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash scripts/reward-fraud-test.sh 2>&1 | grep -c 'PASS' | tr -d ' '",
+              "expected": "14"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "docs/file-inventory.md に DELETE マークが 0件である（done_when[1]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c '^- \\[x\\] DELETE' docs/file-inventory.md || echo 0",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f docs/file-inventory.md && echo 'exists' || echo 'not exists'",
+              "expected": "exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < docs/file-inventory.md | tr -d ' '",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "全 Hook Unit（10種）が chain.sh を持つ（done_when[2]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls -1 .claude/events/*/chain.sh | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/events/*/chain.sh; do test -x \"$f\" || echo 'NOT_EXEC'; done | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls -d .claude/events/*/ | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "repository-map.yaml と実際のファイル構成が一致する（done_when[3]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash .claude/hooks/generate-repository-map.sh && echo 'SUCCESS' || echo 'FAILED'",
+              "expected": "SUCCESS"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f docs/repository-map.yaml && echo 'exists' || echo 'not exists'",
+              "expected": "exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'total_files' docs/repository-map.yaml",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

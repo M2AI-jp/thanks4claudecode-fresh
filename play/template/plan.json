@@ -14,32 +14,53 @@
       "PROHIBITED_PATTERNS": {
         "hollow_criterion": {
           "description": "A criterion that cannot fail or proves nothing",
-          "examples": ["ファイルが適切に設定されている", "正しく動作する", "問題なく完了する"],
+          "examples": [
+            "ファイルが適切に設定されている",
+            "正しく動作する",
+            "問題なく完了する"
+          ],
           "why_prohibited": "Cannot be falsified - always passes by interpretation"
         },
         "compound_criterion": {
           "description": "A criterion that tests multiple independent conditions",
-          "examples": ["ファイル X が存在し、関数 Y が定義されている", "A が B で、C が D である"],
+          "examples": [
+            "ファイル X が存在し、関数 Y が定義されている",
+            "A が B で、C が D である"
+          ],
           "why_prohibited": "If one fails, which failed? Split into separate criteria."
         },
         "action_criterion": {
           "description": "A criterion written as an action to perform",
-          "examples": ["ファイルを作成する", "テストを実行する", "設定を確認する"],
+          "examples": [
+            "ファイルを作成する",
+            "テストを実行する",
+            "設定を確認する"
+          ],
           "why_prohibited": "Criterion describes state, not action. Use past participle or existence."
         },
         "proxy_criterion": {
           "description": "Criterion that tests existence/syntax when semantics matter",
-          "examples": ["関数が定義されている（when logic correctness matters）", "ファイルが存在する（when content correctness matters）"],
+          "examples": [
+            "関数が定義されている（when logic correctness matters）",
+            "ファイルが存在する（when content correctness matters）"
+          ],
           "why_prohibited": "Existence != correctness. Test the actual behavior, not its proxy."
         },
         "tautological_criterion": {
           "description": "Criterion that cannot logically fail",
-          "examples": ["0件以上存在する", "ファイルの内容がファイルと一致する", "空または空でない"],
+          "examples": [
+            "0件以上存在する",
+            "ファイルの内容がファイルと一致する",
+            "空または空でない"
+          ],
           "why_prohibited": "If true by definition, it proves nothing."
         },
         "semantic_compound": {
           "description": "Criterion that appears single but implies multiple conditions",
-          "examples": ["API レスポンスの形式が仕様通り（=API稼働+JSON有効+スキーマ準拠）", "ビルドが成功する（=依存解決+コンパイル+リンク）"],
+          "examples": [
+            "API レスポンスの形式が仕様通り（=API稼働+JSON有効+スキーマ準拠）",
+            "ビルドが成功する（=依存解決+コンパイル+リンク）"
+          ],
           "why_prohibited": "Decompose high-level concepts into atomic testable units."
         }
       },
@@ -61,27 +82,46 @@
       "PROHIBITED_PATTERNS": {
         "pseudo_command": {
           "description": "Instructions disguised as commands",
-          "examples": ["Execute the test", "Compare with expected", "Manually verify"],
+          "examples": [
+            "Execute the test",
+            "Compare with expected",
+            "Manually verify"
+          ],
           "why_prohibited": "Not executable. Must be actual shell command."
         },
         "compound_command": {
           "description": "Multiple commands chained together",
-          "examples": ["test -f path && grep -q 'pattern' path", "cmd1; cmd2"],
+          "examples": [
+            "test -f path && grep -q 'pattern' path",
+            "cmd1; cmd2"
+          ],
           "why_prohibited": "Which command failed? Split into separate validations."
         },
         "trivial_command": {
           "description": "Commands that always succeed",
-          "examples": ["echo 'done'", "true", "exit 0"],
+          "examples": [
+            "echo 'done'",
+            "true",
+            "exit 0"
+          ],
           "why_prohibited": "Proves nothing. Command must actually test something."
         },
         "output_filtering": {
           "description": "Commands that hide failures through filtering",
-          "examples": ["grep -v 'error'", "|| true", "|| echo 0", "2>/dev/null (hiding errors)"],
+          "examples": [
+            "grep -v 'error'",
+            "|| true",
+            "|| echo 0",
+            "2>/dev/null (hiding errors)"
+          ],
           "why_prohibited": "Hides evidence of failure. Output must be unfiltered."
         },
         "stale_check": {
           "description": "Checking cached/old artifacts without regeneration",
-          "examples": ["test -d dist (without preceding build)", "cat old-log.txt"],
+          "examples": [
+            "test -d dist (without preceding build)",
+            "cat old-log.txt"
+          ],
           "why_prohibited": "May pass on stale success. Validate current state."
         }
       },
@@ -102,21 +142,41 @@
       "PROHIBITED_PATTERNS": {
         "subjective_expected": {
           "description": "Values requiring human judgment",
-          "examples": ["適切な値", "正常終了", "期待通り"],
+          "examples": [
+            "適切な値",
+            "正常終了",
+            "期待通り"
+          ],
           "why_prohibited": "Machine cannot evaluate 'appropriate'. Use concrete value."
         },
         "universal_expected": {
           "description": "Values that sound complete but mean nothing",
-          "examples": ["All pass", "100% success", "No errors"],
+          "examples": [
+            "All pass",
+            "100% success",
+            "No errors"
+          ],
           "why_prohibited": "What is 'all'? Define the specific check."
         },
         "vacuous_threshold": {
           "description": "Thresholds that almost anything passes",
-          "examples": [">= 0", ">= 1 line", "not empty (on any file)", "any output"],
+          "examples": [
+            ">= 0",
+            ">= 1 line",
+            "not empty (on any file)",
+            "any output"
+          ],
           "why_prohibited": "No meaningful quality gate. Threshold must exclude failures."
         }
       },
-      "VALID_FORMS": ["exit 0", "exit 1", ">= N (where N > trivial)", "== N", "contains 'X'", "exact string"],
+      "VALID_FORMS": [
+        "exit 0",
+        "exit 1",
+        ">= N (where N > trivial)",
+        "== N",
+        "contains 'X'",
+        "exact string"
+      ],
       "SELF_CHECK": [
         "What percentage of random inputs would pass this? If > 90%, too weak.",
         "Would a hollow implementation's output pass? If yes, strengthen."
@@ -130,7 +190,9 @@
       "PROHIBITED_PATTERNS": {
         "omnibus_subtask": {
           "description": "A subtask that does too many things",
-          "examples": ["ファイル作成、テスト追加、ドキュメント更新を行う"],
+          "examples": [
+            "ファイル作成、テスト追加、ドキュメント更新を行う"
+          ],
           "why_prohibited": "Which part failed? One subtask = one verifiable change."
         }
       }
@@ -176,6 +238,18 @@
         "If I hardcode the expected output, would this validation pass?",
         "Does the command actually test what the criterion claims?"
       ]
+    },
+    "functional_test_requirement": {
+      "MUST": "p_final phase には必ず動作テストを含む subtask を定義すること",
+      "PROHIBITED_VERIFICATION": [
+        "test -f",
+        "test -e",
+        "test -d",
+        "ls -la",
+        "file",
+        "stat"
+      ],
+      "REQUIRED_VERIFICATION": "テストスクリプト実行、API呼び出し、コマンド実行などの動作確認"
     }
   },
   "format_version": "2.4",
@@ -192,7 +266,8 @@
       "worker": "codex",
       "reviewer": "coderabbit",
       "human": "user"
-    }
+    },
+    "requires_functional_test": true
   },
   "goal": {
     "summary": "Implement X to achieve Y (one sentence, specific)",
@@ -214,8 +289,12 @@
       }
     ],
     "scope": {
-      "includes": ["List specific files or features"],
-      "excludes": ["List what is NOT in scope"]
+      "includes": [
+        "List specific files or features"
+      ],
+      "excludes": [
+        "List what is NOT in scope"
+      ]
     }
   },
   "context": {
@@ -268,7 +347,9 @@
       "id": "p_final",
       "name": "Final verification",
       "description": "Execute all done_when commands and verify results",
-      "depends_on": ["p1"],
+      "depends_on": [
+        "p1"
+      ],
       "subtasks": [
         {
           "id": "p_final.1",

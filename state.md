@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/mini-lisp
+last_archived: play/archive/reward-fraud-prevention-v2
 review_pending: false
 ```
 
@@ -44,8 +44,8 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 21:11:40
-last_end: 2026-01-28 15:12:57
+last_start: 2026-01-28 23:49:08
+last_end: 2026-01-28 23:04:17
 last_clear: 2026-01-20
 ```
 

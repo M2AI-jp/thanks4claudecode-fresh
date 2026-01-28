@@ -34,6 +34,50 @@ done_criteria の達成状況と playbook 妥当性を批判的に評価する�
    - 実際に動かして検証したか
    - エッジケースを考慮したか
 
+## PROXY_VERIFICATION_BLOCKLIST（存在確認禁止リスト）
+
+> **以下のコマンドは機能検証として認めない。存在確認のみで PASS を主張した場合は自動 FAIL。**
+
+### 禁止コマンド
+
+```yaml
+blocked_commands:
+  - test -f    # ファイル存在確認
+  - test -e    # エントリ存在確認
+  - test -d    # ディレクトリ存在確認
+  - ls -la     # ファイル一覧（存在確認として使用時）
+  - file       # ファイルタイプ確認
+  - stat       # ファイル状態確認
+
+理由:
+  - これらは「存在する」ことを確認するが「動作する」ことを確認しない
+  - 空のファイル、壊れたスクリプト、間違った設定でも PASS になってしまう
+  - 報酬詐欺の温床
+
+許可される検証:
+  - bash script.sh && echo 'SUCCESS'  # 実行テスト
+  - grep -c 'expected' file           # 内容検証
+  - jq '.key' file                    # 構造検証
+  - npm test / pytest / go test       # テスト実行
+  - curl -s url | grep 'expected'     # API 検証
+```
+
+### 検出と対応
+
+```yaml
+検出方法:
+  - criterion の command を解析
+  - 禁止コマンドのみで構成されている場合は警告
+  - 禁止コマンドのみの証拠で PASS を主張 → 自動 FAIL
+
+対応:
+  - 存在確認 + 動作確認の組み合わせを要求
+  - 例: `test -f script.sh && bash script.sh && echo 'SUCCESS'`
+  - 存在確認は前提条件として許容、最終検証は動作確認必須
+```
+
+---
+
 ## 評価フレームワーク（4QV+ 統合）
 
 > **M088: 4QV+ 導火線モデルに従った検証を必ず実行すること**
