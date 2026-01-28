@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T21:40:00Z",
+    "generator": "Claude Opus 4.5",
+    "milestone": "m3",
+    "purpose": "SubAgent Cross-Reference Integrity Verification"
+  },
+  "summary": {
+    "total_references": 7,
+    "identical_count": 7,
+    "different_count": 0,
+    "integrity_status": "PASS"
+  },
+  "references": [
+    {
+      "name": "pm.md",
+      "agents_path": ".claude/agents/pm.md",
+      "skills_path": ".claude/skills/golden-path/agents/pm.md",
+      "status": "identical",
+      "verified_at": "2026-01-28T21:40:00Z"
+    },
+    {
+      "name": "critic.md",
+      "agents_path": ".claude/agents/critic.md",
+      "skills_path": ".claude/skills/reward-guard/agents/critic.md",
+      "status": "identical",
+      "verified_at": "2026-01-28T21:40:00Z"
+    },
+    {
+      "name": "reviewer.md",
+      "agents_path": ".claude/agents/reviewer.md",
+      "skills_path": ".claude/skills/quality-assurance/agents/reviewer.md",
+      "status": "identical",
+      "verified_at": "2026-01-28T21:40:00Z"
+    },
+    {
+      "name": "prompt-analyzer.md",
+      "agents_path": ".claude/agents/prompt-analyzer.md",
+      "skills_path": ".claude/skills/prompt-analyzer/agents/prompt-analyzer.md",
+      "status": "identical",
+      "verified_at": "2026-01-28T21:40:00Z"
+    },
+    {
+      "name": "executor-resolver.md",
+      "agents_path": ".claude/agents/executor-resolver.md",
+      "skills_path": ".claude/skills/executor-resolver/agents/executor-resolver.md",
+      "status": "identical",
+      "verified_at": "2026-01-28T21:40:00Z"
+    },
+    {
+      "name": "codex-delegate.md",
+      "agents_path": ".claude/agents/codex-delegate.md",
+      "skills_path": ".claude/skills/golden-path/agents/codex-delegate.md",
+      "status": "identical",
+      "verified_at": "2026-01-28T21:40:00Z"
+    },
+    {
+      "name": "coderabbit-delegate.md",
+      "agents_path": ".claude/agents/coderabbit-delegate.md",
+      "skills_path": ".claude/skills/quality-assurance/agents/coderabbit-delegate.md",
+      "status": "identical",
+      "verified_at": "2026-01-28T21:40:00Z"
+    }
+  ],
+  "verification_method": "diff command between agents_path and skills_path"
+}

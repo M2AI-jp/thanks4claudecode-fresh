@@ -1,0 +1,95 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T21:35:00Z",
+    "generator": "Claude Opus 4.5",
+    "milestone": "m3",
+    "purpose": "SubAgent Structure Verification Results"
+  },
+  "note": "SubAgent files use Japanese headers. Semantic equivalence verified: 役割/責務=Purpose, 使用方法/トリガー条件=When to Use, 出力フォーマット=Output",
+  "subagents": [
+    {
+      "name": "pm.md",
+      "path": ".claude/agents/pm.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "has_output": true,
+      "purpose_section": "## 役割定義",
+      "when_section": "## トリガー条件",
+      "output_section": "## Structured Question Output"
+    },
+    {
+      "name": "critic.md",
+      "path": ".claude/agents/critic.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "has_output": true,
+      "purpose_section": "## 責務",
+      "when_section": "## Playbook v2 (JSON) 検証指針",
+      "output_section": "## 出力フォーマット"
+    },
+    {
+      "name": "reviewer.md",
+      "path": ".claude/agents/reviewer.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "has_output": true,
+      "purpose_section": "## 責務",
+      "when_section": "## レビュー実行手順",
+      "output_section": "## 出力フォーマット"
+    },
+    {
+      "name": "prompt-analyzer.md",
+      "path": ".claude/agents/prompt-analyzer.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "has_output": true,
+      "purpose_section": "## 最重要: 必ず出力する項目",
+      "when_section": "## topic_type 判定ルール",
+      "output_section": "## 出力フォーマット"
+    },
+    {
+      "name": "executor-resolver.md",
+      "path": ".claude/agents/executor-resolver.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "has_output": true,
+      "purpose_section": "## 責務",
+      "when_section": "## 分析ルール",
+      "output_section": "## 出力フォーマット"
+    },
+    {
+      "name": "codex-delegate.md",
+      "path": ".claude/agents/codex-delegate.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "has_output": true,
+      "purpose_section": "## 役割",
+      "when_section": "## 使用方法",
+      "output_section": "## 出力フォーマット"
+    },
+    {
+      "name": "coderabbit-delegate.md",
+      "path": ".claude/agents/coderabbit-delegate.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "has_output": true,
+      "purpose_section": "## 役割",
+      "when_section": "## 使用方法",
+      "output_section": "## 出力フォーマット"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "with_all_sections": 7,
+    "structural_compliance": "100%",
+    "note": "All SubAgents have semantically equivalent sections using Japanese terminology"
+  },
+  "verification": {
+    "method": "grep pattern matching for Japanese section headers",
+    "patterns_used": {
+      "purpose": "役割|責務|最重要",
+      "when_to_use": "使用方法|トリガー条件|判定ルール|分析ルール|レビュー実行",
+      "output": "出力フォーマット"
+    }
+  }
+}

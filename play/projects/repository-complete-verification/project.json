@@ -52,7 +52,7 @@
       "id": "m2",
       "title": "Milestone 2: Guard System Verification",
       "order": 2,
-      "status": "in_progress",
+      "status": "completed",
       "description": "Verify all 15 Guard systems (HARD_BLOCK, playbook-guard, critic-guard, protected-edit, etc.)",
       "done_when": [
         {
@@ -162,8 +162,8 @@
   "progress": {
     "total_playbooks": 6,
     "completed_playbooks": 2,
-    "current_milestone": "m2",
-    "current_playbook": null
+    "current_milestone": "m3",
+    "current_playbook": "pb-m3-subagents"
   },
   "context": {
     "analysis_result": {

@@ -1,0 +1,87 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T21:30:00Z",
+    "generator": "Claude Opus 4.5",
+    "milestone": "m3",
+    "purpose": "SubAgent Baseline Documentation"
+  },
+  "summary": {
+    "total_subagents": 7,
+    "categories": {
+      "orchestration": 1,
+      "analysis": 2,
+      "validation": 2,
+      "delegation": 2
+    }
+  },
+  "subagents": [
+    {
+      "name": "pm.md",
+      "agents_path": ".claude/agents/pm.md",
+      "skills_path": ".claude/skills/golden-path/agents/pm.md",
+      "category": "orchestration",
+      "purpose": "Playbook creation and management",
+      "invocation": "Task(subagent_type='pm', prompt='...')",
+      "expected_output": "Creates plan.json and progress.json in play/ directory"
+    },
+    {
+      "name": "critic.md",
+      "agents_path": ".claude/agents/critic.md",
+      "skills_path": ".claude/skills/reward-guard/agents/critic.md",
+      "category": "validation",
+      "purpose": "done_criteria verification with PASS/FAIL judgment",
+      "invocation": "Task(subagent_type='critic', prompt='...')",
+      "expected_output": "PASS or FAIL with evidence for each criterion"
+    },
+    {
+      "name": "reviewer.md",
+      "agents_path": ".claude/agents/reviewer.md",
+      "skills_path": ".claude/skills/quality-assurance/agents/reviewer.md",
+      "category": "validation",
+      "purpose": "Playbook review and approval",
+      "invocation": "Task(subagent_type='reviewer', prompt='...')",
+      "expected_output": "PASS or FAIL judgment with review comments"
+    },
+    {
+      "name": "prompt-analyzer.md",
+      "agents_path": ".claude/agents/prompt-analyzer.md",
+      "skills_path": ".claude/skills/prompt-analyzer/agents/prompt-analyzer.md",
+      "category": "analysis",
+      "purpose": "User prompt analysis and classification",
+      "invocation": "Task(subagent_type='prompt-analyzer', prompt='...')",
+      "expected_output": "topic_type (instruction/question/context) with 5W1H analysis"
+    },
+    {
+      "name": "executor-resolver.md",
+      "agents_path": ".claude/agents/executor-resolver.md",
+      "skills_path": ".claude/skills/executor-resolver/agents/executor-resolver.md",
+      "category": "analysis",
+      "purpose": "Task executor determination (claudecode/codex/coderabbit/user)",
+      "invocation": "Task(subagent_type='executor-resolver', prompt='...')",
+      "expected_output": "Recommended executor with rationale"
+    },
+    {
+      "name": "codex-delegate.md",
+      "agents_path": ".claude/agents/codex-delegate.md",
+      "skills_path": ".claude/skills/golden-path/agents/codex-delegate.md",
+      "category": "delegation",
+      "purpose": "Wrap Codex MCP calls and summarize results",
+      "invocation": "Task(subagent_type='codex-delegate', prompt='...')",
+      "expected_output": "Codex execution result summary"
+    },
+    {
+      "name": "coderabbit-delegate.md",
+      "agents_path": ".claude/agents/coderabbit-delegate.md",
+      "skills_path": ".claude/skills/quality-assurance/agents/coderabbit-delegate.md",
+      "category": "delegation",
+      "purpose": "Wrap CodeRabbit CLI for code review",
+      "invocation": "Task(subagent_type='coderabbit-delegate', prompt='...')",
+      "expected_output": "CodeRabbit review result summary"
+    }
+  ],
+  "verification": {
+    "agents_count": 7,
+    "skills_agents_count": 7,
+    "all_present": true
+  }
+}

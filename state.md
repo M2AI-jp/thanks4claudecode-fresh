@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: m2
-status: idle
+active: play/projects/repository-complete-verification/project.json
+current_milestone: m3
+status: active
 ```
 
 ---
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
-parent_project: null
-current_phase: null
-branch: null
+active: play/projects/repository-complete-verification/playbooks/pb-m3-subagents/plan.json
+parent_project: repository-complete-verification
+current_phase: p1
+branch: feat/m3-subagent-verification
 last_archived: play/archive/projects/repository-complete-verification/pb-m2-guards
 review_pending: false
 ```
@@ -33,10 +33,15 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: m3
+phase: p1
+done_criteria:
+  - "7 SubAgent ファイルが .claude/agents/ に存在する"
+  - ".claude/agents/ と skills/*/agents/ の SubAgent ファイル数が一致する"
+  - "各 SubAgent が必須セクション（Purpose, When to Use, Output）を含む"
+  - "Adversarial invocation test が全て失敗している"
+  - "docs/reports/m3-subagent-certification.json が生成されている"
+status: in_progress
 ```
 
 ---
@@ -44,7 +49,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 19:49:03
+last_start: 2026-01-28 20:17:24
 last_end: 2026-01-28 15:12:57
 last_clear: 2026-01-20
 ```
