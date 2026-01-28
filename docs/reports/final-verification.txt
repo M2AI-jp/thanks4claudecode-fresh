@@ -1,0 +1,63 @@
+=== Final Verification Report ===
+Generated: 2026-01-29T01:15:00+09:00
+Playbook: repository-verification
+
+---
+GOAL done_when VERIFICATION
+---
+
+[1/4] docs/completion-criteria.md exists
+  Command: test -f docs/completion-criteria.md
+  Expected: exit 0
+  Result: PASS
+
+[2/4] Guard test results (>= 7 PASS)
+  Command: grep -c 'PASS' docs/reports/guard-test-results.txt
+  Expected: >= 7
+  Result: 8 PASS
+  Status: PASS
+
+[3/4] Chain verification (>= 10 VERIFIED)
+  Command: grep -c 'VERIFIED' docs/reports/chain-verification-results.txt
+  Expected: >= 10
+  Result: 13 VERIFIED
+  Status: PASS
+
+[4/4] Orphan audit complete
+  Command: test -f docs/orphan-audit.md && grep -c 'AUDIT COMPLETE' docs/orphan-audit.md
+  Expected: >= 1
+  Result: 1
+  Status: PASS
+
+---
+SUMMARY
+---
+
+Total done_when criteria: 4
+PASS: 4
+FAIL: 0
+
+OVERALL: ALL CRITERIA MET
+
+---
+PHASE COMPLETION STATUS
+---
+
+p1_definition: DONE (docs/completion-criteria.md created with 5-layer fraud prevention)
+p2_guard_test: DONE (7/7 guards tested, 8 PASS recorded)
+p3_chain_verification: DONE (13/12 chains verified)
+p4_orphan_check: DONE (0 orphaned files, audit complete)
+p_final: DONE (all done_when verified)
+
+---
+EVIDENCE FILES
+---
+
+1. docs/completion-criteria.md - Repository completion definition
+2. docs/reports/guard-test-results.txt - Guard script test results
+3. docs/reports/chain-verification-results.txt - Hook chain verification
+4. docs/orphan-audit.md - Orphan file audit report
+5. docs/reports/final-verification.txt - This file
+
+---
+AWAITING: critic validation via /crit

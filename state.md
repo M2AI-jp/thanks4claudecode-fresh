@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/standalone/architecture-sync
+last_archived: play/archive/repository-verification
 review_pending: false
 ```
 
@@ -32,7 +32,7 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: true
+self_complete: false
 milestone: null
 phase: null
 done_criteria: []
@@ -44,7 +44,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-29 00:08:55
+last_start: 2026-01-29 01:21:36
 last_end: 2026-01-28 23:04:17
 last_clear: 2026-01-20
 ```

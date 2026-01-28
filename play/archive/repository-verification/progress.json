@@ -1,0 +1,453 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "repository-verification",
+    "plan_path": "play/standalone/repository-verification/plan.json",
+    "status": "complete"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.4"
+  },
+  "phases": {
+    "p1_definition": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:02:00+09:00"
+    },
+    "p2_guard_test": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:05:00+09:00"
+    },
+    "p3_chain_verification": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:06:00+09:00"
+    },
+    "p4_orphan_check": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:10:00+09:00"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-29T01:30:00+09:00"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f docs/completion-criteria.md → exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c '## ' docs/completion-criteria.md → 11"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -cE '(Hook|Skill|SubAgent|Event Unit|Guard)' → 24"]
+        }
+      },
+      "notes": "Created docs/completion-criteria.md with 7 completion conditions"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'reward' docs/completion-criteria.md → 6"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -cE '(critic-guard|subtask-guard|phase-status-guard|scope-guard|completion-check)' → 10"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'exit 2' docs/completion-criteria.md → 4"]
+        }
+      },
+      "notes": "5-layer fraud prevention system documented"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["critic-guard.sh exists with exit 2"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["File exists at .claude/skills/reward-guard/guards/critic-guard.sh"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'exit 2' critic-guard.sh → 2"]
+        }
+      },
+      "notes": "Recorded in docs/reports/guard-test-results.txt"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["subtask-guard.sh exists with validated_by check"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["File exists"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'validated_by' → 8"]
+        }
+      },
+      "notes": "Recorded in docs/reports/guard-test-results.txt"
+    },
+    "p2.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["phase-status-guard.sh exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'exit 2' → 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'subtasks' → 6"]
+        }
+      },
+      "notes": "Recorded in docs/reports/guard-test-results.txt"
+    },
+    "p2.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["scope-guard.sh exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'done_when' → 5"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'STRICT_MODE' → 4"]
+        }
+      },
+      "notes": "Recorded in docs/reports/guard-test-results.txt"
+    },
+    "p2.5": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["coherence.sh exists and executes"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["File exists"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'state.md' → 9"]
+        }
+      },
+      "notes": "Recorded in docs/reports/guard-test-results.txt"
+    },
+    "p2.6": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["completion-check.sh exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'progress.json' → 4"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'exit 1' → 3"]
+        }
+      },
+      "notes": "Recorded in docs/reports/guard-test-results.txt"
+    },
+    "p2.7": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["progress-reminder.sh exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'systemMessage' → 3"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'progress.json' → 8"]
+        }
+      },
+      "notes": "Recorded in docs/reports/guard-test-results.txt"
+    },
+    "p2.8": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["docs/reports/guard-test-results.txt exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'PASS' → 8"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["7 guards + summary = 8+ lines"]
+        }
+      },
+      "notes": "All 7 guards tested and recorded"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["ls -la .claude/events/*/chain.sh → 10 files"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["find -type l → 10 symlinks"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["10 event unit directories"]
+        }
+      },
+      "notes": "Recorded in docs/reports/chain-verification-results.txt"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["find .claude/skills -name 'SKILL.md' → 14"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["14 skill directories"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All SKILL.md contain Purpose section"]
+        }
+      },
+      "notes": "Recorded in docs/reports/chain-verification-results.txt"
+    },
+    "p3.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["find -path '*/agents/*.md' → 7"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["7 agents in .claude/agents/"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["All agents have Purpose/Role sections"]
+        }
+      },
+      "notes": "Recorded in docs/reports/chain-verification-results.txt"
+    },
+    "p3.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["docs/reports/chain-verification-results.txt exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'VERIFIED' → 13"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["12 chain verifications + summary"]
+        }
+      },
+      "notes": "All chains verified"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["docs/repository-map.yaml exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'path:' → 100+"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'purpose:' → 100+"]
+        }
+      },
+      "notes": "Repository map is current"
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["docs/orphan-audit.md exists"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'AUDIT COMPLETE' → 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["0 orphaned files detected"]
+        }
+      },
+      "notes": "Orphan audit complete - 0 orphaned files"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f docs/completion-criteria.md → exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["wc -l → 215 lines"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c '## ' → 11 sections"]
+        }
+      },
+      "notes": "done_when[0] verified"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'PASS' guard-test-results.txt → 8"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["docs/reports/guard-test-results.txt exists"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["8 >= 7 required"]
+        }
+      },
+      "notes": "done_when[1] verified"
+    },
+    "p_final.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'VERIFIED' chain-verification-results.txt → 13"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["docs/reports/chain-verification-results.txt exists"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["13 >= 10 required"]
+        }
+      },
+      "notes": "done_when[2] verified"
+    },
+    "p_final.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T01:30:00+09:00",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["docs/orphan-audit.md exists with AUDIT COMPLETE"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'AUDIT COMPLETE' → 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["wc -l → 85 lines"]
+        }
+      },
+      "notes": "done_when[3] verified"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "validated_at": "2026-01-29T01:30:00+09:00",
+    "evidence": [
+      "done_when[0]: docs/completion-criteria.md exists → PASS",
+      "done_when[1]: 8 PASS in guard-test-results.txt (>= 7) → PASS",
+      "done_when[2]: 13 VERIFIED in chain-verification-results.txt (>= 10) → PASS",
+      "done_when[3]: AUDIT COMPLETE in orphan-audit.md → PASS",
+      "IR01: CLAUDE.md unchanged → PASS",
+      "IR02: Hook chain intact → PASS",
+      "IR03: No direct critic/reviewer calls → PASS",
+      "IR04: Playbook not skipped → PASS",
+      "IR05: done_when not tampered → PASS"
+    ],
+    "notes": "Codex independent validation completed via codex-delegate SubAgent"
+  }
+}
