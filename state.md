@@ -76,6 +76,3 @@ roles:
 | CLAUDE.md | LLM の振る舞いルール |
 | docs/repository-map.yaml | 全ファイルマッピング（自動生成） |
 | docs/core-feature-reclassification.md | Hook Unit SSOT |
-| docs/bash-protection-issues.md | Bash 保護の誤検出パターン |
-| docs/reward-fraud-test-results.md | 報酬詐欺耐性テスト結果 |
-| docs/file-audit-report-2026-01-28.md | 全ファイル点検レポート |

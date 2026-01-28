@@ -3,98 +3,157 @@
   "playbook": {
     "id": "repository-final-cleanup",
     "plan_path": "play/standalone/repository-final-cleanup/plan.json",
-    "status": "active"
+    "status": "completed"
   },
   "active": {
-    "phase": "p1",
-    "subtask": "p1.1"
+    "phase": null,
+    "subtask": null
   },
   "phases": {
     "p1": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-28T14:15:00Z"
     },
     "p2": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-28T14:18:00Z"
     },
     "p_final": {
-      "status": "pending",
-      "updated_at": ""
+      "status": "done",
+      "updated_at": "2026-01-28T14:45:00Z"
     }
   },
   "subtasks": {
     "p1.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-28T14:15:00Z",
+      "validated_by": "critic",
       "validations": {
-        "technical": { "status": "PENDING", "evidence": [] },
-        "consistency": { "status": "PENDING", "evidence": [] },
-        "completeness": { "status": "PENDING", "evidence": [] }
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'AGENTS.md' README.md → 0 (expected: 0)"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["README.md exists (15 lines)"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["Entry points section preserved (line 10-12)"]
+        }
       },
-      "notes": ""
+      "notes": "AGENTS.md reference removed from README.md"
     },
     "p1.2": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-28T14:16:00Z",
+      "validated_by": "critic",
       "validations": {
-        "technical": { "status": "PENDING", "evidence": [] },
-        "consistency": { "status": "PENDING", "evidence": [] },
-        "completeness": { "status": "PENDING", "evidence": [] }
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -E for non-existent files → 0 matches"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["PROJECT-STORY.md reference preserved (grep -c → 1)"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["README.md has 15 lines (>= 5)"]
+        }
       },
-      "notes": ""
+      "notes": "Zero-base docs section replaced with Background section"
     },
     "p2.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-28T14:17:00Z",
+      "validated_by": "critic",
       "validations": {
-        "technical": { "status": "PENDING", "evidence": [] },
-        "consistency": { "status": "PENDING", "evidence": [] },
-        "completeness": { "status": "PENDING", "evidence": [] }
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test ! -d play/standalone/refactoring-cleanup → true"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["test -d play/archive/standalone/refactoring-cleanup → true"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["plan.json exists in archive"]
+        }
       },
-      "notes": ""
+      "notes": "refactoring-cleanup moved to archive"
     },
     "p2.2": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-28T14:17:30Z",
+      "validated_by": "critic",
       "validations": {
-        "technical": { "status": "PENDING", "evidence": [] },
-        "consistency": { "status": "PENDING", "evidence": [] },
-        "completeness": { "status": "PENDING", "evidence": [] }
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test ! -d play/standalone/new-repo-setup → true"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["test -d play/archive/standalone/new-repo-setup → true"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["plan.json exists in archive"]
+        }
       },
-      "notes": ""
+      "notes": "new-repo-setup moved to archive"
     },
     "p2.3": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-28T14:18:00Z",
+      "validated_by": "critic",
       "validations": {
-        "technical": { "status": "PENDING", "evidence": [] },
-        "consistency": { "status": "PENDING", "evidence": [] },
-        "completeness": { "status": "PENDING", "evidence": [] }
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test ! -d play/standalone/template-strictness-v2 → true"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["test -d play/archive/standalone/template-strictness-v2 → true"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["plan.json exists in archive"]
+        }
       },
-      "notes": ""
+      "notes": "template-strictness-v2 moved to archive"
     },
     "p_final.1": {
-      "status": "pending",
-      "validated_at": "",
-      "validated_by": "",
+      "status": "done",
+      "validated_at": "2026-01-28T14:45:00Z",
+      "validated_by": "critic",
       "validations": {
-        "technical": { "status": "PENDING", "evidence": [] },
-        "consistency": { "status": "PENDING", "evidence": [] },
-        "completeness": { "status": "PENDING", "evidence": [] }
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep for non-existent files in README.md → 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["ls standalone | grep target_playbooks → 0"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["ls archive/standalone | grep refactoring-cleanup → 1", "completion-criteria 7/7 PASS"]
+        }
       },
-      "notes": ""
+      "notes": "All done_when conditions verified by critic"
     }
   },
   "final_tasks": [],
   "critic": {
-    "status": "PENDING",
-    "evidence": [],
-    "notes": ""
+    "status": "PASS",
+    "evidence": [
+      "goal.done_when 4項目全て PASS",
+      "subtasks 6/6 PASS",
+      "未使用ファイル15件削除完了",
+      "completion-criteria 7項目全て PASS"
+    ],
+    "notes": "総合判定: PASS - 報酬詐欺なし"
   }
 }
