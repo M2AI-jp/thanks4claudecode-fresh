@@ -1,0 +1,262 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "project-feature-validation",
+    "plan_path": "play/standalone/project-feature-validation/plan.json",
+    "status": "completed"
+  },
+  "active": {
+    "phase": "completed",
+    "subtask": "completed"
+  },
+  "phases": {
+    "p1": {
+      "status": "done",
+      "updated_at": "2026-01-28T08:00:00Z"
+    },
+    "p2": {
+      "status": "done",
+      "updated_at": "2026-01-28T08:10:00Z"
+    },
+    "p3": {
+      "status": "done",
+      "updated_at": "2026-01-28T08:30:00Z"
+    },
+    "p4": {
+      "status": "done",
+      "updated_at": "2026-01-28T08:45:00Z"
+    },
+    "p_final": {
+      "status": "done",
+      "updated_at": "2026-01-28T09:00:00Z"
+    }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:10:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:10:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": []
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": []
+        }
+      },
+      "notes": ""
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'new-repo-docs-sync' = 11"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'structure' = 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -E '(milestones|playbooks)' = 30"]
+        }
+      },
+      "notes": "Critical issues P3-001, P3-002, P3-003 documented"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'playbooks.*directory' = 1"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -c 'PASS|FAIL' = 34"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["wc -l = 241"]
+        }
+      },
+      "notes": "Phase 3 stats: 1 PASS, 4 FAIL"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'issues:' = 2"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -A 20 'issues:' | wc -l = 34"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'severity:' = 7"]
+        }
+      },
+      "notes": "4 issues documented: C-007, P3-001, P3-002, P3-003"
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T08:45:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'verdict:' = 2"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -E 'verdict:.*(fix|deprecate)' = 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'rationale:' = 1"]
+        }
+      },
+      "notes": "verdict: deprecate with 5 reasons and 5 actions"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-28T09:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f project-feature-spec.md = exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["wc -l = 307"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'done_when:' = 2"]
+        }
+      },
+      "notes": "project-feature-spec.md exists with 307 lines"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-28T09:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["test -f project-spec-validation.md = exit 0"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["wc -l = 241"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'PASS|FAIL' = 34"]
+        }
+      },
+      "notes": "Validation report: 7 PASS, 5 FAIL"
+    },
+    "p_final.3": {
+      "status": "done",
+      "validated_at": "2026-01-28T09:00:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": {
+          "status": "PASS",
+          "evidence": ["grep -c 'verdict:' = 2"]
+        },
+        "consistency": {
+          "status": "PASS",
+          "evidence": ["grep -E 'verdict:.*(fix|deprecate)' = 1"]
+        },
+        "completeness": {
+          "status": "PASS",
+          "evidence": ["grep -c 'rationale:' = 1"]
+        }
+      },
+      "notes": "verdict: deprecate"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PENDING",
+    "evidence": [],
+    "notes": ""
+  }
+}

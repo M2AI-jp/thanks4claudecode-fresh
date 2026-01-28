@@ -8,9 +8,9 @@
 # このファイルは自動生成されます。手動編集は上書きされます。
 
 meta:
-  generated: "2026-01-28 03:56:29"
+  generated: "2026-01-28 12:44:43"
   generator: ".claude/hooks/generate-repository-map.sh"
-  total_files: 259
+  total_files: 270
 
 hooks:
   directory: .claude/hooks/
@@ -132,14 +132,22 @@ commands:
 
 docs:
   directory: docs/
-  count: 5
+  count: 9
   files:
     - name: "ARCHITECTURE.md"
       description: "ユーザー体験ベースの状態遷移マップ"
     - name: "PROMPT_CHANGELOG.md"
       description: "> Change log for CLAUDE.md (Frozen Constitution)"
+    - name: "bash-protection-issues.md"
+      description: "Bash 保護の誤検出パターンと修正提案"
+    - name: "completion-criteria.md"
+      description: "リポジトリ完成状態の定義"
     - name: "core-feature-reclassification.md"
       description: "> SSOT: Hook Unit catalog + dependency map (ideal -> current -> missing)."
+    - name: "file-inventory.md"
+      description: "リポジトリ内全ファイルのインベントリ"
+    - name: "reward-fraud-test-results.md"
+      description: "報酬詐欺耐性テストの実行結果"
     - name: "validation-command-standards.md"
       description: "目的"
 
@@ -151,7 +159,7 @@ play:
       count: 0
     archive:
       description: "完了した playbook のアーカイブ"
-      count: 33
+      count: 36
     template:
       description: "playbook v2 テンプレート"
       count: 2
@@ -388,6 +396,6 @@ workflows:
 # 変更履歴
 # ==============================================================================
 changelog:
-  - date: "2026-01-28 03:56:29"
+  - date: "2026-01-28 12:44:43"
     action: "auto-generated"
     description: "playbook 完了時に自動生成"

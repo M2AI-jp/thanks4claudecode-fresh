@@ -1,0 +1,396 @@
+{
+  "_template_rules": {
+    "_philosophy": {
+      "principle": "LLM は提案者、ルールは裁判官。キーワード禁止は無意味（言い換え可能）。行動パターンを禁止する。",
+      "reference": "claude-code-harness の implementation-quality.md / test-quality.md"
+    }
+  },
+  "format_version": "2.4",
+  "meta": {
+    "id": "project-feature-validation",
+    "branch": "feat/project-feature-validation",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "project 機能の健全性を厳密に定義・点検し、修正または廃止判定を行う",
+    "done_when": [
+      {
+        "criterion": "project 機能の「完成」定義が docs/design/project-feature-spec.md に記載されている",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "仕様検証レポートが tmp/project-spec-validation.md に存在する",
+        "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "最終判定（修正実施 or 廃止）が docs/design/project-feature-spec.md の verdict セクションに記載されている",
+        "command": "grep -c 'verdict:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+        "expected": ">= 1"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "pm.md の project 階層サポート（M090）",
+        "state.md の project セクション",
+        "play/projects/template/project.json",
+        "play/projects/ ディレクトリ構造",
+        "既存 project（new-repo-docs-sync）の実装状態"
+      ],
+      "excludes": [
+        "standalone playbook の機能（これは正常動作前提）",
+        "他の Skill/SubAgent の修正"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code",
+          "what": "project 機能の点検と修正（または廃止判定）",
+          "when": "即時",
+          "where": "pm.md, state.md, play/projects/, play/template/",
+          "why": "project を使う前に機能の健全性を確認",
+          "how": "仕様定義 → 実装検証 → 修正 or 廃止判定",
+          "missing": []
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "project 機能が根本的に破綻している場合の廃止作業",
+              "severity": "medium",
+              "mitigation": "standalone運用への移行計画を立てる"
+            }
+          ]
+        },
+        "ambiguity": [],
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user",
+      "approved_at": "2026-01-28",
+      "summary": "project 機能検証を standalone playbook で先に実施",
+      "approved_items": [
+        "project 機能の「完成」を厳密定義",
+        "仕様検証（pm.md, state.md, template の整合性）",
+        "実装検証（実際に project 作成フローをテスト）",
+        "問題修正 or 廃止判定"
+      ],
+      "technical_requirements_confirmed": []
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Project 機能の「完成」定義",
+      "description": "project 機能が「完成している」とはどういう状態かを厳密に定義",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "docs/design/project-feature-spec.md が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'done_when:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'must_have:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "仕様書に「必須機能」「完了条件」「検証方法」の3セクションが含まれる",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c '## ' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -E '(must_have|done_when|validation)' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md | wc -l | tr -d ' '",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md | tr -d ' '",
+              "expected": ">= 50"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "仕様検証（整合性チェック）",
+      "description": "pm.md, state.md, template の整合性を検証",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "pm.md の project セクションと state.md の project セクションの整合性チェック結果が tmp/project-spec-validation.md に記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'pm.md' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'state.md' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|FAIL' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "project.json template と pm.md の定義の整合性チェック結果が tmp/project-spec-validation.md に記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'template' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'project.json' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md | tr -d ' '",
+              "expected": ">= 30"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "実装検証（実際の project 状態チェック）",
+      "description": "既存 project（new-repo-docs-sync）の実装状態を検証",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "play/projects/new-repo-docs-sync/project.json の構造が template に準拠しているかの検証結果が tmp/project-spec-validation.md に追記されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'new-repo-docs-sync' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'structure' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -E '(milestones|playbooks)' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md | wc -l | tr -d ' '",
+              "expected": ">= 2"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "project の playbooks ディレクトリ構造の検証結果が tmp/project-spec-validation.md に追記されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'playbooks.*directory\\|directory.*playbooks' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'FAIL\\|PASS' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 3"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md | tr -d ' '",
+              "expected": ">= 60"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "問題修正 or 廃止判定",
+      "description": "検証結果に基づいて修正を実施、または廃止を判定",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "検証結果の問題一覧が docs/design/project-feature-spec.md の issues セクションに記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'issues:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -A 20 'issues:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md | wc -l | tr -d ' '",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'severity:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "最終判定（verdict: fix または verdict: deprecate）が docs/design/project-feature-spec.md に記載されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'verdict:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -E 'verdict:.*(fix|deprecate)' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'rationale:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "Execute all done_when commands and verify results",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "project 機能の「完成」定義が docs/design/project-feature-spec.md に記載されている（done_when[0]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md | tr -d ' '",
+              "expected": ">= 50"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'done_when:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "仕様検証レポートが tmp/project-spec-validation.md に存在する（done_when[1]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md | tr -d ' '",
+              "expected": ">= 60"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'PASS\\|FAIL' /Users/amano/Desktop/thanks4claudecode-v2/tmp/project-spec-validation.md",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "最終判定が docs/design/project-feature-spec.md の verdict セクションに記載されている（done_when[2]）",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'verdict:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -E 'verdict:.*(fix|deprecate)' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'rationale:' /Users/amano/Desktop/thanks4claudecode-v2/docs/design/project-feature-spec.md",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
