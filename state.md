@@ -22,8 +22,8 @@ status: idle
 active: null
 parent_project: null
 current_phase: null
-branch: null
-last_archived: play/archive/project-fix
+branch: main
+last_archived: play/archive/standalone/repository-final-cleanup
 review_pending: false
 ```
 
@@ -44,7 +44,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 13:24:39
+last_start: 2026-01-28 14:11:38
 last_end: 2026-01-28 02:47:07
 last_clear: 2026-01-20
 ```

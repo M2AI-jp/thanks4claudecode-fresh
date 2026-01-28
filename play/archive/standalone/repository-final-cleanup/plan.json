@@ -1,0 +1,294 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "repository-final-cleanup",
+    "branch": "feat/repository-cleanup-final",
+    "created": "2026-01-28",
+    "status": "completed",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "前回セッションの報酬詐欺を修正し、README.md の参照エラーを解消し、未アーカイブ playbook をクリーンアップする",
+    "done_when": [
+      {
+        "criterion": "README.md に存在しないファイルへの参照がない",
+        "command": "grep -E '(AGENTS\\.md|BUILD-FROM-SCRATCH\\.md|REBUILD-DESIGN-SPEC\\.md|EXAMPLE-FRAMEWORK-BUILD\\.md|EXAMPLE-CHATGPT-CLONE\\.md)' /Users/amano/Desktop/thanks4claudecode-v2/README.md | wc -l | tr -d ' '",
+        "expected": "0"
+      },
+      {
+        "criterion": "play/standalone/refactoring-cleanup/ が存在しない（アーカイブ済み）",
+        "command": "test ! -d /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/refactoring-cleanup && echo 'archived'",
+        "expected": "archived"
+      },
+      {
+        "criterion": "play/standalone/new-repo-setup/ が存在しない（アーカイブ済み）",
+        "command": "test ! -d /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/new-repo-setup && echo 'archived'",
+        "expected": "archived"
+      },
+      {
+        "criterion": "play/standalone/template-strictness-v2/ が存在しない（アーカイブ済み）",
+        "command": "test ! -d /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/template-strictness-v2 && echo 'archived'",
+        "expected": "archived"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "README.md の Zero-base docs セクション修正",
+        "play/standalone/ の未アーカイブ playbook を play/archive/ に移動",
+        "refactoring-cleanup の報酬詐欺状態を解消（アーカイブ移動）"
+      ],
+      "excludes": [
+        "PROJECT-STORY.md の削除（README.md から参照されているため保持）",
+        "play/standalone/project-story/ の削除（別タスク）",
+        "新機能の実装"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "codex-verification",
+      "data": {
+        "verified_issues": {
+          "P1_critical": [
+            {
+              "issue": "README.md が存在しないファイルを参照",
+              "files": [
+                "AGENTS.md",
+                "REBUILD-DESIGN-SPEC.md",
+                "BUILD-FROM-SCRATCH.md",
+                "EXAMPLE-FRAMEWORK-BUILD.md",
+                "EXAMPLE-CHATGPT-CLONE.md"
+              ],
+              "action": "README.md を更新し、参照を削除"
+            },
+            {
+              "issue": "refactoring-cleanup で報酬詐欺",
+              "evidence": "completed なのに subtasks=pending, critic=PENDING",
+              "action": "アーカイブに移動"
+            }
+          ],
+          "P2_high": [
+            {
+              "issue": "アクティブ playbook が残存",
+              "files": [
+                "play/standalone/new-repo-setup/",
+                "play/standalone/template-strictness-v2/"
+              ],
+              "action": "アーカイブに移動"
+            },
+            {
+              "issue": "PROJECT-STORY.md の必要性",
+              "finding": "README.md から参照されているので削除不可",
+              "action": "保持"
+            }
+          ]
+        },
+        "5w1h": {
+          "who": "Claude Code（pm SubAgent 経由）",
+          "what": "README.md の参照エラー修正、報酬詐欺 playbook のアーカイブ移動",
+          "when": "即時",
+          "where": "README.md, play/standalone/, play/archive/",
+          "why": "前回セッションの報酬詐欺を修正し、真の完成状態を達成するため",
+          "how": "README.md の編集、mv コマンドでのアーカイブ移動"
+        },
+        "risks": [
+          {
+            "type": "scope",
+            "description": "project-story playbook の扱いが未定義",
+            "severity": "low",
+            "mitigation": "今回のスコープ外として明示（別タスク化）"
+          }
+        ],
+        "ambiguity": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "user-approval",
+      "approved_at": "2026-01-28",
+      "summary": "Codex 検証結果に基づく修正を承認",
+      "approved_items": [
+        "README.md の Zero-base docs セクション修正",
+        "報酬詐欺 playbook のアーカイブ移動",
+        "PROJECT-STORY.md は保持"
+      ],
+      "technical_requirements_confirmed": [
+        "存在しないファイル参照の削除",
+        "play/archive/ への mv 移動"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "README.md 参照エラー修正",
+      "description": "README.md の Zero-base docs セクションを修正し、存在しないファイルへの参照を削除",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "README.md に AGENTS.md への参照がない",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'AGENTS.md' /Users/amano/Desktop/thanks4claudecode-v2/README.md || echo '0'",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/README.md && echo 'exists'",
+              "expected": "exists"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'Entry points' /Users/amano/Desktop/thanks4claudecode-v2/README.md",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "README.md に Zero-base docs セクションが削除または修正されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -E '(BUILD-FROM-SCRATCH\\.md|REBUILD-DESIGN-SPEC\\.md|EXAMPLE-FRAMEWORK-BUILD\\.md|EXAMPLE-CHATGPT-CLONE\\.md)' /Users/amano/Desktop/thanks4claudecode-v2/README.md | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'PROJECT-STORY.md' /Users/amano/Desktop/thanks4claudecode-v2/README.md",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l < /Users/amano/Desktop/thanks4claudecode-v2/README.md | tr -d ' '",
+              "expected": ">= 5"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "未アーカイブ playbook のクリーンアップ",
+      "description": "play/standalone/ の未完了/報酬詐欺 playbook を play/archive/standalone/ に移動",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "play/standalone/refactoring-cleanup/ が play/archive/standalone/ に移動済み",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -d /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/refactoring-cleanup && echo 'moved'",
+              "expected": "moved"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/thanks4claudecode-v2/play/archive/standalone/refactoring-cleanup && echo 'in_archive'",
+              "expected": "in_archive"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/play/archive/standalone/refactoring-cleanup/plan.json && echo 'plan_exists'",
+              "expected": "plan_exists"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "play/standalone/new-repo-setup/ が play/archive/standalone/ に移動済み",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -d /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/new-repo-setup && echo 'moved'",
+              "expected": "moved"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/thanks4claudecode-v2/play/archive/standalone/new-repo-setup && echo 'in_archive'",
+              "expected": "in_archive"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/play/archive/standalone/new-repo-setup/plan.json && echo 'plan_exists'",
+              "expected": "plan_exists"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "play/standalone/template-strictness-v2/ が play/archive/standalone/ に移動済み",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test ! -d /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/template-strictness-v2 && echo 'moved'",
+              "expected": "moved"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -d /Users/amano/Desktop/thanks4claudecode-v2/play/archive/standalone/template-strictness-v2 && echo 'in_archive'",
+              "expected": "in_archive"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/play/archive/standalone/template-strictness-v2/plan.json && echo 'plan_exists'",
+              "expected": "plan_exists"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "全ての done_when 条件を検証し、Codex による再確認を依頼",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "goal.done_when の全コマンドが expected を返す",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -E '(AGENTS\\.md|BUILD-FROM-SCRATCH\\.md|REBUILD-DESIGN-SPEC\\.md|EXAMPLE-FRAMEWORK-BUILD\\.md|EXAMPLE-CHATGPT-CLONE\\.md)' /Users/amano/Desktop/thanks4claudecode-v2/README.md | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/play/standalone/ | grep -E '(refactoring-cleanup|new-repo-setup|template-strictness-v2)' | wc -l | tr -d ' '",
+              "expected": "0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/play/archive/standalone/ | grep -c 'refactoring-cleanup'",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
