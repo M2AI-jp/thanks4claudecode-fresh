@@ -51,8 +51,15 @@ format_json() {
         local last_timestamp="null"
         
         if [[ -f "$log_file" ]]; then
-            entry_count=$(jq -s 'length' "$log_file" 2>/dev/null || echo "0")
+            # Handle both JSONL and pretty-printed JSON
+            entry_count=$(jq -s 'length' "$log_file" 2>/dev/null)
+            if [[ -z "$entry_count" ]] || [[ "$entry_count" == "0" ]]; then
+                entry_count=$(grep -c "\"event\": \"$event_type\"" "$log_file" 2>/dev/null || echo "0")
+            fi
             last_timestamp=$(jq -rs 'last | .timestamp // null' "$log_file" 2>/dev/null || echo "null")
+            if [[ "$last_timestamp" == "null" ]] || [[ -z "$last_timestamp" ]]; then
+                last_timestamp=$(grep '"timestamp":' "$log_file" 2>/dev/null | tail -1 | sed 's/.*"timestamp": *"\([^"]*\)".*/\1/' || echo "null")
+            fi
             if [[ "$last_timestamp" != "null" ]]; then
                 last_timestamp="\"$last_timestamp\""
             fi
@@ -160,8 +167,15 @@ YAML
         local last_timestamp="null"
         
         if [[ -f "$log_file" ]]; then
-            entry_count=$(jq -s 'length' "$log_file" 2>/dev/null || echo "0")
+            # Handle both JSONL and pretty-printed JSON
+            entry_count=$(jq -s 'length' "$log_file" 2>/dev/null)
+            if [[ -z "$entry_count" ]] || [[ "$entry_count" == "0" ]]; then
+                entry_count=$(grep -c "\"event\": \"$event_type\"" "$log_file" 2>/dev/null || echo "0")
+            fi
             last_timestamp=$(jq -rs 'last | .timestamp // "null"' "$log_file" 2>/dev/null || echo "null")
+            if [[ "$last_timestamp" == "null" ]] || [[ -z "$last_timestamp" ]]; then
+                last_timestamp=$(grep '"timestamp":' "$log_file" 2>/dev/null | tail -1 | sed 's/.*"timestamp": *"\([^"]*\)".*/\1/' || echo "null")
+            fi
         fi
         
         cat << UNIT

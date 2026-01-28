@@ -60,22 +60,37 @@ calculate_health_score() {
         if [[ -f "$log_file" ]]; then
             active_units=$((active_units + 1))
             
-            # Count entries by status
+            # Count entries by status (handle both JSONL and pretty-printed JSON)
             local entries
-            entries=$(jq -s 'length' "$log_file" 2>/dev/null || echo "0")
+            entries=$(jq -s 'length' "$log_file" 2>/dev/null)
+            if [[ -z "$entries" ]] || [[ "$entries" == "0" ]]; then
+                # Fallback: count by grep for pretty-printed multi-object JSON
+                entries=$(grep -c "\"event\": \"$event_type\"" "$log_file" 2>/dev/null || echo "0")
+            fi
             total_entries=$((total_entries + entries))
             
-            # Count success/warning/error
-            local success
-            success=$(jq -s '[.[] | select(.status == "success" or .status == "ok" or .status == "allowed" or .status == "ALLOWED")] | length' "$log_file" 2>/dev/null || echo "0")
+            # Count success/warning/error (simple grep to handle both JSONL and pretty-printed)
+            local success=0 warning=0 error=0
+            local s1 s2 s3 s4 s5
+            s1=$(grep -c '"status": "success"' "$log_file" 2>/dev/null) || s1=0
+            s2=$(grep -c '"status": "ok"' "$log_file" 2>/dev/null) || s2=0
+            s3=$(grep -c '"status": "allowed"' "$log_file" 2>/dev/null) || s3=0
+            s4=$(grep -c '"status": "ALLOWED"' "$log_file" 2>/dev/null) || s4=0
+            s5=$(grep -c '"status": "recorded"' "$log_file" 2>/dev/null) || s5=0
+            success=$((s1 + s2 + s3 + s4 + s5))
             success_entries=$((success_entries + success))
-            
-            local warning
-            warning=$(jq -s '[.[] | select(.status == "warning" or .status == "warn")] | length' "$log_file" 2>/dev/null || echo "0")
+
+            local w1 w2
+            w1=$(grep -c '"status": "warning"' "$log_file" 2>/dev/null) || w1=0
+            w2=$(grep -c '"status": "warn"' "$log_file" 2>/dev/null) || w2=0
+            warning=$((w1 + w2))
             warning_entries=$((warning_entries + warning))
-            
-            local error
-            error=$(jq -s '[.[] | select(.status == "error" or .status == "blocked" or .status == "BLOCKED")] | length' "$log_file" 2>/dev/null || echo "0")
+
+            local e1 e2 e3
+            e1=$(grep -c '"status": "error"' "$log_file" 2>/dev/null) || e1=0
+            e2=$(grep -c '"status": "blocked"' "$log_file" 2>/dev/null) || e2=0
+            e3=$(grep -c '"status": "BLOCKED"' "$log_file" 2>/dev/null) || e3=0
+            error=$((e1 + e2 + e3))
             error_entries=$((error_entries + error))
         fi
     done
@@ -133,24 +148,29 @@ get_unit_status() {
         return
     fi
     
-    # Check for errors
-    local error_count
-    error_count=$(jq -s '[.[] | select(.status == "error" or .status == "blocked" or .status == "BLOCKED")] | length' "$log_file" 2>/dev/null || echo "0")
-    
+    # Check for errors (simple grep)
+    local e1 e2 e3 error_count
+    e1=$(grep -c '"status": "error"' "$log_file" 2>/dev/null) || e1=0
+    e2=$(grep -c '"status": "blocked"' "$log_file" 2>/dev/null) || e2=0
+    e3=$(grep -c '"status": "BLOCKED"' "$log_file" 2>/dev/null) || e3=0
+    error_count=$((e1 + e2 + e3))
+
     if [[ "$error_count" -gt 0 ]]; then
         echo "ERROR"
         return
     fi
-    
+
     # Check for warnings
-    local warning_count
-    warning_count=$(jq -s '[.[] | select(.status == "warning" or .status == "warn")] | length' "$log_file" 2>/dev/null || echo "0")
-    
+    local w1 w2 warning_count
+    w1=$(grep -c '"status": "warning"' "$log_file" 2>/dev/null) || w1=0
+    w2=$(grep -c '"status": "warn"' "$log_file" 2>/dev/null) || w2=0
+    warning_count=$((w1 + w2))
+
     if [[ "$warning_count" -gt 0 ]]; then
         echo "WARN"
         return
     fi
-    
+
     echo "OK"
 }
 
@@ -176,8 +196,15 @@ check_all_units() {
         local last_activity="N/A"
         
         if [[ -f "$log_file" ]]; then
-            entry_count=$(jq -s 'length' "$log_file" 2>/dev/null || echo "0")
+            # Handle both JSONL and pretty-printed JSON
+            entry_count=$(jq -s 'length' "$log_file" 2>/dev/null)
+            if [[ -z "$entry_count" ]] || [[ "$entry_count" == "0" ]]; then
+                entry_count=$(grep -c "\"event\": \"$event_type\"" "$log_file" 2>/dev/null || echo "0")
+            fi
             last_activity=$(jq -rs 'last | .timestamp // "unknown"' "$log_file" 2>/dev/null | cut -c1-19 || echo "unknown")
+            if [[ "$last_activity" == "unknown" ]] || [[ -z "$last_activity" ]]; then
+                last_activity=$(grep '"timestamp":' "$log_file" 2>/dev/null | tail -1 | sed 's/.*"timestamp": *"\([^"]*\)".*/\1/' | cut -c1-19 || echo "unknown")
+            fi
         fi
         
         # Color code the status

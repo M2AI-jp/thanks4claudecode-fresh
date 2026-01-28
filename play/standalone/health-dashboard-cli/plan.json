@@ -1,0 +1,789 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "health-dashboard-cli",
+    "branch": "feat/health-dashboard-cli",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Repository Health Dashboard CLI を作成し、全 Event Unit の telemetry ログを集約・分析してリポジトリの健全性レポートを生成する。これにより全 Hook チェーン、SubAgent オーケストレーション、Guard システム、Git ワークフロー、Archive 処理を通しで検証する。",
+    "done_when": [
+      {
+        "criterion": "tools/health-dashboard/cli.sh が存在する",
+        "command": "test -f tools/health-dashboard/cli.sh",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "CLI が全 10 Event Unit の telemetry ログを読み取れる",
+        "command": "tools/health-dashboard/cli.sh --check-units",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "CLI が健全性サマリを標準出力に表示できる",
+        "command": "tools/health-dashboard/cli.sh --summary",
+        "expected": "contains 'Health Score'"
+      },
+      {
+        "criterion": "CLI が JSON 形式でレポートを出力できる",
+        "command": "tools/health-dashboard/cli.sh --format json --output /tmp/health-report.json && test -f /tmp/health-report.json",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "CLI が YAML 形式でレポートを出力できる",
+        "command": "tools/health-dashboard/cli.sh --format yaml --output /tmp/health-report.yaml && test -f /tmp/health-report.yaml",
+        "expected": "exit 0"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "tools/health-dashboard/ 配下の CLI 実装",
+        "telemetry ログパーサー",
+        "健全性スコア算出ロジック",
+        "JSON/YAML/テキスト出力フォーマッター",
+        "全 Event Unit の統合テスト",
+        "E2E 検証スクリプト"
+      ],
+      "excludes": [
+        "GUI/Web インターフェース",
+        "外部サービス連携",
+        "リアルタイム監視機能"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "primary_topic_type": "instruction",
+        "confidence": "high",
+        "5w1h": {
+          "who": "Claude Code / 開発者",
+          "what": "Repository Health Dashboard CLI の作成",
+          "when": "指定なし",
+          "where": "このリポジトリ内（tools/ 配下に新規作成）",
+          "why": "リポジトリの全機能を実証し、システム全体の動作を検証するため",
+          "how": "全 Hook チェーン、SubAgent オーケストレーション、Guard システム、Git ワークフロー、Archive 処理を通しで実行"
+        },
+        "risks": {
+          "technical": [
+            {
+              "risk": "telemetry 共有ライブラリ（lib/telemetry.sh）が未実装",
+              "severity": "high",
+              "mitigation": "各 Event Unit の既存ログを直接パース"
+            }
+          ],
+          "scope": [
+            {
+              "risk": "「全機能を実証」の範囲が広大",
+              "severity": "high",
+              "mitigation": "MVP を定義し段階的に機能追加"
+            }
+          ]
+        },
+        "multi_topic_detection": {
+          "detected": true,
+          "topics": [
+            {"id": 1, "summary": "telemetry ログ集約機能の実装"},
+            {"id": 2, "summary": "健全性分析・レポート生成機能の実装"},
+            {"id": 3, "summary": "全 Hook/SubAgent/Guard の統合テスト"},
+            {"id": 4, "summary": "Git ワークフロー・Archive 処理の E2E 検証"}
+          ],
+          "recommendation": "Phase 分割を推奨: P1-P2-P3-P4-P5-P_final"
+        },
+        "test_strategy": {
+          "test_types": ["unit", "integration", "e2e"],
+          "coverage_target": "standard"
+        },
+        "success_criteria": {
+          "functional": [
+            "CLI が全 10 Event Unit の telemetry ログを読み取れる",
+            "CLI が健全性サマリを標準出力に表示できる",
+            "CLI が JSON/YAML 形式でレポートを出力できる",
+            "全 Hook チェーンが正常に発火する",
+            "SubAgent（pm, reviewer, critic）が正常にオーケストレーションされる",
+            "playbook 完了時に archive-playbook.sh が自動実行される"
+          ]
+        },
+        "ready_for_playbook": true,
+        "blocking_issues": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-28T08:40:00Z",
+      "summary": "6 Phase 構成で Repository Health Dashboard CLI を作成",
+      "approved_items": [
+        "P1: telemetry 収集基盤（共有ライブラリ）",
+        "P2: CLI 基本機能（ログパーサー、サマリ表示）",
+        "P3: レポート生成（JSON/YAML/テキスト出力）",
+        "P4: 統合テスト（全 Event Unit）",
+        "P5: E2E 検証（全 Hook チェーン通し）",
+        "P_final: ドキュメント・仕上げ"
+      ],
+      "technical_requirements_confirmed": [
+        "既存ログ形式をパースする（lib/telemetry.sh は未実装のため）",
+        "toolstack C（claudecode + codex + coderabbit）を使用"
+      ]
+    }
+  },
+  "max_iterations": 10,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "telemetry 収集基盤",
+      "description": "telemetry ログの収集・パース基盤を構築する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "tools/health-dashboard/ ディレクトリが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -d tools/health-dashboard",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls tools/health-dashboard",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "test -d tools/health-dashboard",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "tools/health-dashboard/lib/log-parser.sh が存在する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f tools/health-dashboard/lib/log-parser.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "head -1 tools/health-dashboard/lib/log-parser.sh | grep -q '#!/'",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'parse_log' tools/health-dashboard/lib/log-parser.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "tools/health-dashboard/lib/log-parser.sh に parse_telemetry_log 関数が定義されている",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -c 'parse_telemetry_log()' tools/health-dashboard/lib/log-parser.sh",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n tools/health-dashboard/lib/log-parser.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -E 'session-start|pre-tool|post-tool' tools/health-dashboard/lib/log-parser.sh | wc -l",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "tools/health-dashboard/lib/collector.sh が存在し collect_all_logs 関数を含む",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f tools/health-dashboard/lib/collector.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'collect_all_logs()' tools/health-dashboard/lib/collector.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '.claude/events' tools/health-dashboard/lib/collector.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "CLI 基本機能",
+      "description": "CLI のメインエントリーポイントとサマリ表示機能を実装する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "tools/health-dashboard/cli.sh が存在し実行可能である",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -x tools/health-dashboard/cli.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "head -1 tools/health-dashboard/cli.sh | grep -q '#!/'",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'usage()' tools/health-dashboard/cli.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "CLI が --help オプションでヘルプを表示する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --help | grep -q 'Usage'",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --help | grep -q 'format'",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --help | grep -q 'summary'",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "tools/health-dashboard/lib/analyzer.sh が存在し calculate_health_score 関数を含む",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f tools/health-dashboard/lib/analyzer.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'calculate_health_score()' tools/health-dashboard/lib/analyzer.sh",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash -n tools/health-dashboard/lib/analyzer.sh",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": "CLI が --summary オプションで Health Score を含むサマリを表示する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --summary | grep -q 'Health Score'",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --summary | grep -qE '[0-9]+%'",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --summary | grep -q 'Event Units'",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p2.5",
+          "criterion": "CLI が --check-units オプションで全 10 Event Unit をチェックする",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --check-units",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --check-units | grep -c 'session-start'",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --check-units | wc -l",
+              "expected": ">= 10"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "レポート生成",
+      "description": "JSON/YAML/テキスト形式でのレポート出力機能を実装する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "tools/health-dashboard/lib/formatter.sh が存在する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f tools/health-dashboard/lib/formatter.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n tools/health-dashboard/lib/formatter.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'format_' tools/health-dashboard/lib/formatter.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "CLI が --format json オプションで JSON 形式を出力する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --format json | head -1 | grep -q '{'",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --format json | jq . > /dev/null 2>&1",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --format json | jq '.health_score'",
+              "expected": "not null"
+            }
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "CLI が --format yaml オプションで YAML 形式を出力する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --format yaml | head -1 | grep -q 'health_score'",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --format yaml | grep -q ':'",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --format yaml | grep -c 'event_units'",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p3.4",
+          "criterion": "CLI が --output オプションでファイルに出力できる",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --format json --output /tmp/test-health.json && test -f /tmp/test-health.json",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq '.health_score' /tmp/test-health.json",
+              "expected": "not null"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "rm -f /tmp/test-health.json && tools/health-dashboard/cli.sh --format yaml --output /tmp/test-health.yaml && test -f /tmp/test-health.yaml",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "統合テスト",
+      "description": "全 Event Unit の telemetry ログを実際にテストする",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "tools/health-dashboard/tests/integration-test.sh が存在する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f tools/health-dashboard/tests/integration-test.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n tools/health-dashboard/tests/integration-test.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'test_' tools/health-dashboard/tests/integration-test.sh",
+              "expected": ">= 3"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": "統合テストが session-start Event Unit のログをパースできる",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/tests/integration-test.sh test_session_start",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f .claude/events/.claude/logs/session-start.log",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/lib/log-parser.sh .claude/events/.claude/logs/session-start.log | grep -q 'session'",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "統合テストが pre-tool-edit Event Unit のログをパースできる",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/tests/integration-test.sh test_pre_tool_edit",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f .claude/events/.claude/logs/pre-tool-edit.log",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "cat .claude/events/.claude/logs/pre-tool-edit.log | head -1 | grep -qE 'timestamp|event'",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p4.4",
+          "criterion": "統合テストが全テストケースに PASS する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/tests/integration-test.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "tools/health-dashboard/tests/integration-test.sh 2>&1 | grep -qE 'PASS|passed'",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/tests/integration-test.sh 2>&1 | grep -qE 'FAIL|failed'",
+              "expected": "exit 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "E2E 検証",
+      "description": "全 Hook チェーンを通した E2E 検証を実施する",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p5.1",
+          "criterion": "tools/health-dashboard/tests/e2e-test.sh が存在する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f tools/health-dashboard/tests/e2e-test.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n tools/health-dashboard/tests/e2e-test.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'hook' tools/health-dashboard/tests/e2e-test.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p5.2",
+          "criterion": "E2E テストが全 Hook チェーンの存在を確認する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/tests/e2e-test.sh test_hook_chain_exists",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls .claude/hooks/*.sh | wc -l",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls .claude/events/*/chain.sh 2>/dev/null | wc -l || echo 0",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p5.3",
+          "criterion": "E2E テストが Health Dashboard の全機能を通しで実行する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/tests/e2e-test.sh test_full_workflow",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --summary && tools/health-dashboard/cli.sh --format json > /dev/null",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/tests/e2e-test.sh",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "ドキュメント・仕上げ",
+      "description": "ドキュメント作成と最終検証を実施する",
+      "depends_on": ["p5"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "tools/health-dashboard/README.md が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f tools/health-dashboard/README.md",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -q 'Usage' tools/health-dashboard/README.md",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -q 'cli.sh' tools/health-dashboard/README.md",
+              "expected": "exit 0"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "done_when[0]: tools/health-dashboard/cli.sh が存在する",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f tools/health-dashboard/cli.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -x tools/health-dashboard/cli.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "wc -l tools/health-dashboard/cli.sh | awk '{print $1}'",
+              "expected": ">= 50"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "done_when[1]: CLI が全 10 Event Unit の telemetry ログを読み取れる",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --check-units",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --check-units | wc -l",
+              "expected": ">= 10"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --check-units | grep -c 'OK\\|WARN\\|ERROR'",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "done_when[2]: CLI が健全性サマリを標準出力に表示できる",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --summary | grep -q 'Health Score'",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --summary | grep -qE '[0-9]+%'",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --summary | wc -l",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p_final.5",
+          "criterion": "done_when[3]: CLI が JSON 形式でレポートを出力できる",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --format json --output /tmp/health-report.json && test -f /tmp/health-report.json",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "jq . /tmp/health-report.json > /dev/null 2>&1",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "jq '.event_units | length' /tmp/health-report.json",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p_final.6",
+          "criterion": "done_when[4]: CLI が YAML 形式でレポートを出力できる",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "tools/health-dashboard/cli.sh --format yaml --output /tmp/health-report.yaml && test -f /tmp/health-report.yaml",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -q 'health_score' /tmp/health-report.yaml",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'event_units' /tmp/health-report.yaml",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
