@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: m1
-status: idle
+active: play/projects/repository-complete-verification/project.json
+current_milestone: m2
+status: in_progress
 ```
 
 ---
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
-parent_project: null
-current_phase: null
-branch: null
+active: play/projects/repository-complete-verification/playbooks/pb-m2-guards/plan.json
+parent_project: repository-complete-verification
+current_phase: p1
+branch: feat/m2-guard-verification
 last_archived: play/archive/projects/repository-complete-verification/pb-m1-event-units
 review_pending: false
 ```
@@ -33,10 +33,14 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: m2
+phase: p1
+done_criteria:
+  - "15 Guard スクリプトが存在し実行可能である"
+  - "各 Guard が BLOCK/ALLOW 動作を記録している"
+  - "Adversarial bypass 試行が全て失敗している"
+  - "Hook chain 統合テストで Guards が正しく発火する"
+status: in_progress
 ```
 
 ---

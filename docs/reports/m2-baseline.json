@@ -1,0 +1,215 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T21:00:00Z",
+    "generator": "Claude Opus 4.5",
+    "milestone": "m2",
+    "purpose": "Guard System Baseline Inventory"
+  },
+  "summary": {
+    "total_guards": 15,
+    "categories": {
+      "access_control": 3,
+      "playbook_gate": 3,
+      "reward_guard": 7,
+      "session": 1,
+      "post_loop": 1
+    }
+  },
+  "guards": [
+    {
+      "name": "critic-guard.sh",
+      "path": ".claude/skills/reward-guard/guards/critic-guard.sh",
+      "category": "reward_guard",
+      "purpose": "status: done への変更を構造的にブロック - critic PASS なしでの完了宣言を防止",
+      "trigger": "PreToolUse(Edit)",
+      "expected_behavior": {
+        "block_condition": "self_complete: false の状態で status: done への変更",
+        "allow_condition": "self_complete: true が設定済み、またはファイルが state.md 以外",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "報酬詐欺防止 - Claude が自己完了宣言することを構造的に防止"
+    },
+    {
+      "name": "phase-status-guard.sh",
+      "path": ".claude/skills/reward-guard/guards/phase-status-guard.sh",
+      "category": "reward_guard",
+      "purpose": "Phase status 変更時の全 subtask 完了検証",
+      "trigger": "PreToolUse(Edit/Write)",
+      "expected_behavior": {
+        "block_condition": "phase.status を done に変更しようとして当該 phase の subtask が全て done でない",
+        "allow_condition": "全 subtask が done、または phase status 変更でない",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "Phase 完了の正当性を保証"
+    },
+    {
+      "name": "scope-guard.sh",
+      "path": ".claude/skills/reward-guard/guards/scope-guard.sh",
+      "category": "reward_guard",
+      "purpose": "done_when/done_criteria の無断変更を検出",
+      "trigger": "PreToolUse(Edit/Write)",
+      "expected_behavior": {
+        "block_condition": "playbook の done_when を pm を経由せずに変更",
+        "allow_condition": "done_when 以外の変更、または pm 経由での変更",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "スコープクリープ防止"
+    },
+    {
+      "name": "subtask-guard.sh",
+      "path": ".claude/skills/reward-guard/guards/subtask-guard.sh",
+      "category": "reward_guard",
+      "purpose": "subtask 完了時の critic 検証を強制",
+      "trigger": "PreToolUse(Edit/Write)",
+      "expected_behavior": {
+        "block_condition": "subtask status を done に変更する際に validated_by: critic がない",
+        "allow_condition": "validated_by: critic が設定済み、または subtask status 変更でない",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "自己報酬詐欺防止"
+    },
+    {
+      "name": "coherence.sh",
+      "path": ".claude/skills/reward-guard/guards/coherence.sh",
+      "category": "reward_guard",
+      "purpose": "state.md と playbook の整合性チェック",
+      "trigger": "Utility (session-start)",
+      "expected_behavior": {
+        "block_condition": "state.md の playbook.active と実際の playbook ファイルが不整合",
+        "allow_condition": "整合性が取れている",
+        "exit_codes": {"allow": 0, "error": 1}
+      },
+      "design_principle": "SSOT 整合性保証"
+    },
+    {
+      "name": "completion-check.sh",
+      "path": ".claude/skills/reward-guard/guards/completion-check.sh",
+      "category": "reward_guard",
+      "purpose": "Stop Hook で未完了 subtask を検出",
+      "trigger": "Stop Hook",
+      "expected_behavior": {
+        "block_condition": "未完了の subtask が残っている状態で会話終了",
+        "allow_condition": "全 subtask が完了、または playbook がアクティブでない",
+        "exit_codes": {"allow": 0, "block": 1}
+      },
+      "design_principle": "報酬詐欺防止 - progress.json 更新バイパス防止"
+    },
+    {
+      "name": "progress-reminder.sh",
+      "path": ".claude/skills/reward-guard/guards/progress-reminder.sh",
+      "category": "reward_guard",
+      "purpose": "作業完了後に progress.json 更新を促す",
+      "trigger": "PostToolUse(Edit/Write)",
+      "expected_behavior": {
+        "block_condition": "N/A (リマインダーのみ)",
+        "allow_condition": "常に許可（systemMessage を注入）",
+        "exit_codes": {"allow": 0}
+      },
+      "design_principle": "subtask-guard バイパス対策"
+    },
+    {
+      "name": "init-guard.sh",
+      "path": ".claude/skills/session-manager/handlers/init-guard.sh",
+      "category": "session",
+      "purpose": "セッション開始時の強制的自己認識ガード",
+      "trigger": "PreToolUse(*)",
+      "expected_behavior": {
+        "block_condition": "必須ファイル (CLAUDE.md, state.md) が Read されていない",
+        "allow_condition": "必須ファイルが既に Read 済み、または Read ツール呼び出し",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "自己認識強制"
+    },
+    {
+      "name": "playbook-guard.sh",
+      "path": ".claude/skills/playbook-gate/guards/playbook-guard.sh",
+      "category": "playbook_gate",
+      "purpose": "playbook=null で Edit/Write をブロック",
+      "trigger": "PreToolUse(Edit/Write)",
+      "expected_behavior": {
+        "block_condition": "state.md の playbook.active が null で Edit/Write 実行",
+        "allow_condition": "playbook.active が設定済み、または playbook ファイル自体の作成",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "計画なき実装の防止"
+    },
+    {
+      "name": "executor-guard.sh",
+      "path": ".claude/skills/playbook-gate/guards/executor-guard.sh",
+      "category": "playbook_gate",
+      "purpose": "Phase の executor を構造的に強制",
+      "trigger": "PreToolUse(Edit/Write)",
+      "expected_behavior": {
+        "block_condition": "executor: codex/coderabbit/user の Phase で Claude が直接編集",
+        "allow_condition": "executor: claudecode、または非コードファイル編集",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "役割分担強制"
+    },
+    {
+      "name": "role-resolver.sh",
+      "path": ".claude/skills/playbook-gate/guards/role-resolver.sh",
+      "category": "playbook_gate",
+      "purpose": "役割名を具体的な executor に解決",
+      "trigger": "Utility (executor-guard.sh)",
+      "expected_behavior": {
+        "block_condition": "N/A (ユーティリティ)",
+        "allow_condition": "常に成功",
+        "exit_codes": {"success": 0}
+      },
+      "design_principle": "抽象役割の具体化"
+    },
+    {
+      "name": "pending-guard.sh",
+      "path": ".claude/skills/post-loop/guards/pending-guard.sh",
+      "category": "post_loop",
+      "purpose": "post-loop-pending ファイルを検出し、post-loop 実行を強制",
+      "trigger": "PreToolUse(Edit/Write)",
+      "expected_behavior": {
+        "block_condition": "post-loop-pending ファイルが存在する状態で Edit/Write",
+        "allow_condition": "pending ファイルが存在しない、または許可リスト対象ファイル",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "post-loop 強制"
+    },
+    {
+      "name": "bash-check.sh",
+      "path": ".claude/skills/access-control/guards/bash-check.sh",
+      "category": "access_control",
+      "purpose": "Bash コマンド実行前の契約チェック",
+      "trigger": "PreToolUse(Bash)",
+      "expected_behavior": {
+        "block_condition": "HARD_BLOCK ファイル (CLAUDE.md, settings.json) への書き込みコマンド",
+        "allow_condition": "保護対象外のコマンド、または読み取り専用コマンド",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "絶対守護 - Bash 経由でもコアファイル変更不可"
+    },
+    {
+      "name": "protected-edit.sh",
+      "path": ".claude/skills/access-control/guards/protected-edit.sh",
+      "category": "access_control",
+      "purpose": "保護対象ファイルの編集をブロック",
+      "trigger": "PreToolUse(Edit/Write)",
+      "expected_behavior": {
+        "block_condition": "HARD_BLOCK/BLOCK レベルの保護ファイルへの編集",
+        "allow_condition": "保護対象外のファイル、または WARN レベルファイル",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "ファイル保護レベル管理"
+    },
+    {
+      "name": "main-branch.sh",
+      "path": ".claude/skills/access-control/guards/main-branch.sh",
+      "category": "access_control",
+      "purpose": "main ブランチでの作業をブロック",
+      "trigger": "PreToolUse(Edit/Write/Bash)",
+      "expected_behavior": {
+        "block_condition": "main/master ブランチで編集系ツール使用",
+        "allow_condition": "feature ブランチ、または Read/Glob/Grep ツール",
+        "exit_codes": {"allow": 0, "block": 2}
+      },
+      "design_principle": "main ブランチ保護"
+    }
+  ]
+}

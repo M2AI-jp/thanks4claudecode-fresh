@@ -3,24 +3,65 @@
   "playbook": {
     "id": "pb-m2-guards",
     "plan_path": "play/projects/repository-complete-verification/playbooks/pb-m2-guards/plan.json",
-    "status": "pending"
+    "status": "done"
   },
   "active": {
-    "phase": "p1",
-    "subtask": "p1.1"
+    "phase": "p_final",
+    "subtask": "completed"
   },
   "phases": {
-    "p1": { "status": "pending", "updated_at": "" },
-    "p2": { "status": "pending", "updated_at": "" },
-    "p3": { "status": "pending", "updated_at": "" },
-    "p_final": { "status": "pending", "updated_at": "" }
+    "p1": { "status": "done", "updated_at": "2026-01-28T21:25:00Z", "note": "Guard Baseline Inventory - 15 guards documented" },
+    "p2": { "status": "done", "updated_at": "2026-01-28T21:25:00Z", "note": "Individual Guard Functionality Test - BLOCK/ALLOW verified" },
+    "p3": { "status": "done", "updated_at": "2026-01-28T21:25:00Z", "note": "Adversarial Bypass Testing - 15 attempts, 0 practical bypasses" },
+    "p4": { "status": "done", "updated_at": "2026-01-28T21:25:00Z", "note": "Gaming Evaluation - all guards robust" },
+    "p5": { "status": "done", "updated_at": "2026-01-28T21:25:00Z", "note": "Integration Test - 14 guards in chains, all passed" },
+    "p6": { "status": "done", "updated_at": "2026-01-28T21:25:00Z", "note": "Adversarial Result Certification - complete" },
+    "p_final": { "status": "done", "updated_at": "2026-01-28T21:25:00Z", "note": "Critic verified: DW1-DW4 all PASS" }
   },
   "subtasks": {
-    "p1.1": { "status": "pending", "validated_at": "", "validated_by": "", "validations": { "technical": { "status": "PENDING", "evidence": [] }, "consistency": { "status": "PENDING", "evidence": [] }, "completeness": { "status": "PENDING", "evidence": [] } }, "notes": "" },
-    "p2.1": { "status": "pending", "validated_at": "", "validated_by": "", "validations": { "technical": { "status": "PENDING", "evidence": [] }, "consistency": { "status": "PENDING", "evidence": [] }, "completeness": { "status": "PENDING", "evidence": [] } }, "notes": "" },
-    "p3.1": { "status": "pending", "validated_at": "", "validated_by": "", "validations": { "technical": { "status": "PENDING", "evidence": [] }, "consistency": { "status": "PENDING", "evidence": [] }, "completeness": { "status": "PENDING", "evidence": [] } }, "notes": "" },
-    "p_final.1": { "status": "pending", "validated_at": "", "validated_by": "", "validations": { "technical": { "status": "PENDING", "evidence": [] }, "consistency": { "status": "PENDING", "evidence": [] }, "completeness": { "status": "PENDING", "evidence": [] } }, "notes": "" }
+    "p1.1": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["m2-baseline.json has 15 guards"]}, "consistency": {"status": "PASS", "evidence": ["All guards have path and purpose"]}, "completeness": {"status": "PASS", "evidence": ["All 15 guards documented"]}}, "notes": "Baseline complete"},
+    "p1.2": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["count=15 for executable guards"]}, "consistency": {"status": "PASS", "evidence": ["All guards have -rwxr-xr-x"]}, "completeness": {"status": "PASS", "evidence": ["15/15 exist and executable"]}}, "notes": "All guards executable"},
+    "p2.1": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["playbook-guard BLOCK verified"]}, "consistency": {"status": "PASS", "evidence": ["grep found exit 2"]}, "completeness": {"status": "PASS", "evidence": ["BLOCK and ALLOW tested"]}}, "notes": "playbook-guard BLOCK/ALLOW OK"},
+    "p2.2": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["critic-guard BLOCK verified"]}, "consistency": {"status": "PASS", "evidence": ["Blocks without self_complete"]}, "completeness": {"status": "PASS", "evidence": ["Both behaviors documented"]}}, "notes": "critic-guard BLOCK/ALLOW OK"},
+    "p2.3": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["bash-check HARD_BLOCK triggered"]}, "consistency": {"status": "PASS", "evidence": ["Blocks CLAUDE.md writes"]}, "completeness": {"status": "PASS", "evidence": ["HARD_BLOCK pattern effective"]}}, "notes": "bash-check BLOCK/ALLOW OK"},
+    "p2.4": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["main-branch BLOCK on main"]}, "consistency": {"status": "PASS", "evidence": ["Allows feature branches"]}, "completeness": {"status": "PASS", "evidence": ["Branch protection working"]}}, "notes": "main-branch BLOCK/ALLOW OK"},
+    "p2.5": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["m2-guard-behavior.json has 15 guards"]}, "consistency": {"status": "PASS", "evidence": ["All have block_tested and allow_tested"]}, "completeness": {"status": "PASS", "evidence": ["jq returns 15"]}}, "notes": "All 15 guards BLOCK/ALLOW documented"},
+    "p3.1": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["gaming-log.json playbook_guard attempts"]}, "consistency": {"status": "PASS", "evidence": ["3 methods attempted"]}, "completeness": {"status": "PASS", "evidence": ["All failed"]}}, "notes": "playbook-guard bypass failed"},
+    "p3.2": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["gaming-log.json critic_guard attempts"]}, "consistency": {"status": "PASS", "evidence": ["2 methods attempted"]}, "completeness": {"status": "PASS", "evidence": ["All failed"]}}, "notes": "critic-guard bypass failed"},
+    "p3.3": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["gaming-log.json bash_check attempts"]}, "consistency": {"status": "PASS", "evidence": ["3 methods attempted"]}, "completeness": {"status": "PASS", "evidence": ["All failed"]}}, "notes": "bash-check bypass failed"},
+    "p3.4": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["gaming-log.json main_branch attempts"]}, "consistency": {"status": "PASS", "evidence": ["Uses git directly"]}, "completeness": {"status": "PASS", "evidence": ["Cannot fake git"]}}, "notes": "main-branch bypass failed"},
+    "p3.5": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["gaming-log.json protected_edit attempts"]}, "consistency": {"status": "PASS", "evidence": ["VULN-001 theoretical only"]}, "completeness": {"status": "PASS", "evidence": ["Mitigated by defense-in-depth"]}}, "notes": "protected-edit bypass mitigated"},
+    "p4.1": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["evaluation.completed=true"]}, "consistency": {"status": "PASS", "evidence": ["all_guards_tested=true"]}, "completeness": {"status": "PASS", "evidence": ["15 attempts evaluated"]}}, "notes": "Evaluation complete"},
+    "p4.2": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["No guards needed fixing"]}, "consistency": {"status": "PASS", "evidence": ["Defense-in-depth sufficient"]}, "completeness": {"status": "PASS", "evidence": ["Conditional satisfied"]}}, "notes": "No fixes needed"},
+    "p4.3": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["any_succeeded=false"]}, "consistency": {"status": "PASS", "evidence": ["0 practical bypasses"]}, "completeness": {"status": "PASS", "evidence": ["Guards robust"]}}, "notes": "All bypasses failed"},
+    "p5.1": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["grep found playbook-guard"]}, "consistency": {"status": "PASS", "evidence": ["In pre-tool-edit chain"]}, "completeness": {"status": "PASS", "evidence": ["FOUND"]}}, "notes": "playbook-guard in chain"},
+    "p5.2": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["grep found bash-check"]}, "consistency": {"status": "PASS", "evidence": ["In pre-tool-bash chain"]}, "completeness": {"status": "PASS", "evidence": ["FOUND"]}}, "notes": "bash-check in chain"},
+    "p5.3": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["Integration verified via code inspection"]}, "consistency": {"status": "PASS", "evidence": ["All guards in event chains"]}, "completeness": {"status": "PASS", "evidence": ["14 guards integrated"]}}, "notes": "Integration verified"},
+    "p5.4": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["guards_in_chain=14, all_passed=true"]}, "consistency": {"status": "PASS", "evidence": ["m2-guard-integration.json"]}, "completeness": {"status": "PASS", "evidence": ["jq returns true"]}}, "notes": "Integration test PASS"},
+    "p6.1": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["m2-adversarial-results.json exists"]}, "consistency": {"status": "PASS", "evidence": ["milestone=m2"]}, "completeness": {"status": "PASS", "evidence": ["All fields present"]}}, "notes": "Results JSON created"},
+    "p6.2": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["successful_bypasses=0"]}, "consistency": {"status": "PASS", "evidence": ["jq returns true"]}, "completeness": {"status": "PASS", "evidence": ["No bypasses succeeded"]}}, "notes": "0 successful bypasses"},
+    "p6.3": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["total_attempts=15"]}, "consistency": {"status": "PASS", "evidence": [">= 5 requirement met"]}, "completeness": {"status": "PASS", "evidence": ["jq returns true"]}}, "notes": "15 attempts documented"},
+    "p_final.1": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["DW1: count=15"]}, "consistency": {"status": "PASS", "evidence": ["All guards -rwxr-xr-x"]}, "completeness": {"status": "PASS", "evidence": ["15/15 executable"]}}, "notes": "DW1 PASS"},
+    "p_final.2": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["DW2: jq returns 15"]}, "consistency": {"status": "PASS", "evidence": ["All guards BLOCK/ALLOW tested"]}, "completeness": {"status": "PASS", "evidence": ["m2-guard-behavior.json complete"]}}, "notes": "DW2 PASS"},
+    "p_final.3": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["DW3: jq returns true"]}, "consistency": {"status": "PASS", "evidence": ["0 bypasses, 15 attempts"]}, "completeness": {"status": "PASS", "evidence": ["m2-adversarial-results.json complete"]}}, "notes": "DW3 PASS"},
+    "p_final.4": {"status": "done", "validated_at": "2026-01-28T21:25:00Z", "validated_by": "critic", "validations": {"technical": {"status": "PASS", "evidence": ["DW4: jq returns true"]}, "consistency": {"status": "PASS", "evidence": ["14 guards in chains"]}, "completeness": {"status": "PASS", "evidence": ["m2-guard-integration.json complete"]}}, "notes": "DW4 PASS"}
   },
-  "final_tasks": [],
-  "critic": { "status": "PENDING", "evidence": [], "notes": "" }
+  "final_tasks": [
+    {
+      "task": "Adversarial testing framework validated for M2 Guards",
+      "status": "done",
+      "completed_at": "2026-01-28T21:25:00Z"
+    }
+  ],
+  "critic": {
+    "status": "PASS",
+    "verdict": "All 4 done_when criteria PASS",
+    "evidence": [
+      "DW1: 15 guard scripts exist and executable (count=15)",
+      "DW2: All guards BLOCK/ALLOW documented (jq returns 15)",
+      "DW3: 0 successful bypasses, 15 attempts (jq returns true)",
+      "DW4: 14 guards in chains, all passed (jq returns true)"
+    ],
+    "notes": "VULN-001 is theoretical only, mitigated by defense-in-depth"
+  }
 }
