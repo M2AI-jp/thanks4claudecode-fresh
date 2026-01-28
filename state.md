@@ -10,7 +10,7 @@
 
 ```yaml
 active: null
-current_milestone: m5
+current_milestone: m6
 status: idle
 ```
 
@@ -23,7 +23,7 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/projects/play/projects/repository-complete-verification/project.json/pb-m5-file-integrity
+last_archived: play/archive/projects/play/projects/repository-complete-verification/project.json/pb-m6-reward-fraud
 review_pending: false
 ```
 
@@ -44,7 +44,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 20:47:43
+last_start: 2026-01-28 21:11:40
 last_end: 2026-01-28 15:12:57
 last_clear: 2026-01-20
 ```
