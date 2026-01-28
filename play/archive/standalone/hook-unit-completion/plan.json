@@ -1,0 +1,469 @@
+{
+  "_template_rules": {
+    "_philosophy": {
+      "principle": "LLM is proposer, rules are judge. Keyword prohibition is meaningless (can be paraphrased). Prohibit behavior patterns.",
+      "reference": "claude-code-harness implementation-quality.md / test-quality.md"
+    }
+  },
+  "format_version": "2.4",
+  "meta": {
+    "id": "hook-unit-completion",
+    "branch": "fix/hook-chain-and-missing-components",
+    "created": "2026-01-28",
+    "status": "active",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    }
+  },
+  "goal": {
+    "summary": "Event Unit Architecture の欠落部分を補完実装し、自己監査機能を確立する（docs/core-feature-reclassification.md Section 8-11 準拠）",
+    "done_when": [
+      {
+        "criterion": "全 10 Event Unit に telemetry.sh が存在する",
+        "command": "ls -1 .claude/events/*/telemetry.sh 2>/dev/null | wc -l | tr -d ' '",
+        "expected": "== 10"
+      },
+      {
+        "criterion": "notification Unit が telemetry を実行する（no-op ではない）",
+        "command": "grep -q 'telemetry' .claude/events/notification/chain.sh && echo 'yes' || echo 'no'",
+        "expected": "yes"
+      },
+      {
+        "criterion": "session-start Unit に health/integrity チェーンが配線されている",
+        "command": "grep -q 'health\\|integrity' .claude/events/session-start/chain.sh && echo 'yes' || echo 'no'",
+        "expected": "yes"
+      },
+      {
+        "criterion": "testing.sh が git にコミットされている",
+        "command": "git ls-files .claude/lib/testing.sh | wc -l | tr -d ' '",
+        "expected": ">= 1"
+      }
+    ],
+    "scope": {
+      "includes": [
+        "全 10 Event Unit への telemetry.sh 追加",
+        "notification Unit の telemetry 実装",
+        "session-start Unit への health/integrity チェーン配線",
+        "testing.sh のコミット",
+        "Codex によるダブルチェック"
+      ],
+      "excludes": [
+        "新規 Skill/SubAgent の追加",
+        "CLAUDE.md の変更",
+        "docs/core-feature-reclassification.md の変更（SSOT のため）"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "what": "Event Unit Architecture の欠落部分を補完実装",
+          "why": "前回セッションで完成したと言っていたが実際は未完成だった。自己監査機能も必要",
+          "who": "Claude Code + Codex（ダブルチェック）",
+          "when": "このセッションで完了",
+          "where": ".claude/events/ 配下の全 Event Unit",
+          "how": "SSOT（docs/core-feature-reclassification.md Section 8-11）に従って component を追加"
+        },
+        "risks": {
+          "technical": {
+            "severity": "medium",
+            "description": "既存の chain.sh ロジックを壊す可能性",
+            "mitigation": "既存ロジックは維持し、component 呼び出しを追加する形で実装"
+          },
+          "scope": {
+            "severity": "low",
+            "description": "scope が広がりすぎる可能性",
+            "mitigation": "telemetry 追加を最優先、validator/context-injector は Phase 2 以降"
+          }
+        },
+        "ambiguity": [
+          {
+            "phrase": "自分の機能を常に動いているか監査",
+            "clarification": "各 Phase 完了時に Codex による検証を実施する"
+          }
+        ]
+      }
+    },
+    "user_approved_understanding": {
+      "source": "understanding-check",
+      "approved_at": "2026-01-28",
+      "summary": "全部まとめて対応、現状を活かして欠落部分を埋める",
+      "approved_items": [
+        "3フェーズ構成で実装",
+        "既存ブランチ fix/hook-chain-and-missing-components を使用",
+        "各 phase 完了時に Codex による検証を含める"
+      ],
+      "technical_requirements_confirmed": [
+        "SSOT は docs/core-feature-reclassification.md Section 8-11",
+        "testing.sh は既に作成済み",
+        "stop Unit は実際には動作している（no-op ではない）"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Critical Fixes",
+      "description": "testing.sh のコミットと notification/stop Unit の telemetry 実装",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "testing.sh が git index に追加されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "git status --porcelain .claude/lib/testing.sh | grep -q '^A' || git ls-files .claude/lib/testing.sh | grep -q 'testing.sh'",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n .claude/lib/testing.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'assert_' .claude/lib/testing.sh",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": ".claude/events/notification/telemetry.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/events/notification/telemetry.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n .claude/events/notification/telemetry.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'log\\|JSONL\\|telemetry' .claude/events/notification/telemetry.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "notification/chain.sh が telemetry.sh を呼び出す",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -q 'telemetry' .claude/events/notification/chain.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n .claude/events/notification/chain.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'telemetry.sh' .claude/events/notification/chain.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": ".claude/events/stop/telemetry.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/events/stop/telemetry.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n .claude/events/stop/telemetry.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'log\\|JSONL\\|telemetry' .claude/events/stop/telemetry.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Component Split - Telemetry",
+      "description": "全 10 Event Unit に telemetry.sh を追加",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": ".claude/events/session-start/telemetry.sh が存在する",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f .claude/events/session-start/telemetry.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n .claude/events/session-start/telemetry.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'log\\|JSONL' .claude/events/session-start/telemetry.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "session-start/chain.sh に health/integrity チェーンが配線されている",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -q 'health\\|integrity' .claude/events/session-start/chain.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n .claude/events/session-start/chain.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'quality-assurance' .claude/events/session-start/chain.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": "残り 7 Unit に telemetry.sh が存在する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls -1 .claude/events/*/telemetry.sh 2>/dev/null | wc -l | tr -d ' '",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/events/*/telemetry.sh; do bash -n \"$f\" || exit 1; done",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls -1 .claude/events/user-prompt-submit/telemetry.sh .claude/events/pre-tool-edit/telemetry.sh .claude/events/pre-tool-bash/telemetry.sh .claude/events/post-tool-edit/telemetry.sh .claude/events/subagent-stop/telemetry.sh .claude/events/pre-compact/telemetry.sh .claude/events/session-end/telemetry.sh 2>/dev/null | wc -l | tr -d ' '",
+              "expected": "== 7"
+            }
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": "全 chain.sh が telemetry.sh を呼び出す",
+          "executor": "claudecode",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for f in .claude/events/*/chain.sh; do grep -q 'telemetry' \"$f\" || echo \"missing: $f\"; done | wc -l | tr -d ' '",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/events/*/chain.sh; do bash -n \"$f\" || exit 1; done",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -l 'telemetry' .claude/events/*/chain.sh | wc -l | tr -d ' '",
+              "expected": "== 10"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Cleanup and Verification",
+      "description": "最終検証とドキュメント整合性確認",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "全 telemetry.sh が JSONL 形式でログを出力する設計になっている",
+          "executor": "codex",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -l 'JSONL\\|json' .claude/events/*/telemetry.sh | wc -l | tr -d ' '",
+              "expected": ">= 8"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -d .claude/logs || mkdir -p .claude/logs; ls -d .claude/logs",
+              "expected": "contains .claude/logs"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'timestamp\\|event\\|status' .claude/events/session-start/telemetry.sh",
+              "expected": ">= 2"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "docs/repository-map.yaml が再生成されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "test -f docs/repository-map.yaml",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -q 'telemetry.sh' docs/repository-map.yaml",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'telemetry.sh' docs/repository-map.yaml",
+              "expected": ">= 10"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "Final verification",
+      "description": "Execute all done_when commands and verify results",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "全 10 Event Unit に telemetry.sh が存在する（done_when[0]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls -1 .claude/events/*/telemetry.sh 2>/dev/null | wc -l | tr -d ' '",
+              "expected": "== 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in .claude/events/*/telemetry.sh; do bash -n \"$f\" || exit 1; done",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls .claude/events/*/telemetry.sh",
+              "expected": "10 files"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "notification Unit が telemetry を実行する（done_when[1]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -q 'telemetry' .claude/events/notification/chain.sh && echo 'yes' || echo 'no'",
+              "expected": "yes"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n .claude/events/notification/chain.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'telemetry' .claude/events/notification/chain.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "session-start Unit に health/integrity チェーンが配線されている（done_when[2]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -q 'health\\|integrity' .claude/events/session-start/chain.sh && echo 'yes' || echo 'no'",
+              "expected": "yes"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash -n .claude/events/session-start/chain.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'quality-assurance' .claude/events/session-start/chain.sh",
+              "expected": ">= 1"
+            }
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "testing.sh が git にコミットされている（done_when[3]）",
+          "executor": "coderabbit",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "git ls-files .claude/lib/testing.sh | wc -l | tr -d ' '",
+              "expected": ">= 1"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "git show HEAD:.claude/lib/testing.sh >/dev/null 2>&1 || git diff --cached --name-only | grep -q 'testing.sh'",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash -n .claude/lib/testing.sh",
+              "expected": "exit 0"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}
