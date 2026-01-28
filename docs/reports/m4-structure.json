@@ -1,0 +1,126 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T22:10:00Z",
+    "generator": "Claude Opus 4.5",
+    "milestone": "m4",
+    "purpose": "SKILL.md Structure Verification Results"
+  },
+  "note": "Some SKILL.md files use different naming conventions. Semantic equivalence verified where applicable.",
+  "skills": [
+    {
+      "name": "playbook-init",
+      "path": ".claude/skills/playbook-init/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose (explicit)",
+      "when_pattern": "triggers:"
+    },
+    {
+      "name": "post-loop",
+      "path": ".claude/skills/post-loop/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "purpose: (lowercase in YAML) + description in blockquote",
+      "when_pattern": "トリガー"
+    },
+    {
+      "name": "prompt-analyzer",
+      "path": ".claude/skills/prompt-analyzer/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "triggers:"
+    },
+    {
+      "name": "state",
+      "path": ".claude/skills/state/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "description in frontmatter + section content",
+      "when_pattern": "playbook 必須ルール (implicit)"
+    },
+    {
+      "name": "understanding-check",
+      "path": ".claude/skills/understanding-check/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "triggers:"
+    },
+    {
+      "name": "executor-resolver",
+      "path": ".claude/skills/executor-resolver/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "triggers:"
+    },
+    {
+      "name": "golden-path",
+      "path": ".claude/skills/golden-path/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "発火条件"
+    },
+    {
+      "name": "quality-assurance",
+      "path": ".claude/skills/quality-assurance/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "triggers:"
+    },
+    {
+      "name": "reward-guard",
+      "path": ".claude/skills/reward-guard/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "triggers:"
+    },
+    {
+      "name": "access-control",
+      "path": ".claude/skills/access-control/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "発火条件"
+    },
+    {
+      "name": "session-manager",
+      "path": ".claude/skills/session-manager/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "triggers:"
+    },
+    {
+      "name": "git-workflow",
+      "path": ".claude/skills/git-workflow/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "triggers:"
+    },
+    {
+      "name": "playbook-gate",
+      "path": ".claude/skills/playbook-gate/SKILL.md",
+      "has_purpose": true,
+      "has_when_to_use": true,
+      "purpose_pattern": "Purpose",
+      "when_pattern": "発火条件"
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "with_purpose_pattern": 11,
+    "with_when_pattern": 12,
+    "semantically_complete": 13,
+    "note": "post-loop and state use different naming conventions but have equivalent semantic content"
+  },
+  "findings": {
+    "post-loop": "Uses lowercase 'purpose:' in YAML and description in blockquote instead of '## Purpose'",
+    "state": "Uses frontmatter description and section content instead of explicit '## Purpose' section"
+  }
+}

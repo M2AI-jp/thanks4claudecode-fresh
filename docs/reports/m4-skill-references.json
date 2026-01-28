@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T22:15:00Z",
+    "generator": "Claude Opus 4.5",
+    "milestone": "m4",
+    "purpose": "Skill Reference Integrity Verification"
+  },
+  "references": [
+    {
+      "skill": "golden-path",
+      "referenced_files": [
+        ".claude/skills/golden-path/agents/pm.md",
+        ".claude/skills/golden-path/agents/codex-delegate.md"
+      ],
+      "all_exist": true,
+      "count": 2
+    },
+    {
+      "skill": "prompt-analyzer",
+      "referenced_files": [
+        ".claude/skills/prompt-analyzer/agents/prompt-analyzer.md"
+      ],
+      "all_exist": true,
+      "count": 1
+    },
+    {
+      "skill": "executor-resolver",
+      "referenced_files": [
+        ".claude/skills/executor-resolver/agents/executor-resolver.md"
+      ],
+      "all_exist": true,
+      "count": 1
+    },
+    {
+      "skill": "quality-assurance",
+      "referenced_files": [
+        ".claude/skills/quality-assurance/agents/reviewer.md",
+        ".claude/skills/quality-assurance/agents/coderabbit-delegate.md"
+      ],
+      "all_exist": true,
+      "count": 2
+    },
+    {
+      "skill": "reward-guard",
+      "referenced_files": [
+        ".claude/skills/reward-guard/agents/critic.md",
+        ".claude/skills/reward-guard/guards/critic-guard.sh",
+        ".claude/skills/reward-guard/guards/subtask-guard.sh",
+        ".claude/skills/reward-guard/guards/phase-status-guard.sh",
+        ".claude/skills/reward-guard/guards/scope-guard.sh",
+        ".claude/skills/reward-guard/guards/coherence.sh",
+        ".claude/skills/reward-guard/guards/completion-check.sh",
+        ".claude/skills/reward-guard/guards/progress-reminder.sh"
+      ],
+      "all_exist": true,
+      "count": 8
+    },
+    {
+      "skill": "access-control",
+      "referenced_files": [
+        ".claude/skills/access-control/guards/bash-check.sh",
+        ".claude/skills/access-control/guards/main-branch.sh",
+        ".claude/skills/access-control/guards/protected-edit.sh"
+      ],
+      "all_exist": true,
+      "count": 3
+    },
+    {
+      "skill": "playbook-gate",
+      "referenced_files": [
+        ".claude/skills/playbook-gate/guards/playbook-guard.sh",
+        ".claude/skills/playbook-gate/guards/executor-guard.sh",
+        ".claude/skills/playbook-gate/guards/role-resolver.sh"
+      ],
+      "all_exist": true,
+      "count": 3
+    },
+    {
+      "skill": "session-manager",
+      "referenced_files": [
+        ".claude/skills/session-manager/handlers/init-guard.sh"
+      ],
+      "all_exist": true,
+      "count": 1
+    },
+    {
+      "skill": "post-loop",
+      "referenced_files": [
+        ".claude/skills/post-loop/guards/pending-guard.sh",
+        ".claude/skills/post-loop/handlers/complete.sh"
+      ],
+      "all_exist": true,
+      "count": 2
+    }
+  ],
+  "validation": {
+    "total_skills_with_references": 9,
+    "total_referenced_files": 23,
+    "referenced_files_exist": 23,
+    "all_references_valid": true
+  },
+  "summary": {
+    "integrity_status": "PASS",
+    "note": "All Skills with referenced SubAgents/Guards have valid file paths"
+  }
+}
