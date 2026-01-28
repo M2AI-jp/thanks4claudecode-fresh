@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/repository-cleanup/plan.json
+active: null
 parent_project: null
-current_phase: p1
-branch: chore/repository-cleanup
-last_archived: play/archive/reward-fraud-prevention-v2
+current_phase: null
+branch: null
+last_archived: play/archive/standalone/repository-cleanup
 review_pending: false
 ```
 
@@ -32,15 +32,11 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: false
+self_complete: true
 milestone: null
-phase: p1
-done_criteria:
-  - __pycache__ ディレクトリがリポジトリ内に存在しない
-  - .pytest_cache ディレクトリがリポジトリ内に存在しない
-  - pytest が exit 0 で終了する
-  - Hook 設定ファイル(.claude/settings.local.json)が存在する
-status: in_progress
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---
