@@ -1,0 +1,255 @@
+{
+  "format_version": "2.0",
+  "playbook": {
+    "id": "module-verification",
+    "plan_path": "play/standalone/module-verification/plan.json",
+    "status": "done"
+  },
+  "active": {
+    "phase": "p_final",
+    "subtask": "p_final.4"
+  },
+  "phases": {
+    "p1": { "status": "done", "updated_at": "2026-01-29T02:10:00Z" },
+    "p2": { "status": "done", "updated_at": "2026-01-29T02:15:00Z" },
+    "p3": { "status": "done", "updated_at": "2026-01-29T02:20:00Z" },
+    "p4": { "status": "done", "updated_at": "2026-01-29T02:25:00Z" },
+    "p_final": { "status": "done", "updated_at": "2026-01-29T02:30:00Z" }
+  },
+  "subtasks": {
+    "p1.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:10:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["find .claude/skills -name SKILL.md | wc -l = 14"] },
+        "consistency": { "status": "PASS", "evidence": ["all files readable"] },
+        "completeness": { "status": "PASS", "evidence": [">= 14 requirement met"] }
+      },
+      "notes": "14 SKILL.md confirmed"
+    },
+    "p1.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:10:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["grep when/triggers in all SKILL.md"] },
+        "consistency": { "status": "PASS", "evidence": ["発火条件 or description found"] },
+        "completeness": { "status": "PASS", "evidence": ["14/14 have triggers"] }
+      },
+      "notes": "when/triggers found in all"
+    },
+    "p1.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:10:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash -n on 30 .sh files = 0 errors"] },
+        "consistency": { "status": "PASS", "evidence": ["sample files checked"] },
+        "completeness": { "status": "PASS", "evidence": [">= 10 files tested"] }
+      },
+      "notes": "30 .sh files pass bash -n"
+    },
+    "p1.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:10:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash tmp/verify-skills.sh = exit 0"] },
+        "consistency": { "status": "PASS", "evidence": ["test -f tmp/verify-skills.sh"] },
+        "completeness": { "status": "PASS", "evidence": ["grep SKILL.md in script >= 1"] }
+      },
+      "notes": "verify-skills.sh created, exit 0"
+    },
+    "p2.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["find skills/*/agents/*.md | wc -l = 7"] },
+        "consistency": { "status": "PASS", "evidence": ["ls .claude/agents/*.md | wc -l = 7"] },
+        "completeness": { "status": "PASS", "evidence": ["all 7 agents found"] }
+      },
+      "notes": "7 agents confirmed"
+    },
+    "p2.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["grep name: and description: in all agents"] },
+        "consistency": { "status": "PASS", "evidence": ["YAML frontmatter valid"] },
+        "completeness": { "status": "PASS", "evidence": ["7/7 have required fields"] }
+      },
+      "notes": "YAML frontmatter validated"
+    },
+    "p2.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["diff .claude/agents vs skills/*/agents = 0"] },
+        "consistency": { "status": "PASS", "evidence": ["ls .claude/agents/ not empty"] },
+        "completeness": { "status": "PASS", "evidence": [">= 5 files synced"] }
+      },
+      "notes": ".claude/agents/ synced"
+    },
+    "p2.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:15:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash tmp/verify-subagents.sh = exit 0"] },
+        "consistency": { "status": "PASS", "evidence": ["test -f tmp/verify-subagents.sh"] },
+        "completeness": { "status": "PASS", "evidence": ["grep agents in script >= 1"] }
+      },
+      "notes": "verify-subagents.sh created, exit 0"
+    },
+    "p3.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["ls -d .claude/events/*/ | wc -l = 10"] },
+        "consistency": { "status": "PASS", "evidence": ["all expected dirs exist"] },
+        "completeness": { "status": "PASS", "evidence": [">= 10 event units"] }
+      },
+      "notes": "10 event unit dirs confirmed"
+    },
+    "p3.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["find .claude/events -name chain.sh | wc -l = 10"] },
+        "consistency": { "status": "PASS", "evidence": ["all dirs have chain.sh"] },
+        "completeness": { "status": "PASS", "evidence": [">= 10 chain.sh files"] }
+      },
+      "notes": "10 chain.sh files exist"
+    },
+    "p3.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash -n on 10 chain.sh = 0 errors"] },
+        "consistency": { "status": "PASS", "evidence": ["syntax valid"] },
+        "completeness": { "status": "PASS", "evidence": ["all chain.sh tested"] }
+      },
+      "notes": "all chain.sh pass bash -n"
+    },
+    "p3.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["grep events/ in hooks/*.sh = 6 files"] },
+        "consistency": { "status": "PASS", "evidence": ["chain.sh pattern found"] },
+        "completeness": { "status": "PASS", "evidence": [">= 3 hooks reference events"] }
+      },
+      "notes": "6 hooks reference events/"
+    },
+    "p3.5": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:20:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash tmp/verify-event-units.sh = exit 0"] },
+        "consistency": { "status": "PASS", "evidence": ["test -f tmp/verify-event-units.sh"] },
+        "completeness": { "status": "PASS", "evidence": ["grep chain.sh in script >= 1"] }
+      },
+      "notes": "verify-event-units.sh created, exit 0"
+    },
+    "p4.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:25:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["SSOT files all exist, 0 missing"] },
+        "consistency": { "status": "PASS", "evidence": ["manual spot check passed"] },
+        "completeness": { "status": "PASS", "evidence": [">= 50 references in SSOT"] }
+      },
+      "notes": "SSOT files all exist"
+    },
+    "p4.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:25:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["orphan check = 0 files"] },
+        "consistency": { "status": "PASS", "evidence": ["orphan list reviewed"] },
+        "completeness": { "status": "PASS", "evidence": [">= 50 files in .claude/"] }
+      },
+      "notes": "0 orphan files detected"
+    },
+    "p4.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:25:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash tmp/verify-file-integrity.sh = exit 0"] },
+        "consistency": { "status": "PASS", "evidence": ["test -f tmp/verify-file-integrity.sh"] },
+        "completeness": { "status": "PASS", "evidence": ["grep core-feature-reclassification >= 1"] }
+      },
+      "notes": "verify-file-integrity.sh created, exit 0"
+    },
+    "p_final.1": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash tmp/verify-skills.sh = exit 0"] },
+        "consistency": { "status": "PASS", "evidence": ["output shows 3 PASS"] },
+        "completeness": { "status": "PASS", "evidence": ["COMPLETE message shown"] }
+      },
+      "notes": "verify-skills.sh exit 0"
+    },
+    "p_final.2": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash tmp/verify-subagents.sh = exit 0"] },
+        "consistency": { "status": "PASS", "evidence": ["output shows 3 PASS"] },
+        "completeness": { "status": "PASS", "evidence": ["COMPLETE message shown"] }
+      },
+      "notes": "verify-subagents.sh exit 0"
+    },
+    "p_final.3": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash tmp/verify-event-units.sh = exit 0"] },
+        "consistency": { "status": "PASS", "evidence": ["output shows 4 PASS"] },
+        "completeness": { "status": "PASS", "evidence": ["COMPLETE message shown"] }
+      },
+      "notes": "verify-event-units.sh exit 0"
+    },
+    "p_final.4": {
+      "status": "done",
+      "validated_at": "2026-01-29T02:30:00Z",
+      "validated_by": "critic",
+      "validations": {
+        "technical": { "status": "PASS", "evidence": ["bash tmp/verify-file-integrity.sh = exit 0"] },
+        "consistency": { "status": "PASS", "evidence": ["output shows 4 PASS"] },
+        "completeness": { "status": "PASS", "evidence": ["COMPLETE message shown"] }
+      },
+      "notes": "verify-file-integrity.sh exit 0"
+    }
+  },
+  "final_tasks": [],
+  "critic": {
+    "status": "PASS",
+    "validated_by": "codex-delegate",
+    "validated_at": "2026-01-29T02:30:00Z",
+    "evidence": [
+      "done_when[0]: verify-skills.sh exit 0 - PASS",
+      "done_when[1]: verify-subagents.sh exit 0 - PASS",
+      "done_when[2]: verify-event-units.sh exit 0 - PASS",
+      "done_when[3]: verify-file-integrity.sh exit 0 - PASS",
+      "IR01-IR06: ALL PASS"
+    ],
+    "notes": "Codex 経由の独立検証完了"
+  }
+}

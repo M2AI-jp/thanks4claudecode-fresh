@@ -1,0 +1,609 @@
+{
+  "format_version": "2.4",
+  "meta": {
+    "id": "module-verification",
+    "branch": "feat/module-verification-test",
+    "created": "2026-01-29",
+    "status": "draft",
+    "review_profile": "standard",
+    "reviewed": true,
+    "reviewed_by": "reviewer",
+    "roles": {
+      "orchestrator": "claudecode",
+      "worker": "codex",
+      "reviewer": "coderabbit",
+      "human": "user"
+    },
+    "requires_functional_test": true
+  },
+  "goal": {
+    "summary": "14 Skills, 7 SubAgents, 10 Event Units の動作検証を実施し、各モジュールが仕様通り動作することを証拠付きで確認する",
+    "done_when": [
+      {
+        "criterion": "14 Skills の SKILL.md が when/action 定義を持ち、関連スクリプトが構文エラーなく実行可能である",
+        "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-skills.sh",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "7 SubAgents の agent 定義が必須フィールドを持ち、Task 呼び出しパターンと整合している",
+        "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-subagents.sh",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "10 Event Units の chain.sh が存在し、実行パスが正しく設定されている",
+        "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-event-units.sh",
+        "expected": "exit 0"
+      },
+      {
+        "criterion": "全ファイルが core-feature-reclassification.md の SSOT と整合し、孤立ファイルが 0 件である",
+        "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-file-integrity.sh",
+        "expected": "exit 0"
+      }
+    ],
+    "scope": {
+      "includes": [
+        ".claude/skills/*/SKILL.md の when/action 検証",
+        ".claude/skills/*/agents/*.md の必須フィールド検証",
+        ".claude/events/*/chain.sh の存在と実行パス検証",
+        "docs/core-feature-reclassification.md との整合性検証"
+      ],
+      "excludes": [
+        "新機能の実装",
+        "アーキテクチャの変更",
+        "products/ 配下のユーザーコード"
+      ]
+    }
+  },
+  "context": {
+    "analysis_result": {
+      "source": "prompt-analyzer",
+      "data": {
+        "5w1h": {
+          "what": "リポジトリ完成状態の定義と検証 - 14 Skills, 7 SubAgents, 10 Event Units の動作検証",
+          "why": "報酬詐欺による偽完了を防止し、各モジュールが実際に動作することを証明する",
+          "who": "Claude Code（検証実行）、ユーザー（結果確認）",
+          "when": "現在のセッションで完了",
+          "where": ".claude/skills/, .claude/events/, docs/",
+          "how": "bash -n による構文検証 + 実行テスト + SSOT との照合"
+        },
+        "risks": [
+          {
+            "risk": "SubAgent は Task 経由でのみ呼び出し可能、直接動作テスト不可",
+            "probability": "high",
+            "impact": "medium",
+            "mitigation": "agent 定義の必須フィールド検証と Task 呼び出しパターンの整合性チェックで代替"
+          },
+          {
+            "risk": "Event Unit の chain.sh が見つからない可能性",
+            "probability": "medium",
+            "impact": "high",
+            "mitigation": "存在確認 + 実行パス検証で早期検出"
+          },
+          {
+            "risk": "345 ファイル全ての存在意義検証は膨大",
+            "probability": "high",
+            "impact": "medium",
+            "mitigation": "SSOT (core-feature-reclassification.md) との照合に限定し、孤立ファイル検出に絞る"
+          }
+        ],
+        "ambiguity": []
+      }
+    },
+    "user_approved_understanding": {
+      "source": "playbook-init",
+      "approved_at": "2026-01-29",
+      "summary": "4 Phase の追加検証を実施 - Skills動作/SubAgents検証/Event Units検証/ファイル整合性",
+      "approved_items": [
+        "p1: 14 Skills 動作テスト - SKILL.md の when/action 検証 + 関連スクリプトの bash -n + 実行テスト",
+        "p2: 7 SubAgents 検証 - agent 定義の必須フィールド検証 + Task 呼び出しパターン整合性",
+        "p3: 10 Event Units 検証 - chain.sh 存在確認 + 実行パス検証 + Hook 発火シミュレーション",
+        "p4: 全ファイル存在意義検証 - SSOT との照合 + 孤立ファイル検出"
+      ],
+      "technical_requirements_confirmed": [
+        "ファイル存在だけでなく実際の動作を検証すること",
+        "grep パターンマッチだけの検証は禁止",
+        "各モジュールが仕様通り動作することを証拠付きで確認"
+      ]
+    }
+  },
+  "max_iterations": 5,
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Skills 動作検証",
+      "description": "14 Skills の SKILL.md を検証し、when/action 定義の存在と関連スクリプトの実行可能性を確認する",
+      "depends_on": [],
+      "subtasks": [
+        {
+          "id": "p1.1",
+          "criterion": "14 Skills の SKILL.md ファイルリストが生成されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills -name 'SKILL.md' | wc -l",
+              "expected": ">= 14"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills -name 'SKILL.md' -exec test -r {} \\; && echo 'readable'",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/*/SKILL.md 2>/dev/null | wc -l",
+              "expected": ">= 14"
+            }
+          }
+        },
+        {
+          "id": "p1.2",
+          "criterion": "各 SKILL.md に when または triggers セクションが定義されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for f in /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/*/SKILL.md; do grep -l -E '(^## When|triggers:|when:)' \"$f\" || echo \"MISSING: $f\"; done | grep -c 'MISSING' || echo 0",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "manual",
+              "description": "各 SKILL.md の when 定義が実際の発火条件と一致しているか確認"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "for f in /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/*/SKILL.md; do grep -c -E '(^## When|triggers:|when:)' \"$f\" >/dev/null || echo \"NO_WHEN: $f\"; done | grep -c 'NO_WHEN' || echo 0",
+              "expected": "== 0"
+            }
+          }
+        },
+        {
+          "id": "p1.3",
+          "criterion": "Skills 配下の .sh ファイルが bash -n で構文エラーなしである",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills -name '*.sh' -exec bash -n {} \\; 2>&1 | grep -c 'syntax error' || echo 0",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills -name '*.sh' | head -5 | xargs -I {} bash -n {} && echo 'sample_ok'",
+              "expected": "contains 'sample_ok'"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills -name '*.sh' | wc -l",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p1.4",
+          "criterion": "Skills 動作検証スクリプト verify-skills.sh が作成され exit 0 で終了する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-skills.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-skills.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'SKILL.md' /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-skills.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "SubAgents 検証",
+      "description": "7 SubAgents の agent 定義を検証し、必須フィールドと Task 呼び出しパターンの整合性を確認する",
+      "depends_on": ["p1"],
+      "subtasks": [
+        {
+          "id": "p2.1",
+          "criterion": "7 SubAgents の agent 定義ファイルが存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills -path '*/agents/*.md' | wc -l",
+              "expected": ">= 7"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/agents/*.md 2>/dev/null | wc -l",
+              "expected": ">= 5"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "for a in pm reviewer critic prompt-analyzer executor-resolver codex-delegate coderabbit-delegate; do find /Users/amano/Desktop/thanks4claudecode-v2/.claude -name \"$a.md\" | head -1; done | wc -l",
+              "expected": ">= 7"
+            }
+          }
+        },
+        {
+          "id": "p2.2",
+          "criterion": "各 agent 定義に Role/Purpose/When セクションが含まれている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "for f in /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/*/agents/*.md; do grep -l -E '(^## Role|^## Purpose|^## When)' \"$f\" >/dev/null || echo \"INCOMPLETE: $f\"; done | grep -c 'INCOMPLETE' || echo 0",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "manual",
+              "description": "各 agent の Role 定義が実際の振る舞いと一致しているか確認"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "for f in /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/*/agents/*.md; do grep -c -E '(^#|Role|Purpose)' \"$f\"; done | sort -n | head -1",
+              "expected": ">= 2"
+            }
+          }
+        },
+        {
+          "id": "p2.3",
+          "criterion": ".claude/agents/ の登録ファイルが skills/*/agents/ と同期している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "diff <(ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/agents/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/skills/*/agents/*.md 2>/dev/null | xargs -n1 basename | sort) | wc -l",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/agents/ | head -5",
+              "expected": "not empty"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/agents/*.md 2>/dev/null | wc -l",
+              "expected": ">= 5"
+            }
+          }
+        },
+        {
+          "id": "p2.4",
+          "criterion": "SubAgents 検証スクリプト verify-subagents.sh が作成され exit 0 で終了する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-subagents.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-subagents.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'agents' /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-subagents.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Event Units 検証",
+      "description": "10 Event Units の chain.sh を検証し、存在確認と実行パスの正しさを確認する",
+      "depends_on": ["p2"],
+      "subtasks": [
+        {
+          "id": "p3.1",
+          "criterion": "10 Event Units ディレクトリが全て存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "ls -d /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/*/ 2>/dev/null | wc -l",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for d in session-start user-prompt-submit pre-tool-edit pre-tool-bash post-tool-edit subagent-stop pre-compact stop session-end notification; do test -d /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/$d && echo \"OK: $d\" || echo \"MISSING: $d\"; done | grep -c 'MISSING' || echo 0",
+              "expected": "== 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/",
+              "expected": "not empty"
+            }
+          }
+        },
+        {
+          "id": "p3.2",
+          "criterion": "各 Event Unit に chain.sh が存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/events -name 'chain.sh' | wc -l",
+              "expected": ">= 10"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for d in /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/*/; do test -f \"${d}chain.sh\" && echo \"OK\" || echo \"MISSING: $d\"; done | grep -c 'MISSING' || echo 0",
+              "expected": "== 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/*/chain.sh 2>/dev/null | wc -l",
+              "expected": ">= 10"
+            }
+          }
+        },
+        {
+          "id": "p3.3",
+          "criterion": "各 chain.sh が bash -n で構文エラーなしである",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/events -name 'chain.sh' -exec bash -n {} \\; 2>&1 | grep -c 'syntax error' || echo 0",
+              "expected": "== 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "for f in /Users/amano/Desktop/thanks4claudecode-v2/.claude/events/*/chain.sh; do bash -n \"$f\" 2>&1 || echo \"ERROR: $f\"; done | grep -c 'ERROR' || echo 0",
+              "expected": "== 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude/events -name 'chain.sh' -exec bash -n {} \\; && echo 'all_valid'",
+              "expected": "contains 'all_valid'"
+            }
+          }
+        },
+        {
+          "id": "p3.4",
+          "criterion": "Hook ファイル (.claude/hooks/*.sh) が対応する Event Unit を呼び出している",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -l 'events/' /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/*.sh | wc -l",
+              "expected": ">= 3"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "grep -c 'chain.sh' /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/*.sh || echo 0",
+              "expected": ">= 1"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "ls /Users/amano/Desktop/thanks4claudecode-v2/.claude/hooks/*.sh | wc -l",
+              "expected": ">= 4"
+            }
+          }
+        },
+        {
+          "id": "p3.5",
+          "criterion": "Event Units 検証スクリプト verify-event-units.sh が作成され exit 0 で終了する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-event-units.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-event-units.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'chain.sh' /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-event-units.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "ファイル整合性検証",
+      "description": "全ファイルが SSOT (core-feature-reclassification.md) と整合し、孤立ファイルがないことを確認する",
+      "depends_on": ["p3"],
+      "subtasks": [
+        {
+          "id": "p4.1",
+          "criterion": "core-feature-reclassification.md に記載されたファイルが全て存在する",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "grep -oE '\\.[a-z]+/[a-zA-Z0-9/_.-]+\\.(sh|md|json|yaml)' /Users/amano/Desktop/thanks4claudecode-v2/docs/core-feature-reclassification.md | sort -u | while read f; do test -f \"/Users/amano/Desktop/thanks4claudecode-v2/$f\" || echo \"MISSING: $f\"; done | grep -c 'MISSING' || echo 0",
+              "expected": "<= 5"
+            },
+            "consistency": {
+              "type": "manual",
+              "description": "SSOT に記載された主要ファイルが実際に存在するか確認"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c '\\.' /Users/amano/Desktop/thanks4claudecode-v2/docs/core-feature-reclassification.md",
+              "expected": ">= 50"
+            }
+          }
+        },
+        {
+          "id": "p4.2",
+          "criterion": ".claude/ 配下のファイルで SSOT に記載されていない孤立ファイルが特定されている",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude -name '*.sh' -o -name '*.md' | wc -l",
+              "expected": ">= 30"
+            },
+            "consistency": {
+              "type": "manual",
+              "description": "孤立ファイルリストを生成し、削除候補を特定"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "find /Users/amano/Desktop/thanks4claudecode-v2/.claude -type f | wc -l",
+              "expected": ">= 50"
+            }
+          }
+        },
+        {
+          "id": "p4.3",
+          "criterion": "ファイル整合性検証スクリプト verify-file-integrity.sh が作成され exit 0 で終了する",
+          "executor": "codex",
+          "coding": true,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-file-integrity.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "test -f /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-file-integrity.sh",
+              "expected": "exit 0"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "grep -c 'core-feature-reclassification' /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-file-integrity.sh",
+              "expected": ">= 1"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "p_final",
+      "name": "最終検証",
+      "description": "全検証スクリプトを実行し、done_when の全条件を確認する",
+      "depends_on": ["p4"],
+      "subtasks": [
+        {
+          "id": "p_final.1",
+          "criterion": "verify-skills.sh が exit 0 で終了する (done_when[0])",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-skills.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-skills.sh 2>&1 | tail -5",
+              "expected": "not empty"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-skills.sh && echo 'COMPLETE'",
+              "expected": "contains 'COMPLETE'"
+            }
+          }
+        },
+        {
+          "id": "p_final.2",
+          "criterion": "verify-subagents.sh が exit 0 で終了する (done_when[1])",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-subagents.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-subagents.sh 2>&1 | tail -5",
+              "expected": "not empty"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-subagents.sh && echo 'COMPLETE'",
+              "expected": "contains 'COMPLETE'"
+            }
+          }
+        },
+        {
+          "id": "p_final.3",
+          "criterion": "verify-event-units.sh が exit 0 で終了する (done_when[2])",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-event-units.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-event-units.sh 2>&1 | tail -5",
+              "expected": "not empty"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-event-units.sh && echo 'COMPLETE'",
+              "expected": "contains 'COMPLETE'"
+            }
+          }
+        },
+        {
+          "id": "p_final.4",
+          "criterion": "verify-file-integrity.sh が exit 0 で終了する (done_when[3])",
+          "executor": "claudecode",
+          "coding": false,
+          "validation_plan": {
+            "technical": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-file-integrity.sh",
+              "expected": "exit 0"
+            },
+            "consistency": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-file-integrity.sh 2>&1 | tail -5",
+              "expected": "not empty"
+            },
+            "completeness": {
+              "type": "automated",
+              "command": "bash /Users/amano/Desktop/thanks4claudecode-v2/tmp/verify-file-integrity.sh && echo 'COMPLETE'",
+              "expected": "contains 'COMPLETE'"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "final_tasks": []
+}

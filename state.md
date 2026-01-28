@@ -23,8 +23,8 @@ active: null
 parent_project: null
 current_phase: null
 branch: null
-last_archived: play/archive/completion-verification
-review_pending: true
+last_archived: play/archive/module-verification
+review_pending: false
 ```
 
 ---
