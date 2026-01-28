@@ -19,11 +19,11 @@ status: idle
 ## playbook
 
 ```yaml
-active: play/standalone/repository-final-cleanup/plan.json
+active: null
 parent_project: null
-current_phase: p_final
-branch: feat/repository-cleanup-final
-last_archived: play/archive/project-fix
+current_phase: null
+branch: main
+last_archived: play/archive/standalone/repository-final-cleanup
 review_pending: false
 ```
 
@@ -32,15 +32,11 @@ review_pending: false
 ## goal
 
 ```yaml
-self_complete: true
+self_complete: false
 milestone: null
-phase: p_final
-done_criteria:
-  - README.md に存在しないファイルへの参照がない
-  - play/standalone/refactoring-cleanup/ が存在しない
-  - play/standalone/new-repo-setup/ が存在しない
-  - play/standalone/template-strictness-v2/ が存在しない
-status: completed
+phase: null
+done_criteria: []
+status: idle
 ```
 
 ---

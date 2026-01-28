@@ -532,9 +532,11 @@ playbook なしで作業開始しない:
    → project.active != null:
       - 既存 project 配下に playbook を作成
       - パス: play/projects/<project-id>/playbooks/<playbook-id>/
+      - 【必須】mkdir -p play/projects/<project-id>/playbooks/<playbook-id>/
    → project.active == null:
       - 単発 playbook として作成
       - パス: play/standalone/<playbook-id>/
+      - 【必須】mkdir -p play/standalone/<playbook-id>/
    → state.md の playbook.parent_project を設定
 
 0.5. 【必須】prompt-analyzer 呼び出し（M086: Orchestrator 化）
