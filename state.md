@@ -9,9 +9,9 @@
 ## project
 
 ```yaml
-active: null
-current_milestone: m3
-status: idle
+active: play/projects/repository-complete-verification/project.json
+current_milestone: m4
+status: in_progress
 ```
 
 ---
@@ -19,10 +19,10 @@ status: idle
 ## playbook
 
 ```yaml
-active: null
-parent_project: null
-current_phase: null
-branch: null
+active: play/projects/repository-complete-verification/playbooks/pb-m4-skills/plan.json
+parent_project: repository-complete-verification
+current_phase: p1
+branch: feat/m4-skill-verification
 last_archived: play/archive/projects/repository-complete-verification/pb-m3-subagents
 review_pending: false
 ```
@@ -33,10 +33,16 @@ review_pending: false
 
 ```yaml
 self_complete: false
-milestone: null
-phase: null
-done_criteria: []
-status: idle
+milestone: m4
+phase: p1
+done_criteria:
+  - 全 13 Skill ディレクトリに SKILL.md が存在する
+  - 全 SKILL.md に Purpose セクションが存在する
+  - 全 SKILL.md に When to Use セクションが存在する
+  - Skill → SubAgent/Guard 参照が整合している
+  - Adversarial invocation test で無効なスキル呼び出しが全て拒否されている
+  - docs/reports/m4-skill-certification.json が生成され passed == true である
+status: in_progress
 ```
 
 ---
@@ -44,7 +50,7 @@ status: idle
 ## session
 
 ```yaml
-last_start: 2026-01-28 20:17:24
+last_start: 2026-01-28 20:47:43
 last_end: 2026-01-28 15:12:57
 last_clear: 2026-01-20
 ```

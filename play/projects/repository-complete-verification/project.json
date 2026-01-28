@@ -74,7 +74,7 @@
       "id": "m3",
       "title": "Milestone 3: SubAgent Verification",
       "order": 3,
-      "status": "pending",
+      "status": "completed",
       "description": "Verify all 7 SubAgents (pm, critic, reviewer, prompt-analyzer, executor-resolver, codex-delegate, coderabbit-delegate)",
       "done_when": [
         {
@@ -162,8 +162,8 @@
   "progress": {
     "total_playbooks": 6,
     "completed_playbooks": 3,
-    "current_milestone": "m3",
-    "current_playbook": null
+    "current_milestone": "m4",
+    "current_playbook": "pb-m4-skills"
   },
   "context": {
     "analysis_result": {

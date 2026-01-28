@@ -1,0 +1,143 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-28T22:05:00Z",
+    "generator": "Claude Opus 4.5",
+    "milestone": "m4",
+    "purpose": "Skill Baseline Documentation"
+  },
+  "summary": {
+    "total_skills": 13,
+    "categories": {
+      "entry_points": 2,
+      "analysis": 3,
+      "state_management": 2,
+      "quality": 2,
+      "protection": 2,
+      "workflow": 2
+    }
+  },
+  "skills": [
+    {
+      "name": "playbook-init",
+      "skill_path": ".claude/skills/playbook-init",
+      "skill_md_path": ".claude/skills/playbook-init/SKILL.md",
+      "skill_md_exists": true,
+      "category": "entry_points",
+      "purpose": "Task start flow entry point",
+      "invocation": "Skill(skill='playbook-init')"
+    },
+    {
+      "name": "post-loop",
+      "skill_path": ".claude/skills/post-loop",
+      "skill_md_path": ".claude/skills/post-loop/SKILL.md",
+      "skill_md_exists": true,
+      "category": "workflow",
+      "purpose": "Playbook completion post-processing",
+      "invocation": "Skill(skill='post-loop')"
+    },
+    {
+      "name": "prompt-analyzer",
+      "skill_path": ".claude/skills/prompt-analyzer",
+      "skill_md_path": ".claude/skills/prompt-analyzer/SKILL.md",
+      "skill_md_exists": true,
+      "category": "analysis",
+      "purpose": "User prompt analysis and classification",
+      "invocation": "Task(subagent_type='prompt-analyzer')"
+    },
+    {
+      "name": "state",
+      "skill_path": ".claude/skills/state",
+      "skill_md_path": ".claude/skills/state/SKILL.md",
+      "skill_md_exists": true,
+      "category": "state_management",
+      "purpose": "state.md management and playbook rules",
+      "invocation": "Skill(skill='state')"
+    },
+    {
+      "name": "understanding-check",
+      "skill_path": ".claude/skills/understanding-check",
+      "skill_md_path": ".claude/skills/understanding-check/SKILL.md",
+      "skill_md_exists": true,
+      "category": "analysis",
+      "purpose": "5W1H understanding verification system",
+      "invocation": "Skill(skill='understanding-check')"
+    },
+    {
+      "name": "executor-resolver",
+      "skill_path": ".claude/skills/executor-resolver",
+      "skill_md_path": ".claude/skills/executor-resolver/SKILL.md",
+      "skill_md_exists": true,
+      "category": "analysis",
+      "purpose": "Executor determination (claudecode/codex/coderabbit/user)",
+      "invocation": "Skill(skill='executor-resolver')"
+    },
+    {
+      "name": "golden-path",
+      "skill_path": ".claude/skills/golden-path",
+      "skill_md_path": ".claude/skills/golden-path/SKILL.md",
+      "skill_md_exists": true,
+      "category": "entry_points",
+      "purpose": "pm and codex-delegate SubAgent management",
+      "invocation": "Task(subagent_type='pm')"
+    },
+    {
+      "name": "quality-assurance",
+      "skill_path": ".claude/skills/quality-assurance",
+      "skill_md_path": ".claude/skills/quality-assurance/SKILL.md",
+      "skill_md_exists": true,
+      "category": "quality",
+      "purpose": "reviewer and coderabbit-delegate SubAgent management",
+      "invocation": "Task(subagent_type='reviewer')"
+    },
+    {
+      "name": "reward-guard",
+      "skill_path": ".claude/skills/reward-guard",
+      "skill_md_path": ".claude/skills/reward-guard/SKILL.md",
+      "skill_md_exists": true,
+      "category": "quality",
+      "purpose": "critic SubAgent and reward fraud prevention guards",
+      "invocation": "Task(subagent_type='critic')"
+    },
+    {
+      "name": "access-control",
+      "skill_path": ".claude/skills/access-control",
+      "skill_md_path": ".claude/skills/access-control/SKILL.md",
+      "skill_md_exists": true,
+      "category": "protection",
+      "purpose": "File protection guards (HARD_BLOCK, protected-edit)",
+      "invocation": "Hook-triggered (pre-tool-edit, pre-tool-bash)"
+    },
+    {
+      "name": "session-manager",
+      "skill_path": ".claude/skills/session-manager",
+      "skill_md_path": ".claude/skills/session-manager/SKILL.md",
+      "skill_md_exists": true,
+      "category": "state_management",
+      "purpose": "Session start/end management",
+      "invocation": "Hook-triggered (session-start, stop)"
+    },
+    {
+      "name": "git-workflow",
+      "skill_path": ".claude/skills/git-workflow",
+      "skill_md_path": ".claude/skills/git-workflow/SKILL.md",
+      "skill_md_exists": true,
+      "category": "workflow",
+      "purpose": "Git operations automation (commit, PR, merge)",
+      "invocation": "Skill(skill='git-workflow')"
+    },
+    {
+      "name": "playbook-gate",
+      "skill_path": ".claude/skills/playbook-gate",
+      "skill_md_path": ".claude/skills/playbook-gate/SKILL.md",
+      "skill_md_exists": true,
+      "category": "protection",
+      "purpose": "playbook-guard and executor-guard management",
+      "invocation": "Hook-triggered (pre-tool-edit)"
+    }
+  ],
+  "verification": {
+    "skill_dir_count": 13,
+    "skill_md_count": 13,
+    "all_present": true
+  }
+}
